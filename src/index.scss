@@ -8,29 +8,44 @@
 /* Import the utility styles for Tailwind */
 @import 'tailwindcss/utilities';
 
+@font-face {
+  font-family: 'DejaVuSansBold';
+  src: local('DejaVuSansBold'), url('./fonts/DejaVuSans-Bold.ttf') format('ttf');
+}
+
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --background-image: null;
+  --theme-root: rgba(0, 0, 0, 0.5);
+  --theme-italic: rgba(245, 245, 245, 1);
+  --theme-text: rgba(255, 253, 253, 1);
+  --theme-box: rgba(19, 19, 19, 0.75);
+  --theme-border: rgba(0, 0, 0, 1);
+  --theme-hover-pos: rgba(0, 140, 233, .75);
+  --theme-hover-neg: rgba(196, 0, 0, .75);
+  --theme-blur: 15px;
+  --theme-border-width: 2px;
+  --theme-border-radius: 8px;
+  --theme-font: 'DejaVuSansBold', sans-serif;
+  --theme-border-type: solid;
+  --theme-text-hover: rgb(255, 255, 255);
+}
+
+:root {
+  font-family: var(--theme-font);
   line-height: 1.5;
   font-weight: 400;
-
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color: var(--theme-text);
+  background-image: var(--background-image);
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
 }
 
 body {
@@ -44,25 +59,6 @@ body {
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
 }
 
 code {
@@ -83,18 +79,51 @@ code {
   text-align: center;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-  code {
-    background-color: #f9f9f9;
-  }
+.themed-button-neg {
+  @apply theme-border-style shadow-md bg-theme-box hover:text-theme-text-hover hover:bg-theme-hover-neg text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
+}
+
+.themed-button-pos {
+  @apply theme-border-style shadow-md bg-theme-box hover:text-theme-text-hover hover:bg-theme-hover-pos text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
+}
+
+.themed-button {
+  @apply theme-border-style shadow-md bg-theme-box text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
+}
+
+.themed-root {
+  @apply theme-border-style shadow-md bg-theme-root border-theme-border border-theme-border-width rounded-theme-border-radius p-4 backdrop-blur-theme-blur;
+}
+
+.themed-menu-button-neg {
+  @apply theme-border-style p-8 w-full text-xl font-bold hover:text-theme-text-hover transition-colors text-theme-text hover:bg-theme-hover-neg border-theme-border border-theme-border-width bg-theme-root backdrop-blur-theme-blur rounded-theme-border-radius;
+}
+
+.themed-menu-button-pos {
+  @apply theme-border-style p-8 w-full text-xl font-bold transition-colors hover:text-theme-text-hover text-theme-text hover:bg-theme-hover-pos border-theme-border border-theme-border-width bg-theme-root backdrop-blur-theme-blur rounded-theme-border-radius;
+}
+.themed-input {
+  @apply theme-border-style shadow-md bg-theme-box text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
+}
+.theme-border-style {
+  border-style: var(--theme-border-type);
+}
+.themed-button-small {
+  @apply theme-border-style shadow-md bg-theme-box text-theme-text border-theme-border border-theme-border-width p-1 backdrop-blur-theme-blur rounded-theme-border-radius;
+}
+
+/* This is the scrollbar track */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* This is the scrollbar itself */
+::-webkit-scrollbar-thumb {
+  background: var(--theme-box); 
+  border-radius: var(--theme-border-radius);
+}
+
+/* This is when you hover over the scrollbar */
+::-webkit-scrollbar-thumb:hover {
+  background: var(--theme-hover-pos); 
 }
