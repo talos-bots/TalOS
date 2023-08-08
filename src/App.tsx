@@ -8,15 +8,17 @@ import AgentsPage from './pages/agents';
 import ActionsPage from './pages/actions';
 import SettingsPage from './pages/settings';
 import DocsPage from './pages/docs';
+import DevPanel from './components/dev-panel';
 
 console.log('[App.tsx]', `Hello world from Electron ${process.versions.electron}!`)
 
 function App() {
+  const isDev = process.env.NODE_ENV === 'development';
   return (
   <div className='App'>
-    <DiscordListeners/>
-    <ChatNavBar />
     <Router>
+      <DiscordListeners/>
+      <ChatNavBar/>
       <Routes>
         <Route path='/*' element={<></>} />
         <Route path='/terminal' element={<ConstructOS/>} />
@@ -25,7 +27,8 @@ function App() {
         <Route path='/settings' element={<SettingsPage/>} />
         <Route path='/docs' element={<DocsPage/>} />
       </Routes>
-  </Router>
+      {isDev ? <DevPanel /> : null}
+    </Router>
   </div>
   )
 }
