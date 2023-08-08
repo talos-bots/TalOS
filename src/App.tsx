@@ -1,6 +1,5 @@
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
-import { useState } from 'react'
-import './App.scss'
+import { useState } from 'react';
 import { ConstructOS } from './components/constructOS';
 import { DiscordListeners } from './listeners/discord-listeners';
 import AgentsPage from './pages/agents';
