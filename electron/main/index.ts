@@ -2,8 +2,8 @@ import { app, BrowserWindow, shell, ipcMain } from 'electron'
 import { release } from 'node:os'
 import { join } from 'node:path'
 import { update } from './update'
-import { DiscordJS } from './discord'
-import { PouchDB } from './pouchdb'
+import { DiscordJSRoutes } from './discord'
+import { PouchDBRoutes } from './pouchdb'
 
 // The built directory structure
 //
@@ -126,5 +126,5 @@ ipcMain.handle('open-win', (_, arg) => {
   }
 })
 
-DiscordJS();
-PouchDB();
+DiscordJSRoutes();
+PouchDBRoutes();

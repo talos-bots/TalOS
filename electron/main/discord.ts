@@ -1,3 +1,5 @@
-export function DiscordJS(){
-    
+import { ipcMain } from 'electron';
+
+export function DiscordJSRoutes(){
+
 };
