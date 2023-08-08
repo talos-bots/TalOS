@@ -32,6 +32,55 @@ export function DiscordJSRoutes(){
     let token = '';
     let applicationID = '';
 
+    ipcMain.on('discord-get-token', async (event) => {
+        event.sender.send('discord-get-token-reply', token);
+    });
+
+    ipcMain.on('discord-get-application-id', async (event) => {
+        event.sender.send('discord-get-application-id-reply', applicationID);
+    });
+
+    ipcMain.on('discord-get-commands', async (event) => {
+        event.sender.send('discord-get-commands-reply', commands);
+    });
+
+    ipcMain.on('discord-get-command', async (event, commandName: string) => {
+        event.sender.send('discord-get-command-reply', commands.get(commandName));
+    });
+
+    ipcMain.on('discord-add-command', async (event, commandName: string, commandFunction: Function) => {
+        commands.set(commandName, commandFunction);
+        event.sender.send('discord-add-command-reply', commands);
+    });
+
+    ipcMain.on('discord-remove-command', async (event, commandName: string) => {
+        commands.delete(commandName);
+        event.sender.send('discord-remove-command-reply', commands);
+    });
+
+    ipcMain.on('discord-remove-all-commands', async (event) => {
+        commands.clear();
+        event.sender.send('discord-remove-all-commands-reply', commands);
+    });
+
+    ipcMain.on('discord-get-guilds', async (event) => {
+        if(!isReady) return false;
+        const guilds = disClient.guilds.cache.map(guild => {
+            const channels = guild.channels.cache
+              .filter(channel => channel.type === 0)
+              .map(channel => ({
+                id: channel.id,
+                name: channel.name,
+              }));
+            return {
+              id: guild.id,
+              name: guild.name,
+              channels,
+            };
+        });
+        event.sender.send('discord-get-guilds-reply', guilds);
+    });
+
     disClient.on('messageCreate', async (message) => {
         if (message.author.id === disClient.user?.id) return;
         ipcMain.emit('discord-message', message);
@@ -160,9 +209,6 @@ export function DiscordJSRoutes(){
 
     disClient.on('ready', () => {
         if(!disClient.user) return;
-        if(disClient.user){
-            disClient.user.setActivity({ name: 'with your feelings', type: ActivityType.Playing });
-        }
         isReady = true;
         console.log(`Logged in as ${disClient.user.tag}!`);
         ipcMain.emit('discord-ready', disClient);
