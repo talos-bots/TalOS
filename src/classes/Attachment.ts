@@ -59,5 +59,4 @@ export class Attachment{
     getAttachmentDataAsFile(){
         return new File([this.data], this.name, {type: this.type});
     }
-
 }
