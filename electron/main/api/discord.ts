@@ -31,7 +31,8 @@ export function DiscordJSRoutes(){
     let isReady = false;
 
     disClient.on('messageCreate', async (message) => {
-        if (message.author.bot) return;
+        if (message.author.id === disClient.user?.id) return;
+        ipcMain.emit('discord-message', message);
     });
 
     disClient.on('ready', () => {
@@ -41,6 +42,7 @@ export function DiscordJSRoutes(){
         }
         isReady = true;
         console.log(`Logged in as ${disClient.user.tag}!`);
+        ipcMain.emit('discord-ready', disClient);
     });
 
     async function setDiscordBotInfo(botName: string, base64Avatar: string): Promise<void> {
@@ -178,6 +180,7 @@ export function DiscordJSRoutes(){
 
     ipcMain.handle('discord-logout', async (event) => {
         await disClient.destroy();
+        ipcMain.emit('discord-disconnected');
         return true;
     });
 
