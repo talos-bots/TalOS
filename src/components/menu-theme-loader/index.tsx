@@ -1,10 +1,6 @@
-import { Settings } from "@/App";
-import { getUITheme  } from "@/api";
-import UITheme from "@/classes/UITheme";
 import { useState, useEffect } from "react";
 
 interface Props {
-    settings: Settings;
     needsReload: boolean;
     setNeedsReload: (reload: boolean) => void;
     setMenuTheme: (theme: any) => void;
