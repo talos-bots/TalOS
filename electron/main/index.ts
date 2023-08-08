@@ -3,8 +3,10 @@ import { release } from 'node:os'
 import { join } from 'node:path'
 import path from 'path';
 import { update } from './update'
-import { DiscordJSRoutes } from './discord'
-import { PouchDBRoutes } from './pouchdb'
+import { DiscordJSRoutes } from './api/discord'
+import { PouchDBRoutes } from './api/pouchdb'
+import Store from 'electron-store';
+import { FsAPIRoutes } from './api/fsapi';
 
 // The built directory structure
 //
@@ -44,7 +46,7 @@ const preload = join(__dirname, '../preload/index.js')
 const url = process.env.VITE_DEV_SERVER_URL
 const indexHtml = join(process.env.DIST, 'index.html')
 export const dataPath = path.join(app.getPath('userData'), 'data/');
-
+export const store = new Store();
 async function createWindow() {
   win = new BrowserWindow({
     title: 'Main window',
@@ -128,5 +130,18 @@ ipcMain.handle('open-win', (_, arg) => {
   }
 })
 
+ipcMain.handle('get-data-path', () => {
+  return dataPath;
+})
+
+ipcMain.on('set-data', (event, arg) => {
+  store.set(arg.key, arg.value);
+})
+
+ipcMain.on('get-data', (event, arg) => {
+  event.sender.send('get-data-reply', store.get(arg));
+})
+
 DiscordJSRoutes();
 PouchDBRoutes();
+FsAPIRoutes();

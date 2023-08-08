@@ -223,3 +223,21 @@ export async function updateChat(chat: Chat) {
 export async function deleteChat(id: string) {
     ipcRenderer.send('delete-chat', id);
 }
+
+export async function getStorageValue(key: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+        ipcRenderer.send("get-data", key);
+
+        ipcRenderer.once("get-data-reply", (event: IpcRendererEvent, data: any) => {
+            if (data) {
+                resolve(data);
+            } else {
+                reject(new Error("No data received from 'data' event."));
+            }
+        });
+    });
+}
+
+export async function setStorageValue(key: string, value: string) {
+    ipcRenderer.send('set-data', key, value);
+}

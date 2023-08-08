@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron';
 import PouchDB from 'pouchdb';
-import { dataPath } from '.';
+import { dataPath } from '../';
 
 export function PouchDBRoutes(){
     let agentDB = new PouchDB('agents', {prefix: dataPath});
