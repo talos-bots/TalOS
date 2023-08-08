@@ -1,15 +1,13 @@
-import { Settings } from "@/App";
 import { useEffect, useState } from "react";
 
 interface Props {
-    settings?: Settings;
     text: string;
     delay?: number;
     typingSpeed?: number;
     isDisabled?: boolean;
 }
 
-const StreamableText: React.FC<Props> = ({ text, settings, delay = 0, typingSpeed, isDisabled = false }) => {
+const StreamableText: React.FC<Props> = ({ text, delay = 0, typingSpeed, isDisabled = false }) => {
     const [streamedText, setStreamedText] = useState<string>('');
     const [typingSpeedState, setTypingSpeedState] = useState<number>(100);
 
@@ -30,7 +28,7 @@ const StreamableText: React.FC<Props> = ({ text, settings, delay = 0, typingSpee
                 textToStream += text.charAt(i);
                 setStreamedText(textToStream);
                 i++;
-                timeoutId = setTimeout(streamText, settings?.typingSpeed || typingSpeedState);
+                timeoutId = setTimeout(streamText, typingSpeedState);
             }
         }
     
@@ -47,7 +45,7 @@ const StreamableText: React.FC<Props> = ({ text, settings, delay = 0, typingSpee
                 clearTimeout(timeoutId);
             }
         };
-    }, [text, settings?.typingSpeed, delay, isDisabled === false]);  // Watch isDisabled state as well    
+    }, [text, delay, isDisabled === false]);  // Watch isDisabled state as well    
 
     return (
         <>

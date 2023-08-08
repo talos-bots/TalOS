@@ -1,9 +1,7 @@
 import { Link } from "react-router-dom"
 import { BiArrowBack } from "react-icons/bi";
-import { Settings } from "@/App";
 interface Props {
     to?: string;
-    settings?: Settings;
 }
 const BackButton = (props: Props) => {    
     return (
