@@ -26,20 +26,189 @@ function cleanEmoji(text: string) {
 }
 
 export function DiscordJSRoutes(){
-    const disClient = new Client(intents);
+    let disClient = new Client(intents);
     const commands = new Collection();
     let isReady = false;
+    let token = '';
+    let applicationID = '';
+
+    ipcMain.on('discord-get-token', async (event) => {
+        event.sender.send('discord-get-token-reply', token);
+    });
+
+    ipcMain.on('discord-get-application-id', async (event) => {
+        event.sender.send('discord-get-application-id-reply', applicationID);
+    });
+
+    ipcMain.on('discord-get-commands', async (event) => {
+        event.sender.send('discord-get-commands-reply', commands);
+    });
+
+    ipcMain.on('discord-get-command', async (event, commandName: string) => {
+        event.sender.send('discord-get-command-reply', commands.get(commandName));
+    });
+
+    ipcMain.on('discord-add-command', async (event, commandName: string, commandFunction: Function) => {
+        commands.set(commandName, commandFunction);
+        event.sender.send('discord-add-command-reply', commands);
+    });
+
+    ipcMain.on('discord-remove-command', async (event, commandName: string) => {
+        commands.delete(commandName);
+        event.sender.send('discord-remove-command-reply', commands);
+    });
+
+    ipcMain.on('discord-remove-all-commands', async (event) => {
+        commands.clear();
+        event.sender.send('discord-remove-all-commands-reply', commands);
+    });
+
+    ipcMain.on('discord-get-guilds', async (event) => {
+        if(!isReady) return false;
+        const guilds = disClient.guilds.cache.map(guild => {
+            const channels = guild.channels.cache
+              .filter(channel => channel.type === 0)
+              .map(channel => ({
+                id: channel.id,
+                name: channel.name,
+              }));
+            return {
+              id: guild.id,
+              name: guild.name,
+              channels,
+            };
+        });
+        event.sender.send('discord-get-guilds-reply', guilds);
+    });
 
     disClient.on('messageCreate', async (message) => {
         if (message.author.id === disClient.user?.id) return;
         ipcMain.emit('discord-message', message);
     });
 
+    disClient.on('messageUpdate', async (oldMessage, newMessage) => {
+        if (newMessage.author?.id === disClient.user?.id) return;
+        ipcMain.emit('discord-message-update', oldMessage, newMessage);
+    });
+
+    disClient.on('messageDelete', async (message) => {
+        if (message.author?.id === disClient.user?.id) return;
+        ipcMain.emit('discord-message-delete', message);
+    });
+
+    disClient.on('messageReactionAdd', async (reaction, user) => {
+        if (user.id === disClient.user?.id) return;
+        ipcMain.emit('discord-message-reaction-add', reaction, user);
+    });
+
+    disClient.on('messageReactionRemove', async (reaction, user) => {
+        if (user.id === disClient.user?.id) return;
+        ipcMain.emit('discord-message-reaction-remove', reaction, user);
+    });
+
+    disClient.on('messageReactionRemoveAll', async (message) => {
+        if (message.author?.id === disClient.user?.id) return;
+        ipcMain.emit('discord-message-reaction-remove-all', message);
+    });
+
+    disClient.on('messageReactionRemoveEmoji', async (reaction) => {
+        ipcMain.emit('discord-message-reaction-remove-emoji', reaction);
+    });
+
+    disClient.on('channelCreate', async (channel) => {
+        ipcMain.emit('discord-channel-create', channel);
+    });
+
+    disClient.on('channelDelete', async (channel) => {
+        ipcMain.emit('discord-channel-delete', channel);
+    });
+
+    disClient.on('channelPinsUpdate', async (channel, time) => {
+        ipcMain.emit('discord-channel-pins-update', channel, time);
+    });
+
+    disClient.on('channelUpdate', async (oldChannel, newChannel) => {
+        ipcMain.emit('discord-channel-update', oldChannel, newChannel);
+    });
+
+    disClient.on('emojiCreate', async (emoji) => {
+        ipcMain.emit('discord-emoji-create', emoji);
+    });
+
+    disClient.on('emojiDelete', async (emoji) => {
+        ipcMain.emit('discord-emoji-delete', emoji);
+    });
+
+    disClient.on('emojiUpdate', async (oldEmoji, newEmoji) => {
+        ipcMain.emit('discord-emoji-update', oldEmoji, newEmoji);
+    });
+
+    disClient.on('guildBanAdd', async (ban) => {
+        ipcMain.emit('discord-guild-ban-add', ban);
+    });
+
+    disClient.on('guildBanRemove', async (ban) => {
+        ipcMain.emit('discord-guild-ban-remove', ban);
+    });
+
+    disClient.on('guildCreate', async (guild) => {
+        ipcMain.emit('discord-guild-create', guild);
+    });
+
+    disClient.on('guildDelete', async (guild) => {
+        ipcMain.emit('discord-guild-delete', guild);
+    });
+
+    disClient.on('guildUnavailable', async (guild) => {
+        ipcMain.emit('discord-guild-unavailable', guild);
+    });
+
+    disClient.on('guildIntegrationsUpdate', async (guild) => {
+        ipcMain.emit('discord-guild-integrations-update', guild);
+    });
+
+    disClient.on('guildMemberAdd', async (member) => {
+        ipcMain.emit('discord-guild-member-add', member);
+    });
+
+    disClient.on('guildMemberRemove', async (member) => {
+        ipcMain.emit('discord-guild-member-remove', member);
+    });
+
+    disClient.on('guildMemberAvailable', async (member) => {
+        ipcMain.emit('discord-guild-member-available', member);
+    });
+
+    disClient.on('guildMemberUpdate', async (oldMember, newMember) => {
+        ipcMain.emit('discord-guild-member-update', oldMember, newMember);
+    });
+
+    disClient.on('guildMembersChunk', async (members, guild) => {
+        ipcMain.emit('discord-guild-members-chunk', members, guild);
+    });
+
+    disClient.on('guildUpdate', async (oldGuild, newGuild) => {
+        ipcMain.emit('discord-guild-update', oldGuild, newGuild);
+    });
+
+    disClient.on('interactionCreate', async (interaction) => {
+        ipcMain.emit('discord-interaction-create', interaction);
+    });
+
+    disClient.on('inviteCreate', async (invite) => {
+        ipcMain.emit('discord-invite-create', invite);
+    });
+
+    disClient.on('inviteDelete', async (invite) => {
+        ipcMain.emit('discord-invite-delete', invite);
+    });
+
+    disClient.on('presenceUpdate', async (oldPresence, newPresence) => {
+        ipcMain.emit('discord-presence-update', oldPresence, newPresence);
+    });
+
     disClient.on('ready', () => {
         if(!disClient.user) return;
-        if(disClient.user){
-            disClient.user.setActivity({ name: 'with your feelings', type: ActivityType.Playing });
-        }
         isReady = true;
         console.log(`Logged in as ${disClient.user.tag}!`);
         ipcMain.emit('discord-ready', disClient);
@@ -173,13 +342,18 @@ export function DiscordJSRoutes(){
         return webhooks.map(webhook => webhook.name);
     }
 
-    ipcMain.handle('discord-login', async (event, token: string) => {
-        await disClient.login(token);
+    ipcMain.handle('discord-login', async (event, rawToken: string, appId: string) => {
+        await disClient.login(rawToken);
+        token = rawToken;
+        applicationID = appId;
         return true;
     });
 
     ipcMain.handle('discord-logout', async (event) => {
         await disClient.destroy();
+        disClient.removeAllListeners();
+        isReady = false;
+        disClient = new Client(intents);
         ipcMain.emit('discord-disconnected');
         return true;
     });
