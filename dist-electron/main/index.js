@@ -70,21 +70,165 @@ const intents = {
   partials: [discord_js.Partials.Channel, discord_js.Partials.GuildMember, discord_js.Partials.User, discord_js.Partials.Reaction, discord_js.Partials.Message]
 };
 function DiscordJSRoutes() {
-  const disClient = new discord_js.Client(intents);
-  new discord_js.Collection();
+  let disClient = new discord_js.Client(intents);
+  const commands = new discord_js.Collection();
   let isReady = false;
+  let token = "";
+  let applicationID = "";
+  electron.ipcMain.on("discord-get-token", async (event) => {
+    event.sender.send("discord-get-token-reply", token);
+  });
+  electron.ipcMain.on("discord-get-application-id", async (event) => {
+    event.sender.send("discord-get-application-id-reply", applicationID);
+  });
+  electron.ipcMain.on("discord-get-commands", async (event) => {
+    event.sender.send("discord-get-commands-reply", commands);
+  });
+  electron.ipcMain.on("discord-get-command", async (event, commandName) => {
+    event.sender.send("discord-get-command-reply", commands.get(commandName));
+  });
+  electron.ipcMain.on("discord-add-command", async (event, commandName, commandFunction) => {
+    commands.set(commandName, commandFunction);
+    event.sender.send("discord-add-command-reply", commands);
+  });
+  electron.ipcMain.on("discord-remove-command", async (event, commandName) => {
+    commands.delete(commandName);
+    event.sender.send("discord-remove-command-reply", commands);
+  });
+  electron.ipcMain.on("discord-remove-all-commands", async (event) => {
+    commands.clear();
+    event.sender.send("discord-remove-all-commands-reply", commands);
+  });
+  electron.ipcMain.on("discord-get-guilds", async (event) => {
+    if (!isReady)
+      return false;
+    const guilds = disClient.guilds.cache.map((guild) => {
+      const channels = guild.channels.cache.filter((channel) => channel.type === 0).map((channel) => ({
+        id: channel.id,
+        name: channel.name
+      }));
+      return {
+        id: guild.id,
+        name: guild.name,
+        channels
+      };
+    });
+    event.sender.send("discord-get-guilds-reply", guilds);
+  });
   disClient.on("messageCreate", async (message) => {
-    if (message.author.bot)
+    var _a;
+    if (message.author.id === ((_a = disClient.user) == null ? void 0 : _a.id))
       return;
+    electron.ipcMain.emit("discord-message", message);
+  });
+  disClient.on("messageUpdate", async (oldMessage, newMessage) => {
+    var _a, _b;
+    if (((_a = newMessage.author) == null ? void 0 : _a.id) === ((_b = disClient.user) == null ? void 0 : _b.id))
+      return;
+    electron.ipcMain.emit("discord-message-update", oldMessage, newMessage);
+  });
+  disClient.on("messageDelete", async (message) => {
+    var _a, _b;
+    if (((_a = message.author) == null ? void 0 : _a.id) === ((_b = disClient.user) == null ? void 0 : _b.id))
+      return;
+    electron.ipcMain.emit("discord-message-delete", message);
+  });
+  disClient.on("messageReactionAdd", async (reaction, user) => {
+    var _a;
+    if (user.id === ((_a = disClient.user) == null ? void 0 : _a.id))
+      return;
+    electron.ipcMain.emit("discord-message-reaction-add", reaction, user);
+  });
+  disClient.on("messageReactionRemove", async (reaction, user) => {
+    var _a;
+    if (user.id === ((_a = disClient.user) == null ? void 0 : _a.id))
+      return;
+    electron.ipcMain.emit("discord-message-reaction-remove", reaction, user);
+  });
+  disClient.on("messageReactionRemoveAll", async (message) => {
+    var _a, _b;
+    if (((_a = message.author) == null ? void 0 : _a.id) === ((_b = disClient.user) == null ? void 0 : _b.id))
+      return;
+    electron.ipcMain.emit("discord-message-reaction-remove-all", message);
+  });
+  disClient.on("messageReactionRemoveEmoji", async (reaction) => {
+    electron.ipcMain.emit("discord-message-reaction-remove-emoji", reaction);
+  });
+  disClient.on("channelCreate", async (channel) => {
+    electron.ipcMain.emit("discord-channel-create", channel);
+  });
+  disClient.on("channelDelete", async (channel) => {
+    electron.ipcMain.emit("discord-channel-delete", channel);
+  });
+  disClient.on("channelPinsUpdate", async (channel, time) => {
+    electron.ipcMain.emit("discord-channel-pins-update", channel, time);
+  });
+  disClient.on("channelUpdate", async (oldChannel, newChannel) => {
+    electron.ipcMain.emit("discord-channel-update", oldChannel, newChannel);
+  });
+  disClient.on("emojiCreate", async (emoji) => {
+    electron.ipcMain.emit("discord-emoji-create", emoji);
+  });
+  disClient.on("emojiDelete", async (emoji) => {
+    electron.ipcMain.emit("discord-emoji-delete", emoji);
+  });
+  disClient.on("emojiUpdate", async (oldEmoji, newEmoji) => {
+    electron.ipcMain.emit("discord-emoji-update", oldEmoji, newEmoji);
+  });
+  disClient.on("guildBanAdd", async (ban) => {
+    electron.ipcMain.emit("discord-guild-ban-add", ban);
+  });
+  disClient.on("guildBanRemove", async (ban) => {
+    electron.ipcMain.emit("discord-guild-ban-remove", ban);
+  });
+  disClient.on("guildCreate", async (guild) => {
+    electron.ipcMain.emit("discord-guild-create", guild);
+  });
+  disClient.on("guildDelete", async (guild) => {
+    electron.ipcMain.emit("discord-guild-delete", guild);
+  });
+  disClient.on("guildUnavailable", async (guild) => {
+    electron.ipcMain.emit("discord-guild-unavailable", guild);
+  });
+  disClient.on("guildIntegrationsUpdate", async (guild) => {
+    electron.ipcMain.emit("discord-guild-integrations-update", guild);
+  });
+  disClient.on("guildMemberAdd", async (member) => {
+    electron.ipcMain.emit("discord-guild-member-add", member);
+  });
+  disClient.on("guildMemberRemove", async (member) => {
+    electron.ipcMain.emit("discord-guild-member-remove", member);
+  });
+  disClient.on("guildMemberAvailable", async (member) => {
+    electron.ipcMain.emit("discord-guild-member-available", member);
+  });
+  disClient.on("guildMemberUpdate", async (oldMember, newMember) => {
+    electron.ipcMain.emit("discord-guild-member-update", oldMember, newMember);
+  });
+  disClient.on("guildMembersChunk", async (members, guild) => {
+    electron.ipcMain.emit("discord-guild-members-chunk", members, guild);
+  });
+  disClient.on("guildUpdate", async (oldGuild, newGuild) => {
+    electron.ipcMain.emit("discord-guild-update", oldGuild, newGuild);
+  });
+  disClient.on("interactionCreate", async (interaction) => {
+    electron.ipcMain.emit("discord-interaction-create", interaction);
+  });
+  disClient.on("inviteCreate", async (invite) => {
+    electron.ipcMain.emit("discord-invite-create", invite);
+  });
+  disClient.on("inviteDelete", async (invite) => {
+    electron.ipcMain.emit("discord-invite-delete", invite);
+  });
+  disClient.on("presenceUpdate", async (oldPresence, newPresence) => {
+    electron.ipcMain.emit("discord-presence-update", oldPresence, newPresence);
   });
   disClient.on("ready", () => {
     if (!disClient.user)
       return;
-    if (disClient.user) {
-      disClient.user.setActivity({ name: "with your feelings", type: discord_js.ActivityType.Playing });
-    }
     isReady = true;
     console.log(`Logged in as ${disClient.user.tag}!`);
+    electron.ipcMain.emit("discord-ready", disClient);
   });
   async function setDiscordBotInfo(botName, base64Avatar) {
     if (!isReady)
@@ -199,12 +343,18 @@ function DiscordJSRoutes() {
     const webhooks = await channel.fetchWebhooks();
     return webhooks.map((webhook) => webhook.name);
   }
-  electron.ipcMain.handle("discord-login", async (event, token) => {
-    await disClient.login(token);
+  electron.ipcMain.handle("discord-login", async (event, rawToken, appId) => {
+    await disClient.login(rawToken);
+    token = rawToken;
+    applicationID = appId;
     return true;
   });
   electron.ipcMain.handle("discord-logout", async (event) => {
     await disClient.destroy();
+    disClient.removeAllListeners();
+    isReady = false;
+    disClient = new discord_js.Client(intents);
+    electron.ipcMain.emit("discord-disconnected");
     return true;
   });
   electron.ipcMain.handle("discord-set-bot-info", async (event, botName, base64Avatar) => {
