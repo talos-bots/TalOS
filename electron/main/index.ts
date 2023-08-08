@@ -33,7 +33,7 @@ if (!app.requestSingleInstanceLock()) {
 // Remove electron security warnings
 // This warning only shows in development mode
 // Read more on https://www.electronjs.org/docs/latest/tutorial/security
-// process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true'
+process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true'
 
 let win: BrowserWindow | null = null
 // Here, you can also use other preload
@@ -47,12 +47,17 @@ async function createWindow() {
     icon: join(process.env.VITE_PUBLIC, 'favicon.ico'),
     webPreferences: {
       preload,
-      // Warning: Enable nodeIntegration and disable contextIsolation is not secure in production
-      // Consider using contextBridge.exposeInMainWorld
-      // Read more on https://www.electronjs.org/docs/latest/tutorial/context-isolation
       nodeIntegration: true,
       contextIsolation: false,
+      webSecurity: false,
     },
+    fullscreenable: true,
+    frame: true,
+    transparent: false,
+    autoHideMenuBar: true,
+    resizable: true,
+    maximizable: true,
+    minimizable: false,
   })
 
   if (url) { // electron-vite-vue#298
