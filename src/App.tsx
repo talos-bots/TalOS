@@ -15,10 +15,11 @@ function App() {
   return (
   <div className='App'>
     <DiscordListeners/>
-    <ChatNavBar />
     <Router>
+      <ChatNavBar />
       <Routes>
         <Route path='/*' element={<></>} />
+        <Route path='/chat' element={<></>} />
         <Route path='/terminal' element={<ConstructOS/>} />
         <Route path='/agents' element={<AgentsPage/>} />
         <Route path='/actions' element={<ActionsPage/>} />

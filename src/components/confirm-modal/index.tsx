@@ -1,3 +1,5 @@
+import React from 'react';
+
 interface ConfirmModalProps {
     message: string;
     note?: string | null;
