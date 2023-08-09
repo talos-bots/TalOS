@@ -2,7 +2,6 @@ import React from 'react';
 import { Link, useLocation, NavLink } from 'react-router-dom';
 import { HashLink } from 'react-router-hash-link';
 import { HomeIcon, MessageCircle, Cog, Sparkles } from 'lucide-react';
-import '../../../src/index.scss'; 
 
 const NavBar: React.FC = () => {
 
