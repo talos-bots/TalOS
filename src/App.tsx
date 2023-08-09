@@ -6,6 +6,7 @@ import { DiscordListeners } from './listeners/discord-listeners';
 import AgentsPage from './pages/agents';
 import ActionsPage from './pages/actions';
 import SettingsPage from './pages/settings';
+import ChatPage from './pages/chat/ChatPage';
 import DocsPage from './pages/docs';
 import DevPanel from './components/dev-panel';
 
@@ -20,7 +21,7 @@ function App() {
       <ChatNavBar/>
       <Routes>
         <Route path='/*' element={<></>} />
-        <Route path='/chat' element={<></>} />
+        <Route path='/chat' element={<ChatPage />} />
         <Route path='/terminal' element={<ConstructOS/>} />
         <Route path='/agents' element={<AgentsPage/>} />
         <Route path='/actions' element={<ActionsPage/>} />
