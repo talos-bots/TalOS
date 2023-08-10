@@ -1,3 +1,4 @@
+import UITheme from "@/classes/UITheme";
 import { useState, useEffect } from "react";
 
 interface Props {
