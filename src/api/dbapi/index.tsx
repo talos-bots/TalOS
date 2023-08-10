@@ -22,6 +22,8 @@ export async function getAgents(): Promise<Agent[]> {
                         doc.doc.background,
                         doc.doc.relationships,
                         doc.doc.interests,
+                        doc.doc.greetings,
+                        doc.doc.farewells,
                     );
                 });
                 resolve(agents);
@@ -49,6 +51,8 @@ export async function getAgent(id: string): Promise<Agent> {
                     data.background,
                     data.relationships,
                     data.interests,
+                    data.greetings,
+                    data.farewells,
                 );
                 resolve(agent);
             } else {

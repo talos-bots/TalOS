@@ -10,6 +10,8 @@ export class Agent{
         public background: string = '',
         public relationships: string[] = [],
         public interests: string[] = [],
+        public greetings: string[] = [],
+        public farewells: string[] = [],
     ) {}
 
     setAgent(name: string, nickname: string, avatar: string, commands: string[], visualDescription: string, personality: string, background: string, relationships: string[], interests: string[]){
@@ -150,4 +152,35 @@ export class Agent{
         return new File([this.avatar], this.name, {type: 'image/png'});
     }
     
+    setGreetings(greetings: string[]){
+        this.greetings = greetings;
+    }
+
+    getGreetings(){
+        return this.greetings;
+    }
+
+    addGreeting(greeting: string){
+        this.greetings.push(greeting);
+    }
+
+    removeGreeting(greeting: string){
+        this.greetings = this.greetings.filter((g) => g !== greeting);
+    }
+
+    setFarewells(farewells: string[]){
+        this.farewells = farewells;
+    }
+
+    getFarewells(){
+        return this.farewells;
+    }
+
+    addFarewell(farewell: string){
+        this.farewells.push(farewell);
+    }
+
+    removeFarewell(farewell: string){
+        this.farewells = this.farewells.filter((f) => f !== farewell);
+    }
 }
