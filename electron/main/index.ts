@@ -7,6 +7,9 @@ import { DiscordJSRoutes } from './api/discord'
 import { PouchDBRoutes } from './api/pouchdb'
 import Store from 'electron-store';
 import { FsAPIRoutes } from './api/fsapi';
+import { LanguageModelAPI } from './api/llm';
+import { SDRoutes } from './api/sd';
+import { BonusFeaturesRoutes } from './api/bonus-features';
 
 // The built directory structure
 //
@@ -145,3 +148,6 @@ ipcMain.on('get-data', (event, arg) => {
 DiscordJSRoutes();
 PouchDBRoutes();
 FsAPIRoutes();
+LanguageModelAPI();
+SDRoutes();
+BonusFeaturesRoutes();
