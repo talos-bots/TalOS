@@ -30,7 +30,7 @@ function App() {
         <Route path='/*' element={<></>} />
         <Route path='/actions' element={<ActionsPage/>} />
         <Route path='/agents' element={<AgentsPage/>} />
-        <Route path='/chat' element={<ChatPage themeProps={selectedTheme}/>} />
+        <Route path='/chat' element={<ChatPage/>} />
         <Route path='/docs' element={<DocsPage/>} />
         <Route path='/settings' element={<SettingsPage/>} />
         <Route path='/terminal' element={<ConstructOS/>} />
