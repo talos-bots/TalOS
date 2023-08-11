@@ -3,7 +3,6 @@ import fs from 'fs';
 import extract from 'png-chunks-extract';
 // @ts-ignore
 import PNGtext from 'png-chunk-text';
-import { Agent } from '@/classes/Agent';
 import { ipcMain } from 'electron';
 
 export function BonusFeaturesRoutes() {
@@ -63,13 +62,7 @@ async function import_tavern_character(img_url: any) {
             };
         }
 
-        const agent = new Agent();
-        agent.name = characterData.name;
-        agent.personality = characterData.personality + '\n' + characterData.description + '\n' + characterData.mes_example + '\n' + characterData.scenario;
-
-        agent.addGreeting(characterData.first_mes);
-
-        return agent;
+        return characterData;
     } catch (error) {
         console.error(error);
         throw error;
