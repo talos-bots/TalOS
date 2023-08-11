@@ -68,6 +68,18 @@ export function PouchDBRoutes(){
         });
     });
 
+    ipcMain.on('get-chats-by-agent', (event, arg) => {
+        chatsDB.find({
+            selector: {
+                agents: arg
+            }
+        }).then((result) => {
+            event.sender.send('get-chats-by-agent-reply', result.docs);
+        }).catch((err) => {
+            console.log(err);
+        });
+    });
+
     ipcMain.on('get-chat', (event, arg) => {
         chatsDB.get(arg).then((result) => {
             event.sender.send('get-chat-reply', result);

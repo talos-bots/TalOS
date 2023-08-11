@@ -9,6 +9,7 @@ export class Chat{
         public lastMessage: Message = new Message(),
         public lastMessageDate: Date = new Date(),
         public firstMessageDate: Date = new Date(),
+        public agents: string[] = [],
     ) {}
 
     setChat(name: string, type: string, messages: Message[]){
@@ -69,5 +70,21 @@ export class Chat{
 
     setFirstMessageDate(date: Date){
         this.firstMessageDate = date;
+    }
+
+    getAgents(){
+        return this.agents;
+    }
+
+    setAgents(agents: string[]){
+        this.agents = agents;
+    }
+
+    addAgent(agent: string){
+        this.agents.push(agent);
+    }
+
+    removeAgent(agent: string){
+        this.agents = this.agents.filter((a) => a !== agent);
     }
 }

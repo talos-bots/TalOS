@@ -183,11 +183,36 @@ export async function getChats(): Promise<Chat[]> {
                         doc.doc.lastMessage,
                         doc.doc.lastMessageDate,
                         doc.doc.firstMessageDate,
+                        doc.doc.agents,
                     );
                 });
                 resolve(chats);
             } else {
                 reject(new Error("No data received from 'chats' event."));
+            }
+        });
+    });
+}
+
+export async function getChatsByAgent(agentId: string): Promise<Chat> {
+    return new Promise((resolve, reject) => {
+        ipcRenderer.send("get-chats-by-agent", agentId);
+
+        ipcRenderer.once("get-chats-by-agent-reply", (event: IpcRendererEvent, data: any) => {
+            if (data) {
+                const chat = new Chat(
+                    data._id,
+                    data.name,
+                    data.type,
+                    data.messages,
+                    data.lastMessage,
+                    data.lastMessageDate,
+                    data.firstMessageDate,
+                    data.agents,
+                );
+                resolve(chat);
+            } else {
+                reject(new Error("No data received from 'chats-by-agent' event."));
             }
         });
     });
@@ -207,6 +232,7 @@ export async function getChat(id: string): Promise<Chat> {
                     data.lastMessage,
                     data.lastMessageDate,
                     data.firstMessageDate,
+                    data.agents,
                 );
                 resolve(chat);
             } else {
