@@ -67,6 +67,7 @@ module.exports = {
       },
       backgroundColor: {
         'theme-root': 'var(--theme-root)',
+        'theme-accent': 'var(--theme-accent)',
         'theme-italic': 'var(--theme-italic)',
         'theme-text': 'var(--theme-text)',
         'theme-box': 'var(--theme-box)',
@@ -75,11 +76,13 @@ module.exports = {
       },
       textColor: {
         'theme-text': 'var(--theme-text)',
+        'theme-accent': 'var(--theme-accent)',
         'theme-italic': 'var(--theme-italic)',
         'theme-text-hover': 'var(--theme-text-hover)',
       },
       borderColor: {
         'theme-border': 'var(--theme-border)',
+        'theme-accent': 'var(--theme-accent)',
       },
       backdropBlur: {
         'theme-blur': 'var(--theme-blur)',
