@@ -14,7 +14,7 @@ export class Agent{
         public farewells: string[] = [],
     ) {}
 
-    setAgent(name: string, nickname: string, avatar: string, commands: string[], visualDescription: string, personality: string, background: string, relationships: string[], interests: string[]){
+    setAgent(name: string, nickname: string, avatar: string, commands: string[], visualDescription: string, personality: string, background: string, relationships: string[], interests: string[], greetings: string[], farewells: string[]){
         this.name = name;
         this.nickname = nickname;
         this.avatar = avatar;
@@ -24,6 +24,8 @@ export class Agent{
         this.background = background;
         this.relationships = relationships;
         this.interests = interests;
+        this.greetings = greetings;
+        this.farewells = farewells;
     }
 
     getAgent(){
@@ -37,6 +39,8 @@ export class Agent{
             background: this.background,
             relationships: this.relationships,
             interests: this.interests,
+            greetings: this.greetings,
+            farewells: this.farewells,
         }
     }
 

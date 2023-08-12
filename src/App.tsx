@@ -30,6 +30,7 @@ function App() {
         <Route path='/actions' element={<ActionsPage/>} />
         <Route path='/agents' element={<AgentsPage/>} />
         <Route path='/agents/:id' element={<AgentManagement/>} />
+        <Route path='/agents/new' element={<AgentManagement/>} />
         <Route path='/chat' element={<ChatPage/>} />
         <Route path='/docs' element={<DocsPage/>} />
         <Route path='/settings' element={<SettingsPage/>} />
