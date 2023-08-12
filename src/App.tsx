@@ -21,10 +21,11 @@ function App() {
 
   const isDev = process.env.NODE_ENV === 'development';
   return (
-  <div className='App'>
+    <div id='App'>
     <Router>
       <DiscordListeners/>
       <NavBar />
+      <div className='main-content'>
       <Routes>
         <Route path='/*' element={<></>} />
         <Route path='/actions' element={<ActionsPage/>} />
@@ -36,9 +37,10 @@ function App() {
         <Route path='/settings' element={<SettingsPage/>} />
         <Route path='/terminal' element={<ConstructOS/>} />
       </Routes>
+      </div>
       {isDev ? <DevPanel /> : null}
     </Router>
-  </div>
+    </div>
   )
 }
 

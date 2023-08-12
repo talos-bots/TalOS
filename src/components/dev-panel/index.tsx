@@ -33,6 +33,7 @@ const DevPanel = () => {
                 <div className="col-span-1">
                     <RouteButton to="/docs" text="Docs" />
                     <RouteButton to="/chat" text="Chat" />
+                    <RouteButton to="/agents/new" text="New Agent" />
                 </div>
                 <div className="col-span-1">
                 </div>

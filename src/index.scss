@@ -30,6 +30,12 @@
   --theme-text-hover: rgb(255, 255, 255);
 }
 
+.main-content {
+  margin: 0 auto;
+  text-align: center;
+  padding-top: 70px;
+}
+
 :root {
   font-family: var(--theme-font);
   line-height: 1.5;
@@ -62,13 +68,6 @@ code {
 
 .card {
   padding: 2em;
-}
-
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
 }
 
 .themed-button-neg {

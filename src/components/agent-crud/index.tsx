@@ -3,7 +3,7 @@ import { Agent } from "@/classes/Agent";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { RiQuestionMark } from "react-icons/ri";
-
+import './AgentCrud.module.css'
 const AgentManagement = () => {
     const { id } = useParams<{ id: string }>();
     const [agent, setAgent] = useState<Agent>(new Agent());
@@ -99,46 +99,49 @@ const AgentManagement = () => {
     };
 
     return (
-        <div className="h-90vh w-65vw grid grid-rows-[auto,1fr] themed-root gap-4">
+        <div className="w-full h-full grid grid-rows-[auto,1fr] themed-root gap-4">
             <h2 className="text-2xl font-bold text-theme-text text-shadow-xl">Agent Editor</h2>
-            <div className="w-full flex flex-col items-center gap-4">
-                <div className="flex flex-col">
-                    <label htmlFor="image-upload">
-                        {agentImage === '' ? <RiQuestionMark id="character-image-default"/> : <img src={agentImage} alt={agentName} id="character-image"/>}
-                    </label>
-                    <input 
-                        type="file" 
-                        required={true}
-                        id="image-upload" 
-                        className="hidden" 
-                        accept=".png, .jpg, .jpeg"
-                        onChange={handleImageUpload}
-                    />
+            <div className="grid grid-cols-5 gap-4">
+                <div className="col-span-1 items-center gap-4">
+                    <div className="w-full flex flex-col items-center gap-4">
+                        <div className="flex flex-col">
+                            <label htmlFor="image-upload">
+                                {agentImage === '' ? <RiQuestionMark id="agent-image-default"/> : <img src={agentImage} alt={agentName} id="agent-image"/>}
+                            </label>
+                            <input 
+                                type="file" 
+                                required={true}
+                                id="image-upload" 
+                                className="hidden" 
+                                accept=".png, .jpg, .jpeg"
+                                onChange={handleImageUpload}
+                            />
+                        </div>
+                        <div className="flex flex-col">
+                            <label htmlFor="agent-name">Name</label>
+                            <input 
+                                type="text" 
+                                required={true}
+                                id="agent-name" 
+                                className="themed-input"
+                                value={agentName}
+                                onChange={(event) => setAgentName(event.target.value)}
+                            />
+                        </div>
+                        <div className="flex flex-col">
+                            <label htmlFor="agent-role">Nickname</label>
+                            <input
+                                type="text"
+                                required={true}
+                                id="agent-role"
+                                className="themed-input"
+                                value={agentNickname}
+                                onChange={(event) => setAgentNick(event.target.value)}
+                            />
+                        </div>
+                    </div>
                 </div>
-                <div className="flex flex-col">
-                    <label htmlFor="agent-name">Name</label>
-                    <input 
-                        type="text" 
-                        required={true}
-                        id="agent-name" 
-                        className="themed-input"
-                        value={agentName}
-                        onChange={(event) => setAgentName(event.target.value)}
-                    />
-                </div>
-                <div className="flex flex-col">
-                    <label htmlFor="agent-role">Nickname</label>
-                    <input
-                        type="text"
-                        required={true}
-                        id="agent-role"
-                        className="themed-input"
-                        value={agentNickname}
-                        onChange={(event) => setAgentNick(event.target.value)}
-                    />
-                </div>
-            </div>
-            <div className="col-span-4 flex flex-col gap-4">
+                <div className="col-span-4 flex flex-col gap-4">
                     <div className="flex flex-col">
                         <label htmlFor="agent-personality">Personality</label>
                         <textarea
@@ -166,7 +169,44 @@ const AgentManagement = () => {
                             onChange={(event) => setAgentBackground(event.target.value)}
                         />
                     </div>
+                    <div className="flex flex-col">
+                        <label htmlFor="agent-relationships">Relationships</label>
+                        <textarea
+                            id="agent-relationships"
+                            className="themed-input h-10vh"
+                            value={agentRelationships}
+                            onChange={(event) => setAgentRelationships(event.target.value.split('\n'))}
+                        />
+                    </div>
+                    <div className="flex flex-col">
+                        <label htmlFor="agent-interests">Interests</label>
+                        <textarea
+                            id="agent-interests"
+                            className="themed-input h-10vh"
+                            value={agentInterests}
+                            onChange={(event) => setAgentInterests(event.target.value.split('\n'))}
+                        />
+                    </div>
+                    <div className="flex flex-col">
+                        <label htmlFor="agent-greetings">Greetings</label>
+                        <textarea
+                            id="agent-greetings"
+                            className="themed-input h-10vh"
+                            value={agentGreetings}
+                            onChange={(event) => setAgentGreetings(event.target.value.split('\n'))}
+                        />
+                    </div>
+                    <div className="flex flex-col">
+                        <label htmlFor="agent-farewells">Farewells</label>
+                        <textarea
+                            id="agent-farewells"
+                            className="themed-input h-10vh"
+                            value={agentFarewells}
+                            onChange={(event) => setAgentFarewells(event.target.value.split('\n'))}
+                        />
+                    </div>
                 </div>
+            </div>
             <div className="flex flex-row justify-center gap-4">
                 <button type="submit" className="themed-button-neg" onClick={returnToMenu}>Cancel</button>
                 <button className="themed-button-pos" onClick={() => saveAgent()}>Save</button>
