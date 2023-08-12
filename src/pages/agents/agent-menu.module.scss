@@ -1,0 +1,11 @@
+.chara-search-bar input{
+	margin-right: auto;
+	margin-left: auto;
+	flex-direction: column;
+	justify-content: flex-start;
+	padding: 1rem;
+	color: var(--theme-text);
+	border: var(--theme-border-width) var(--theme-border-type) var(--theme-border-color);
+    background-color: var(--theme-box);
+	border-radius: var(--theme-border-radius);
+}
