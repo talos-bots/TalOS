@@ -5,6 +5,23 @@ module.exports = {
   media: false, // or 'media' or 'class'
   theme: {
     extend: {
+      colors: {
+        black: "#000",
+        lime: {
+          "100": "rgba(3, 179, 0, 0.25)",
+          "200": "rgba(0, 255, 26, 0.25)",
+        },
+      },
+      "fontFamily": {
+        "inter": ["Inter", "sans-serif"],
+      },
+      "borderRadius": {
+        "6xl": "25px",
+        "81xl": "100px"
+      },
+      "fontSize": {
+        "lg": "18px"
+      },
       width: {
         '5vw': '5vw',
         '10vw': '10vw',

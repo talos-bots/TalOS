@@ -7,6 +7,9 @@ import { DiscordJSRoutes } from './api/discord'
 import { PouchDBRoutes } from './api/pouchdb'
 import Store from 'electron-store';
 import { FsAPIRoutes } from './api/fsapi';
+import { LanguageModelAPI } from './api/llm';
+import { SDRoutes } from './api/sd';
+import { BonusFeaturesRoutes } from './api/bonus-features';
 
 // The built directory structure
 //
@@ -85,8 +88,14 @@ async function createWindow() {
     return { action: 'deny' }
   })
 
-  // Apply electron-updater
-  update(win)
+
+  DiscordJSRoutes();
+  PouchDBRoutes();
+  FsAPIRoutes();
+  LanguageModelAPI();
+  SDRoutes();
+  BonusFeaturesRoutes();
+  // update(win)
 }
 
 app.whenReady().then(createWindow)
@@ -141,7 +150,3 @@ ipcMain.on('set-data', (event, arg) => {
 ipcMain.on('get-data', (event, arg) => {
   event.sender.send('get-data-reply', store.get(arg));
 })
-
-DiscordJSRoutes();
-PouchDBRoutes();
-FsAPIRoutes();

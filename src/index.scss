@@ -14,7 +14,7 @@
 }
 
 :root {
-  --background-image: null;
+  --background-image: url('./backgrounds/greendefault.svg');
   --theme-root: rgba(0, 0, 0, 0.5);
   --theme-italic: rgba(245, 245, 245, 1);
   --theme-text: rgba(255, 253, 253, 1);
@@ -30,6 +30,12 @@
   --theme-text-hover: rgb(255, 255, 255);
 }
 
+.main-content {
+  margin: 0 auto;
+  text-align: center;
+  padding-top: 70px;
+}
+
 :root {
   font-family: var(--theme-font);
   line-height: 1.5;
@@ -37,10 +43,6 @@
   color-scheme: light dark;
   color: var(--theme-text);
   background-image: var(--background-image);
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center center;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -62,13 +64,6 @@ code {
 
 .card {
   padding: 2em;
-}
-
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
 }
 
 .themed-button-neg {
