@@ -8,6 +8,7 @@ import DocsPage from './pages/docs';
 import DevPanel from './components/dev-panel';
 import NavBar from './components/shared/NavBar';
 import SettingsPage from './pages/settings';
+import AgentManagement from './components/agent-crud';
 
 console.log('[App.tsx]', `Hello world from Electron ${process.versions.electron}!`)
 
@@ -30,6 +31,7 @@ function App() {
         <Route path='/*' element={<></>} />
         <Route path='/actions' element={<ActionsPage/>} />
         <Route path='/agents' element={<AgentsPage/>} />
+        <Route path='/agents/:id' element={<AgentManagement/>} />
         <Route path='/chat' element={<ChatPage/>} />
         <Route path='/docs' element={<DocsPage/>} />
         <Route path='/settings' element={<SettingsPage/>} />
