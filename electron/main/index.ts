@@ -88,8 +88,14 @@ async function createWindow() {
     return { action: 'deny' }
   })
 
-  // Apply electron-updater
-  update(win)
+
+  DiscordJSRoutes();
+  PouchDBRoutes();
+  FsAPIRoutes();
+  LanguageModelAPI();
+  SDRoutes();
+  BonusFeaturesRoutes();
+  // update(win)
 }
 
 app.whenReady().then(createWindow)
@@ -144,10 +150,3 @@ ipcMain.on('set-data', (event, arg) => {
 ipcMain.on('get-data', (event, arg) => {
   event.sender.send('get-data-reply', store.get(arg));
 })
-
-DiscordJSRoutes();
-PouchDBRoutes();
-FsAPIRoutes();
-LanguageModelAPI();
-SDRoutes();
-BonusFeaturesRoutes();
