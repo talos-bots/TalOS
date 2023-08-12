@@ -10,8 +10,6 @@ import NavBar from './components/shared/NavBar';
 import SettingsPage from './pages/settings';
 import AgentManagement from './components/agent-crud';
 
-console.log('[App.tsx]', `Hello world from Electron ${process.versions.electron}!`)
-
 function App() {
   const greenTheme = {
     bgImage: "/backgrounds/bluedefault.svg",
