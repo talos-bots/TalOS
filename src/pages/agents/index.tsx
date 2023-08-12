@@ -1,11 +1,11 @@
 
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import './agent-menu.module.scss';
 import { FiPlus } from "react-icons/fi";
 import { Agent } from "@/classes/Agent";
 import { getAgents } from "@/api/dbapi";
 import AgentBox from "@/components/agent-box";
+import './agent-page.module.scss';
 
 const AgentsPage = () => {
     const [characters, setCharacters] = useState<Agent[]>([]);
@@ -61,7 +61,7 @@ const AgentsPage = () => {
     }, []);
     return (
         <>
-        <div className="">
+        <div className="w-full h-calc(100vh - 70px) grid grid-rows-[auto,1fr] themed-root gap-4">
             <h2 className="text-2xl font-bold text-theme-text text-shadow-xl">Agents</h2>
             <div className="flex flex-col gap-8">
                 <div className="grid grid-cols-4 gap-0 w-15vw h-5vh">
@@ -69,7 +69,7 @@ const AgentsPage = () => {
                         <FiPlus className='absolute'size={50}/>
                     </Link>
                     {characters && 
-                        <div className="chara-search-bar col-span-2">
+                        <div className="agent-search-bar col-span-2">
                             <input
                             type="text"
                             placeholder="Search characters"
