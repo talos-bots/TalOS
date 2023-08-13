@@ -9,7 +9,6 @@ export async function getAgents(): Promise<Agent[]> {
 
         ipcRenderer.once("get-agents-reply", (event: IpcRendererEvent, data: any[]) => {
             if (data) {
-                console.log(data[0]);
                 const agents = data.map((doc: any) => {
                     return new Agent(
                         doc._id,
@@ -39,7 +38,6 @@ export async function getAgent(id: string): Promise<Agent> {
         ipcRenderer.send("get-agent", id);
         ipcRenderer.once("get-agent-reply", (event: IpcRendererEvent, data: any) => {
             if (data) {
-                console.log(data);
                 const agent = new Agent(
                     data._id,
                     data.name,
