@@ -425,12 +425,12 @@ function DiscordJSRoutes() {
     event.sender.send("discord-bot-status-reply", isReady);
   });
 }
-let agentDB;
+let constructDB;
 let chatsDB;
 let commandDB;
 let attachmentDB;
 async function getAllAgents() {
-  return agentDB.allDocs({ include_docs: true }).then((result) => {
+  return constructDB.allDocs({ include_docs: true }).then((result) => {
     return result.rows;
   }).catch((err) => {
     console.log(err);
@@ -438,30 +438,30 @@ async function getAllAgents() {
   });
 }
 async function getAgent(id) {
-  return agentDB.get(id).then((result) => {
+  return constructDB.get(id).then((result) => {
     return result;
   }).catch((err) => {
     console.log(err);
   });
 }
-async function addAgent$1(agent) {
-  return agentDB.put(agent).then((result) => {
+async function addAgent$1(construct) {
+  return constructDB.put(construct).then((result) => {
     return result;
   }).catch((err) => {
     console.log(err);
   });
 }
 async function removeAgent$1(id) {
-  return agentDB.get(id).then((doc) => {
-    return agentDB.remove(doc);
+  return constructDB.get(id).then((doc) => {
+    return constructDB.remove(doc);
   }).catch((err) => {
     console.log(err);
   });
 }
-async function updateAgent(agent) {
-  return agentDB.get(agent._id).then((doc) => {
-    let updatedDoc = { ...doc, ...agent };
-    agentDB.put(updatedDoc).then((result) => {
+async function updateAgent(construct) {
+  return constructDB.get(construct._id).then((doc) => {
+    let updatedDoc = { ...doc, ...construct };
+    constructDB.put(updatedDoc).then((result) => {
       return result;
     }).catch((err) => {
       console.error("Error while updating document: ", err);
@@ -477,10 +477,10 @@ async function getAllChats() {
     console.log(err);
   });
 }
-async function getChatsByAgent(agentId) {
+async function getChatsByAgent(constructId) {
   return chatsDB.find({
     selector: {
-      agents: agentId
+      constructs: constructId
     }
   }).then((result) => {
     return result.docs;
@@ -602,33 +602,33 @@ async function updateAttachment(attachment) {
   });
 }
 function PouchDBRoutes() {
-  agentDB = new PouchDB("agents", { prefix: dataPath });
+  constructDB = new PouchDB("constructs", { prefix: dataPath });
   chatsDB = new PouchDB("chats", { prefix: dataPath });
   commandDB = new PouchDB("commands", { prefix: dataPath });
   attachmentDB = new PouchDB("attachments", { prefix: dataPath });
-  electron.ipcMain.on("get-agents", (event, arg) => {
+  electron.ipcMain.on("get-constructs", (event, arg) => {
     getAllAgents().then((result) => {
-      event.sender.send("get-agents-reply", result);
+      event.sender.send("get-constructs-reply", result);
     });
   });
-  electron.ipcMain.on("get-agent", (event, arg) => {
+  electron.ipcMain.on("get-construct", (event, arg) => {
     getAgent(arg).then((result) => {
-      event.sender.send("get-agent-reply", result);
+      event.sender.send("get-construct-reply", result);
     });
   });
-  electron.ipcMain.on("add-agent", (event, arg) => {
+  electron.ipcMain.on("add-construct", (event, arg) => {
     addAgent$1(arg).then((result) => {
-      event.sender.send("add-agent-reply", result);
+      event.sender.send("add-construct-reply", result);
     });
   });
-  electron.ipcMain.on("update-agent", (event, arg) => {
+  electron.ipcMain.on("update-construct", (event, arg) => {
     updateAgent(arg).then((result) => {
-      event.sender.send("update-agent-reply", result);
+      event.sender.send("update-construct-reply", result);
     });
   });
-  electron.ipcMain.on("delete-agent", (event, arg) => {
+  electron.ipcMain.on("delete-construct", (event, arg) => {
     removeAgent$1(arg).then((result) => {
-      event.sender.send("delete-agent-reply", result);
+      event.sender.send("delete-construct-reply", result);
     });
   });
   electron.ipcMain.on("get-chats", (event, arg) => {
@@ -636,9 +636,9 @@ function PouchDBRoutes() {
       event.sender.send("get-chats-reply", result);
     });
   });
-  electron.ipcMain.on("get-chats-by-agent", (event, arg) => {
+  electron.ipcMain.on("get-chats-by-construct", (event, arg) => {
     getChatsByAgent(arg).then((result) => {
-      event.sender.send("get-chats-by-agent-reply", result);
+      event.sender.send("get-chats-by-construct-reply", result);
     });
   });
   electron.ipcMain.on("get-chat", (event, arg) => {
@@ -712,20 +712,20 @@ function PouchDBRoutes() {
     });
   });
   electron.ipcMain.on("clear-data", (event, arg) => {
-    agentDB.destroy();
+    constructDB.destroy();
     chatsDB.destroy();
     commandDB.destroy();
     attachmentDB.destroy();
     createDBs();
   });
   function createDBs() {
-    agentDB = new PouchDB("agents", { prefix: dataPath });
+    constructDB = new PouchDB("constructs", { prefix: dataPath });
     chatsDB = new PouchDB("chats", { prefix: dataPath });
     commandDB = new PouchDB("commands", { prefix: dataPath });
     attachmentDB = new PouchDB("attachments", { prefix: dataPath });
   }
   return {
-    agentDB,
+    constructDB,
     chatsDB,
     commandDB,
     attachmentDB

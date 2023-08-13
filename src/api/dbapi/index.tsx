@@ -1,16 +1,16 @@
-import { Agent } from "@/classes/Agent";
+import { Construct } from "@/classes/Construct";
 import { Attachment } from "@/classes/Attachment";
 import { Chat } from "@/classes/Chat";
 import { IpcRendererEvent, ipcRenderer } from "electron";
 
-export async function getAgents(): Promise<Agent[]> {
+export async function getConstructs(): Promise<Construct[]> {
     return new Promise((resolve, reject) => {
-        ipcRenderer.send("get-agents");
+        ipcRenderer.send("get-constructs");
 
-        ipcRenderer.once("get-agents-reply", (event: IpcRendererEvent, data: any[]) => {
+        ipcRenderer.once("get-constructs-reply", (event: IpcRendererEvent, data: any[]) => {
             if (data) {
-                const agents = data.map((doc: any) => {
-                    return new Agent(
+                const constructs = data.map((doc: any) => {
+                    return new Construct(
                         doc._id,
                         doc.name,
                         doc.nickname,
@@ -25,20 +25,20 @@ export async function getAgents(): Promise<Agent[]> {
                         doc.farewells,
                     );
                 });
-                resolve(agents);
+                resolve(constructs);
             } else {
-                reject(new Error("No data received from 'agents' event."));
+                reject(new Error("No data received from 'constructs' event."));
             }
         });
     });
 }
 
-export async function getAgent(id: string): Promise<Agent> {
+export async function getConstruct(id: string): Promise<Construct> {
     return new Promise((resolve, reject) => {
-        ipcRenderer.send("get-agent", id);
-        ipcRenderer.once("get-agent-reply", (event: IpcRendererEvent, data: any) => {
+        ipcRenderer.send("get-construct", id);
+        ipcRenderer.once("get-construct-reply", (event: IpcRendererEvent, data: any) => {
             if (data) {
-                const agent = new Agent(
+                const construct = new Construct(
                     data._id,
                     data.name,
                     data.nickname,
@@ -52,24 +52,24 @@ export async function getAgent(id: string): Promise<Agent> {
                     data.greetings,
                     data.farewells,
                 );
-                resolve(agent);
+                resolve(construct);
             } else {
-                reject(new Error("No data received from 'agent' event."));
+                reject(new Error("No data received from 'construct' event."));
             }
         });
     });
 }
 
-export async function saveNewAgent(agent: Agent) {
-    ipcRenderer.send('add-agent', agent);
+export async function saveNewConstruct(construct: Construct) {
+    ipcRenderer.send('add-construct', construct);
 }
 
-export async function updateAgent(agent: Agent) {
-    ipcRenderer.send('update-agent', agent);
+export async function updateConstruct(construct: Construct) {
+    ipcRenderer.send('update-construct', construct);
 }
 
-export async function deleteAgent(id: string) {
-    ipcRenderer.send('delete-agent', id);
+export async function deleteConstruct(id: string) {
+    ipcRenderer.send('delete-construct', id);
 }
 
 export async function getCommands(): Promise<string[]> {
@@ -181,7 +181,7 @@ export async function getChats(): Promise<Chat[]> {
                         doc.doc.lastMessage,
                         doc.doc.lastMessageDate,
                         doc.doc.firstMessageDate,
-                        doc.doc.agents,
+                        doc.doc.constructs,
                     );
                 });
                 resolve(chats);
@@ -192,11 +192,11 @@ export async function getChats(): Promise<Chat[]> {
     });
 }
 
-export async function getChatsByAgent(agentId: string): Promise<Chat> {
+export async function getChatsByConstruct(constructId: string): Promise<Chat> {
     return new Promise((resolve, reject) => {
-        ipcRenderer.send("get-chats-by-agent", agentId);
+        ipcRenderer.send("get-chats-by-construct", constructId);
 
-        ipcRenderer.once("get-chats-by-agent-reply", (event: IpcRendererEvent, data: any) => {
+        ipcRenderer.once("get-chats-by-construct-reply", (event: IpcRendererEvent, data: any) => {
             if (data) {
                 const chat = new Chat(
                     data._id,
@@ -206,11 +206,11 @@ export async function getChatsByAgent(agentId: string): Promise<Chat> {
                     data.lastMessage,
                     data.lastMessageDate,
                     data.firstMessageDate,
-                    data.agents,
+                    data.constructs,
                 );
                 resolve(chat);
             } else {
-                reject(new Error("No data received from 'chats-by-agent' event."));
+                reject(new Error("No data received from 'chats-by-construct' event."));
             }
         });
     });
@@ -230,7 +230,7 @@ export async function getChat(id: string): Promise<Chat> {
                     data.lastMessage,
                     data.lastMessageDate,
                     data.firstMessageDate,
-                    data.agents,
+                    data.constructs,
                 );
                 resolve(chat);
             } else {

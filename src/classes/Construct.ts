@@ -1,4 +1,4 @@
-export class Agent{
+export class Construct{
     constructor(
         public _id: string = (new Date().getTime()).toString(),
         public name: string = '',
@@ -14,7 +14,7 @@ export class Agent{
         public farewells: string[] = [],
     ) {}
 
-    setAgent(name: string, nickname: string, avatar: string, commands: string[], visualDescription: string, personality: string, background: string, relationships: string[], interests: string[], greetings: string[], farewells: string[]){
+    setConstruct(name: string, nickname: string, avatar: string, commands: string[], visualDescription: string, personality: string, background: string, relationships: string[], interests: string[], greetings: string[], farewells: string[]){
         this.name = name;
         this.nickname = nickname;
         this.avatar = avatar;
@@ -28,7 +28,7 @@ export class Agent{
         this.farewells = farewells;
     }
 
-    getAgent(){
+    getConstruct(){
         return {
             name: this.name,
             nickname: this.nickname,
@@ -44,115 +44,115 @@ export class Agent{
         }
     }
 
-    getAgentName(){
+    getConstructName(){
         return this.name;
     }
 
-    getAgentNickname(){
+    getConstructNickname(){
         return this.nickname;
     }
 
-    getAgentAvatar(){
+    getConstructAvatar(){
         return this.avatar;
     }
 
-    getAgentCommands(){
+    getConstructCommands(){
         return this.commands;
     }
 
-    getAgentVisualDescription(){
+    getConstructVisualDescription(){
         return this.visualDescription;
     }
 
-    getAgentPersonality(){
+    getConstructPersonality(){
         return this.personality;
     }
 
-    getAgentBackground(){
+    getConstructBackground(){
         return this.background;
     }
 
-    getAgentRelationships(){
+    getConstructRelationships(){
         return this.relationships;
     }
 
-    getAgentInterests(){
+    getConstructInterests(){
         return this.interests;
     }
 
-    setAgentName(name: string){
+    setConstructName(name: string){
         this.name = name;
     }
 
-    setAgentNickname(nickname: string){
+    setConstructNickname(nickname: string){
         this.nickname = nickname;
     }
 
-    setAgentAvatar(avatar: string){
+    setConstructAvatar(avatar: string){
         this.avatar = avatar;
     }
 
-    setAgentCommands(commands: string[]){
+    setConstructCommands(commands: string[]){
         this.commands = commands;
     }
 
-    setAgentVisualDescription(visualDescription: string){
+    setConstructVisualDescription(visualDescription: string){
         this.visualDescription = visualDescription;
     }
 
-    setAgentPersonality(personality: string){
+    setConstructPersonality(personality: string){
         this.personality = personality;
     }
 
-    setAgentBackground(background: string){
+    setConstructBackground(background: string){
         this.background = background;
     }
 
-    setAgentRelationships(relationships: string[]){
+    setConstructRelationships(relationships: string[]){
         this.relationships = relationships;
     }
 
-    setAgentInterests(interests: string[]){
+    setConstructInterests(interests: string[]){
         this.interests = interests;
     }
 
-    addAgentCommand(command: string){   
+    addConstructCommand(command: string){   
         this.commands.push(command);
     }
 
-    addAgentRelationship(relationship: string){
+    addConstructRelationship(relationship: string){
         this.relationships.push(relationship);
     }
 
-    addAgentInterest(interest: string){
+    addConstructInterest(interest: string){
         this.interests.push(interest);
     }
 
-    removeAgentCommand(command: string){
+    removeConstructCommand(command: string){
         this.commands = this.commands.filter((c) => c !== command);
     }
 
-    removeAgentRelationship(relationship: string){
+    removeConstructRelationship(relationship: string){
         this.relationships = this.relationships.filter((r) => r !== relationship);
     }
 
-    removeAgentInterest(interest: string){
+    removeConstructInterest(interest: string){
         this.interests = this.interests.filter((i) => i !== interest);
     }
 
-    getAgentAvatarAsBase64(){
+    getConstructAvatarAsBase64(){
         return this.avatar;
     }
 
-    getAgentAvatarAsBuffer(){
+    getConstructAvatarAsBuffer(){
         return Buffer.from(this.avatar, 'base64');
     }
 
-    getAgentAvatarAsBlob(){
+    getConstructAvatarAsBlob(){
         return new Blob([this.avatar], {type: 'image/png'});
     }
 
-    getAgentAvatarAsFile(){
+    getConstructAvatarAsFile(){
         return new File([this.avatar], this.name, {type: 'image/png'});
     }
     

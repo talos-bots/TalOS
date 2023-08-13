@@ -1,23 +1,23 @@
-import {Agent} from "@/classes/Agent";
+import {Construct} from "@/classes/Construct";
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { AiOutlineDown, AiOutlineUp } from "react-icons/ai";
 import { RiQuestionMark } from "react-icons/ri";
-import './agent-box.scss';
-import { getAgent } from "@/api/dbapi";
+import './ConstructBox.scss';
+import { getConstruct } from "@/api/dbapi";
 interface Props {
-    character: Agent;
+    character: Construct;
 }
-const AgentBox: React.FC<Props> = ({character}) => {
+const ConstructBox: React.FC<Props> = ({character}) => {
     const [characterName, setCharacterName] = useState<string>(character.name);
-    const [liveCharacter, setLiveCharacter] = useState<Agent | null>(null);
+    const [liveCharacter, setLiveCharacter] = useState<Construct | null>(null);
     const [isOpen, setIsOpen] = useState<boolean>(false);
 
     useEffect(() => {
         setCharacterName(character.name);
-        let fetchedAgent = getAgent(character._id);
-        fetchedAgent.then((agent) => {
-            setLiveCharacter(agent);
+        let fetchedConstruct = getConstruct(character._id);
+        fetchedConstruct.then((construct) => {
+            setLiveCharacter(construct);
         });
     }, [character]);
 
@@ -32,8 +32,8 @@ const AgentBox: React.FC<Props> = ({character}) => {
             {isOpen && liveCharacter && (
             <div className="grid grid-cols-5 gap-4">
                 <div className="col-span-1">
-                    <Link to={`/agents/${character._id}`}>
-                        {liveCharacter && (liveCharacter.avatar === '' ? <RiQuestionMark className="agent-image-default"/> : <img src={liveCharacter.avatar} alt={characterName} className="cursor-pointer object-scale-down rounded-theme-border-radius"/>)}
+                    <Link to={`/constructs/${character._id}`}>
+                        {liveCharacter && (liveCharacter.avatar === '' ? <RiQuestionMark className="construct-image-default"/> : <img src={liveCharacter.avatar} alt={characterName} className="cursor-pointer object-scale-down rounded-theme-border-radius"/>)}
                     </Link>
                     <i className="mt-4">
                         {liveCharacter.nickname}
@@ -120,4 +120,4 @@ const AgentBox: React.FC<Props> = ({character}) => {
         </div>
     )
 }
-export default AgentBox;
+export default ConstructBox;

@@ -34,14 +34,14 @@ const DevPanel = () => {
                     
                 </div>
                 <div className="col-span-1">
-                    <RouteButton to="/agents" text="Agents" />
+                    <RouteButton to="/constructs" text="Constructs" />
                     <RouteButton to="/settings" text="Settings" />
                     <RouteButton to="/actions" text="Actions" />
                 </div>
                 <div className="col-span-1">
                     <RouteButton to="/docs" text="Docs" />
                     <RouteButton to="/chat" text="Chat" />
-                    <RouteButton to="/agents/new" text="New Agent" />
+                    <RouteButton to="/constructs/new" text="New Construct" />
                 </div>
                 <div className="col-span-1">
                     <RouteButton to="/Zero" text="Zero" />
