@@ -9,7 +9,7 @@ import { FsAPIRoutes } from './api/fsapi';
 import { LanguageModelAPI } from './api/llm';
 import { SDRoutes } from './api/sd';
 import { BonusFeaturesRoutes } from './api/bonus-features';
-import agentController from './controllers/AgentController';
+import constructController from './controllers/ConstructController';
 import fs from 'fs';
 
 // The built directory structure
@@ -89,7 +89,7 @@ async function createWindow() {
   LanguageModelAPI();
   SDRoutes();
   BonusFeaturesRoutes();
-  agentController();
+  constructController();
   // update(win)
 }
 

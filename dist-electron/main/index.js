@@ -444,14 +444,14 @@ async function getAgent(id) {
     console.log(err);
   });
 }
-async function addAgent$1(construct) {
+async function addAgent(construct) {
   return constructDB.put(construct).then((result) => {
     return result;
   }).catch((err) => {
     console.log(err);
   });
 }
-async function removeAgent$1(id) {
+async function removeAgent(id) {
   return constructDB.get(id).then((doc) => {
     return constructDB.remove(doc);
   }).catch((err) => {
@@ -617,7 +617,7 @@ function PouchDBRoutes() {
     });
   });
   electron.ipcMain.on("add-construct", (event, arg) => {
-    addAgent$1(arg).then((result) => {
+    addAgent(arg).then((result) => {
       event.sender.send("add-construct-reply", result);
     });
   });
@@ -627,7 +627,7 @@ function PouchDBRoutes() {
     });
   });
   electron.ipcMain.on("delete-construct", (event, arg) => {
-    removeAgent$1(arg).then((result) => {
+    removeAgent(arg).then((result) => {
       event.sender.send("delete-construct-reply", result);
     });
   });
@@ -1166,45 +1166,45 @@ async function import_tavern_character(img_url) {
   }
 }
 const store$1 = new Store();
-let ActiveAgents = [];
-const retrieveAgents = () => {
+let ActiveConstructs = [];
+const retrieveConstructs = () => {
   return store$1.get("ids", []);
 };
-const addAgent = (newId) => {
-  const existingIds = retrieveAgents();
+const addConstruct = (newId) => {
+  const existingIds = retrieveConstructs();
   if (!existingIds.includes(newId)) {
     existingIds.push(newId);
     store$1.set("ids", existingIds);
   }
 };
-const removeAgent = (idToRemove) => {
-  const existingIds = retrieveAgents();
+const removeConstruct = (idToRemove) => {
+  const existingIds = retrieveConstructs();
   const updatedIds = existingIds.filter((id) => id !== idToRemove);
   store$1.set("ids", updatedIds);
 };
-const isAgentActive = (id) => {
-  const existingIds = retrieveAgents();
+const isConstructActive = (id) => {
+  const existingIds = retrieveConstructs();
   return existingIds.includes(id);
 };
-function agentController() {
-  ActiveAgents = retrieveAgents();
-  electron.ipcMain.on("add-agent", (event, arg) => {
-    addAgent(arg);
-    ActiveAgents = retrieveAgents();
-    event.reply("add-agent-reply", ActiveAgents);
+function constructController() {
+  ActiveConstructs = retrieveConstructs();
+  electron.ipcMain.on("add-construct", (event, arg) => {
+    addConstruct(arg);
+    ActiveConstructs = retrieveConstructs();
+    event.reply("add-construct-reply", ActiveConstructs);
   });
-  electron.ipcMain.on("remove-agent", (event, arg) => {
-    removeAgent(arg);
-    ActiveAgents = retrieveAgents();
-    event.reply("remove-agent-reply", ActiveAgents);
+  electron.ipcMain.on("remove-construct", (event, arg) => {
+    removeConstruct(arg);
+    ActiveConstructs = retrieveConstructs();
+    event.reply("remove-construct-reply", ActiveConstructs);
   });
-  electron.ipcMain.on("get-agents", (event, arg) => {
-    ActiveAgents = retrieveAgents();
-    event.reply("get-agents-reply", ActiveAgents);
+  electron.ipcMain.on("get-constructs", (event, arg) => {
+    ActiveConstructs = retrieveConstructs();
+    event.reply("get-constructs-reply", ActiveConstructs);
   });
-  electron.ipcMain.on("is-agent-active", (event, arg) => {
-    const isActive = isAgentActive(arg);
-    event.reply("is-agent-active-reply", isActive);
+  electron.ipcMain.on("is-construct-active", (event, arg) => {
+    const isActive = isConstructActive(arg);
+    event.reply("is-construct-active-reply", isActive);
   });
 }
 process.env.DIST_ELECTRON = node_path.join(__dirname, "../");
@@ -1260,7 +1260,7 @@ async function createWindow() {
   LanguageModelAPI();
   SDRoutes();
   BonusFeaturesRoutes();
-  agentController();
+  constructController();
 }
 electron.app.whenReady().then(createWindow);
 electron.app.on("window-all-closed", () => {
