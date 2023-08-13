@@ -45,14 +45,6 @@ const AgentManagement = () => {
         history.back();
     }
 
-    useEffect(() => {
-        const closeOnEscapeKey = (e: { key: string; }) => e.key === "Escape" ? returnToMenu() : null;
-        document.body.addEventListener("keydown", closeOnEscapeKey);
-        return () => {
-            document.body.removeEventListener("keydown", closeOnEscapeKey);
-        };
-    }, []);
-
     const saveAgent = async () => {
         if(agentState !== null) {
             agentState.name = agentName;

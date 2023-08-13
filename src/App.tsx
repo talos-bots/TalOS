@@ -10,6 +10,7 @@ import NavBar from './components/shared/NavBar';
 import SettingsPage from './pages/settings';
 import AgentManagement from './components/agent-crud';
 import ZeroPage from './pages/zero';
+import { useEffect } from 'react';
 
 function App() {
   const greenTheme = {
@@ -19,7 +20,19 @@ function App() {
   };
 
   const selectedTheme = greenTheme;
+  
+  const returnToMenu = () => {
+    history.back();
+  }
 
+  useEffect(() => {
+      const closeOnEscapeKey = (e: { key: string; }) => e.key === "Escape" ? returnToMenu() : null;
+      document.body.addEventListener("keydown", closeOnEscapeKey);
+      return () => {
+          document.body.removeEventListener("keydown", closeOnEscapeKey);
+      };
+  }, []);
+  
   const isDev = process.env.NODE_ENV === 'development';
   return (
     <div id='App'>
