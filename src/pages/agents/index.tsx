@@ -46,7 +46,7 @@ const AgentsPage = () => {
     }, []);
 
     return (
-        <div className="w-full h-calc(100vh - 70px) grid grid-rows-[auto,1fr] gap-2">
+        <div className="w-full h-[calc(100vh-70px)] grid grid-rows-[auto,1fr] themed-root gap-4">
             <h2 className="text-2xl font-bold text-theme-text text-shadow-xl">Agents</h2>
             <div className="flex flex-col gap-8">
                 <div className="grid grid-cols-4 gap-0 w-15vw h-5vh">
