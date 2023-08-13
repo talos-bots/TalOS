@@ -17,21 +17,21 @@ const MenuThemeLoader = (props: Props) => {
         const getSavedTheme = async () => {
             try {
                 savedTheme = await getStorageValue('uiTheme');
+                console.log(savedTheme);
             }catch(err) {
                 console.log(err);
             }
+            getThemes();
         }
         const getThemes = async () => {
             let loadedTheme: UITheme = defaultThemes[0];
             if(savedTheme !== undefined) {
                 loadedTheme = defaultThemes.find((theme) => theme._id === savedTheme) || defaultThemes[0];
             }
-            console.log(loadedTheme);
             setUiTheme(loadedTheme);
             setThemeLoaded(true);            
         }
         getSavedTheme();
-        getThemes();
     }, []);    
 
     useEffect(() => {

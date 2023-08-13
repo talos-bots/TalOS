@@ -267,7 +267,11 @@ export async function getStorageValue(key: string): Promise<string> {
 }
 
 export async function setStorageValue(key: string, value: string) {
-    ipcRenderer.send('set-data', key, value);
+    const data = {
+        key,
+        value,
+    };
+    ipcRenderer.send('set-data', data);
 }
 
 export async function clearDBs(){
