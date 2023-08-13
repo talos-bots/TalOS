@@ -25,12 +25,141 @@ const intents = {
   ],
   partials: [discord_js.Partials.Channel, discord_js.Partials.GuildMember, discord_js.Partials.User, discord_js.Partials.Reaction, discord_js.Partials.Message]
 };
+let disClient = new discord_js.Client(intents);
+const commands = new discord_js.Collection();
+let isReady = false;
+let token = "";
+let applicationID = "";
+async function setDiscordBotInfo(botName, base64Avatar) {
+  if (!isReady)
+    return;
+  if (!disClient.user) {
+    console.error("Discord client user is not initialized.");
+    return;
+  }
+  let newName;
+  let newNameDot;
+  try {
+    await disClient.user.setUsername(botName);
+    console.log(`My new username is ${botName}`);
+  } catch (error) {
+    console.error(`Failed to set username to ${botName}:`, error);
+    try {
+      newName = "_" + botName;
+      await disClient.user.setUsername(newName);
+      console.log(`My new username is ${newName}`);
+    } catch (error2) {
+      console.error(`Failed to set username to ${newName}:`, error2);
+      try {
+        newNameDot = "." + botName;
+        await disClient.user.setUsername(newNameDot);
+        console.log(`My new username is ${newNameDot}`);
+      } catch (error3) {
+        console.error(`Failed to set username to ${newNameDot}:`, error3);
+      }
+    }
+  }
+  try {
+    const buffer = Buffer.from(base64Avatar, "base64");
+    await disClient.user.setAvatar(buffer);
+    console.log("New avatar set!");
+  } catch (error) {
+    console.error("Failed to set avatar:", error);
+  }
+}
+async function getDiscordGuilds() {
+  if (!isReady)
+    return false;
+  const guilds = disClient.guilds.cache.map((guild) => {
+    const channels = guild.channels.cache.filter((channel) => channel.type === 0).map((channel) => ({
+      id: channel.id,
+      name: channel.name
+    }));
+    return {
+      id: guild.id,
+      name: guild.name,
+      channels
+    };
+  });
+  return guilds;
+}
+async function setStatus(message, type) {
+  if (!disClient.user)
+    return;
+  if (!isReady)
+    return;
+  let activityType;
+  switch (type) {
+    case "Playing":
+      activityType = discord_js.ActivityType.Playing;
+      break;
+    case "Watching":
+      activityType = discord_js.ActivityType.Watching;
+      break;
+    case "Listening":
+      activityType = discord_js.ActivityType.Listening;
+      break;
+    case "Streaming":
+      activityType = discord_js.ActivityType.Streaming;
+      break;
+    case "Competing":
+      activityType = discord_js.ActivityType.Competing;
+      break;
+    default:
+      activityType = discord_js.ActivityType.Playing;
+      break;
+  }
+  disClient.user.setActivity(`${message}`, { type: activityType });
+}
+async function setOnlineMode(type) {
+  if (!disClient.user)
+    return;
+  if (!isReady)
+    return;
+  disClient.user.setStatus(type);
+}
+async function sendMessage(channelID, message) {
+  if (!isReady)
+    return;
+  if (!disClient.user) {
+    console.error("Discord client user is not initialized.");
+    return;
+  }
+  const channel = await disClient.channels.fetch(channelID);
+  if (channel instanceof discord_js.TextChannel || channel instanceof discord_js.DMChannel || channel instanceof discord_js.NewsChannel) {
+    channel.send(message);
+  }
+}
+async function getWebhookForCharacter(charName, channelID) {
+  if (!isReady)
+    return;
+  const channel = disClient.channels.cache.get(channelID);
+  if (!(channel instanceof discord_js.TextChannel || channel instanceof discord_js.NewsChannel)) {
+    return void 0;
+  }
+  const webhooks = await channel.fetchWebhooks();
+  return webhooks.find((webhook) => webhook.name === charName);
+}
+async function sendMessageAsCharacter(charName, channelID, message) {
+  if (!isReady)
+    return;
+  const webhook = await getWebhookForCharacter(charName, channelID);
+  if (!webhook) {
+    throw new Error(`Webhook for character ${charName} not found.`);
+  }
+  await webhook.send(message);
+}
+async function getWebhooksForChannel(channelID) {
+  if (!isReady)
+    return [];
+  const channel = disClient.channels.cache.get(channelID);
+  if (!(channel instanceof discord_js.TextChannel || channel instanceof discord_js.NewsChannel)) {
+    return [];
+  }
+  const webhooks = await channel.fetchWebhooks();
+  return webhooks.map((webhook) => webhook.name);
+}
 function DiscordJSRoutes() {
-  let disClient = new discord_js.Client(intents);
-  const commands = new discord_js.Collection();
-  let isReady = false;
-  let token = "";
-  let applicationID = "";
   electron.ipcMain.on("discord-get-token", async (event) => {
     event.sender.send("discord-get-token-reply", token);
   });
@@ -56,20 +185,7 @@ function DiscordJSRoutes() {
     event.sender.send("discord-remove-all-commands-reply", commands);
   });
   electron.ipcMain.on("discord-get-guilds", async (event) => {
-    if (!isReady)
-      return false;
-    const guilds = disClient.guilds.cache.map((guild) => {
-      const channels = guild.channels.cache.filter((channel) => channel.type === 0).map((channel) => ({
-        id: channel.id,
-        name: channel.name
-      }));
-      return {
-        id: guild.id,
-        name: guild.name,
-        channels
-      };
-    });
-    event.sender.send("discord-get-guilds-reply", guilds);
+    event.sender.send("discord-get-guilds-reply", await getDiscordGuilds());
   });
   disClient.on("messageCreate", async (message) => {
     var _a;
@@ -186,119 +302,6 @@ function DiscordJSRoutes() {
     console.log(`Logged in as ${disClient.user.tag}!`);
     electron.ipcMain.emit("discord-ready", disClient);
   });
-  async function setDiscordBotInfo(botName, base64Avatar) {
-    if (!isReady)
-      return;
-    if (!disClient.user) {
-      console.error("Discord client user is not initialized.");
-      return;
-    }
-    let newName;
-    let newNameDot;
-    try {
-      await disClient.user.setUsername(botName);
-      console.log(`My new username is ${botName}`);
-    } catch (error) {
-      console.error(`Failed to set username to ${botName}:`, error);
-      try {
-        newName = "_" + botName;
-        await disClient.user.setUsername(newName);
-        console.log(`My new username is ${newName}`);
-      } catch (error2) {
-        console.error(`Failed to set username to ${newName}:`, error2);
-        try {
-          newNameDot = "." + botName;
-          await disClient.user.setUsername(newNameDot);
-          console.log(`My new username is ${newNameDot}`);
-        } catch (error3) {
-          console.error(`Failed to set username to ${newNameDot}:`, error3);
-        }
-      }
-    }
-    try {
-      const buffer = Buffer.from(base64Avatar, "base64");
-      await disClient.user.setAvatar(buffer);
-      console.log("New avatar set!");
-    } catch (error) {
-      console.error("Failed to set avatar:", error);
-    }
-  }
-  async function setStatus(message, type) {
-    if (!disClient.user)
-      return;
-    if (!isReady)
-      return;
-    let activityType;
-    switch (type) {
-      case "Playing":
-        activityType = discord_js.ActivityType.Playing;
-        break;
-      case "Watching":
-        activityType = discord_js.ActivityType.Watching;
-        break;
-      case "Listening":
-        activityType = discord_js.ActivityType.Listening;
-        break;
-      case "Streaming":
-        activityType = discord_js.ActivityType.Streaming;
-        break;
-      case "Competing":
-        activityType = discord_js.ActivityType.Competing;
-        break;
-      default:
-        activityType = discord_js.ActivityType.Playing;
-        break;
-    }
-    disClient.user.setActivity(`${message}`, { type: activityType });
-  }
-  async function setOnlineMode(type) {
-    if (!disClient.user)
-      return;
-    if (!isReady)
-      return;
-    disClient.user.setStatus(type);
-  }
-  async function sendMessage(channelID, message) {
-    if (!isReady)
-      return;
-    if (!disClient.user) {
-      console.error("Discord client user is not initialized.");
-      return;
-    }
-    const channel = await disClient.channels.fetch(channelID);
-    if (channel instanceof discord_js.TextChannel || channel instanceof discord_js.DMChannel || channel instanceof discord_js.NewsChannel) {
-      channel.send(message);
-    }
-  }
-  async function getWebhookForCharacter(charName, channelID) {
-    if (!isReady)
-      return;
-    const channel = disClient.channels.cache.get(channelID);
-    if (!(channel instanceof discord_js.TextChannel || channel instanceof discord_js.NewsChannel)) {
-      return void 0;
-    }
-    const webhooks = await channel.fetchWebhooks();
-    return webhooks.find((webhook) => webhook.name === charName);
-  }
-  async function sendMessageAsCharacter(charName, channelID, message) {
-    if (!isReady)
-      return;
-    const webhook = await getWebhookForCharacter(charName, channelID);
-    if (!webhook) {
-      throw new Error(`Webhook for character ${charName} not found.`);
-    }
-    await webhook.send(message);
-  }
-  async function getWebhooksForChannel(channelID) {
-    if (!isReady)
-      return [];
-    const channel = disClient.channels.cache.get(channelID);
-    if (!(channel instanceof discord_js.TextChannel || channel instanceof discord_js.NewsChannel)) {
-      return [];
-    }
-    const webhooks = await channel.fetchWebhooks();
-    return webhooks.map((webhook) => webhook.name);
-  }
   electron.ipcMain.handle("discord-login", async (event, rawToken, appId) => {
     await disClient.login(rawToken);
     token = rawToken;
@@ -422,196 +425,290 @@ function DiscordJSRoutes() {
     event.sender.send("discord-bot-status-reply", isReady);
   });
 }
-function PouchDBRoutes() {
-  let agentDB = new PouchDB("agents", { prefix: dataPath });
-  let chatsDB = new PouchDB("chats", { prefix: dataPath });
-  let commandDB = new PouchDB("commands", { prefix: dataPath });
-  let attachmentDB = new PouchDB("attachments", { prefix: dataPath });
-  electron.ipcMain.on("get-agents", (event, arg) => {
-    agentDB.allDocs({ include_docs: true }).then((result) => {
-      event.sender.send("get-agents-reply", result.rows);
+let agentDB;
+let chatsDB;
+let commandDB;
+let attachmentDB;
+async function getAllAgents() {
+  return agentDB.allDocs({ include_docs: true }).then((result) => {
+    return result.rows;
+  }).catch((err) => {
+    console.log(err);
+    return null;
+  });
+}
+async function getAgent(id) {
+  return agentDB.get(id).then((result) => {
+    return result;
+  }).catch((err) => {
+    console.log(err);
+  });
+}
+async function addAgent$1(agent) {
+  return agentDB.put(agent).then((result) => {
+    return result;
+  }).catch((err) => {
+    console.log(err);
+  });
+}
+async function removeAgent$1(id) {
+  return agentDB.get(id).then((doc) => {
+    return agentDB.remove(doc);
+  }).catch((err) => {
+    console.log(err);
+  });
+}
+async function updateAgent(agent) {
+  return agentDB.get(agent._id).then((doc) => {
+    let updatedDoc = { ...doc, ...agent };
+    agentDB.put(updatedDoc).then((result) => {
+      return result;
     }).catch((err) => {
-      console.log(err);
+      console.error("Error while updating document: ", err);
+    });
+  }).catch((err) => {
+    console.error("Error while getting document: ", err);
+  });
+}
+async function getAllChats() {
+  return chatsDB.allDocs({ include_docs: true }).then((result) => {
+    return result.rows;
+  }).catch((err) => {
+    console.log(err);
+  });
+}
+async function getChatsByAgent(agentId) {
+  return chatsDB.find({
+    selector: {
+      agents: agentId
+    }
+  }).then((result) => {
+    return result.docs;
+  }).catch((err) => {
+    console.log(err);
+  });
+}
+async function getChat(id) {
+  return chatsDB.get(id).then((result) => {
+    return result;
+  }).catch((err) => {
+    console.log(err);
+  });
+}
+async function addChat(chat) {
+  return chatsDB.put(chat).then((result) => {
+    return result;
+  }).catch((err) => {
+    console.log(err);
+  });
+}
+async function removeChat(id) {
+  return chatsDB.get(id).then((doc) => {
+    return chatsDB.remove(doc);
+  }).catch((err) => {
+    console.log(err);
+  });
+}
+async function updateChat(chat) {
+  return chatsDB.get(chat._id).then((doc) => {
+    let updatedDoc = { ...doc, ...chat };
+    chatsDB.put(updatedDoc).then((result) => {
+      return result;
+    }).catch((err) => {
+      console.error("Error while updating document: ", err);
+    });
+  }).catch((err) => {
+    console.error("Error while getting document: ", err);
+  });
+}
+async function getAllCommands() {
+  return commandDB.allDocs({ include_docs: true }).then((result) => {
+    return result.rows;
+  }).catch((err) => {
+    console.log(err);
+  });
+}
+async function getCommand(id) {
+  return commandDB.get(id).then((result) => {
+    return result;
+  }).catch((err) => {
+    console.log(err);
+  });
+}
+async function addCommand(command) {
+  return commandDB.put(command).then((result) => {
+    return result;
+  }).catch((err) => {
+    console.log(err);
+  });
+}
+async function removeCommand(id) {
+  return commandDB.get(id).then((doc) => {
+    return commandDB.remove(doc);
+  }).catch((err) => {
+    console.log(err);
+  });
+}
+async function updateCommand(command) {
+  return commandDB.get(command._id).then((doc) => {
+    let updatedDoc = { ...doc, ...command };
+    commandDB.put(updatedDoc).then((result) => {
+      return result;
+    }).catch((err) => {
+      console.error("Error while updating document: ", err);
+    });
+  }).catch((err) => {
+    console.error("Error while getting document: ", err);
+  });
+}
+async function getAllAttachments() {
+  return attachmentDB.allDocs({ include_docs: true }).then((result) => {
+    return result.rows;
+  }).catch((err) => {
+    console.log(err);
+  });
+}
+async function getAttachment(id) {
+  return attachmentDB.get(id).then((result) => {
+    return result;
+  }).catch((err) => {
+    console.log(err);
+  });
+}
+async function addAttachment(attachment) {
+  return attachmentDB.put(attachment).then((result) => {
+    return result;
+  }).catch((err) => {
+    console.log(err);
+  });
+}
+async function removeAttachment(id) {
+  return attachmentDB.get(id).then((doc) => {
+    return attachmentDB.remove(doc);
+  }).catch((err) => {
+    console.log(err);
+  });
+}
+async function updateAttachment(attachment) {
+  return attachmentDB.get(attachment._id).then((doc) => {
+    let updatedDoc = { ...doc, ...attachment };
+    attachmentDB.put(updatedDoc).then((result) => {
+      return result;
+    }).catch((err) => {
+      console.error("Error while updating document: ", err);
+    });
+  }).catch((err) => {
+    console.error("Error while getting document: ", err);
+  });
+}
+function PouchDBRoutes() {
+  agentDB = new PouchDB("agents", { prefix: dataPath });
+  chatsDB = new PouchDB("chats", { prefix: dataPath });
+  commandDB = new PouchDB("commands", { prefix: dataPath });
+  attachmentDB = new PouchDB("attachments", { prefix: dataPath });
+  electron.ipcMain.on("get-agents", (event, arg) => {
+    getAllAgents().then((result) => {
+      event.sender.send("get-agents-reply", result);
     });
   });
   electron.ipcMain.on("get-agent", (event, arg) => {
-    agentDB.get(arg).then((result) => {
+    getAgent(arg).then((result) => {
       event.sender.send("get-agent-reply", result);
-    }).catch((err) => {
-      console.log(err);
     });
   });
   electron.ipcMain.on("add-agent", (event, arg) => {
-    agentDB.put(arg).then((result) => {
+    addAgent$1(arg).then((result) => {
       event.sender.send("add-agent-reply", result);
-    }).catch((err) => {
-      console.log(err);
     });
   });
   electron.ipcMain.on("update-agent", (event, arg) => {
-    agentDB.get(arg._id).then((doc) => {
-      let updatedDoc = { ...doc, ...arg };
-      agentDB.put(updatedDoc).then((result) => {
-        event.sender.send("update-agent-reply", result);
-      }).catch((err) => {
-        console.error("Error while updating document: ", err);
-      });
-    }).catch((err) => {
-      console.error("Error while getting document: ", err);
+    updateAgent(arg).then((result) => {
+      event.sender.send("update-agent-reply", result);
     });
   });
   electron.ipcMain.on("delete-agent", (event, arg) => {
-    agentDB.get(arg).then((doc) => {
-      agentDB.remove(doc).then((result) => {
-        event.sender.send("delete-agent-reply", result);
-      }).catch((err) => {
-        console.error("Error while deleting document: ", err);
-      });
-    }).catch((err) => {
-      console.error("Error while getting document: ", err);
+    removeAgent$1(arg).then((result) => {
+      event.sender.send("delete-agent-reply", result);
     });
   });
   electron.ipcMain.on("get-chats", (event, arg) => {
-    chatsDB.allDocs({ include_docs: true }).then((result) => {
-      event.sender.send("get-chats-reply", result.rows);
-    }).catch((err) => {
-      console.log(err);
+    getAllChats().then((result) => {
+      event.sender.send("get-chats-reply", result);
     });
   });
   electron.ipcMain.on("get-chats-by-agent", (event, arg) => {
-    chatsDB.find({
-      selector: {
-        agents: arg
-      }
-    }).then((result) => {
-      event.sender.send("get-chats-by-agent-reply", result.docs);
-    }).catch((err) => {
-      console.log(err);
+    getChatsByAgent(arg).then((result) => {
+      event.sender.send("get-chats-by-agent-reply", result);
     });
   });
   electron.ipcMain.on("get-chat", (event, arg) => {
-    chatsDB.get(arg).then((result) => {
+    getChat(arg).then((result) => {
       event.sender.send("get-chat-reply", result);
-    }).catch((err) => {
-      console.log(err);
     });
   });
   electron.ipcMain.on("add-chat", (event, arg) => {
-    chatsDB.put(arg).then((result) => {
+    addChat(arg).then((result) => {
       event.sender.send("add-chat-reply", result);
-    }).catch((err) => {
-      console.log(err);
     });
   });
   electron.ipcMain.on("update-chat", (event, arg) => {
-    chatsDB.get(arg._id).then((doc) => {
-      let updatedDoc = { ...doc, ...arg };
-      chatsDB.put(updatedDoc).then((result) => {
-        event.sender.send("update-chat-reply", result);
-      }).catch((err) => {
-        console.error("Error while updating document: ", err);
-      });
-    }).catch((err) => {
-      console.error("Error while getting document: ", err);
+    updateChat(arg).then((result) => {
+      event.sender.send("update-chat-reply", result);
     });
   });
   electron.ipcMain.on("delete-chat", (event, arg) => {
-    chatsDB.get(arg).then((doc) => {
-      chatsDB.remove(doc).then((result) => {
-        event.sender.send("delete-chat-reply", result);
-      }).catch((err) => {
-        console.error("Error while deleting document: ", err);
-      });
-    }).catch((err) => {
-      console.error("Error while getting document: ", err);
+    removeChat(arg).then((result) => {
+      event.sender.send("delete-chat-reply", result);
     });
   });
   electron.ipcMain.on("get-commands", (event, arg) => {
-    commandDB.allDocs({ include_docs: true }).then((result) => {
-      event.sender.send("get-commands-reply", result.rows);
-    }).catch((err) => {
-      console.log(err);
+    getAllCommands().then((result) => {
+      event.sender.send("get-commands-reply", result);
     });
   });
   electron.ipcMain.on("get-command", (event, arg) => {
-    commandDB.get(arg).then((result) => {
+    getCommand(arg).then((result) => {
       event.sender.send("get-command-reply", result);
-    }).catch((err) => {
-      console.log(err);
     });
   });
   electron.ipcMain.on("add-command", (event, arg) => {
-    commandDB.put(arg).then((result) => {
+    addCommand(arg).then((result) => {
       event.sender.send("add-command-reply", result);
-    }).catch((err) => {
-      console.log(err);
     });
   });
   electron.ipcMain.on("update-command", (event, arg) => {
-    commandDB.get(arg._id).then((doc) => {
-      let updatedDoc = { ...doc, ...arg };
-      commandDB.put(updatedDoc).then((result) => {
-        event.sender.send("update-command-reply", result);
-      }).catch((err) => {
-        console.error("Error while updating document: ", err);
-      });
-    }).catch((err) => {
-      console.error("Error while getting document: ", err);
+    updateCommand(arg).then((result) => {
+      event.sender.send("update-command-reply", result);
     });
   });
   electron.ipcMain.on("delete-command", (event, arg) => {
-    commandDB.get(arg).then((doc) => {
-      commandDB.remove(doc).then((result) => {
-        event.sender.send("delete-command-reply", result);
-      }).catch((err) => {
-        console.error("Error while deleting document: ", err);
-      });
-    }).catch((err) => {
-      console.error("Error while getting document: ", err);
+    removeCommand(arg).then((result) => {
+      event.sender.send("delete-command-reply", result);
     });
   });
   electron.ipcMain.on("get-attachments", (event, arg) => {
-    attachmentDB.allDocs({ include_docs: true }).then((result) => {
-      event.sender.send("get-attachments-reply", result.rows);
-    }).catch((err) => {
-      console.log(err);
+    getAllAttachments().then((result) => {
+      event.sender.send("get-attachments-reply", result);
     });
   });
   electron.ipcMain.on("get-attachment", (event, arg) => {
-    attachmentDB.get(arg).then((result) => {
+    getAttachment(arg).then((result) => {
       event.sender.send("get-attachment-reply", result);
-    }).catch((err) => {
-      console.log(err);
     });
   });
   electron.ipcMain.on("add-attachment", (event, arg) => {
-    attachmentDB.put(arg).then((result) => {
+    addAttachment(arg).then((result) => {
       event.sender.send("add-attachment-reply", result);
-    }).catch((err) => {
-      console.log(err);
     });
   });
   electron.ipcMain.on("update-attachment", (event, arg) => {
-    attachmentDB.get(arg._id).then((doc) => {
-      let updatedDoc = { ...doc, ...arg };
-      attachmentDB.put(updatedDoc).then((result) => {
-        event.sender.send("update-attachment-reply", result);
-      }).catch((err) => {
-        console.error("Error while updating document: ", err);
-      });
-    }).catch((err) => {
-      console.error("Error while getting document: ", err);
+    updateAttachment(arg).then((result) => {
+      event.sender.send("update-attachment-reply", result);
     });
   });
   electron.ipcMain.on("delete-attachment", (event, arg) => {
-    attachmentDB.get(arg).then((doc) => {
-      attachmentDB.remove(doc).then((result) => {
-        event.sender.send("delete-attachment-reply", result);
-      }).catch((err) => {
-        console.error("Error while deleting document: ", err);
-      });
-    }).catch((err) => {
-      console.error("Error while getting document: ", err);
+    removeAttachment(arg).then((result) => {
+      event.sender.send("delete-attachment-reply", result);
     });
   });
   electron.ipcMain.on("clear-data", (event, arg) => {
@@ -1068,6 +1165,40 @@ async function import_tavern_character(img_url) {
     throw error;
   }
 }
+const store$1 = new Store();
+let ActiveAgents = [];
+const retrieveAgents = () => {
+  return store$1.get("ids", []);
+};
+const addAgent = (newId) => {
+  const existingIds = retrieveAgents();
+  if (!existingIds.includes(newId)) {
+    existingIds.push(newId);
+    store$1.set("ids", existingIds);
+  }
+};
+const removeAgent = (idToRemove) => {
+  const existingIds = retrieveAgents();
+  const updatedIds = existingIds.filter((id) => id !== idToRemove);
+  store$1.set("ids", updatedIds);
+};
+function agentController() {
+  ActiveAgents = retrieveAgents();
+  electron.ipcMain.on("add-agent", (event, arg) => {
+    addAgent(arg);
+    ActiveAgents = retrieveAgents();
+    event.reply("add-agent-reply", ActiveAgents);
+  });
+  electron.ipcMain.on("remove-agent", (event, arg) => {
+    removeAgent(arg);
+    ActiveAgents = retrieveAgents();
+    event.reply("remove-agent-reply", ActiveAgents);
+  });
+  electron.ipcMain.on("get-agents", (event, arg) => {
+    ActiveAgents = retrieveAgents();
+    event.reply("get-agents-reply", ActiveAgents);
+  });
+}
 process.env.DIST_ELECTRON = node_path.join(__dirname, "../");
 process.env.DIST = node_path.join(process.env.DIST_ELECTRON, "../dist");
 process.env.VITE_PUBLIC = process.env.VITE_DEV_SERVER_URL ? node_path.join(process.env.DIST_ELECTRON, "../public") : process.env.DIST;
@@ -1088,7 +1219,7 @@ const dataPath = path.join(electron.app.getPath("userData"), "data/");
 const store = new Store();
 async function createWindow() {
   win = new electron.BrowserWindow({
-    title: "Main window",
+    title: "ConstructOS - AI Agent Manager",
     icon: node_path.join(process.env.VITE_PUBLIC, "favicon.ico"),
     webPreferences: {
       preload,
@@ -1110,9 +1241,6 @@ async function createWindow() {
   } else {
     win.loadFile(indexHtml);
   }
-  win.webContents.on("did-finish-load", () => {
-    win == null ? void 0 : win.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
-  });
   win.webContents.setWindowOpenHandler(({ url: url2 }) => {
     if (url2.startsWith("https:"))
       electron.shell.openExternal(url2);
@@ -1124,6 +1252,7 @@ async function createWindow() {
   LanguageModelAPI();
   SDRoutes();
   BonusFeaturesRoutes();
+  agentController();
 }
 electron.app.whenReady().then(createWindow);
 electron.app.on("window-all-closed", () => {

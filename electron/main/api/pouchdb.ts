@@ -7,39 +7,43 @@ let chatsDB: PouchDB.Database<any>;
 let commandDB: PouchDB.Database<any>;
 let attachmentDB: PouchDB.Database<any>;
 
-export function getAllAgents() {
-    agentDB.allDocs({include_docs: true}).then((result) => {
+export async function getAllAgents() {
+    return agentDB.allDocs({include_docs: true})
+    .then((result) => {
         return result.rows;
-    }).catch((err) => {
+    })
+    .catch((err) => {
         console.log(err);
+        return null;
     });
 }
 
-export function getAgent(id: string) {
-    agentDB.get(id).then((result) => {
+export async function getAgent(id: string) {
+    return agentDB.get(id).then((result) => {
         return result;
     }).catch((err) => {
         console.log(err);
     });
 }
 
-export function addAgent(agent: any) {
-    agentDB.put(agent).then((result) => {
+export async function addAgent(agent: any) {
+    return agentDB.put(agent).then((result) => {
         return result;
     }).catch((err) => {
         console.log(err);
     });
 }
 
-export function removeAgent(id: string) {
-    agentDB.get(id).then((doc) => {
+export async function removeAgent(id: string) {
+    return agentDB.get(id).then((doc) => {
         return agentDB.remove(doc);
     }).catch((err) => {
         console.log(err);
     });
 }
-export function updateAgent(agent: any) {
-    agentDB.get(agent._id).then((doc) => {
+
+export async function updateAgent(agent: any) {
+    return agentDB.get(agent._id).then((doc) => {
         // Merge existing fields with updated fields and retain _rev
         let updatedDoc = {...doc, ...agent};
         
@@ -53,16 +57,16 @@ export function updateAgent(agent: any) {
     });
 }
 
-export function getAllChats() {
-    chatsDB.allDocs({include_docs: true}).then((result) => {
+export async function getAllChats() {
+    return chatsDB.allDocs({include_docs: true}).then((result) => {
         return result.rows;
     }).catch((err) => {
         console.log(err);
     });
 }
 
-export function getChatsByAgent(agentId: string) {
-    chatsDB.find({
+export async function getChatsByAgent(agentId: string) {
+    return chatsDB.find({
         selector: {
             agents: agentId
         }
@@ -73,32 +77,32 @@ export function getChatsByAgent(agentId: string) {
     });
 }
 
-export function getChat(id: string) {
-    chatsDB.get(id).then((result) => {
+export async function getChat(id: string) {
+    return chatsDB.get(id).then((result) => {
         return result;
     }).catch((err) => {
         console.log(err);
     });
 }
 
-export function addChat(chat: any) {
-    chatsDB.put(chat).then((result) => {
+export async function addChat(chat: any) {
+    return chatsDB.put(chat).then((result) => {
         return result;
     }).catch((err) => {
         console.log(err);
     });
 }
 
-export function removeChat(id: string) {
-    chatsDB.get(id).then((doc) => {
+export async function removeChat(id: string) {
+    return chatsDB.get(id).then((doc) => {
         return chatsDB.remove(doc);
     }).catch((err) => {
         console.log(err);
     });
 }
 
-export function updateChat(chat: any) {
-    chatsDB.get(chat._id).then((doc) => {
+export async function updateChat(chat: any) {
+    return chatsDB.get(chat._id).then((doc) => {
         // Merge existing fields with updated fields and retain _rev
         let updatedDoc = {...doc, ...chat};
 
@@ -112,40 +116,40 @@ export function updateChat(chat: any) {
     });
 }
 
-export function getAllCommands() {
-    commandDB.allDocs({include_docs: true}).then((result) => {
+export async function getAllCommands() {
+    return commandDB.allDocs({include_docs: true}).then((result) => {
         return result.rows;
     }).catch((err) => {
         console.log(err);
     });
 }
 
-export function getCommand(id: string) {
-    commandDB.get(id).then((result) => {
+export async function getCommand(id: string) {
+    return commandDB.get(id).then((result) => {
         return result;
     }).catch((err) => {
         console.log(err);
     });
 }
 
-export function addCommand(command: any) {
-    commandDB.put(command).then((result) => {
+export async function addCommand(command: any) {
+    return commandDB.put(command).then((result) => {
         return result;
     }).catch((err) => {
         console.log(err);
     });
 }
 
-export function removeCommand(id: string) {
-    commandDB.get(id).then((doc) => {
+export async function removeCommand(id: string) {
+    return commandDB.get(id).then((doc) => {
         return commandDB.remove(doc);
     }).catch((err) => {
         console.log(err);
     });
 }
 
-export function updateCommand(command: any) {
-    commandDB.get(command._id).then((doc) => {
+export async function updateCommand(command: any) {
+    return commandDB.get(command._id).then((doc) => {
         // Merge existing fields with updated fields and retain _rev
         let updatedDoc = {...doc, ...command};
 
@@ -159,40 +163,40 @@ export function updateCommand(command: any) {
     });
 }
 
-export function getAllAttachments() {
-    attachmentDB.allDocs({include_docs: true}).then((result) => {
+export async function getAllAttachments() {
+    return attachmentDB.allDocs({include_docs: true}).then((result) => {
         return result.rows;
     }).catch((err) => {
         console.log(err);
     });
 }
 
-export function getAttachment(id: string) {
-    attachmentDB.get(id).then((result) => {
+export async function getAttachment(id: string) {
+    return attachmentDB.get(id).then((result) => {
         return result;
     }).catch((err) => {
         console.log(err);
     });
 }
 
-export function addAttachment(attachment: any) {
-    attachmentDB.put(attachment).then((result) => {
+export async function addAttachment(attachment: any) {
+    return attachmentDB.put(attachment).then((result) => {
         return result;
     }).catch((err) => {
         console.log(err);
     });
 }
 
-export function removeAttachment(id: string) {
-    attachmentDB.get(id).then((doc) => {
+export async function removeAttachment(id: string) {
+    return attachmentDB.get(id).then((doc) => {
         return attachmentDB.remove(doc);
     }).catch((err) => {
         console.log(err);
     });
 }
 
-export function updateAttachment(attachment: any) {
-    attachmentDB.get(attachment._id).then((doc) => {
+export async function updateAttachment(attachment: any) {
+    return attachmentDB.get(attachment._id).then((doc) => {
         // Merge existing fields with updated fields and retain _rev
         let updatedDoc = {...doc, ...attachment};
         
@@ -213,87 +217,129 @@ export function PouchDBRoutes(){
     attachmentDB = new PouchDB('attachments', {prefix: dataPath});
 
     ipcMain.on('get-agents', (event, arg) => {
-        event.sender.send('get-agents-reply', getAllAgents());
+        getAllAgents().then((result) => {
+            event.sender.send('get-agents-reply', result);
+        });
     });
 
     ipcMain.on('get-agent', (event, arg) => {
-        event.sender.send('get-agent-reply', getAgent(arg));
+        getAgent(arg).then((result) => {
+            event.sender.send('get-agent-reply', result);
+        });
     });
 
     ipcMain.on('add-agent', (event, arg) => {
-        event.sender.send('add-agent-reply', addAgent(arg));
+        addAgent(arg).then((result) => {
+            event.sender.send('add-agent-reply', result);
+        });
     });
 
     ipcMain.on('update-agent', (event, arg) => {
-        event.sender.send('update-agent-reply', updateAgent(arg));
+        updateAgent(arg).then((result) => {
+            event.sender.send('update-agent-reply', result);
+        });
     });
 
     ipcMain.on('delete-agent', (event, arg) => {
-        event.sender.send('delete-agent-reply', removeAgent(arg));
+        removeAgent(arg).then((result) => {
+            event.sender.send('delete-agent-reply', result);
+        });
     });
 
     ipcMain.on('get-chats', (event, arg) => {
-        event.sender.send('get-chats-reply', getAllChats());
+        getAllChats().then((result) => {
+            event.sender.send('get-chats-reply', result);
+        });
     });
 
     ipcMain.on('get-chats-by-agent', (event, arg) => {
-        event.sender.send('get-chats-by-agent-reply', getChatsByAgent(arg));
+        getChatsByAgent(arg).then((result) => {
+            event.sender.send('get-chats-by-agent-reply', result);
+        });
     });
 
     ipcMain.on('get-chat', (event, arg) => {
-        event.sender.send('get-chat-reply', getChat(arg));
+        getChat(arg).then((result) => {
+            event.sender.send('get-chat-reply', result);
+        });
     });
 
     ipcMain.on('add-chat', (event, arg) => {
-        event.sender.send('add-chat-reply', addChat(arg));
+        addChat(arg).then((result) => {
+            event.sender.send('add-chat-reply', result);
+        });
     });
 
     ipcMain.on('update-chat', (event, arg) => {
-        event.sender.send('update-chat-reply', updateChat(arg));
+        updateChat(arg).then((result) => {
+            event.sender.send('update-chat-reply', result);
+        });
     });
 
     ipcMain.on('delete-chat', (event, arg) => {
-        event.sender.send('delete-chat-reply', removeChat(arg));
+        removeChat(arg).then((result) => {
+            event.sender.send('delete-chat-reply', result);
+        });
     });
 
     ipcMain.on('get-commands', (event, arg) => {
-        event.sender.send('get-commands-reply', getAllCommands());
+        getAllCommands().then((result) => {
+            event.sender.send('get-commands-reply', result);
+        });
     });
 
     ipcMain.on('get-command', (event, arg) => {
-        event.sender.send('get-command-reply', getCommand(arg));
+        getCommand(arg).then((result) => {
+            event.sender.send('get-command-reply', result);
+        });
     });
 
     ipcMain.on('add-command', (event, arg) => {
-        event.sender.send('add-command-reply', addCommand(arg));
+        addCommand(arg).then((result) => {
+            event.sender.send('add-command-reply', result);
+        });
     });
 
     ipcMain.on('update-command', (event, arg) => {
-        event.sender.send('update-command-reply', updateCommand(arg));
+        updateCommand(arg).then((result) => {
+            event.sender.send('update-command-reply', result);
+        });
     });
 
     ipcMain.on('delete-command', (event, arg) => {
-        event.sender.send('delete-command-reply', removeCommand(arg));
+        removeCommand(arg).then((result) => {
+            event.sender.send('delete-command-reply', result);
+        });
     });
 
     ipcMain.on('get-attachments', (event, arg) => {
-        event.sender.send('get-attachments-reply', getAllAttachments());
+        getAllAttachments().then((result) => {
+            event.sender.send('get-attachments-reply', result);
+        });
     });
 
     ipcMain.on('get-attachment', (event, arg) => {
-        event.sender.send('get-attachment-reply', getAttachment(arg));
+        getAttachment(arg).then((result) => {
+            event.sender.send('get-attachment-reply', result);
+        });
     });
 
     ipcMain.on('add-attachment', (event, arg) => {
-        event.sender.send('add-attachment-reply', addAttachment(arg));
+        addAttachment(arg).then((result) => {
+            event.sender.send('add-attachment-reply', result);
+        });
     });
 
     ipcMain.on('update-attachment', (event, arg) => {
-        event.sender.send('update-attachment-reply', updateAttachment(arg));
+        updateAttachment(arg).then((result) => {
+            event.sender.send('update-attachment-reply', result);
+        });
     });
 
     ipcMain.on('delete-attachment', (event, arg) => {
-        event.sender.send('delete-attachment-reply', removeAttachment(arg));
+        removeAttachment(arg).then((result) => {
+            event.sender.send('delete-attachment-reply', result);
+        });
     });
 
 
