@@ -9,3 +9,10 @@
     background-color: var(--theme-box);
 	border-radius: var(--theme-border-radius);
 }
+
+.agent-search-bar input:focus{
+	outline: none;
+	border: var(--theme-border-width) var(--theme-border-type) var(--theme-border-color);
+	background-color: var(--theme-accent);
+	border-radius: var(--theme-border-radius);
+}
