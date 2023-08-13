@@ -2,7 +2,6 @@ import { app, BrowserWindow, shell, ipcMain } from 'electron'
 import { release } from 'node:os'
 import { join } from 'node:path'
 import path from 'path';
-import { update } from './update'
 import { DiscordJSRoutes } from './api/discord'
 import { PouchDBRoutes } from './api/pouchdb'
 import Store from 'electron-store';
@@ -12,7 +11,6 @@ import { SDRoutes } from './api/sd';
 import { BonusFeaturesRoutes } from './api/bonus-features';
 import agentController from './controllers/AgentController';
 import fs from 'fs';
-
 
 // The built directory structure
 //
@@ -55,7 +53,7 @@ export const dataPath = path.join(app.getPath('userData'), 'data/');
 export const store = new Store();
 async function createWindow() {
   win = new BrowserWindow({
-    title: 'Main window',
+    title: 'ConstructOS - AI Agent Manager',
     icon: join(process.env.VITE_PUBLIC, 'favicon.ico'),
     webPreferences: {
       preload,
@@ -72,20 +70,13 @@ async function createWindow() {
     minimizable: false,
   })
 
-  if (url) { // electron-vite-vue#298
+  if (url) {
     win.loadURL(url)
-    // Open devTool if the app is not packaged
     win.webContents.openDevTools()
   } else {
     win.loadFile(indexHtml)
   }
 
-  // Test actively push message to the Electron-Renderer
-  win.webContents.on('did-finish-load', () => {
-    win?.webContents.send('main-process-message', new Date().toLocaleString())
-  })
-
-  // Make all links open with the browser, not with the application
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith('https:')) shell.openExternal(url)
     return { action: 'deny' }
@@ -98,6 +89,7 @@ async function createWindow() {
   LanguageModelAPI();
   SDRoutes();
   BonusFeaturesRoutes();
+  agentController();
   // update(win)
 }
 
@@ -153,16 +145,3 @@ ipcMain.on('set-data', (event, arg) => {
 ipcMain.on('get-data', (event, arg) => {
   event.sender.send('get-data-reply', store.get(arg));
 })
-
-// Get the quart server port from the backend config file
-ipcMain.handle("get-server-port", (event) => {
-  try {
-    const configPath = path.join(__dirname, "../../backend", "config.json");
-    const rawData = fs.readFileSync(configPath, "utf8");
-    const config = JSON.parse(rawData);
-    return config.port;
-  } catch (error) {
-    console.error("Failed to get server port:", error);
-    throw error; // This will send the error back to the renderer
-  }
-});
