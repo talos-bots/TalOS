@@ -60,13 +60,17 @@ const AgentBox: React.FC<Props> = ({character}) => {
                     </div>
                     <div className="col-span-1 flex flex-col justify-start items-start">
                         <label className="text-xl">Personality</label>
-                        <div className="overflow-hidden w-full h-1/2 text-left themed-input">
-                            {liveCharacter.personality}
-                        </div>
+                        <textarea
+                            className="overflow-hidden w-full h-1/2 themed-input"
+                            value={liveCharacter.personality}
+                            disabled
+                        />
                         <label className="text-xl">Background</label>
-                        <div className="overflow-hidden w-full h-1/2 text-left themed-input">
-                            {liveCharacter.background}
-                        </div>
+                        <textarea
+                            className="overflow-hidden w-full h-1/2 themed-input"
+                            value={liveCharacter.background}
+                            disabled
+                        />
                     </div>
                     <div className="col-span-1 flex flex-col justify-start">
                         <label className="text-xl">Relationships</label>

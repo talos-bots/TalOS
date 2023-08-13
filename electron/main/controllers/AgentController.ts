@@ -23,6 +23,11 @@ export const removeAgent = (idToRemove: AgentID): void => {
     store.set('ids', updatedIds);
 }
 
+export const isAgentActive = (id: AgentID): boolean => {
+    const existingIds = retrieveAgents();
+    return existingIds.includes(id);
+}
+
 function agentController() {
     ActiveAgents = retrieveAgents();
     
@@ -41,6 +46,11 @@ function agentController() {
     ipcMain.on('get-agents', (event, arg) => {
         ActiveAgents = retrieveAgents();
         event.reply('get-agents-reply', ActiveAgents);
+    });
+
+    ipcMain.on('is-agent-active', (event, arg) => {
+        const isActive = isAgentActive(arg);
+        event.reply('is-agent-active-reply', isActive);
     });
 }
 export default agentController;
