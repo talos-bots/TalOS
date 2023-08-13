@@ -10,6 +10,7 @@ import { LanguageModelAPI } from './api/llm';
 import { SDRoutes } from './api/sd';
 import { BonusFeaturesRoutes } from './api/bonus-features';
 import agentController from './controllers/AgentController';
+import fs from 'fs';
 
 // The built directory structure
 //

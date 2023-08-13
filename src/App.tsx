@@ -8,6 +8,7 @@ import DevPanel from './components/dev-panel';
 import NavBar from './components/shared/NavBar';
 import SettingsPage from './pages/settings';
 import AgentManagement from './components/agent-crud';
+import ZeroPage from './pages/zero';
 import { useEffect } from 'react';
 
 function App() {
@@ -47,6 +48,7 @@ function App() {
         <Route path='/chat' element={<ChatPage/>} />
         <Route path='/docs' element={<DocsPage/>} />
         <Route path='/settings' element={<SettingsPage/>} />
+        <Route path='/zero' element={<ZeroPage/>} />
       </Routes>
       </div>
       {isDev ? <DevPanel /> : null}
@@ -55,4 +57,4 @@ function App() {
   )
 }
 
-export default App
+export default App;

@@ -25,6 +25,7 @@ const NavBar: React.FC = () => {
       <HashLink to="/nodes" aria-label="Nodes" className={`p-1 transition-all duration-125 hover:opacity-25`}>
         <Sparkles style={location.hash === "/nodes" ? { color: 'white' } : { color: '#c2c2c2' }} />
       </HashLink>
+      
     </div>
   </nav>
   

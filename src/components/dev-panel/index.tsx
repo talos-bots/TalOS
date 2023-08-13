@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import RouteButton from "../route-button";
 
 const DevPanel = () => {
-    const [isMinimized, setMinimized] = useState(true);
+  const [isMinimized, setMinimized] = useState(true);
 
     return isMinimized ? (
         <button
@@ -24,6 +24,7 @@ const DevPanel = () => {
                     <RouteButton to="/terminal" text="Terminal" />
                     <RouteButton to="/playground" text="Playground" />
                     <RouteButton to="/" text="Home" />
+                    
                 </div>
                 <div className="col-span-1">
                     <RouteButton to="/agents" text="Agents" />
@@ -34,6 +35,10 @@ const DevPanel = () => {
                     <RouteButton to="/docs" text="Docs" />
                     <RouteButton to="/chat" text="Chat" />
                     <RouteButton to="/agents/new" text="New Agent" />
+                </div>
+                <div className="col-span-1">
+                    <RouteButton to="/Zero" text="Zero" />
+
                 </div>
                 <div className="col-span-1">
                 </div>
