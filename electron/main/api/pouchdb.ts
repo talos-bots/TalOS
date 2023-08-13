@@ -7,205 +7,6 @@ let chatsDB: PouchDB.Database<any>;
 let commandDB: PouchDB.Database<any>;
 let attachmentDB: PouchDB.Database<any>;
 
-export function getAllAgents() {
-    agentDB.allDocs({include_docs: true}).then((result) => {
-        return result.rows;
-    }).catch((err) => {
-        console.log(err);
-    });
-}
-
-export function getAgent(id: string) {
-    agentDB.get(id).then((result) => {
-        return result;
-    }).catch((err) => {
-        console.log(err);
-    });
-}
-
-export function addAgent(agent: any) {
-    agentDB.put(agent).then((result) => {
-        return result;
-    }).catch((err) => {
-        console.log(err);
-    });
-}
-
-export function removeAgent(id: string) {
-    agentDB.get(id).then((doc) => {
-        return agentDB.remove(doc);
-    }).catch((err) => {
-        console.log(err);
-    });
-}
-export function updateAgent(agent: any) {
-    agentDB.get(agent._id).then((doc) => {
-        // Merge existing fields with updated fields and retain _rev
-        let updatedDoc = {...doc, ...agent};
-        
-        agentDB.put(updatedDoc).then((result) => {
-            return result;
-        }).catch((err) => {
-            console.error('Error while updating document: ', err);
-        });
-    }).catch((err) => {
-        console.error('Error while getting document: ', err);
-    });
-}
-
-export function getAllChats() {
-    chatsDB.allDocs({include_docs: true}).then((result) => {
-        return result.rows;
-    }).catch((err) => {
-        console.log(err);
-    });
-}
-
-export function getChatsByAgent(agentId: string) {
-    chatsDB.find({
-        selector: {
-            agents: agentId
-        }
-    }).then((result) => {
-        return result.docs;
-    }).catch((err) => {
-        console.log(err);
-    });
-}
-
-export function getChat(id: string) {
-    chatsDB.get(id).then((result) => {
-        return result;
-    }).catch((err) => {
-        console.log(err);
-    });
-}
-
-export function addChat(chat: any) {
-    chatsDB.put(chat).then((result) => {
-        return result;
-    }).catch((err) => {
-        console.log(err);
-    });
-}
-
-export function removeChat(id: string) {
-    chatsDB.get(id).then((doc) => {
-        return chatsDB.remove(doc);
-    }).catch((err) => {
-        console.log(err);
-    });
-}
-
-export function updateChat(chat: any) {
-    chatsDB.get(chat._id).then((doc) => {
-        // Merge existing fields with updated fields and retain _rev
-        let updatedDoc = {...doc, ...chat};
-
-        chatsDB.put(updatedDoc).then((result) => {
-            return result;
-        }).catch((err) => {
-            console.error('Error while updating document: ', err);
-        });
-    }).catch((err) => {
-        console.error('Error while getting document: ', err);
-    });
-}
-
-export function getAllCommands() {
-    commandDB.allDocs({include_docs: true}).then((result) => {
-        return result.rows;
-    }).catch((err) => {
-        console.log(err);
-    });
-}
-
-export function getCommand(id: string) {
-    commandDB.get(id).then((result) => {
-        return result;
-    }).catch((err) => {
-        console.log(err);
-    });
-}
-
-export function addCommand(command: any) {
-    commandDB.put(command).then((result) => {
-        return result;
-    }).catch((err) => {
-        console.log(err);
-    });
-}
-
-export function removeCommand(id: string) {
-    commandDB.get(id).then((doc) => {
-        return commandDB.remove(doc);
-    }).catch((err) => {
-        console.log(err);
-    });
-}
-
-export function updateCommand(command: any) {
-    commandDB.get(command._id).then((doc) => {
-        // Merge existing fields with updated fields and retain _rev
-        let updatedDoc = {...doc, ...command};
-
-        commandDB.put(updatedDoc).then((result) => {
-            return result;
-        }).catch((err) => {
-            console.error('Error while updating document: ', err);
-        });
-    }).catch((err) => {
-        console.error('Error while getting document: ', err);
-    });
-}
-
-export function getAllAttachments() {
-    attachmentDB.allDocs({include_docs: true}).then((result) => {
-        return result.rows;
-    }).catch((err) => {
-        console.log(err);
-    });
-}
-
-export function getAttachment(id: string) {
-    attachmentDB.get(id).then((result) => {
-        return result;
-    }).catch((err) => {
-        console.log(err);
-    });
-}
-
-export function addAttachment(attachment: any) {
-    attachmentDB.put(attachment).then((result) => {
-        return result;
-    }).catch((err) => {
-        console.log(err);
-    });
-}
-
-export function removeAttachment(id: string) {
-    attachmentDB.get(id).then((doc) => {
-        return attachmentDB.remove(doc);
-    }).catch((err) => {
-        console.log(err);
-    });
-}
-
-export function updateAttachment(attachment: any) {
-    attachmentDB.get(attachment._id).then((doc) => {
-        // Merge existing fields with updated fields and retain _rev
-        let updatedDoc = {...doc, ...attachment};
-        
-        attachmentDB.put(updatedDoc).then((result) => {
-            return result;
-        }).catch((err) => {
-            console.error('Error while updating document: ', err);
-        });
-    }).catch((err) => {
-        console.error('Error while getting document: ', err);
-    });
-}
-
 export function PouchDBRoutes(){
     agentDB = new PouchDB('agents', {prefix: dataPath});
     chatsDB = new PouchDB('chats', {prefix: dataPath});
@@ -213,87 +14,219 @@ export function PouchDBRoutes(){
     attachmentDB = new PouchDB('attachments', {prefix: dataPath});
 
     ipcMain.on('get-agents', (event, arg) => {
-        event.sender.send('get-agents-reply', getAllAgents());
+        agentDB.allDocs({include_docs: true}).then((result) => {
+            event.sender.send('get-agents-reply', result.rows);
+        }).catch((err) => {
+            console.log(err);
+        });
     });
 
     ipcMain.on('get-agent', (event, arg) => {
-        event.sender.send('get-agent-reply', getAgent(arg));
+        agentDB.get(arg).then((result) => {
+            event.sender.send('get-agent-reply', result);
+        }).catch((err) => {
+            console.log(err);
+        });
     });
 
     ipcMain.on('add-agent', (event, arg) => {
-        event.sender.send('add-agent-reply', addAgent(arg));
+        agentDB.put(arg).then((result) => {
+            event.sender.send('add-agent-reply', result);
+        }).catch((err) => {
+            console.log(err);
+        });
     });
 
     ipcMain.on('update-agent', (event, arg) => {
-        event.sender.send('update-agent-reply', updateAgent(arg));
+        agentDB.get(arg._id).then((doc) => {
+            // Merge existing fields with updated fields and retain _rev
+            let updatedDoc = {...doc, ...arg};
+
+            agentDB.put(updatedDoc).then((result) => {
+                event.sender.send('update-agent-reply', result);
+            }).catch((err) => {
+                console.error('Error while updating document: ', err);
+            });
+        }).catch((err) => {
+            console.error('Error while getting document: ', err);
+        }); 
     });
 
     ipcMain.on('delete-agent', (event, arg) => {
-        event.sender.send('delete-agent-reply', removeAgent(arg));
+        agentDB.get(arg).then((doc) => {
+            agentDB.remove(doc).then((result) => {
+                event.sender.send('delete-agent-reply', result);
+            }).catch((err) => {
+                console.error('Error while deleting document: ', err);
+            });
+        }).catch((err) => {
+            console.error('Error while getting document: ', err);
+        }); 
     });
 
     ipcMain.on('get-chats', (event, arg) => {
-        event.sender.send('get-chats-reply', getAllChats());
+        chatsDB.allDocs({include_docs: true}).then((result) => {
+            event.sender.send('get-chats-reply', result.rows);
+        }).catch((err) => {
+            console.log(err);
+        });
     });
 
     ipcMain.on('get-chats-by-agent', (event, arg) => {
-        event.sender.send('get-chats-by-agent-reply', getChatsByAgent(arg));
+        chatsDB.find({
+            selector: {
+                agents: arg
+            }
+        }).then((result) => {
+            event.sender.send('get-chats-by-agent-reply', result.docs);
+        }).catch((err) => {
+            console.log(err);
+        });
     });
 
     ipcMain.on('get-chat', (event, arg) => {
-        event.sender.send('get-chat-reply', getChat(arg));
+        chatsDB.get(arg).then((result) => {
+            event.sender.send('get-chat-reply', result);
+        }).catch((err) => {
+            console.log(err);
+        });
     });
 
     ipcMain.on('add-chat', (event, arg) => {
-        event.sender.send('add-chat-reply', addChat(arg));
+        chatsDB.put(arg).then((result) => {
+            event.sender.send('add-chat-reply', result);
+        }).catch((err) => {
+            console.log(err);
+        });
     });
 
     ipcMain.on('update-chat', (event, arg) => {
-        event.sender.send('update-chat-reply', updateChat(arg));
+        chatsDB.get(arg._id).then((doc) => {
+            // Merge existing fields with updated fields and retain _rev
+            let updatedDoc = {...doc, ...arg};
+            
+            chatsDB.put(updatedDoc).then((result) => {
+                event.sender.send('update-chat-reply', result);
+            }).catch((err) => {
+                console.error('Error while updating document: ', err);
+            });
+        }).catch((err) => {
+            console.error('Error while getting document: ', err);
+        });
     });
 
     ipcMain.on('delete-chat', (event, arg) => {
-        event.sender.send('delete-chat-reply', removeChat(arg));
+        chatsDB.get(arg).then((doc) => {
+            chatsDB.remove(doc).then((result) => {
+                event.sender.send('delete-chat-reply', result);
+            }).catch((err) => {
+                console.error('Error while deleting document: ', err);
+            });
+        }).catch((err) => {
+            console.error('Error while getting document: ', err);
+        });
     });
 
     ipcMain.on('get-commands', (event, arg) => {
-        event.sender.send('get-commands-reply', getAllCommands());
+        commandDB.allDocs({include_docs: true}).then((result) => {
+            event.sender.send('get-commands-reply', result.rows);
+        }).catch((err) => {
+            console.log(err);
+        });
     });
 
     ipcMain.on('get-command', (event, arg) => {
-        event.sender.send('get-command-reply', getCommand(arg));
+        commandDB.get(arg).then((result) => {
+            event.sender.send('get-command-reply', result);
+        }).catch((err) => {
+            console.log(err);
+        });
     });
 
     ipcMain.on('add-command', (event, arg) => {
-        event.sender.send('add-command-reply', addCommand(arg));
+        commandDB.put(arg).then((result) => {
+            event.sender.send('add-command-reply', result);
+        }).catch((err) => {
+            console.log(err);
+        });
     });
 
     ipcMain.on('update-command', (event, arg) => {
-        event.sender.send('update-command-reply', updateCommand(arg));
+        commandDB.get(arg._id).then((doc) => {
+            // Merge existing fields with updated fields and retain _rev
+            let updatedDoc = {...doc, ...arg};
+
+            commandDB.put(updatedDoc).then((result) => {
+                event.sender.send('update-command-reply', result);
+            }).catch((err) => {
+                console.error('Error while updating document: ', err);
+            });
+        }).catch((err) => {
+            console.error('Error while getting document: ', err);
+        });
     });
 
     ipcMain.on('delete-command', (event, arg) => {
-        event.sender.send('delete-command-reply', removeCommand(arg));
+        commandDB.get(arg).then((doc) => {
+            commandDB.remove(doc).then((result) => {
+                event.sender.send('delete-command-reply', result);
+            }).catch((err) => {
+                console.error('Error while deleting document: ', err);
+            });
+        }).catch((err) => {
+            console.error('Error while getting document: ', err);
+        });
     });
 
     ipcMain.on('get-attachments', (event, arg) => {
-        event.sender.send('get-attachments-reply', getAllAttachments());
+        attachmentDB.allDocs({include_docs: true}).then((result) => {
+            event.sender.send('get-attachments-reply', result.rows);
+        }).catch((err) => {
+            console.log(err);
+        });
     });
 
     ipcMain.on('get-attachment', (event, arg) => {
-        event.sender.send('get-attachment-reply', getAttachment(arg));
+        attachmentDB.get(arg).then((result) => {
+            event.sender.send('get-attachment-reply', result);
+        }).catch((err) => {
+            console.log(err);
+        });
     });
 
     ipcMain.on('add-attachment', (event, arg) => {
-        event.sender.send('add-attachment-reply', addAttachment(arg));
+        attachmentDB.put(arg).then((result) => {
+            event.sender.send('add-attachment-reply', result);
+        }).catch((err) => {
+            console.log(err);
+        });
     });
 
     ipcMain.on('update-attachment', (event, arg) => {
-        event.sender.send('update-attachment-reply', updateAttachment(arg));
+        attachmentDB.get(arg._id).then((doc) => {
+            // Merge existing fields with updated fields and retain _rev
+            let updatedDoc = {...doc, ...arg};
+
+            attachmentDB.put(updatedDoc).then((result) => {
+                event.sender.send('update-attachment-reply', result);
+            }).catch((err) => {
+                console.error('Error while updating document: ', err);
+            });
+        }).catch((err) => {
+            console.error('Error while getting document: ', err);
+        });
     });
 
     ipcMain.on('delete-attachment', (event, arg) => {
-        event.sender.send('delete-attachment-reply', removeAttachment(arg));
+        attachmentDB.get(arg).then((doc) => {
+            attachmentDB.remove(doc).then((result) => {
+                event.sender.send('delete-attachment-reply', result);
+            }).catch((err) => {
+                console.error('Error while deleting document: ', err);
+            });
+        }).catch((err) => {
+            console.error('Error while getting document: ', err);
+        });
     });
 
 

@@ -25,12 +25,141 @@ const intents = {
   ],
   partials: [discord_js.Partials.Channel, discord_js.Partials.GuildMember, discord_js.Partials.User, discord_js.Partials.Reaction, discord_js.Partials.Message]
 };
+let disClient = new discord_js.Client(intents);
+const commands = new discord_js.Collection();
+let isReady = false;
+let token = "";
+let applicationID = "";
+async function setDiscordBotInfo(botName, base64Avatar) {
+  if (!isReady)
+    return;
+  if (!disClient.user) {
+    console.error("Discord client user is not initialized.");
+    return;
+  }
+  let newName;
+  let newNameDot;
+  try {
+    await disClient.user.setUsername(botName);
+    console.log(`My new username is ${botName}`);
+  } catch (error) {
+    console.error(`Failed to set username to ${botName}:`, error);
+    try {
+      newName = "_" + botName;
+      await disClient.user.setUsername(newName);
+      console.log(`My new username is ${newName}`);
+    } catch (error2) {
+      console.error(`Failed to set username to ${newName}:`, error2);
+      try {
+        newNameDot = "." + botName;
+        await disClient.user.setUsername(newNameDot);
+        console.log(`My new username is ${newNameDot}`);
+      } catch (error3) {
+        console.error(`Failed to set username to ${newNameDot}:`, error3);
+      }
+    }
+  }
+  try {
+    const buffer = Buffer.from(base64Avatar, "base64");
+    await disClient.user.setAvatar(buffer);
+    console.log("New avatar set!");
+  } catch (error) {
+    console.error("Failed to set avatar:", error);
+  }
+}
+async function getDiscordGuilds() {
+  if (!isReady)
+    return false;
+  const guilds = disClient.guilds.cache.map((guild) => {
+    const channels = guild.channels.cache.filter((channel) => channel.type === 0).map((channel) => ({
+      id: channel.id,
+      name: channel.name
+    }));
+    return {
+      id: guild.id,
+      name: guild.name,
+      channels
+    };
+  });
+  return guilds;
+}
+async function setStatus(message, type) {
+  if (!disClient.user)
+    return;
+  if (!isReady)
+    return;
+  let activityType;
+  switch (type) {
+    case "Playing":
+      activityType = discord_js.ActivityType.Playing;
+      break;
+    case "Watching":
+      activityType = discord_js.ActivityType.Watching;
+      break;
+    case "Listening":
+      activityType = discord_js.ActivityType.Listening;
+      break;
+    case "Streaming":
+      activityType = discord_js.ActivityType.Streaming;
+      break;
+    case "Competing":
+      activityType = discord_js.ActivityType.Competing;
+      break;
+    default:
+      activityType = discord_js.ActivityType.Playing;
+      break;
+  }
+  disClient.user.setActivity(`${message}`, { type: activityType });
+}
+async function setOnlineMode(type) {
+  if (!disClient.user)
+    return;
+  if (!isReady)
+    return;
+  disClient.user.setStatus(type);
+}
+async function sendMessage(channelID, message) {
+  if (!isReady)
+    return;
+  if (!disClient.user) {
+    console.error("Discord client user is not initialized.");
+    return;
+  }
+  const channel = await disClient.channels.fetch(channelID);
+  if (channel instanceof discord_js.TextChannel || channel instanceof discord_js.DMChannel || channel instanceof discord_js.NewsChannel) {
+    channel.send(message);
+  }
+}
+async function getWebhookForCharacter(charName, channelID) {
+  if (!isReady)
+    return;
+  const channel = disClient.channels.cache.get(channelID);
+  if (!(channel instanceof discord_js.TextChannel || channel instanceof discord_js.NewsChannel)) {
+    return void 0;
+  }
+  const webhooks = await channel.fetchWebhooks();
+  return webhooks.find((webhook) => webhook.name === charName);
+}
+async function sendMessageAsCharacter(charName, channelID, message) {
+  if (!isReady)
+    return;
+  const webhook = await getWebhookForCharacter(charName, channelID);
+  if (!webhook) {
+    throw new Error(`Webhook for character ${charName} not found.`);
+  }
+  await webhook.send(message);
+}
+async function getWebhooksForChannel(channelID) {
+  if (!isReady)
+    return [];
+  const channel = disClient.channels.cache.get(channelID);
+  if (!(channel instanceof discord_js.TextChannel || channel instanceof discord_js.NewsChannel)) {
+    return [];
+  }
+  const webhooks = await channel.fetchWebhooks();
+  return webhooks.map((webhook) => webhook.name);
+}
 function DiscordJSRoutes() {
-  let disClient = new discord_js.Client(intents);
-  const commands = new discord_js.Collection();
-  let isReady = false;
-  let token = "";
-  let applicationID = "";
   electron.ipcMain.on("discord-get-token", async (event) => {
     event.sender.send("discord-get-token-reply", token);
   });
@@ -56,20 +185,7 @@ function DiscordJSRoutes() {
     event.sender.send("discord-remove-all-commands-reply", commands);
   });
   electron.ipcMain.on("discord-get-guilds", async (event) => {
-    if (!isReady)
-      return false;
-    const guilds = disClient.guilds.cache.map((guild) => {
-      const channels = guild.channels.cache.filter((channel) => channel.type === 0).map((channel) => ({
-        id: channel.id,
-        name: channel.name
-      }));
-      return {
-        id: guild.id,
-        name: guild.name,
-        channels
-      };
-    });
-    event.sender.send("discord-get-guilds-reply", guilds);
+    event.sender.send("discord-get-guilds-reply", await getDiscordGuilds());
   });
   disClient.on("messageCreate", async (message) => {
     var _a;
@@ -186,119 +302,6 @@ function DiscordJSRoutes() {
     console.log(`Logged in as ${disClient.user.tag}!`);
     electron.ipcMain.emit("discord-ready", disClient);
   });
-  async function setDiscordBotInfo(botName, base64Avatar) {
-    if (!isReady)
-      return;
-    if (!disClient.user) {
-      console.error("Discord client user is not initialized.");
-      return;
-    }
-    let newName;
-    let newNameDot;
-    try {
-      await disClient.user.setUsername(botName);
-      console.log(`My new username is ${botName}`);
-    } catch (error) {
-      console.error(`Failed to set username to ${botName}:`, error);
-      try {
-        newName = "_" + botName;
-        await disClient.user.setUsername(newName);
-        console.log(`My new username is ${newName}`);
-      } catch (error2) {
-        console.error(`Failed to set username to ${newName}:`, error2);
-        try {
-          newNameDot = "." + botName;
-          await disClient.user.setUsername(newNameDot);
-          console.log(`My new username is ${newNameDot}`);
-        } catch (error3) {
-          console.error(`Failed to set username to ${newNameDot}:`, error3);
-        }
-      }
-    }
-    try {
-      const buffer = Buffer.from(base64Avatar, "base64");
-      await disClient.user.setAvatar(buffer);
-      console.log("New avatar set!");
-    } catch (error) {
-      console.error("Failed to set avatar:", error);
-    }
-  }
-  async function setStatus(message, type) {
-    if (!disClient.user)
-      return;
-    if (!isReady)
-      return;
-    let activityType;
-    switch (type) {
-      case "Playing":
-        activityType = discord_js.ActivityType.Playing;
-        break;
-      case "Watching":
-        activityType = discord_js.ActivityType.Watching;
-        break;
-      case "Listening":
-        activityType = discord_js.ActivityType.Listening;
-        break;
-      case "Streaming":
-        activityType = discord_js.ActivityType.Streaming;
-        break;
-      case "Competing":
-        activityType = discord_js.ActivityType.Competing;
-        break;
-      default:
-        activityType = discord_js.ActivityType.Playing;
-        break;
-    }
-    disClient.user.setActivity(`${message}`, { type: activityType });
-  }
-  async function setOnlineMode(type) {
-    if (!disClient.user)
-      return;
-    if (!isReady)
-      return;
-    disClient.user.setStatus(type);
-  }
-  async function sendMessage(channelID, message) {
-    if (!isReady)
-      return;
-    if (!disClient.user) {
-      console.error("Discord client user is not initialized.");
-      return;
-    }
-    const channel = await disClient.channels.fetch(channelID);
-    if (channel instanceof discord_js.TextChannel || channel instanceof discord_js.DMChannel || channel instanceof discord_js.NewsChannel) {
-      channel.send(message);
-    }
-  }
-  async function getWebhookForCharacter(charName, channelID) {
-    if (!isReady)
-      return;
-    const channel = disClient.channels.cache.get(channelID);
-    if (!(channel instanceof discord_js.TextChannel || channel instanceof discord_js.NewsChannel)) {
-      return void 0;
-    }
-    const webhooks = await channel.fetchWebhooks();
-    return webhooks.find((webhook) => webhook.name === charName);
-  }
-  async function sendMessageAsCharacter(charName, channelID, message) {
-    if (!isReady)
-      return;
-    const webhook = await getWebhookForCharacter(charName, channelID);
-    if (!webhook) {
-      throw new Error(`Webhook for character ${charName} not found.`);
-    }
-    await webhook.send(message);
-  }
-  async function getWebhooksForChannel(channelID) {
-    if (!isReady)
-      return [];
-    const channel = disClient.channels.cache.get(channelID);
-    if (!(channel instanceof discord_js.TextChannel || channel instanceof discord_js.NewsChannel)) {
-      return [];
-    }
-    const webhooks = await channel.fetchWebhooks();
-    return webhooks.map((webhook) => webhook.name);
-  }
   electron.ipcMain.handle("discord-login", async (event, rawToken, appId) => {
     await disClient.login(rawToken);
     token = rawToken;
@@ -422,11 +425,15 @@ function DiscordJSRoutes() {
     event.sender.send("discord-bot-status-reply", isReady);
   });
 }
+let agentDB;
+let chatsDB;
+let commandDB;
+let attachmentDB;
 function PouchDBRoutes() {
-  let agentDB = new PouchDB("agents", { prefix: dataPath });
-  let chatsDB = new PouchDB("chats", { prefix: dataPath });
-  let commandDB = new PouchDB("commands", { prefix: dataPath });
-  let attachmentDB = new PouchDB("attachments", { prefix: dataPath });
+  agentDB = new PouchDB("agents", { prefix: dataPath });
+  chatsDB = new PouchDB("chats", { prefix: dataPath });
+  commandDB = new PouchDB("commands", { prefix: dataPath });
+  attachmentDB = new PouchDB("attachments", { prefix: dataPath });
   electron.ipcMain.on("get-agents", (event, arg) => {
     agentDB.allDocs({ include_docs: true }).then((result) => {
       event.sender.send("get-agents-reply", result.rows);
@@ -1068,6 +1075,40 @@ async function import_tavern_character(img_url) {
     throw error;
   }
 }
+const store$1 = new Store();
+let ActiveAgents = [];
+const retrieveAgents = () => {
+  return store$1.get("ids", []);
+};
+const addAgent = (newId) => {
+  const existingIds = retrieveAgents();
+  if (!existingIds.includes(newId)) {
+    existingIds.push(newId);
+    store$1.set("ids", existingIds);
+  }
+};
+const removeAgent = (idToRemove) => {
+  const existingIds = retrieveAgents();
+  const updatedIds = existingIds.filter((id) => id !== idToRemove);
+  store$1.set("ids", updatedIds);
+};
+function agentController() {
+  ActiveAgents = retrieveAgents();
+  electron.ipcMain.on("add-agent", (event, arg) => {
+    addAgent(arg);
+    ActiveAgents = retrieveAgents();
+    event.reply("add-agent-reply", ActiveAgents);
+  });
+  electron.ipcMain.on("remove-agent", (event, arg) => {
+    removeAgent(arg);
+    ActiveAgents = retrieveAgents();
+    event.reply("remove-agent-reply", ActiveAgents);
+  });
+  electron.ipcMain.on("get-agents", (event, arg) => {
+    ActiveAgents = retrieveAgents();
+    event.reply("get-agents-reply", ActiveAgents);
+  });
+}
 process.env.DIST_ELECTRON = node_path.join(__dirname, "../");
 process.env.DIST = node_path.join(process.env.DIST_ELECTRON, "../dist");
 process.env.VITE_PUBLIC = process.env.VITE_DEV_SERVER_URL ? node_path.join(process.env.DIST_ELECTRON, "../public") : process.env.DIST;
@@ -1088,7 +1129,7 @@ const dataPath = path.join(electron.app.getPath("userData"), "data/");
 const store = new Store();
 async function createWindow() {
   win = new electron.BrowserWindow({
-    title: "Main window",
+    title: "ConstructOS - AI Agent Manager",
     icon: node_path.join(process.env.VITE_PUBLIC, "favicon.ico"),
     webPreferences: {
       preload,
@@ -1110,9 +1151,6 @@ async function createWindow() {
   } else {
     win.loadFile(indexHtml);
   }
-  win.webContents.on("did-finish-load", () => {
-    win == null ? void 0 : win.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
-  });
   win.webContents.setWindowOpenHandler(({ url: url2 }) => {
     if (url2.startsWith("https:"))
       electron.shell.openExternal(url2);
@@ -1124,6 +1162,7 @@ async function createWindow() {
   LanguageModelAPI();
   SDRoutes();
   BonusFeaturesRoutes();
+  agentController();
 }
 electron.app.whenReady().then(createWindow);
 electron.app.on("window-all-closed", () => {
