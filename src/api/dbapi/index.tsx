@@ -9,21 +9,20 @@ export async function getAgents(): Promise<Agent[]> {
 
         ipcRenderer.once("get-agents-reply", (event: IpcRendererEvent, data: any[]) => {
             if (data) {
-                // map the array of documents to an array of UITheme instances
                 const agents = data.map((doc: any) => {
                     return new Agent(
-                        doc.doc._id,
-                        doc.doc.name,
-                        doc.doc.nickname,
-                        doc.doc.avatar,
-                        doc.doc.commands,
-                        doc.doc.visualDescription,
-                        doc.doc.personality,
-                        doc.doc.background,
-                        doc.doc.relationships,
-                        doc.doc.interests,
-                        doc.doc.greetings,
-                        doc.doc.farewells,
+                        doc._id,
+                        doc.name,
+                        doc.nickname,
+                        doc.avatar,
+                        doc.commands,
+                        doc.visualDescription,
+                        doc.personality,
+                        doc.background,
+                        doc.relationships,
+                        doc.interests,
+                        doc.greetings,
+                        doc.farewells,
                     );
                 });
                 resolve(agents);
@@ -37,7 +36,6 @@ export async function getAgents(): Promise<Agent[]> {
 export async function getAgent(id: string): Promise<Agent> {
     return new Promise((resolve, reject) => {
         ipcRenderer.send("get-agent", id);
-
         ipcRenderer.once("get-agent-reply", (event: IpcRendererEvent, data: any) => {
             if (data) {
                 const agent = new Agent(
@@ -270,4 +268,8 @@ export async function getStorageValue(key: string): Promise<string> {
 
 export async function setStorageValue(key: string, value: string) {
     ipcRenderer.send('set-data', key, value);
+}
+
+export async function clearDBs(){
+    ipcRenderer.send('clear-data');
 }

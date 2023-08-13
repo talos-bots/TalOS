@@ -1,5 +1,4 @@
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
-import { ConstructOS } from './components/constructOS';
 import { DiscordListeners } from './listeners/discord-listeners';
 import AgentsPage from './pages/agents';
 import ActionsPage from './pages/actions';
@@ -49,7 +48,6 @@ function App() {
         <Route path='/chat' element={<ChatPage/>} />
         <Route path='/docs' element={<DocsPage/>} />
         <Route path='/settings' element={<SettingsPage/>} />
-        <Route path='/terminal' element={<ConstructOS/>} />
         <Route path='/zero' element={<ZeroPage/>} />
       </Routes>
       </div>

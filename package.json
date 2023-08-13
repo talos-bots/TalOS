@@ -1,5 +1,5 @@
 {
-  "name": "electron-llm-react",
+  "name": "construct-os",
   "version": "0.0.1",
   "main": "dist-electron/main/index.js",
   "description": "Electron LLM React",
