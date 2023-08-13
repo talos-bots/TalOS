@@ -1,0 +1,3 @@
+langchain
+quart
+duckduckgo-search
