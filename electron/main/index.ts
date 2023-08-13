@@ -10,6 +10,7 @@ import { FsAPIRoutes } from './api/fsapi';
 import { LanguageModelAPI } from './api/llm';
 import { SDRoutes } from './api/sd';
 import { BonusFeaturesRoutes } from './api/bonus-features';
+import fs from 'fs';
 
 // The built directory structure
 //
@@ -150,3 +151,16 @@ ipcMain.on('set-data', (event, arg) => {
 ipcMain.on('get-data', (event, arg) => {
   event.sender.send('get-data-reply', store.get(arg));
 })
+
+// Get the quart server port from the backend config file
+ipcMain.handle("get-server-port", (event) => {
+  try {
+    const configPath = path.join(__dirname, "../../backend", "config.json");
+    const rawData = fs.readFileSync(configPath, "utf8");
+    const config = JSON.parse(rawData);
+    return config.port;
+  } catch (error) {
+    console.error("Failed to get server port:", error);
+    throw error; // This will send the error back to the renderer
+  }
+});

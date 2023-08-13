@@ -1,38 +1,87 @@
-from quart import Quart, request
-from langchain.llms import TextGen
+from quart import Quart, jsonify, request
+from langchain.agents import (
+    Tool,
+    AgentExecutor,
+    LLMSingleActionAgent,
+    AgentOutputParser,
+)
+from langchain.prompts import BaseChatPromptTemplate
+from langchain import SerpAPIWrapper, LLMChain
+from langchain.schema import AgentAction, AgentFinish, HumanMessage
+from langchain.llms import KoboldApiLLM, TextGen
 from langchain.tools import DuckDuckGoSearchRun
+import json
+import requests
 
-app = Quart(__name__)
-llm = TextGen(model_url="https://night-traveler-part-trash.trycloudflare.com")
 search = DuckDuckGoSearchRun()
 
-@app.route('/zero-message', methods=['POST'])
+app = Quart(__name__)
+
+
+@app.route("/zero-message", methods=["POST"])
 async def zero_message():
     data = await request.get_json()
-    print(data['message'])
-    # data = await request.get_json()
-    # message = data.get('message')
-    # print(f'Received message: {message}')
+    print(data["message"])
+    return data
 
-    # # Use DuckDuckGo to search for the message
-    # search_result = search(message)
 
-    # # Generate the prompt for the LLM
-    # prompt_template = f"""Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
+@app.route("/message", methods=["POST"])
+async def message():
+    data = await request.get_json()
+    print(data["message"])
+    return data
 
-    # ### Instruction:
-    # {message}
 
-    # ### Input:
-    # {search_result}
+@app.route("/get_response", methods=["POST"])
+async def get_response():
+    data = await request.json
+    question = data["message"]
 
-    # ### Response:
-    # """
+    search_result = search(question)
 
-    # # Use the LLM to generate a response
-    # response = llm(prompt_template)
+    print(search_result)
 
-    return None
+    prompt_template = f"""Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
+    
+### Instruction:
+{question}
 
-if __name__ == '__main__':
-    app.run(port=5000)
+### Input:
+{search_result}
+
+### Response:
+"""
+
+
+    llm = TextGen(model_url="http://127.0.0.1:5000", max_length=2000)
+
+    response = llm(prompt_template)
+    print(f"\n\n\nResponse: {response}")
+    print(response)
+
+    return jsonify({"response": response})
+
+
+def is_port_in_use(port):
+    try:
+        response = requests.get(f"http://127.0.0.1:{port}")
+        return True
+    except requests.ConnectionError:
+        return False
+
+
+port = 5000
+while is_port_in_use(port):
+    port += 1
+
+print(f"Available port: {port}")
+
+if __name__ == "__main__":
+    with open("config.json", "r+") as f:
+        config = json.load(f)
+        config["port"] = port
+        f.seek(0)
+        json.dump(config, f)
+        f.truncate()
+
+    app.run(port=port)
