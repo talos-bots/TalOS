@@ -3,7 +3,7 @@ import { Agent } from "@/classes/Agent";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { RiQuestionMark } from "react-icons/ri";
-import './AgentCrud.module.css'
+import './AgentCrud.scss'
 const AgentManagement = () => {
     const { id } = useParams<{ id: string }>();
     const [agent, setAgent] = useState<Agent>(new Agent());
@@ -91,14 +91,14 @@ const AgentManagement = () => {
     };
 
     return (
-        <div className="w-full h-full grid grid-rows-[auto,1fr] themed-root gap-4">
+        <div className="w-full h-calc(100vh - 70px) grid grid-rows-[auto,1fr] themed-root gap-4">
             <h2 className="text-2xl font-bold text-theme-text text-shadow-xl">Agent Editor</h2>
-            <div className="grid grid-cols-5 gap-4">
+            <div className="grid grid-cols-5 gap-4 text-left">
                 <div className="col-span-1 items-center gap-4">
                     <div className="w-full flex flex-col items-center gap-4">
                         <div className="flex flex-col">
                             <label htmlFor="image-upload">
-                                {agentImage === '' ? <RiQuestionMark id="agent-image-default"/> : <img src={agentImage} alt={agentName} id="agent-image"/>}
+                                {agentImage === '' ? <RiQuestionMark id="agent-image-default"/> : <img src={agentImage} alt={agentName} className="agent-image"/>}
                             </label>
                             <input 
                                 type="file" 
@@ -133,7 +133,7 @@ const AgentManagement = () => {
                         </div>
                     </div>
                 </div>
-                <div className="col-span-4 flex flex-col gap-4">
+                <div className="col-span-2 flex flex-col gap-4">
                     <div className="flex flex-col">
                         <label htmlFor="agent-personality">Personality</label>
                         <textarea
@@ -170,6 +170,8 @@ const AgentManagement = () => {
                             onChange={(event) => setAgentRelationships(event.target.value.split('\n'))}
                         />
                     </div>
+                </div>
+                <div className="col-span-2 flex flex-col gap-4">
                     <div className="flex flex-col">
                         <label htmlFor="agent-interests">Interests</label>
                         <textarea

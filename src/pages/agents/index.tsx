@@ -5,7 +5,7 @@ import { FiPlus } from "react-icons/fi";
 import { Agent } from "@/classes/Agent";
 import { getAgents } from "@/api/dbapi";
 import AgentBox from "@/components/agent-box";
-import './agent-page.module.scss';
+import './agent-page.scss';
 
 const AgentsPage = () => {
     const [characters, setCharacters] = useState<Agent[]>([]);
@@ -21,10 +21,6 @@ const AgentsPage = () => {
         );
     }) : [];
 
-    // Get the characters for the current page
-    const getCurrentPageCharacters = () => {
-        return filteredCharacters;
-    };
 
     const returnToMenu = () => {
         console.log('returning to menu');
@@ -69,7 +65,7 @@ const AgentsPage = () => {
                     }
                 </div>
                 <div className="flex flex-col">
-                    {Array.isArray(characters) && getCurrentPageCharacters().map((character, index) => (
+                    {Array.isArray(filteredCharacters) && filteredCharacters.map((character, index) => (
                         <AgentBox key={index} character={character} />
                     ))}
                 </div>
