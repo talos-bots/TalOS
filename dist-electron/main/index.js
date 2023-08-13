@@ -1182,6 +1182,10 @@ const removeAgent = (idToRemove) => {
   const updatedIds = existingIds.filter((id) => id !== idToRemove);
   store$1.set("ids", updatedIds);
 };
+const isAgentActive = (id) => {
+  const existingIds = retrieveAgents();
+  return existingIds.includes(id);
+};
 function agentController() {
   ActiveAgents = retrieveAgents();
   electron.ipcMain.on("add-agent", (event, arg) => {
@@ -1197,6 +1201,10 @@ function agentController() {
   electron.ipcMain.on("get-agents", (event, arg) => {
     ActiveAgents = retrieveAgents();
     event.reply("get-agents-reply", ActiveAgents);
+  });
+  electron.ipcMain.on("is-agent-active", (event, arg) => {
+    const isActive = isAgentActive(arg);
+    event.reply("is-agent-active-reply", isActive);
   });
 }
 process.env.DIST_ELECTRON = node_path.join(__dirname, "../");
