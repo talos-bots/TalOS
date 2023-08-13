@@ -2,7 +2,6 @@ import { app, BrowserWindow, shell, ipcMain } from 'electron'
 import { release } from 'node:os'
 import { join } from 'node:path'
 import path from 'path';
-import { update } from './update'
 import { DiscordJSRoutes } from './api/discord'
 import { PouchDBRoutes } from './api/pouchdb'
 import Store from 'electron-store';
@@ -10,6 +9,7 @@ import { FsAPIRoutes } from './api/fsapi';
 import { LanguageModelAPI } from './api/llm';
 import { SDRoutes } from './api/sd';
 import { BonusFeaturesRoutes } from './api/bonus-features';
+import agentController from './controllers/AgentController';
 
 // The built directory structure
 //
@@ -95,6 +95,7 @@ async function createWindow() {
   LanguageModelAPI();
   SDRoutes();
   BonusFeaturesRoutes();
+  agentController();
   // update(win)
 }
 
