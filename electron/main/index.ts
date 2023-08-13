@@ -52,7 +52,7 @@ export const dataPath = path.join(app.getPath('userData'), 'data/');
 export const store = new Store();
 async function createWindow() {
   win = new BrowserWindow({
-    title: 'Main window',
+    title: 'ConstructOS - AI Agent Manager',
     icon: join(process.env.VITE_PUBLIC, 'favicon.ico'),
     webPreferences: {
       preload,
