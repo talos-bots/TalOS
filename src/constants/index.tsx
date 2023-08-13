@@ -19,4 +19,23 @@ defaultGreen.themeBorderType = 'solid';
 defaultGreen.themeTextHover = 'rgb(255, 255, 255)';
 defaultGreen.themeBackground = "url('./backgrounds/greendefault.svg')";
 
+const defaultBlue = new UITheme();
+defaultBlue.name = 'Default Blue';
+defaultBlue._id = 'DefaultBlue';
+defaultBlue.themeRoot = 'rgba(0, 0, 0, 0.5)';
+defaultBlue.themeItalic = 'rgba(245, 245, 245, 1)';
+defaultBlue.themeText = 'rgba(255, 253, 253, 1)';
+defaultBlue.themeBox = 'rgba(14, 34, 19, 0.658)';
+defaultBlue.themeAccent = 'rgba(12, 78, 150, 0.295)';
+defaultBlue.themeBorder = 'rgba(0, 0, 0, 1)';
+defaultBlue.themeHoverPos = 'var(--theme-accent)';
+defaultBlue.themeHoverNeg = 'rgba(196, 0, 0, .75)';
+defaultBlue.themeBlur = '15px';
+defaultBlue.themeBorderWidth = '2px';
+defaultBlue.themeBorderRadius = '8px';
+defaultBlue.themeFont = "'DejaVuSansBold', sans-serif";
+defaultBlue.themeBorderType = 'solid';
+defaultBlue.themeTextHover = 'rgb(255, 255, 255)';
+defaultBlue.themeBackground = "url('./backgrounds/bluedefault.svg";
+
 export const defaultThemes: UITheme[] = [defaultGreen];
