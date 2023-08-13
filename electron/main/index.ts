@@ -145,3 +145,15 @@ ipcMain.on('set-data', (event, arg) => {
 ipcMain.on('get-data', (event, arg) => {
   event.sender.send('get-data-reply', store.get(arg));
 })
+
+ipcMain.handle('get-server-port', (event) => {
+  try {
+    const configPath = path.join(__dirname, "backend", "config.json");
+    const rawData = fs.readFileSync(configPath, 'utf8');
+    const config = JSON.parse(rawData);
+    return config.port;
+  } catch (error) {
+    console.error("Failed to get server port:", error);
+    throw error;  // This will send the error back to the renderer
+  }
+});

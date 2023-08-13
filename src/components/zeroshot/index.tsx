@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { ipcRenderer } from "electron";
 import { sendZeroMessage } from "../../api/pyapi";
 
 const ZeroShot = () => {
