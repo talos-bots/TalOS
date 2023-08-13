@@ -129,4 +129,4 @@ dist-electron/preload/index.js
 dist-electron/main/index.js
 dist-electron/main/index.js.map
 
-backend/venv
+venv

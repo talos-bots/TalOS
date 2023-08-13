@@ -1300,7 +1300,7 @@ electron.ipcMain.on("get-data", (event, arg) => {
 });
 electron.ipcMain.handle("get-server-port", (event) => {
   try {
-    const configPath = path.join(__dirname, "../../backend", "config.json");
+    const configPath = path.join(__dirname, "backend", "config.json");
     const rawData = fs.readFileSync(configPath, "utf8");
     const config = JSON.parse(rawData);
     return config.port;

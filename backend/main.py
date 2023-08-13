@@ -12,6 +12,7 @@ from langchain.llms import KoboldApiLLM, TextGen
 from langchain.tools import DuckDuckGoSearchRun
 import json
 import requests
+import os
 
 search = DuckDuckGoSearchRun()
 
@@ -77,11 +78,18 @@ while is_port_in_use(port):
 print(f"Available port: {port}")
 
 if __name__ == "__main__":
-    with open("config.json", "r+") as f:
-        config = json.load(f)
-        config["port"] = port
-        f.seek(0)
-        json.dump(config, f)
-        f.truncate()
+    try:
+        # check if config.json exists
+        if not os.path.exists("config.json"):
+            with open("config.json", "w") as f:
+                pass
+
+    except:
+        with open("config.json", "r+") as f:
+            config = json.load(f)
+            config["port"] = port
+            f.seek(0)
+            json.dump(config, f)
+            f.truncate()
 
     app.run(port=port)
