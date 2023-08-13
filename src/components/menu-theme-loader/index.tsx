@@ -1,29 +1,38 @@
+import { getStorageValue } from "@/api/dbapi";
 import UITheme from "@/classes/UITheme";
+import { defaultThemes } from "@/constants";
 import { useState, useEffect } from "react";
 
 interface Props {
     needsReload: boolean;
     setNeedsReload: (reload: boolean) => void;
-    setMenuTheme: (theme: any) => void;
 }
 
 const MenuThemeLoader = (props: Props) => {
-    const theme = props.settings.uiTheme;
     const [uiTheme, setUiTheme] = useState<UITheme>();
     const [themeLoaded, setThemeLoaded] = useState(false);
 
     useEffect(() => {
-        const getThemes = async () => {
+        let savedTheme: string | undefined;
+        const getSavedTheme = async () => {
             try {
-                const loadedTheme = await getUITheme(theme);
-                setUiTheme(loadedTheme);
-                setThemeLoaded(true);
-            } catch (error) {
-                console.error(error);
-            }              
+                savedTheme = await getStorageValue('uiTheme');
+            }catch(err) {
+                console.log(err);
+            }
         }
+        const getThemes = async () => {
+            let loadedTheme: UITheme = defaultThemes[0];
+            if(savedTheme !== undefined) {
+                loadedTheme = defaultThemes.find((theme) => theme._id === savedTheme) || defaultThemes[0];
+            }
+            console.log(loadedTheme);
+            setUiTheme(loadedTheme);
+            setThemeLoaded(true);            
+        }
+        getSavedTheme();
         getThemes();
-    }, [props.settings.uiTheme !== null, props.settings.uiTheme !== undefined]);
+    }, []);    
 
     useEffect(() => {
         if(uiTheme !== undefined) {
@@ -66,7 +75,12 @@ const MenuThemeLoader = (props: Props) => {
             if(uiTheme.themeBorderType.length > 0) {
                 setStyle(kebabCase('themeBorderType'), uiTheme.themeBorderType);
             }
-            props.setMenuTheme(props.settings.menuTheme);
+            if(uiTheme.themeBackground.length > 0) {
+                setStyle('background-image', uiTheme.themeBackground);
+            }
+            if(uiTheme.themeAccent.length > 0) {
+                setStyle(kebabCase('themeAccent'), uiTheme.themeAccent);
+            }
             props.setNeedsReload(false);
         }
     }, [themeLoaded === true]);

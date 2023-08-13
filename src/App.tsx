@@ -9,17 +9,11 @@ import NavBar from './components/shared/NavBar';
 import SettingsPage from './pages/settings';
 import AgentManagement from './components/agent-crud';
 import ZeroPage from './pages/zero';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import MenuThemeLoader from './components/menu-theme-loader';
 
 function App() {
-  const greenTheme = {
-    bgImage: "/backgrounds/bluedefault.svg",
-    bgColor: "lime-200",
-    borderColor: "lime-200",
-  };
-
-  const selectedTheme = greenTheme;
-  
+  const [needsReload, setNeedsReload] = useState(false);
   const returnToMenu = () => {
     history.back();
   }
@@ -36,6 +30,7 @@ function App() {
   return (
     <div id='App'>
     <Router>
+      <MenuThemeLoader needsReload setNeedsReload={setNeedsReload}/>
       <DiscordListeners/>
       <NavBar />
       <div className='main-content'>
