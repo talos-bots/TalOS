@@ -91,7 +91,7 @@ const AgentManagement = () => {
     };
 
     return (
-        <div className="w-full h-calc(100vh - 70px) grid grid-rows-[auto,1fr] themed-root gap-4">
+        <div className="w-full h-[calc(100vh-70px)] grid grid-rows-[auto,1fr] themed-root gap-4">
             <h2 className="text-2xl font-bold text-theme-text text-shadow-xl">Agent Editor</h2>
             <div className="grid grid-cols-5 gap-4 text-left">
                 <div className="col-span-1 items-center gap-4">
