@@ -1,6 +1,8 @@
 import { ipcMain } from 'electron';
 import Store from 'electron-store';
-const store = new Store();
+const store = new Store({
+    name: 'constructData',
+});
 type ConstructID = string;
 
 export let ActiveConstructs: ConstructID[] = [];

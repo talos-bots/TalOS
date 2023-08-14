@@ -2,6 +2,7 @@ import { Construct } from "@/classes/Construct";
 import { Attachment } from "@/classes/Attachment";
 import { Chat } from "@/classes/Chat";
 import { IpcRendererEvent, ipcRenderer } from "electron";
+import { Instruct } from "@/classes/Instruct";
 
 export async function getConstructs(): Promise<Construct[]> {
     return new Promise((resolve, reject) => {
@@ -250,6 +251,56 @@ export async function updateChat(chat: Chat) {
 
 export async function deleteChat(id: string) {
     ipcRenderer.send('delete-chat', id);
+}
+
+export async function getInstructs(): Promise<Instruct[]> {
+    return new Promise((resolve, reject) => {
+        ipcRenderer.send("get-instructs");
+
+        ipcRenderer.once("get-instructs-reply", (event: IpcRendererEvent, data: any[]) => {
+            if (data) {
+                const instructs = data.map((doc: any) => {
+                    return new Instruct(
+                        doc.doc._id,
+                        doc.doc.name,
+                    );
+                });
+                resolve(instructs);
+            } else {
+                reject(new Error("No data received from 'instructs' event."));
+            }
+        });
+    });
+}
+
+export async function getInstruct(id: string): Promise<Instruct> {
+    return new Promise((resolve, reject) => {
+        ipcRenderer.send("get-instruct", id);
+
+        ipcRenderer.once("get-instruct-reply", (event: IpcRendererEvent, data: any) => {
+            if (data) {
+                const instruct = new Instruct(
+                    data._id,
+                    data.name,
+                );
+                resolve(instruct);
+            } else {
+                reject(new Error("No data received from 'instruct' event."));
+            }
+        });
+    });
+}
+
+export async function saveNewInstruct(instruct: Instruct) {
+    ipcRenderer.send('add-instruct', instruct);
+}
+
+export async function updateInstruct(instruct: Instruct) {
+    ipcRenderer.send('update-instruct', instruct);
+}
+
+export async function deleteInstruct(id: string) {
+    ipcRenderer.send('delete-instruct', id);
 }
 
 export async function getStorageValue(key: string): Promise<string> {

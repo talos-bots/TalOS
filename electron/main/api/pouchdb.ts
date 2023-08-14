@@ -6,6 +6,7 @@ let constructDB: PouchDB.Database<any>;
 let chatsDB: PouchDB.Database<any>;
 let commandDB: PouchDB.Database<any>;
 let attachmentDB: PouchDB.Database<any>;
+let instructDB: PouchDB.Database<any>;
 
 export async function getAllConstructs() {
     return constructDB.allDocs({include_docs: true})
@@ -210,11 +211,59 @@ export async function updateAttachment(attachment: any) {
     });
 }
 
+export async function getAllInstructs() {
+    return instructDB.allDocs({include_docs: true}).then((result) => {
+        return result.rows;
+    }).catch((err) => {
+        console.log(err);
+    });
+}
+
+export async function getInstruct(id: string) {
+    return instructDB.get(id).then((result) => {
+        return result;
+    }).catch((err) => {
+        console.log(err);
+    });
+}
+
+export async function addInstruct(instruct: any) {
+    return instructDB.put(instruct).then((result) => {
+        return result;
+    }).catch((err) => {
+        console.log(err);
+    });
+}
+
+export async function removeInstruct(id: string) {
+    return instructDB.get(id).then((doc) => {
+        return instructDB.remove(doc);
+    }).catch((err) => {
+        console.log(err);
+    });
+}
+
+export async function updateInstruct(instruct: any) {
+    return instructDB.get(instruct._id).then((doc) => {
+        // Merge existing fields with updated fields and retain _rev
+        let updatedDoc = {...doc, ...instruct};
+
+        instructDB.put(updatedDoc).then((result) => {
+            return result;
+        }).catch((err) => {
+            console.error('Error while updating document: ', err);
+        });
+    }).catch((err) => {
+        console.error('Error while getting document: ', err);
+    });
+}
+
 export function PouchDBRoutes(){
     constructDB = new PouchDB('constructs', {prefix: dataPath});
     chatsDB = new PouchDB('chats', {prefix: dataPath});
     commandDB = new PouchDB('commands', {prefix: dataPath});
     attachmentDB = new PouchDB('attachments', {prefix: dataPath});
+    instructDB = new PouchDB('instructs', {prefix: dataPath});
 
     ipcMain.on('get-constructs', (event, arg) => {
         getAllConstructs().then((result) => {
@@ -342,6 +391,35 @@ export function PouchDBRoutes(){
         });
     });
 
+    ipcMain.on('get-instructs', (event, arg) => {
+        getAllInstructs().then((result) => {
+            event.sender.send('get-instructs-reply', result);
+        });
+    });
+
+    ipcMain.on('get-instruct', (event, arg) => {
+        getInstruct(arg).then((result) => {
+            event.sender.send('get-instruct-reply', result);
+        });
+    });
+
+    ipcMain.on('add-instruct', (event, arg) => {
+        addInstruct(arg).then((result) => {
+            event.sender.send('add-instruct-reply', result);
+        });
+    });
+
+    ipcMain.on('update-instruct', (event, arg) => {
+        updateInstruct(arg).then((result) => {
+            event.sender.send('update-instruct-reply', result);
+        });
+    });
+
+    ipcMain.on('delete-instruct', (event, arg) => {
+        removeInstruct(arg).then((result) => {
+            event.sender.send('delete-instruct-reply', result);
+        });
+    });
 
     ipcMain.on('clear-data', (event, arg) => {
         constructDB.destroy();
@@ -356,6 +434,7 @@ export function PouchDBRoutes(){
         chatsDB = new PouchDB('chats', {prefix: dataPath});
         commandDB = new PouchDB('commands', {prefix: dataPath});
         attachmentDB = new PouchDB('attachments', {prefix: dataPath});
+        instructDB = new PouchDB('instructs', {prefix: dataPath});
     }
 
     return {
@@ -363,5 +442,6 @@ export function PouchDBRoutes(){
         chatsDB,
         commandDB,
         attachmentDB,
+        instructDB
     }
 };

@@ -429,6 +429,7 @@ let constructDB;
 let chatsDB;
 let commandDB;
 let attachmentDB;
+let instructDB;
 async function getAllConstructs() {
   return constructDB.allDocs({ include_docs: true }).then((result) => {
     return result.rows;
@@ -601,11 +602,52 @@ async function updateAttachment(attachment) {
     console.error("Error while getting document: ", err);
   });
 }
+async function getAllInstructs() {
+  return instructDB.allDocs({ include_docs: true }).then((result) => {
+    return result.rows;
+  }).catch((err) => {
+    console.log(err);
+  });
+}
+async function getInstruct(id) {
+  return instructDB.get(id).then((result) => {
+    return result;
+  }).catch((err) => {
+    console.log(err);
+  });
+}
+async function addInstruct(instruct) {
+  return instructDB.put(instruct).then((result) => {
+    return result;
+  }).catch((err) => {
+    console.log(err);
+  });
+}
+async function removeInstruct(id) {
+  return instructDB.get(id).then((doc) => {
+    return instructDB.remove(doc);
+  }).catch((err) => {
+    console.log(err);
+  });
+}
+async function updateInstruct(instruct) {
+  return instructDB.get(instruct._id).then((doc) => {
+    let updatedDoc = { ...doc, ...instruct };
+    instructDB.put(updatedDoc).then((result) => {
+      return result;
+    }).catch((err) => {
+      console.error("Error while updating document: ", err);
+    });
+  }).catch((err) => {
+    console.error("Error while getting document: ", err);
+  });
+}
 function PouchDBRoutes() {
   constructDB = new PouchDB("constructs", { prefix: dataPath });
   chatsDB = new PouchDB("chats", { prefix: dataPath });
   commandDB = new PouchDB("commands", { prefix: dataPath });
   attachmentDB = new PouchDB("attachments", { prefix: dataPath });
+  instructDB = new PouchDB("instructs", { prefix: dataPath });
   electron.ipcMain.on("get-constructs", (event, arg) => {
     getAllConstructs().then((result) => {
       event.sender.send("get-constructs-reply", result);
@@ -711,6 +753,31 @@ function PouchDBRoutes() {
       event.sender.send("delete-attachment-reply", result);
     });
   });
+  electron.ipcMain.on("get-instructs", (event, arg) => {
+    getAllInstructs().then((result) => {
+      event.sender.send("get-instructs-reply", result);
+    });
+  });
+  electron.ipcMain.on("get-instruct", (event, arg) => {
+    getInstruct(arg).then((result) => {
+      event.sender.send("get-instruct-reply", result);
+    });
+  });
+  electron.ipcMain.on("add-instruct", (event, arg) => {
+    addInstruct(arg).then((result) => {
+      event.sender.send("add-instruct-reply", result);
+    });
+  });
+  electron.ipcMain.on("update-instruct", (event, arg) => {
+    updateInstruct(arg).then((result) => {
+      event.sender.send("update-instruct-reply", result);
+    });
+  });
+  electron.ipcMain.on("delete-instruct", (event, arg) => {
+    removeInstruct(arg).then((result) => {
+      event.sender.send("delete-instruct-reply", result);
+    });
+  });
   electron.ipcMain.on("clear-data", (event, arg) => {
     constructDB.destroy();
     chatsDB.destroy();
@@ -723,12 +790,14 @@ function PouchDBRoutes() {
     chatsDB = new PouchDB("chats", { prefix: dataPath });
     commandDB = new PouchDB("commands", { prefix: dataPath });
     attachmentDB = new PouchDB("attachments", { prefix: dataPath });
+    instructDB = new PouchDB("instructs", { prefix: dataPath });
   }
   return {
     constructDB,
     chatsDB,
     commandDB,
-    attachmentDB
+    attachmentDB,
+    instructDB
   };
 }
 function FsAPIRoutes() {
@@ -1165,7 +1234,9 @@ async function import_tavern_character(img_url) {
     throw error;
   }
 }
-const store$1 = new Store();
+const store$1 = new Store({
+  name: "constructData"
+});
 let ActiveConstructs = [];
 const retrieveConstructs = () => {
   return store$1.get("ids", []);
