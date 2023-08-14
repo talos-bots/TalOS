@@ -1259,19 +1259,19 @@ const isConstructActive = (id) => {
 };
 function constructController() {
   ActiveConstructs = retrieveConstructs();
-  electron.ipcMain.on("add-construct", (event, arg) => {
+  electron.ipcMain.on("add-construct-to-active", (event, arg) => {
     addConstruct(arg);
     ActiveConstructs = retrieveConstructs();
-    event.reply("add-construct-reply", ActiveConstructs);
+    event.reply("add-construct-to-active-reply", ActiveConstructs);
   });
-  electron.ipcMain.on("remove-construct", (event, arg) => {
+  electron.ipcMain.on("remove-construct-active", (event, arg) => {
     removeConstruct(arg);
     ActiveConstructs = retrieveConstructs();
-    event.reply("remove-construct-reply", ActiveConstructs);
+    event.reply("remove-construct-active-reply", ActiveConstructs);
   });
-  electron.ipcMain.on("get-constructs", (event, arg) => {
+  electron.ipcMain.on("get-construct-active-list", (event, arg) => {
     ActiveConstructs = retrieveConstructs();
-    event.reply("get-constructs-reply", ActiveConstructs);
+    event.reply("get-construct-active-list-reply", ActiveConstructs);
   });
   electron.ipcMain.on("is-construct-active", (event, arg) => {
     const isActive = isConstructActive(arg);
