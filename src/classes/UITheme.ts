@@ -9,6 +9,7 @@ class UITheme{
         public themeTextHover: string = '',
         public themeText: string = '',
         public themeBox: string = '',
+        public themeButton: string = '',
         public themeBorder: string = '',
         public themeHoverPos: string = '',
         public themeHoverNeg: string = '',
@@ -83,6 +84,18 @@ class UITheme{
 
     setAuthor(author: string) {
         this.author = author;
+    }
+
+    setThemeBackground(themeBackground: string) {
+        this.themeBackground = themeBackground;
+    }
+
+    setThemeAccent(themeAccent: string) {
+        this.themeAccent = themeAccent;
+    }
+
+    setThemeButton(themeButton: string) {
+        this.themeButton = themeButton;
     }
 }
 export default UITheme;

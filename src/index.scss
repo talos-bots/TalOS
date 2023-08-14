@@ -16,9 +16,10 @@
 :root {
   --background-image: null;
   --theme-root: rgba(0, 0, 0, 0.5);
+  --theme-box: rgba(0, 0, 0, 0.5);
   --theme-italic: rgba(245, 245, 245, 1);
   --theme-text: rgba(255, 253, 253, 1);
-  --theme-box: rgba(14, 34, 19, 0.658);
+  --theme-button: rgba(14, 34, 19, 0.658);
   --theme-accent: rgba(12, 151, 31, 0.295);
   --theme-border: rgba(0, 0, 0, 1);
   --theme-hover-pos: var(--theme-accent);
@@ -68,36 +69,35 @@ code {
 }
 
 .themed-button-neg {
-  @apply theme-border-style shadow-md bg-theme-box hover:text-theme-text-hover hover:bg-theme-hover-neg text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
+  @apply theme-border-style shadow-md bg-theme-button hover:text-theme-text-hover hover:bg-theme-hover-neg text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
 }
 
 .themed-button-pos {
-  @apply theme-border-style shadow-md bg-theme-box hover:text-theme-text-hover hover:bg-theme-hover-pos text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
+  @apply theme-border-style shadow-md bg-theme-button hover:text-theme-text-hover hover:bg-theme-hover-pos text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
 }
 
 .themed-button {
-  @apply theme-border-style shadow-md bg-theme-box text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
+  @apply theme-border-style shadow-md bg-theme-button text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
 }
 
 .themed-root {
   @apply theme-border-style shadow-md bg-theme-root border-theme-border border-theme-border-width rounded-theme-border-radius p-4 backdrop-blur-theme-blur;
 }
 
-.themed-menu-button-neg {
-  @apply theme-border-style p-8 w-full text-xl font-bold hover:text-theme-text-hover transition-colors text-theme-text hover:bg-theme-hover-neg border-theme-border border-theme-border-width bg-theme-root backdrop-blur-theme-blur rounded-theme-border-radius;
+.themed-box {
+  @apply theme-border-style shadow-md bg-theme-box border-theme-border border-theme-border-width rounded-theme-border-radius p-4 backdrop-blur-theme-blur;
 }
 
-.themed-menu-button-pos {
-  @apply theme-border-style p-8 w-full text-xl font-bold transition-colors hover:text-theme-text-hover text-theme-text hover:bg-theme-hover-pos border-theme-border border-theme-border-width bg-theme-root backdrop-blur-theme-blur rounded-theme-border-radius;
-}
 .themed-input {
   @apply resize-none overflow-hidden theme-border-style shadow-md bg-theme-accent text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
 }
+
 .theme-border-style {
   border-style: var(--theme-border-type);
 }
+
 .themed-button-small {
-  @apply theme-border-style shadow-md bg-theme-box text-theme-text border-theme-border border-theme-border-width p-1 backdrop-blur-theme-blur rounded-theme-border-radius;
+  @apply theme-border-style shadow-md bg-theme-button text-theme-text border-theme-border border-theme-border-width p-1 backdrop-blur-theme-blur rounded-theme-border-radius;
 }
 
 /* This is the scrollbar track */

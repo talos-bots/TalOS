@@ -8,7 +8,7 @@ const Accordian = (props: AccordianProps) => {
     const { title, children } = props;
     const [isExpanded, setIsExpanded] = useState(false);
     return (
-        <div className="themed-root w-full h-fit justify-center">
+        <div className="themed-box w-full h-fit justify-center">
             <div className="text-2xl font-bold z-10 w-full flex justify-between items-center">
                 <div className="flex flex-row w-full">
                     <div className="flex flex-col w-1/2 items-left text-left justify-start">

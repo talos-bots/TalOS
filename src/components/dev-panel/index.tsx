@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import RouteButton from "../route-button";
 import { defaultThemes } from "@/constants";
-import UITheme from "@/classes/UITheme";
 import { setStorageValue } from "@/api/dbapi";
 
 const DevPanel = () => {
@@ -35,17 +34,17 @@ const DevPanel = () => {
                 </div>
                 <div className="col-span-1">
                     <RouteButton to="/constructs" text="Constructs" />
+                    <RouteButton to="/constructs/new" text="New Construct" />
                     <RouteButton to="/settings" text="Settings" />
-                    <RouteButton to="/actions" text="Actions" />
                 </div>
                 <div className="col-span-1">
                     <RouteButton to="/docs" text="Docs" />
                     <RouteButton to="/chat" text="Chat" />
-                    <RouteButton to="/constructs/new" text="New Construct" />
+                    <RouteButton to="/actions" text="Actions" />
                 </div>
                 <div className="col-span-1">
                     <RouteButton to="/Zero" text="Zero" />
-
+                    <RouteButton to="/discord" text="Discord" />
                 </div>
                 <div className="col-span-1">
                 </div>

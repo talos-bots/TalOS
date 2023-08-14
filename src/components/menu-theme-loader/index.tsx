@@ -81,6 +81,9 @@ const MenuThemeLoader = (props: Props) => {
             if(uiTheme.themeAccent.length > 0) {
                 setStyle(kebabCase('themeAccent'), uiTheme.themeAccent);
             }
+            if(uiTheme.themeButton.length > 0) {
+                setStyle(kebabCase('themeButton'), uiTheme.themeButton);
+            }
             props.setNeedsReload(false);
         }
     }, [themeLoaded === true]);

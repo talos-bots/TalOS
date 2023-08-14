@@ -11,6 +11,7 @@ import ZeroPage from './pages/zero';
 import { useEffect, useState } from 'react';
 import MenuThemeLoader from './components/menu-theme-loader';
 import ConstructsPage from './pages/constructs';
+import DiscordPage from './pages/discord';
 
 function App() {
   const [needsReload, setNeedsReload] = useState(false);
@@ -41,6 +42,8 @@ function App() {
         <Route path='/constructs/:id' element={<ConstructManagement/>} />
         <Route path='/constructs/new' element={<ConstructManagement/>} />
         <Route path='/chat' element={<ChatPage/>} />
+        <Route path='/chat/:id' element={<ChatPage/>} />
+        <Route path='/discord' element={<DiscordPage/>} />
         <Route path='/docs' element={<DocsPage/>} />
         <Route path='/settings' element={<SettingsPage/>} />
         <Route path='/zero' element={<ZeroPage/>} />

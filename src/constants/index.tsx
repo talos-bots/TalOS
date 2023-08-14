@@ -18,6 +18,7 @@ defaultGreen.themeFont = "'DejaVuSansBold', sans-serif";
 defaultGreen.themeBorderType = 'solid';
 defaultGreen.themeTextHover = 'rgb(255, 255, 255)';
 defaultGreen.themeBackground = "url('./backgrounds/greendefault.svg')";
+defaultGreen.themeButton = 'rgba(14, 34, 19, 0.658)';
 
 const defaultBlue = new UITheme();
 defaultBlue.name = 'Default Blue';
@@ -37,5 +38,6 @@ defaultBlue.themeFont = "'DejaVuSansBold', sans-serif";
 defaultBlue.themeBorderType = 'solid';
 defaultBlue.themeTextHover = 'rgb(255, 255, 255)';
 defaultBlue.themeBackground = "url('./backgrounds/bluedefault.svg";
+defaultBlue.themeButton = 'rgba(14, 18, 33, 0.658)';
 
 export const defaultThemes: UITheme[] = [defaultGreen, defaultBlue];

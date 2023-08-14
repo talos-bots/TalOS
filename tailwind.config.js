@@ -70,6 +70,7 @@ module.exports = {
         'theme-accent': 'var(--theme-accent)',
         'theme-italic': 'var(--theme-italic)',
         'theme-text': 'var(--theme-text)',
+        'theme-button': 'var(--theme-button)',
         'theme-box': 'var(--theme-box)',
         'theme-hover-pos': 'var(--theme-hover-pos)',
         'theme-hover-neg': 'var(--theme-hover-neg)',
@@ -82,6 +83,7 @@ module.exports = {
       },
       borderColor: {
         'theme-border': 'var(--theme-border)',
+        'theme-button': 'var(--theme-button)',
         'theme-accent': 'var(--theme-accent)',
       },
       backdropBlur: {
