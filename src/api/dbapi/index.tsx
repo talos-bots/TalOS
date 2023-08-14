@@ -121,10 +121,10 @@ export async function getAttachments(): Promise<Attachment[]> {
             if (data) {
                 const attachments = data.map((doc: any) => {
                     return new Attachment(
-                        doc.doc._id,
-                        doc.doc.name,
-                        doc.doc.type,
-                        doc.doc.data,
+                        doc._id,
+                        doc.name,
+                        doc.type,
+                        doc.data,
                     );
                 });
                 resolve(attachments);
@@ -175,14 +175,14 @@ export async function getChats(): Promise<Chat[]> {
             if (data) {
                 const chats = data.map((doc: any) => {
                     return new Chat(
-                        doc.doc._id,
-                        doc.doc.name,
-                        doc.doc.type,
-                        doc.doc.messages,
-                        doc.doc.lastMessage,
-                        doc.doc.lastMessageDate,
-                        doc.doc.firstMessageDate,
-                        doc.doc.constructs,
+                        doc._id,
+                        doc.name,
+                        doc.type,
+                        doc.messages,
+                        doc.lastMessage,
+                        doc.lastMessageDate,
+                        doc.firstMessageDate,
+                        doc.constructs,
                     );
                 });
                 resolve(chats);
@@ -261,8 +261,9 @@ export async function getInstructs(): Promise<Instruct[]> {
             if (data) {
                 const instructs = data.map((doc: any) => {
                     return new Instruct(
-                        doc.doc._id,
-                        doc.doc.name,
+                        doc._id,
+                        doc.name,
+                        doc.randomEvents
                     );
                 });
                 resolve(instructs);
@@ -282,6 +283,7 @@ export async function getInstruct(id: string): Promise<Instruct> {
                 const instruct = new Instruct(
                     data._id,
                     data.name,
+                    data.randomEvents
                 );
                 resolve(instruct);
             } else {
