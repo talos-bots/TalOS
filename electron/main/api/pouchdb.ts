@@ -426,6 +426,7 @@ export function PouchDBRoutes(){
         chatsDB.destroy();
         commandDB.destroy();
         attachmentDB.destroy();
+        instructDB.destroy();
         createDBs();
     });
 
@@ -435,13 +436,5 @@ export function PouchDBRoutes(){
         commandDB = new PouchDB('commands', {prefix: dataPath});
         attachmentDB = new PouchDB('attachments', {prefix: dataPath});
         instructDB = new PouchDB('instructs', {prefix: dataPath});
-    }
-
-    return {
-        constructDB,
-        chatsDB,
-        commandDB,
-        attachmentDB,
-        instructDB
     }
 };
