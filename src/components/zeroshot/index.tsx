@@ -53,7 +53,7 @@ const ZeroShot = () => {
         </div>
       </div>
       <div
-        className={`p-7 text-gray-400 rounded-2xl shadow-lg w-full xs:w-3/4 sm:w-2/4 sm:w-3/5 md:w-3/4 lg:w-1/2 mx-auto mb-8 bg-theme-bg`}
+        className={`p-7 text-gray-400 rounded-2xl shadow-lg w-full xs:w-3/4 sm:w-3/5 md:w-3/4 lg:w-1/2 mx-auto mb-8 bg-theme-bg`}
         style={{
           backgroundColor: "rgba(0,0,0,0.7)",
           display: "flex",
