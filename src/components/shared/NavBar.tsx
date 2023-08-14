@@ -10,7 +10,7 @@ const NavBar: React.FC = () => {
   return (
   <nav className={`sm:px-16 px-6 w-full flex items-center justify-between py-5 fixed top-0 z-20 bg-black bg-opacity-50 backdrop-blur-xl`}>
     <div className="flex items-center gap-2">
-      <p className="text-white text-[18px] font-bold">Construct<span className="text-[#00ff00]">OS</span> - AI Agent Manager</p>
+      <p className="text-white text-[18px] font-bold">Construct<span className="text-theme-flavor-text">OS</span> - AI Agent Manager</p>
     </div>
     <div className="hidden md:flex gap-5">
       <NavLink to="/" aria-label="Home" className={`p-1 transition-all duration-125 hover:opacity-25`} >

@@ -84,6 +84,9 @@ const MenuThemeLoader = (props: Props) => {
             if(uiTheme.themeButton.length > 0) {
                 setStyle(kebabCase('themeButton'), uiTheme.themeButton);
             }
+            if(uiTheme.themeFlavorText.length > 0) {
+                setStyle(kebabCase('themeFlavorText'), uiTheme.themeFlavorText);
+            }
             props.setNeedsReload(false);
         }
     }, [themeLoaded === true]);

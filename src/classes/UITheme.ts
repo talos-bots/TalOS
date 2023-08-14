@@ -19,6 +19,7 @@ class UITheme{
         public themeFont: string = '',
         public themeBorderType: string = '',
         public themeBackground: string = '',
+        public themeFlavorText: string = '',
         public author: string = '',
     ) {}
 
@@ -96,6 +97,10 @@ class UITheme{
 
     setThemeButton(themeButton: string) {
         this.themeButton = themeButton;
+    }
+
+    setThemeFlavorText(themeFlavorText: string) {
+        this.themeFlavorText = themeFlavorText;
     }
 }
 export default UITheme;
