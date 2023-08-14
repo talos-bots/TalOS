@@ -1,4 +1,4 @@
-.agent-search-bar input{
+.construct-search-bar input{
 	margin-right: auto;
 	margin-left: auto;
 	flex-direction: column;
@@ -10,7 +10,7 @@
 	border-radius: var(--theme-border-radius);
 }
 
-.agent-search-bar input:focus{
+.construct-search-bar input:focus{
 	outline: none;
 	border: var(--theme-border-width) var(--theme-border-type) var(--theme-border-color);
 	background-color: var(--theme-accent);

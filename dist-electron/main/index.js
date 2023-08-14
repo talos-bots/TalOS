@@ -429,7 +429,7 @@ let constructDB;
 let chatsDB;
 let commandDB;
 let attachmentDB;
-async function getAllAgents() {
+async function getAllConstructs() {
   return constructDB.allDocs({ include_docs: true }).then((result) => {
     return result.rows;
   }).catch((err) => {
@@ -437,28 +437,28 @@ async function getAllAgents() {
     return null;
   });
 }
-async function getAgent(id) {
+async function getConstruct(id) {
   return constructDB.get(id).then((result) => {
     return result;
   }).catch((err) => {
     console.log(err);
   });
 }
-async function addAgent(construct) {
+async function addConstruct$1(construct) {
   return constructDB.put(construct).then((result) => {
     return result;
   }).catch((err) => {
     console.log(err);
   });
 }
-async function removeAgent(id) {
+async function removeConstruct$1(id) {
   return constructDB.get(id).then((doc) => {
     return constructDB.remove(doc);
   }).catch((err) => {
     console.log(err);
   });
 }
-async function updateAgent(construct) {
+async function updateConstruct(construct) {
   return constructDB.get(construct._id).then((doc) => {
     let updatedDoc = { ...doc, ...construct };
     constructDB.put(updatedDoc).then((result) => {
@@ -477,7 +477,7 @@ async function getAllChats() {
     console.log(err);
   });
 }
-async function getChatsByAgent(constructId) {
+async function getChatsByConstruct(constructId) {
   return chatsDB.find({
     selector: {
       constructs: constructId
@@ -607,27 +607,27 @@ function PouchDBRoutes() {
   commandDB = new PouchDB("commands", { prefix: dataPath });
   attachmentDB = new PouchDB("attachments", { prefix: dataPath });
   electron.ipcMain.on("get-constructs", (event, arg) => {
-    getAllAgents().then((result) => {
+    getAllConstructs().then((result) => {
       event.sender.send("get-constructs-reply", result);
     });
   });
   electron.ipcMain.on("get-construct", (event, arg) => {
-    getAgent(arg).then((result) => {
+    getConstruct(arg).then((result) => {
       event.sender.send("get-construct-reply", result);
     });
   });
   electron.ipcMain.on("add-construct", (event, arg) => {
-    addAgent(arg).then((result) => {
+    addConstruct$1(arg).then((result) => {
       event.sender.send("add-construct-reply", result);
     });
   });
   electron.ipcMain.on("update-construct", (event, arg) => {
-    updateAgent(arg).then((result) => {
+    updateConstruct(arg).then((result) => {
       event.sender.send("update-construct-reply", result);
     });
   });
   electron.ipcMain.on("delete-construct", (event, arg) => {
-    removeAgent(arg).then((result) => {
+    removeConstruct$1(arg).then((result) => {
       event.sender.send("delete-construct-reply", result);
     });
   });
@@ -637,7 +637,7 @@ function PouchDBRoutes() {
     });
   });
   electron.ipcMain.on("get-chats-by-construct", (event, arg) => {
-    getChatsByAgent(arg).then((result) => {
+    getChatsByConstruct(arg).then((result) => {
       event.sender.send("get-chats-by-construct-reply", result);
     });
   });
@@ -1282,6 +1282,10 @@ electron.app.on("activate", () => {
   } else {
     createWindow();
   }
+});
+electron.app.on("ready", () => {
+  const { session } = require("electron");
+  session.defaultSession.clearCache();
 });
 electron.ipcMain.handle("open-win", (_, arg) => {
   const childWindow = new electron.BrowserWindow({

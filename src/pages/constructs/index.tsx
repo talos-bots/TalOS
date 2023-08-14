@@ -40,6 +40,9 @@ const ConstructsPage = () => {
             let retrievedChars: Construct[] = await getConstructs();
             if(retrievedChars){
                 setCharacters(retrievedChars);
+            }else{
+                console.log('no constructs found');
+                setCharacters([]);
             }
         }
         retrieveCharacters();

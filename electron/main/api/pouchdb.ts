@@ -7,7 +7,7 @@ let chatsDB: PouchDB.Database<any>;
 let commandDB: PouchDB.Database<any>;
 let attachmentDB: PouchDB.Database<any>;
 
-export async function getAllAgents() {
+export async function getAllConstructs() {
     return constructDB.allDocs({include_docs: true})
     .then((result) => {
         return result.rows;
@@ -18,7 +18,7 @@ export async function getAllAgents() {
     });
 }
 
-export async function getAgent(id: string) {
+export async function getConstruct(id: string) {
     return constructDB.get(id).then((result) => {
         return result;
     }).catch((err) => {
@@ -26,7 +26,7 @@ export async function getAgent(id: string) {
     });
 }
 
-export async function addAgent(construct: any) {
+export async function addConstruct(construct: any) {
     return constructDB.put(construct).then((result) => {
         return result;
     }).catch((err) => {
@@ -34,7 +34,7 @@ export async function addAgent(construct: any) {
     });
 }
 
-export async function removeAgent(id: string) {
+export async function removeConstruct(id: string) {
     return constructDB.get(id).then((doc) => {
         return constructDB.remove(doc);
     }).catch((err) => {
@@ -42,7 +42,7 @@ export async function removeAgent(id: string) {
     });
 }
 
-export async function updateAgent(construct: any) {
+export async function updateConstruct(construct: any) {
     return constructDB.get(construct._id).then((doc) => {
         // Merge existing fields with updated fields and retain _rev
         let updatedDoc = {...doc, ...construct};
@@ -65,7 +65,7 @@ export async function getAllChats() {
     });
 }
 
-export async function getChatsByAgent(constructId: string) {
+export async function getChatsByConstruct(constructId: string) {
     return chatsDB.find({
         selector: {
             constructs: constructId
@@ -217,31 +217,31 @@ export function PouchDBRoutes(){
     attachmentDB = new PouchDB('attachments', {prefix: dataPath});
 
     ipcMain.on('get-constructs', (event, arg) => {
-        getAllAgents().then((result) => {
+        getAllConstructs().then((result) => {
             event.sender.send('get-constructs-reply', result);
         });
     });
 
     ipcMain.on('get-construct', (event, arg) => {
-        getAgent(arg).then((result) => {
+        getConstruct(arg).then((result) => {
             event.sender.send('get-construct-reply', result);
         });
     });
 
     ipcMain.on('add-construct', (event, arg) => {
-        addAgent(arg).then((result) => {
+        addConstruct(arg).then((result) => {
             event.sender.send('add-construct-reply', result);
         });
     });
 
     ipcMain.on('update-construct', (event, arg) => {
-        updateAgent(arg).then((result) => {
+        updateConstruct(arg).then((result) => {
             event.sender.send('update-construct-reply', result);
         });
     });
 
     ipcMain.on('delete-construct', (event, arg) => {
-        removeAgent(arg).then((result) => {
+        removeConstruct(arg).then((result) => {
             event.sender.send('delete-construct-reply', result);
         });
     });
@@ -253,7 +253,7 @@ export function PouchDBRoutes(){
     });
 
     ipcMain.on('get-chats-by-construct', (event, arg) => {
-        getChatsByAgent(arg).then((result) => {
+        getChatsByConstruct(arg).then((result) => {
             event.sender.send('get-chats-by-construct-reply', result);
         });
     });
