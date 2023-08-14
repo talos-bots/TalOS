@@ -151,18 +151,6 @@ ipcMain.on("get-data", (event, arg) => {
 
 ipcMain.handle("get-server-port", (event) => {
   try {
-    const configPath = path.join(__dirname, "backend", "config.json");
-    const rawData = fs.readFileSync(configPath, "utf8");
-    const config = JSON.parse(rawData);
-    return config.port;
-  } catch (error) {
-    console.error("Failed to get server port:", error);
-    throw error; // This will send the error back to the renderer
-  }
-});
-
-ipcMain.handle("get-server-port", (event) => {
-  try {
     // Using app.getAppPath() to get the root directory of the app
     const appRoot = app.getAppPath();
 
