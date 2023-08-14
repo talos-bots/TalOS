@@ -125,11 +125,5 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
-dist-electron/preload/index.js
-dist-electron/main/index.js
-dist-electron/main/index.js.map
-
+dist-electron/
 backend/venv
-dist-electron/main/index.js
-dist-electron/main/index.js
-dist-electron/main/index.js.map
