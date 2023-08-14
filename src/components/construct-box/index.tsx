@@ -1,4 +1,4 @@
-import {Construct} from "@/classes/Construct";
+import { Construct } from "@/classes/Construct";
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { AiOutlineDown, AiOutlineUp } from "react-icons/ai";

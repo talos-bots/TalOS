@@ -9,21 +9,22 @@ export async function getConstructs(): Promise<Construct[]> {
         ipcRenderer.send("get-constructs");
 
         ipcRenderer.once("get-constructs-reply", (event: IpcRendererEvent, data: any[]) => {
+            console.log(data);
             if (data) {
                 const constructs = data.map((doc: any) => {
                     return new Construct(
-                        doc._id,
-                        doc.name,
-                        doc.nickname,
-                        doc.avatar,
-                        doc.commands,
-                        doc.visualDescription,
-                        doc.personality,
-                        doc.background,
-                        doc.relationships,
-                        doc.interests,
-                        doc.greetings,
-                        doc.farewells,
+                        doc.doc._id,
+                        doc.doc.name,
+                        doc.doc.nickname,
+                        doc.doc.avatar,
+                        doc.doc.commands,
+                        doc.doc.visualDescription,
+                        doc.doc.personality,
+                        doc.doc.background,
+                        doc.doc.relationships,
+                        doc.doc.interests,
+                        doc.doc.greetings,
+                        doc.doc.farewells,
                     );
                 });
                 resolve(constructs);
@@ -121,10 +122,10 @@ export async function getAttachments(): Promise<Attachment[]> {
             if (data) {
                 const attachments = data.map((doc: any) => {
                     return new Attachment(
-                        doc._id,
-                        doc.name,
-                        doc.type,
-                        doc.data,
+                        doc.doc._id,
+                        doc.doc.name,
+                        doc.doc.type,
+                        doc.doc.data,
                     );
                 });
                 resolve(attachments);
@@ -175,14 +176,14 @@ export async function getChats(): Promise<Chat[]> {
             if (data) {
                 const chats = data.map((doc: any) => {
                     return new Chat(
-                        doc._id,
-                        doc.name,
-                        doc.type,
-                        doc.messages,
-                        doc.lastMessage,
-                        doc.lastMessageDate,
-                        doc.firstMessageDate,
-                        doc.constructs,
+                        doc.doc._id,
+                        doc.doc.name,
+                        doc.doc.type,
+                        doc.doc.messages,
+                        doc.doc.lastMessage,
+                        doc.doc.lastMessageDate,
+                        doc.doc.firstMessageDate,
+                        doc.doc.constructs,
                     );
                 });
                 resolve(chats);
@@ -261,9 +262,9 @@ export async function getInstructs(): Promise<Instruct[]> {
             if (data) {
                 const instructs = data.map((doc: any) => {
                     return new Instruct(
-                        doc._id,
-                        doc.name,
-                        doc.randomEvents
+                        doc.doc._id,
+                        doc.doc.name,
+                        doc.doc.randomEvents
                     );
                 });
                 resolve(instructs);
