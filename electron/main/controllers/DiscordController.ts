@@ -3,6 +3,7 @@ import Store from 'electron-store';
 const store = new Store({
     name: 'discordData',
 });
+
 type DiscordMode = 'Character' | 'Construct';
 
 const setDiscordMode = (mode: DiscordMode) => {
@@ -10,7 +11,6 @@ const setDiscordMode = (mode: DiscordMode) => {
 };
 
 function DiscordController(){
-
     ipcMain.on('discordMode', (event, arg) => {
         setDiscordMode(arg);
     });

@@ -145,8 +145,8 @@ ipcMain.on("set-data", (event, arg) => {
   store.set(arg.key, arg.value);
 });
 
-ipcMain.on("get-data", (event, arg) => {
-  event.sender.send("get-data-reply", store.get(arg));
+ipcMain.on("get-data", (event, arg, replyName) => {
+  event.sender.send(replyName, store.get(arg));
 });
 
 ipcMain.handle("get-server-port", (event) => {

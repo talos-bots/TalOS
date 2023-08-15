@@ -265,15 +265,15 @@ export function PouchDBRoutes(){
     attachmentDB = new PouchDB('attachments', {prefix: dataPath});
     instructDB = new PouchDB('instructs', {prefix: dataPath});
 
-    ipcMain.on('get-constructs', (event, arg) => {
+    ipcMain.on('get-constructs', (event, replyName) => {
         getAllConstructs().then((result) => {
-            event.sender.send('get-constructs-reply', result);
+            event.sender.send(replyName, result);
         });
     });
 
-    ipcMain.on('get-construct', (event, arg) => {
+    ipcMain.on('get-construct', (event, arg, replyName) => {
         getConstruct(arg).then((result) => {
-            event.sender.send('get-construct-reply', result);
+            event.sender.send(replyName, result);
         });
     });
 
@@ -295,21 +295,21 @@ export function PouchDBRoutes(){
         });
     });
 
-    ipcMain.on('get-chats', (event, arg) => {
+    ipcMain.on('get-chats', (event, replyName) => {
         getAllChats().then((result) => {
-            event.sender.send('get-chats-reply', result);
+            event.sender.send(replyName, result);
         });
     });
 
-    ipcMain.on('get-chats-by-construct', (event, arg) => {
+    ipcMain.on('get-chats-by-construct', (event, arg, replyName) => {
         getChatsByConstruct(arg).then((result) => {
-            event.sender.send('get-chats-by-construct-reply', result);
+            event.sender.send(replyName, result);
         });
     });
 
-    ipcMain.on('get-chat', (event, arg) => {
+    ipcMain.on('get-chat', (event, arg, replyName) => {
         getChat(arg).then((result) => {
-            event.sender.send('get-chat-reply', result);
+            event.sender.send(replyName, result);
         });
     });
 
@@ -331,15 +331,15 @@ export function PouchDBRoutes(){
         });
     });
 
-    ipcMain.on('get-commands', (event, arg) => {
+    ipcMain.on('get-commands', (event, replyName) => {
         getAllCommands().then((result) => {
-            event.sender.send('get-commands-reply', result);
+            event.sender.send(replyName, result);
         });
     });
 
-    ipcMain.on('get-command', (event, arg) => {
+    ipcMain.on('get-command', (event, arg, replyName) => {
         getCommand(arg).then((result) => {
-            event.sender.send('get-command-reply', result);
+            event.sender.send(replyName, result);
         });
     });
 
@@ -361,15 +361,15 @@ export function PouchDBRoutes(){
         });
     });
 
-    ipcMain.on('get-attachments', (event, arg) => {
+    ipcMain.on('get-attachments', (event, replyName) => {
         getAllAttachments().then((result) => {
-            event.sender.send('get-attachments-reply', result);
+            event.sender.send(replyName, result);
         });
     });
 
-    ipcMain.on('get-attachment', (event, arg) => {
+    ipcMain.on('get-attachment', (event, arg, replyName) => {
         getAttachment(arg).then((result) => {
-            event.sender.send('get-attachment-reply', result);
+            event.sender.send(replyName, result);
         });
     });
 
@@ -391,15 +391,15 @@ export function PouchDBRoutes(){
         });
     });
 
-    ipcMain.on('get-instructs', (event, arg) => {
+    ipcMain.on('get-instructs', (event, replyName) => {
         getAllInstructs().then((result) => {
-            event.sender.send('get-instructs-reply', result);
+            event.sender.send(replyName, result);
         });
     });
 
-    ipcMain.on('get-instruct', (event, arg) => {
+    ipcMain.on('get-instruct', (event, arg, replyName) => {
         getInstruct(arg).then((result) => {
-            event.sender.send('get-instruct-reply', result);
+            event.sender.send(replyName, result);
         });
     });
 

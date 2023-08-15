@@ -10,13 +10,13 @@ export const importTavernCharacter = (
 
         reader.onload = () => {
             const fileContents = reader.result;
-
+            const uniqueEventName = "get-tavern-card-reply-" + Date.now() + "-" + Math.random();
             ipcRenderer.send('import-tavern-character', {
                 name: file.name,
                 contents: fileContents
-            });
+            }, uniqueEventName);
 
-            ipcRenderer.once('import-tavern-character-reply', async (event, characterData) => {
+            ipcRenderer.once(uniqueEventName, async (event, characterData) => {
                 if (characterData) {
                     const construct = new Construct();
                     construct.avatar = characterData.avatar;

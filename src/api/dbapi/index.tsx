@@ -7,9 +7,9 @@ import { removeConstructFromActive } from "../constructapi";
 
 export async function getConstructs(): Promise<Construct[]> {
     return new Promise((resolve, reject) => {
-        ipcRenderer.send("get-constructs");
-
-        ipcRenderer.once("get-constructs-reply", (event: IpcRendererEvent, data: any[]) => {
+        const uniqueEventName = "get-constructs-reply-" + Date.now() + "-" + Math.random();
+        ipcRenderer.send("get-constructs", uniqueEventName);
+        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any[]) => {
             if (data) {
                 const constructs = data.map((doc: any) => {
                     return new Construct(
@@ -37,8 +37,9 @@ export async function getConstructs(): Promise<Construct[]> {
 
 export async function getConstruct(id: string): Promise<Construct> {
     return new Promise((resolve, reject) => {
-        ipcRenderer.send("get-construct", id);
-        ipcRenderer.once("get-construct-reply", (event: IpcRendererEvent, data: any) => {
+        const uniqueEventName = "get-construct-reply-" + Date.now() + "-" + Math.random();
+        ipcRenderer.send("get-construct", id, uniqueEventName);
+        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any) => {
             if (data) {
                 const construct = new Construct(
                     data._id,
@@ -77,9 +78,10 @@ export async function deleteConstruct(id: string) {
 
 export async function getCommands(): Promise<string[]> {
     return new Promise((resolve, reject) => {
-        ipcRenderer.send("get-commands");
+        const uniqueEventName = "get-commands-reply-" + Date.now() + "-" + Math.random();
+        ipcRenderer.send("get-commands", uniqueEventName);
 
-        ipcRenderer.once("get-commands-reply", (event: IpcRendererEvent, data: any[]) => {
+        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any[]) => {
             if (data) {
                 resolve(data);
             } else {
@@ -91,9 +93,10 @@ export async function getCommands(): Promise<string[]> {
 
 export async function getCommand(id: string): Promise<string> {
     return new Promise((resolve, reject) => {
-        ipcRenderer.send("get-command", id);
+        const uniqueEventName = "get-command-reply-" + Date.now() + "-" + Math.random();
+        ipcRenderer.send("get-command", id, uniqueEventName);
 
-        ipcRenderer.once("get-command-reply", (event: IpcRendererEvent, data: any) => {
+        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any) => {
             if (data) {
                 resolve(data);
             } else {
@@ -117,9 +120,10 @@ export async function deleteCommand(id: string) {
 
 export async function getAttachments(): Promise<Attachment[]> {
     return new Promise((resolve, reject) => {
-        ipcRenderer.send("get-attachments");
+        const uniqueEventName = "get-attachments-reply-" + Date.now() + "-" + Math.random();
+        ipcRenderer.send("get-attachments", uniqueEventName);
 
-        ipcRenderer.once("get-attachments-reply", (event: IpcRendererEvent, data: any[]) => {
+        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any[]) => {
             if (data) {
                 const attachments = data.map((doc: any) => {
                     return new Attachment(
@@ -139,9 +143,10 @@ export async function getAttachments(): Promise<Attachment[]> {
 
 export async function getAttachment(id: string): Promise<Attachment> {
     return new Promise((resolve, reject) => {
-        ipcRenderer.send("get-attachment", id);
+        const uniqueEventName = "get-attachment-reply-" + Date.now() + "-" + Math.random();
+        ipcRenderer.send("get-attachment", id, uniqueEventName);
 
-        ipcRenderer.once("get-attachment-reply", (event: IpcRendererEvent, data: any) => {
+        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any) => {
             if (data) {
                 const attachment = new Attachment(
                     data._id,
@@ -171,9 +176,10 @@ export async function deleteAttachment(id: string) {
 
 export async function getChats(): Promise<Chat[]> {
     return new Promise((resolve, reject) => {
-        ipcRenderer.send("get-chats");
+        const uniqueEventName = "get-chats-reply-" + Date.now() + "-" + Math.random();
+        ipcRenderer.send("get-chats", uniqueEventName);
 
-        ipcRenderer.once("get-chats-reply", (event: IpcRendererEvent, data: any[]) => {
+        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any[]) => {
             if (data) {
                 const chats = data.map((doc: any) => {
                     return new Chat(
@@ -197,9 +203,10 @@ export async function getChats(): Promise<Chat[]> {
 
 export async function getChatsByConstruct(constructId: string): Promise<Chat> {
     return new Promise((resolve, reject) => {
-        ipcRenderer.send("get-chats-by-construct", constructId);
+        const uniqueEventName = "get-chats-by-construct-reply-" + Date.now() + "-" + Math.random();
+        ipcRenderer.send("get-chats-by-construct", constructId, uniqueEventName);
 
-        ipcRenderer.once("get-chats-by-construct-reply", (event: IpcRendererEvent, data: any) => {
+        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any) => {
             if (data) {
                 const chat = new Chat(
                     data._id,
@@ -221,9 +228,10 @@ export async function getChatsByConstruct(constructId: string): Promise<Chat> {
 
 export async function getChat(id: string): Promise<Chat> {
     return new Promise((resolve, reject) => {
-        ipcRenderer.send("get-chat", id);
+        const uniqueEventName = "get-chat-reply-" + Date.now() + "-" + Math.random();
+        ipcRenderer.send("get-chat", id, uniqueEventName);
 
-        ipcRenderer.once("get-chat-reply", (event: IpcRendererEvent, data: any) => {
+        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any) => {
             if (data) {
                 const chat = new Chat(
                     data._id,
@@ -257,9 +265,10 @@ export async function deleteChat(id: string) {
 
 export async function getInstructs(): Promise<Instruct[]> {
     return new Promise((resolve, reject) => {
-        ipcRenderer.send("get-instructs");
+        const uniqueEventName = "get-instructs-reply-" + Date.now() + "-" + Math.random();
+        ipcRenderer.send("get-instructs", uniqueEventName);
 
-        ipcRenderer.once("get-instructs-reply", (event: IpcRendererEvent, data: any[]) => {
+        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any[]) => {
             if (data) {
                 const instructs = data.map((doc: any) => {
                     return new Instruct(
@@ -278,9 +287,10 @@ export async function getInstructs(): Promise<Instruct[]> {
 
 export async function getInstruct(id: string): Promise<Instruct> {
     return new Promise((resolve, reject) => {
+        const uniqueEventName = "get-instruct-reply-" + Date.now() + "-" + Math.random();
         ipcRenderer.send("get-instruct", id);
 
-        ipcRenderer.once("get-instruct-reply", (event: IpcRendererEvent, data: any) => {
+        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any) => {
             if (data) {
                 const instruct = new Instruct(
                     data._id,
@@ -309,9 +319,10 @@ export async function deleteInstruct(id: string) {
 
 export async function getStorageValue(key: string): Promise<string> {
     return new Promise((resolve, reject) => {
-        ipcRenderer.send("get-data", key);
+        const uniqueEventName = "get-data-reply-" + Date.now() + "-" + Math.random();
+        ipcRenderer.send("get-data", key, uniqueEventName);
 
-        ipcRenderer.once("get-data-reply", (event: IpcRendererEvent, data: any) => {
+        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any) => {
             if (data) {
                 resolve(data);
             } else {

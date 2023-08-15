@@ -5,8 +5,8 @@ const node_os = require("node:os");
 const node_path = require("node:path");
 const path = require("path");
 const discord_js = require("discord.js");
-const PouchDB = require("pouchdb");
 const Store = require("electron-store");
+const PouchDB = require("pouchdb");
 const fs = require("fs");
 const axios = require("axios");
 const openai = require("openai");
@@ -25,6 +25,9 @@ const intents = {
   ],
   partials: [discord_js.Partials.Channel, discord_js.Partials.GuildMember, discord_js.Partials.User, discord_js.Partials.Reaction, discord_js.Partials.Message]
 };
+const store$2 = new Store({
+  name: "discordData"
+});
 let disClient = new discord_js.Client(intents);
 const commands = new discord_js.Collection();
 let isReady = false;
@@ -303,9 +306,29 @@ function DiscordJSRoutes() {
     electron.ipcMain.emit("discord-ready", disClient);
   });
   electron.ipcMain.handle("discord-login", async (event, rawToken, appId) => {
-    await disClient.login(rawToken);
-    token = rawToken;
-    applicationID = appId;
+    if (rawToken === "") {
+      const storedToken = store$2.get("discordToken");
+      if (storedToken !== void 0 && typeof storedToken === "string") {
+        token = storedToken;
+      } else {
+        return false;
+      }
+    } else {
+      token = rawToken;
+      store$2.set("discordToken", rawToken);
+    }
+    if (appId === "") {
+      const storedAppId = store$2.get("discordAppId");
+      if (storedAppId !== void 0 && typeof storedAppId === "string") {
+        applicationID = storedAppId;
+      } else {
+        return false;
+      }
+    } else {
+      applicationID = appId;
+      store$2.set("discordAppId", appId);
+    }
+    await disClient.login(token);
     return true;
   });
   electron.ipcMain.handle("discord-logout", async (event) => {
@@ -648,14 +671,14 @@ function PouchDBRoutes() {
   commandDB = new PouchDB("commands", { prefix: dataPath });
   attachmentDB = new PouchDB("attachments", { prefix: dataPath });
   instructDB = new PouchDB("instructs", { prefix: dataPath });
-  electron.ipcMain.on("get-constructs", (event, arg) => {
+  electron.ipcMain.on("get-constructs", (event, replyName) => {
     getAllConstructs().then((result) => {
-      event.sender.send("get-constructs-reply", result);
+      event.sender.send(replyName, result);
     });
   });
-  electron.ipcMain.on("get-construct", (event, arg) => {
+  electron.ipcMain.on("get-construct", (event, arg, replyName) => {
     getConstruct(arg).then((result) => {
-      event.sender.send("get-construct-reply", result);
+      event.sender.send(replyName, result);
     });
   });
   electron.ipcMain.on("add-construct", (event, arg) => {
@@ -673,19 +696,19 @@ function PouchDBRoutes() {
       event.sender.send("delete-construct-reply", result);
     });
   });
-  electron.ipcMain.on("get-chats", (event, arg) => {
+  electron.ipcMain.on("get-chats", (event, replyName) => {
     getAllChats().then((result) => {
-      event.sender.send("get-chats-reply", result);
+      event.sender.send(replyName, result);
     });
   });
-  electron.ipcMain.on("get-chats-by-construct", (event, arg) => {
+  electron.ipcMain.on("get-chats-by-construct", (event, arg, replyName) => {
     getChatsByConstruct(arg).then((result) => {
-      event.sender.send("get-chats-by-construct-reply", result);
+      event.sender.send(replyName, result);
     });
   });
-  electron.ipcMain.on("get-chat", (event, arg) => {
+  electron.ipcMain.on("get-chat", (event, arg, replyName) => {
     getChat(arg).then((result) => {
-      event.sender.send("get-chat-reply", result);
+      event.sender.send(replyName, result);
     });
   });
   electron.ipcMain.on("add-chat", (event, arg) => {
@@ -703,14 +726,14 @@ function PouchDBRoutes() {
       event.sender.send("delete-chat-reply", result);
     });
   });
-  electron.ipcMain.on("get-commands", (event, arg) => {
+  electron.ipcMain.on("get-commands", (event, replyName) => {
     getAllCommands().then((result) => {
-      event.sender.send("get-commands-reply", result);
+      event.sender.send(replyName, result);
     });
   });
-  electron.ipcMain.on("get-command", (event, arg) => {
+  electron.ipcMain.on("get-command", (event, arg, replyName) => {
     getCommand(arg).then((result) => {
-      event.sender.send("get-command-reply", result);
+      event.sender.send(replyName, result);
     });
   });
   electron.ipcMain.on("add-command", (event, arg) => {
@@ -728,14 +751,14 @@ function PouchDBRoutes() {
       event.sender.send("delete-command-reply", result);
     });
   });
-  electron.ipcMain.on("get-attachments", (event, arg) => {
+  electron.ipcMain.on("get-attachments", (event, replyName) => {
     getAllAttachments().then((result) => {
-      event.sender.send("get-attachments-reply", result);
+      event.sender.send(replyName, result);
     });
   });
-  electron.ipcMain.on("get-attachment", (event, arg) => {
+  electron.ipcMain.on("get-attachment", (event, arg, replyName) => {
     getAttachment(arg).then((result) => {
-      event.sender.send("get-attachment-reply", result);
+      event.sender.send(replyName, result);
     });
   });
   electron.ipcMain.on("add-attachment", (event, arg) => {
@@ -753,14 +776,14 @@ function PouchDBRoutes() {
       event.sender.send("delete-attachment-reply", result);
     });
   });
-  electron.ipcMain.on("get-instructs", (event, arg) => {
+  electron.ipcMain.on("get-instructs", (event, replyName) => {
     getAllInstructs().then((result) => {
-      event.sender.send("get-instructs-reply", result);
+      event.sender.send(replyName, result);
     });
   });
-  electron.ipcMain.on("get-instruct", (event, arg) => {
+  electron.ipcMain.on("get-instruct", (event, arg, replyName) => {
     getInstruct(arg).then((result) => {
-      event.sender.send("get-instruct-reply", result);
+      event.sender.send(replyName, result);
     });
   });
   electron.ipcMain.on("add-instruct", (event, arg) => {
@@ -1174,9 +1197,9 @@ const txt2img = async (data, apiUrl) => {
   }
 };
 function BonusFeaturesRoutes() {
-  electron.ipcMain.on("import-tavern-character", async (event, fileData) => {
+  electron.ipcMain.on("import-tavern-character", async (event, fileData, uniqueEventName) => {
     const agent = await import_tavern_character(fileData);
-    event.reply("import-tavern-character-reply", agent);
+    event.reply(uniqueEventName, agent);
   });
 }
 async function import_tavern_character(fileData) {
@@ -1394,8 +1417,8 @@ electron.ipcMain.handle("get-data-path", () => {
 electron.ipcMain.on("set-data", (event, arg) => {
   store.set(arg.key, arg.value);
 });
-electron.ipcMain.on("get-data", (event, arg) => {
-  event.sender.send("get-data-reply", store.get(arg));
+electron.ipcMain.on("get-data", (event, arg, replyName) => {
+  event.sender.send(replyName, store.get(arg));
 });
 electron.ipcMain.handle("get-server-port", (event) => {
   try {

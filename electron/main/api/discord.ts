@@ -1,5 +1,6 @@
 import { ipcMain } from 'electron';
 import { ActivityType, Client, GatewayIntentBits, Collection, REST, Routes, Partials, TextChannel, DMChannel, NewsChannel, Snowflake, Webhook } from 'discord.js';
+import Store from 'electron-store';
 
 const intents = { 
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, 
@@ -9,6 +10,10 @@ const intents = {
     partials: [Partials.Channel, Partials.GuildMember, Partials.User, Partials.Reaction, Partials.Message] 
 };
 type ValidStatus = 'online' | 'dnd' | 'idle' | 'invisible';
+
+const store = new Store({
+    name: 'discordData',
+});
 
 let disClient = new Client(intents);
 const commands = new Collection();
@@ -347,11 +352,34 @@ export function DiscordJSRoutes(){
     });
 
     ipcMain.handle('discord-login', async (event, rawToken: string, appId: string) => {
-        await disClient.login(rawToken);
-        token = rawToken;
-        applicationID = appId;
+        if (rawToken === '') {
+            const storedToken = store.get('discordToken');
+            
+            if (storedToken !== undefined && typeof storedToken === 'string') {
+                token = storedToken;
+            } else {
+                return false; // or return an error message
+            }
+        } else {
+            token = rawToken;
+            store.set('discordToken', rawToken);
+        }
+        
+        if (appId === '') {
+            const storedAppId = store.get('discordAppId');
+            
+            if (storedAppId !== undefined && typeof storedAppId === 'string') {
+                applicationID = storedAppId;
+            } else {
+                return false; // or return an error message
+            }
+        } else {
+            applicationID = appId;
+            store.set('discordAppId', appId);
+        }
+        await disClient.login(token);
         return true;
-    });
+    });    
 
     ipcMain.handle('discord-logout', async (event) => {
         await disClient.destroy();

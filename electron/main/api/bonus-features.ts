@@ -6,9 +6,9 @@ import PNGtext from 'png-chunk-text';
 import { ipcMain } from 'electron';
 
 export function BonusFeaturesRoutes() {
-    ipcMain.on('import-tavern-character', async (event: any, fileData: any) => {
+    ipcMain.on('import-tavern-character', async (event: any, fileData: any, uniqueEventName: string) => {
         const agent = await import_tavern_character(fileData);
-        event.reply('import-tavern-character-reply', agent);
+        event.reply(uniqueEventName, agent);
     });
 }
 
