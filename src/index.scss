@@ -70,15 +70,15 @@ code {
 }
 
 .themed-button-neg {
-  @apply theme-border-style shadow-md bg-theme-button hover:text-theme-text-hover hover:bg-theme-hover-neg text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
+  @apply font-semibold theme-border-style shadow-md bg-theme-button hover:text-theme-text-hover hover:bg-theme-hover-neg text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
 }
 
 .themed-button-pos {
-  @apply theme-border-style shadow-md bg-theme-button hover:text-theme-text-hover hover:bg-theme-hover-pos text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
+  @apply font-semibold theme-border-style shadow-md bg-theme-button hover:text-theme-text-hover hover:bg-theme-hover-pos text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
 }
 
 .themed-button {
-  @apply theme-border-style shadow-md bg-theme-button text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
+  @apply font-semibold theme-border-style shadow-md bg-theme-button text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
 }
 
 .themed-root {

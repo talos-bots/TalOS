@@ -71,7 +71,7 @@ const ConstructBox: React.FC<Props> = ({character}) => {
                     <Link to={`/constructs/${character._id}`}>
                         {character && (character.avatar === '' ? <RiQuestionMark className="construct-image-default"/> : <img id={character._id} src={character.avatar} alt={characterName} className="cursor-pointer object-fit rounded-theme-border-radius"/>)}
                     </Link>
-                    <i className="mt-4">
+                    <i className="mt-4 font-semibold">
                         {character.nickname}
                     </i>
                     <div className="text-left">
@@ -80,7 +80,7 @@ const ConstructBox: React.FC<Props> = ({character}) => {
                 </div>
                 <div className="col-span-4 grid-cols-3 gap-4 grid justify-start">
                     <div className="col-span-1 flex flex-col justify-start items-start">
-                        <label className="text-xl">User Actions</label>
+                        <label className="text-xl font-semibold text-left">User Actions</label>
                         <div className="w-full h-1/2 overflow-hidden">
                             <div className="grid grid-rows-2 h-full">
                                 <div className="row-span-1 flex flex-row">
@@ -94,7 +94,7 @@ const ConstructBox: React.FC<Props> = ({character}) => {
                                 </div>
                             </div>
                         </div>
-                        <label className="text-xl">Commands</label>
+                        <label className="text-xl font-semibold text-left">Commands</label>
                         <div className="w-full h-1/2 overflow-hidden themed-input">
                             {character.commands.map((command, index) => {
                                 return (
@@ -106,13 +106,13 @@ const ConstructBox: React.FC<Props> = ({character}) => {
                         </div>
                     </div>
                     <div className="col-span-1 flex flex-col justify-start items-start">
-                        <label className="text-xl">Personality</label>
+                        <label className="text-xl font-semibold text-left">Personality</label>
                         <textarea
                             className="overflow-hidden w-full h-1/2 themed-input"
                             value={character.personality}
                             disabled
                         />
-                        <label className="text-xl">Background</label>
+                        <label className="text-xl font-semibold text-left">Background</label>
                         <textarea
                             className="overflow-hidden w-full h-1/2 themed-input"
                             value={character.background}
@@ -120,28 +120,28 @@ const ConstructBox: React.FC<Props> = ({character}) => {
                         />
                     </div>
                     <div className="col-span-1 flex flex-col justify-start">
-                        <label className="text-xl">Relationships</label>
+                        <label className="text-xl font-semibold text-left">Relationships</label>
                         <div className="w-full h-1/4 overflow-hidden text-left themed-input">
                             <StringArrayEditor
                                 value={character.relationships}
                                 disabled
                             />
                         </div>
-                        <label className="text-xl">Interests</label>
+                        <label className="text-xl font-semibold text-left">Interests</label>
                         <div className="w-full h-1/4 overflow-hidden themed-input">
                             <StringArrayEditor
                                 value={character.interests}
                                 disabled
                             />
                         </div>
-                        <label className="text-xl">Greetings</label>
+                        <label className="text-xl font-semibold text-left">Greetings</label>
                         <div className="w-full h-1/4 overflow-hidden themed-input">
                             <StringArrayEditor
                                 value={character.greetings}
                                 disabled
                             />
                         </div>
-                        <label className="text-xl">Farewells</label>
+                        <label className="text-xl font-semibold text-left">Farewells</label>
                         <div className="w-full h-1/4 overflow-hidden themed-input">
                             <StringArrayEditor
                                 value={character.farewells}

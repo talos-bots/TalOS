@@ -156,7 +156,7 @@ const ConstructManagement = () => {
                 <div className="col-span-1 items-center gap-4 h-3/4">
                     <div className="w-full grid grid-rows-1 items-center justify-center gap-4">
                         <div className="row-span-1 flex flex-col">
-                            <label htmlFor="construct-role">Name</label>
+                            <label htmlFor="construct-role" className="font-semibold">Name</label>
                             <input
                                 type="text"
                                 required={true}
@@ -180,7 +180,7 @@ const ConstructManagement = () => {
                             />
                         </div>
                         <div className="row-span-1 flex flex-col flex-grow-0">
-                            <label htmlFor="construct-role">Nickname</label>
+                            <label htmlFor="construct-role" className="font-semibold">Nickname</label>
                             <input
                                 type="text"
                                 required={true}
@@ -198,7 +198,7 @@ const ConstructManagement = () => {
                 <div className="col-span-2 gap-4 grid grid-rows-2">
                     <div className="row-span-1 flex flex-col gap-4 flex-grow-0">
                     <div className="flex flex-col h-1/2 flex-grow-0">
-                            <label htmlFor="construct-background">Background</label>
+                            <label htmlFor="construct-background" className="font-semibold">Background</label>
                             <textarea
                                 id="construct-background"
                                 className="themed-input h-full"
@@ -207,7 +207,7 @@ const ConstructManagement = () => {
                             />
                         </div>
                         <div className="flex flex-col h-1/2 flex-grow-0">
-                            <label htmlFor="construct-personality">Personality</label>
+                            <label htmlFor="construct-personality" className="font-semibold">Personality</label>
                             <textarea
                                 id="construct-personality h-1/2"
                                 className="themed-input h-full"
@@ -218,7 +218,7 @@ const ConstructManagement = () => {
                     </div>
                     <div className="row-span-1 flex flex-col gap-4 flex-grow-0">
                         <div className="flex flex-col h-1/2 flex-grow-0">
-                            <label htmlFor="construct-appearance">Visual Description</label>
+                            <label htmlFor="construct-appearance" className="font-semibold">Visual Description</label>
                             <textarea
                                 id="construct-appearance"
                                 className="themed-input h-full"
@@ -227,7 +227,7 @@ const ConstructManagement = () => {
                             />
                         </div>
                         <div className="flex flex-col h-1/2 overflow-y-auto flex-grow-0">
-                            <label htmlFor="construct-relationships">Relationships</label>
+                            <label htmlFor="construct-relationships" className="font-semibold">Relationships</label>
                             <StringArrayEditor 
                                 value={constructRelationships}
                                 onChange={(event) => setConstructRelationships(event)}
@@ -238,14 +238,14 @@ const ConstructManagement = () => {
                 <div className="col-span-2 gap-4 grid grid-rows-2">
                     <div className="row-span-1 flex flex-col gap-4 flex-grow-0">
                         <div className="flex flex-col h-1/2 overflow-y-auto flex-grow-0">
-                            <label htmlFor="construct-interests">Interests</label>
+                            <label htmlFor="construct-interests" className="font-semibold">Interests</label>
                             <StringArrayEditor
                                 value={constructInterests}
                                 onChange={(event) => setConstructInterests(event)}
                             />
                         </div>
                         <div className="flex flex-col h-1/2 overflow-y-auto flex-grow-0">
-                            <label htmlFor="construct-greetings">Greetings</label>
+                            <label htmlFor="construct-greetings" className="font-semibold">Greetings</label>
                             <StringArrayEditor
                                 value={constructGreetings}
                                 onChange={(event) => setConstructGreetings(event)}
@@ -254,14 +254,14 @@ const ConstructManagement = () => {
                     </div>
                     <div className="row-span-1 flex flex-col gap-4 flex-grow-0">
                         <div className="flex flex-col h-1/2 overflow-y-auto flex-grow-0">
-                            <label htmlFor="construct-farewells">Farewells</label>
+                            <label htmlFor="construct-farewells" className="font-semibold">Farewells</label>
                             <StringArrayEditor
                                 value={constructFarewells}
                                 onChange={(event) => setConstructFarewells(event)}
                             />
                         </div>
                         <div className="flex flex-col h-1/2 flex-grow-0">
-                            <label htmlFor="construct-questions">User Actions</label>
+                            <label htmlFor="construct-questions" className="font-semibold">User Actions</label>
                             <div className="grid grid-rows-2 h-full">
                                 <div className="row-span-1 flex flex-row">
                                     <button className="themed-button-pos w-1/4" onClick={() => makePrimary()}>Set as Primary Construct</button>
