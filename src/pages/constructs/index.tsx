@@ -76,7 +76,7 @@ const ConstructsPage = () => {
                         <div className="construct-search-bar col-span-2">
                             <input
                             type="text"
-                            placeholder="Search characters"
+                            placeholder="Search Constructs"
                             value={searchTerm}
                             onChange={(event) => setSearchTerm(event.target.value)}
                             />
