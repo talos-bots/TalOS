@@ -90,7 +90,7 @@ code {
 }
 
 .themed-input {
-  @apply resize-none overflow-hidden theme-border-style shadow-md bg-theme-accent text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
+  @apply resize-none overflow-y-auto theme-border-style shadow-md bg-theme-accent text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
 }
 
 .theme-border-style {

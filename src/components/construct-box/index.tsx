@@ -5,6 +5,7 @@ import { AiOutlineDown, AiOutlineUp } from "react-icons/ai";
 import { RiQuestionMark } from "react-icons/ri";
 import './ConstructBox.scss';
 import { getConstruct } from "@/api/dbapi";
+import StringArrayEditor from "../string-array-editor";
 interface Props {
     character: Construct;
 }
@@ -75,43 +76,31 @@ const ConstructBox: React.FC<Props> = ({character}) => {
                     <div className="col-span-1 flex flex-col justify-start">
                         <label className="text-xl">Relationships</label>
                         <div className="w-full h-1/4 overflow-hidden text-left themed-input">
-                            {liveCharacter.relationships.map((command, index) => {
-                                return (
-                                    <div key={index}>
-                                        {command}
-                                    </div>
-                                )
-                            })}
+                            <StringArrayEditor
+                                value={liveCharacter.relationships}
+                                disabled
+                            />
                         </div>
                         <label className="text-xl">Interests</label>
                         <div className="w-full h-1/4 overflow-hidden themed-input">
-                            {liveCharacter.interests.map((command, index) => {
-                                return (
-                                    <div key={index}>
-                                        {command}
-                                    </div>
-                                )
-                            })}
+                            <StringArrayEditor
+                                value={liveCharacter.interests}
+                                disabled
+                            />
                         </div>
                         <label className="text-xl">Greetings</label>
                         <div className="w-full h-1/4 overflow-hidden themed-input">
-                            {liveCharacter.greetings.map((command, index) => {
-                                return (
-                                    <div key={index}>
-                                        {command}
-                                    </div>
-                                )
-                            })}
+                            <StringArrayEditor
+                                value={liveCharacter.greetings}
+                                disabled
+                            />
                         </div>
                         <label className="text-xl">Farewells</label>
                         <div className="w-full h-1/4 overflow-hidden themed-input">
-                            {liveCharacter.farewells.map((command, index) => {
-                                return (
-                                    <div key={index}>
-                                        {command}
-                                    </div>
-                                )
-                            })}
+                            <StringArrayEditor
+                                value={liveCharacter.farewells}
+                                disabled
+                            />
                         </div>
                     </div>
                 </div>

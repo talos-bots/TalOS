@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { RiQuestionMark } from "react-icons/ri";
 import './ConstructCrud.scss'
+import StringArrayEditor from "../string-array-editor";
 const ConstructManagement = () => {
     const { id } = useParams<{ id: string }>();
     const [construct, setConstruct] = useState<Construct>(new Construct());
@@ -114,7 +115,18 @@ const ConstructManagement = () => {
             <h2 className="text-2xl font-bold text-theme-text text-shadow-xl">Construct Editor</h2>
             <div className="grid grid-cols-5 grid-rows-[calc, 1fr] gap-4 text-left">
                 <div className="col-span-1 items-center gap-4 h-3/4">
-                    <div className="w-full grid grid-rows-2 items-center justify-center gap-4">
+                    <div className="w-full grid grid-rows-1 items-center justify-center gap-4">
+                        <div className="row-span-1 flex flex-col">
+                            <label htmlFor="construct-role">Name</label>
+                            <input
+                                type="text"
+                                required={true}
+                                id="construct-name"
+                                className="themed-input"
+                                value={constructName}
+                                onChange={(event) => setConstructName(event.target.value)}
+                            />
+                        </div>
                         <div className="row-span-1 flex flex-col">
                             <label htmlFor="image-upload">
                                 {constructImage === '' ? <RiQuestionMark className="construct-image-default"/> : <img src={constructImage} alt={constructName} className="construct-image"/>}
@@ -128,18 +140,7 @@ const ConstructManagement = () => {
                                 onChange={handleImageUpload}
                             />
                         </div>
-                        <div className="row-span-1 flex flex-col">
-                            <label htmlFor="construct-name">Name</label>
-                            <input 
-                                type="text" 
-                                required={true}
-                                id="construct-name" 
-                                className="themed-input"
-                                value={constructName}
-                                onChange={(event) => setConstructName(event.target.value)}
-                            />
-                        </div>
-                        <div className="row-span-1 flex flex-col">
+                        <div className="row-span-1 flex flex-col flex-grow-0">
                             <label htmlFor="construct-role">Nickname</label>
                             <input
                                 type="text"
@@ -153,8 +154,8 @@ const ConstructManagement = () => {
                     </div>
                 </div>
                 <div className="col-span-2 gap-4 grid grid-rows-2">
-                    <div className="row-span-1 flex flex-col gap-4">
-                        <div className="flex flex-col h-1/2">
+                    <div className="row-span-1 flex flex-col gap-4 flex-grow-0">
+                        <div className="flex flex-col h-1/2 flex-grow-0">
                             <label htmlFor="construct-personality">Personality</label>
                             <textarea
                                 id="construct-personality h-1/2"
@@ -163,7 +164,7 @@ const ConstructManagement = () => {
                                 onChange={(event) => setConstructPersonality(event.target.value)}
                             />
                         </div>
-                        <div className="flex flex-col h-1/2">
+                        <div className="flex flex-col h-1/2 flex-grow-0">
                             <label htmlFor="construct-appearance">Visual Description</label>
                             <textarea
                                 id="construct-appearance"
@@ -173,8 +174,8 @@ const ConstructManagement = () => {
                             />
                         </div>
                     </div>
-                    <div className="row-span-1 flex flex-col gap-4">
-                        <div className="flex flex-col h-1/2">
+                    <div className="row-span-1 flex flex-col gap-4 flex-grow-0">
+                        <div className="flex flex-col h-1/2 flex-grow-0">
                             <label htmlFor="construct-background">Background</label>
                             <textarea
                                 id="construct-background"
@@ -183,49 +184,41 @@ const ConstructManagement = () => {
                                 onChange={(event) => setConstructBackground(event.target.value)}
                             />
                         </div>
-                        <div className="flex flex-col h-1/2">
+                        <div className="flex flex-col h-1/2 overflow-y-auto flex-grow-0">
                             <label htmlFor="construct-relationships">Relationships</label>
-                            <textarea
-                                id="construct-relationships"
-                                className="themed-input h-full"
+                            <StringArrayEditor 
                                 value={constructRelationships}
-                                onChange={(event) => setConstructRelationships(event.target.value.split('\n'))}
+                                onChange={(event) => setConstructRelationships(event)}
                             />
                         </div>
                     </div>
                 </div>
                 <div className="col-span-2 gap-4 grid grid-rows-2">
-                    <div className="row-span-1 flex flex-col gap-4">
-                        <div className="flex flex-col h-1/2">
+                    <div className="row-span-1 flex flex-col gap-4 flex-grow-0">
+                        <div className="flex flex-col h-1/2 overflow-y-auto flex-grow-0">
                             <label htmlFor="construct-interests">Interests</label>
-                            <textarea
-                                id="construct-interests"
-                                className="themed-input h-full"
+                            <StringArrayEditor
                                 value={constructInterests}
-                                onChange={(event) => setConstructInterests(event.target.value.split('\n'))}
+                                onChange={(event) => setConstructInterests(event)}
                             />
                         </div>
-                        <div className="flex flex-col h-1/2">
+                        <div className="flex flex-col h-1/2 overflow-y-auto flex-grow-0">
                             <label htmlFor="construct-greetings">Greetings</label>
-                            <textarea
-                                id="construct-greetings"
-                                className="themed-input h-full"
+                            <StringArrayEditor
                                 value={constructGreetings}
-                                onChange={(event) => setConstructGreetings(event.target.value.split('\n'))}
+                                onChange={(event) => setConstructGreetings(event)}
                             />
                         </div>
                     </div>
-                    <div className="row-span-1 flex flex-col gap-4">
-                        <div className="flex flex-col h-1/2">
+                    <div className="row-span-1 flex flex-col gap-4 flex-grow-0">
+                        <div className="flex flex-col h-1/2 overflow-y-auto flex-grow-0">
                             <label htmlFor="construct-farewells">Farewells</label>
-                            <textarea
-                                id="construct-farewells"
-                                className="themed-input h-full"
+                            <StringArrayEditor
                                 value={constructFarewells}
-                                onChange={(event) => setConstructFarewells(event.target.value.split('\n'))}
+                                onChange={(event) => setConstructFarewells(event)}
                             />
                         </div>
-                        <div className="flex flex-col h-1/2">
+                        <div className="flex flex-col h-1/2 flex-grow-0">
                             <label htmlFor="construct-questions">User Actions</label>
                             <div className="grid grid-rows-2 h-full">
                                 <div className="row-span-1 flex flex-row">
