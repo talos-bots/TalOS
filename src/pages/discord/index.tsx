@@ -40,8 +40,20 @@ const DiscordPage = () => {
     }
 
     return (
-        <div className="w-full h-[calc(100vh-70px)] grid grid-rows-[auto,1fr] gap-4 themed-root overflow-y-auto overflow-x-hidden">
+        <div className="w-full h-[calc(100vh-70px)] flex flex-col gap-4 themed-root overflow-y-auto overflow-x-hidden">
             <h2 className="text-2xl font-bold text-theme-text text-shadow-xl">Discord Configuration Panel</h2>
+            <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-1">
+                    <Accordian title="What is this?">
+                        <p className="text-theme-text text-left">Welcome to the ConstructOS</p>
+                    </Accordian>
+                </div>
+                <div className="col-span-1">
+                    <Accordian title="How do I use this?">
+                        <p className="text-theme-text text-left">Welcome to the ConstructOS</p>
+                    </Accordian>
+                </div>
+            </div>
             <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-1">
                     <Accordian title="Construct Configuration">
@@ -51,12 +63,10 @@ const DiscordPage = () => {
                             <div className="themed-input flex flex-col items-center w-full h-15vh overflow-y-auto">
                                 {Array.isArray(discordActiveConstructs) && discordActiveConstructs.length > 0 && discordActiveConstructs.map((construct, index) => {
                                     return(
-                                    <>
-                                        <div className="flex flex-row w-full">
-                                            <label className="text-theme-text font-semibold themed-button w-2/3">{construct.name} {index === 0 ? '(Primary)' : '(Secondary)'}</label>
-                                            <button className="themed-button-neg w-1/3" onClick={() => {removeActive(construct._id)}}>Remove</button>
+                                        <div className="flex flex-row w-full" key={index}>
+                                            <label key={index} className="text-theme-text font-semibold themed-button w-2/3">{construct.name} {index === 0 ? '(Primary)' : '(Secondary)'}</label>
+                                            <button key={index} className="themed-button-neg w-1/3" onClick={() => {removeActive(construct._id)}}>Remove</button>
                                         </div>
-                                    </>
                                 )})}
                             </div>
                         </div>
@@ -79,7 +89,7 @@ const DiscordPage = () => {
                     </Accordian>
                 </div>
                 <div className="col-span-1">
-                    <Accordian title="Bot Information">
+                    <Accordian title="Bot Configuration">
                         <div className="flex flex-row text-left gap-4 mt-2">
                             <div className="flex flex-col text-left w-1/2">
                                 <label className="text-theme-text font-semibold">Bot Token</label>
