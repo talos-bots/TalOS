@@ -3,6 +3,7 @@ import { Attachment } from "@/classes/Attachment";
 import { Chat } from "@/classes/Chat";
 import { IpcRendererEvent, ipcRenderer } from "electron";
 import { Instruct } from "@/classes/Instruct";
+import { removeConstructFromActive } from "../constructapi";
 
 export async function getConstructs(): Promise<Construct[]> {
     return new Promise((resolve, reject) => {
@@ -71,6 +72,7 @@ export async function updateConstruct(construct: Construct) {
 
 export async function deleteConstruct(id: string) {
     ipcRenderer.send('delete-construct', id);
+    await removeConstructFromActive(id);
 }
 
 export async function getCommands(): Promise<string[]> {
