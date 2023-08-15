@@ -5,12 +5,16 @@ interface RouteButtonProps {
     text: string;
     icon?: any;
     onClick?: () => void;
+    className?: string;
+    id?: string;
+    children?: React.ReactNode;
 }
 const RouteButton = (props: RouteButtonProps) => {
     return (
-        <Link to={props.to} className="flex flex-row items-center justify-center gap-2 themed-button-pos" onClick={props.onClick}>
+        <Link id={props.id} to={props.to} className={"flex flex-row items-center justify-center gap-2 themed-button-pos " + props.className} onClick={props.onClick}>
             {props.icon}
             <span>{props.text}</span>
+            {props.children}
         </Link>
     );
 }

@@ -4,8 +4,9 @@ import { Link } from "react-router-dom";
 import { AiOutlineDown, AiOutlineUp } from "react-icons/ai";
 import { RiQuestionMark } from "react-icons/ri";
 import './ConstructBox.scss';
-import { getConstruct } from "@/api/dbapi";
+import { deleteConstruct, getConstruct } from "@/api/dbapi";
 import StringArrayEditor from "../string-array-editor";
+import RouteButton from "../route-button";
 interface Props {
     character: Construct;
 }
@@ -21,6 +22,11 @@ const ConstructBox: React.FC<Props> = ({character}) => {
             setLiveCharacter(construct);
         });
     }, [character]);
+
+    const deleteConstructFrom = async () => {
+        await deleteConstruct(character._id);
+        window.location.reload();
+    }
 
     return (
         <div className="character-box themed-root h-calc(100vh/6) w-full justify-center">
@@ -43,9 +49,17 @@ const ConstructBox: React.FC<Props> = ({character}) => {
                 <div className="col-span-4 grid-cols-3 gap-4 grid justify-start">
                     <div className="col-span-1 flex flex-col justify-start items-start">
                         <label className="text-xl">User Actions</label>
-                        <div className="w-full h-1/2 overflow-hidden themed-input">
-                            <div className="grid grid-rows-2">
-
+                        <div className="w-full h-1/2 overflow-hidden">
+                            <div className="grid grid-rows-2 h-full">
+                                <div className="row-span-1 flex flex-row">
+                                    <button className="themed-button-pos w-1/3" onClick={() => console.log('Primary')}>Set as Primary Construct</button>
+                                    <button className="themed-button-pos w-1/3" onClick={() => console.log('Secondary')}>Add as Secondary Construct</button>
+                                    <button className="themed-button-neg w-1/3" onClick={() => console.log('Remove')}>Remove Active Construct</button>
+                                </div>
+                                <div className="row-span-1 flex flex-row">
+                                    <RouteButton to={`/constructs/${character._id}`} text="Edit" className="w-1/2"/>
+                                    <button className="themed-button-neg w-1/2" onClick={() => deleteConstructFrom()}>Delete</button>
+                                </div>
                             </div>
                         </div>
                         <label className="text-xl">Commands</label>
