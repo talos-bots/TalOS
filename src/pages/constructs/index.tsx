@@ -54,15 +54,14 @@ const ConstructsPage = () => {
     }, []);
 
     return (
-        <div className="w-full h-[calc(100vh-70px)] grid grid-rows-[auto,1fr] overflow-y-auto themed-root gap-4">
+        <div className="w-full h-[calc(100vh-70px)] grid grid-rows-[auto,1fr] overflow-y-auto overflow-x-hidden themed-root gap-4">
             <h2 className="text-2xl font-bold text-theme-text text-shadow-xl">Constructs</h2>
             <div className="flex flex-col gap-8">
                 <div className="grid grid-cols-4 gap-0 w-15vw h-5vh">
-                    <Link to="/constructs/new" className="themed-button-pos flex items-center justify-center">
+                    <Link to="/constructs/new" className="themed-button-pos flex items-center justify-center" data-tooltip="Add New Construct">
                         <FiPlus className='absolute'size={50}/>
                     </Link>
-                    <label htmlFor="character-image-input"  
-                        className="themed-button-pos flex items-center justify-center" title="Import Character Card">
+                    <label htmlFor="character-image-input" className="themed-button-pos flex items-center justify-center" data-tooltip="Import Character Card">
                         <AiOutlineUpload className='absolute'size={50}/>
                     </label>
                     <input

@@ -116,3 +116,44 @@ code {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--theme-hover-pos); 
 }
+
+[data-tooltip] {
+  position: relative;
+  cursor: pointer;
+  z-index: 9999;
+}
+
+[data-tooltip]::before,
+[data-tooltip]::after {
+  position: absolute;
+  visibility: hidden;
+  opacity: 0;
+  z-index: 9999;
+  pointer-events: none;
+  transition: all 0.3s;
+}
+
+[data-tooltip]::before {
+  content: attr(data-tooltip);
+  width: max-content;
+  top: 100%; /* Set top to 100% to place it below the element */
+  left: 0; /* Adjust this value to control horizontal placement */
+  white-space: nowrap;
+  font-size: 12px;
+  z-index: 9999;
+  @apply themed-input;
+}
+
+[data-tooltip]::after {
+  content: '';
+  top: 100%; /* Set top to 100% to place it below the element */
+  left: 0; /* Adjust this value to control horizontal placement */
+  z-index: 9999;
+}
+
+[data-tooltip]:hover::before,
+[data-tooltip]:hover::after {
+  visibility: visible;
+  opacity: 1;
+  z-index: 9999;
+}

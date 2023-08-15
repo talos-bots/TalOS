@@ -61,7 +61,7 @@ const ConstructBox: React.FC<Props> = ({character}) => {
         <div className="character-box themed-box h-calc(100vh/6) w-full justify-center">
             <div className="text-2xl font-bold z-10 flex justify-between items-center">
                 {characterName}
-                <button onClick={() => setIsOpen(!isOpen)}>
+                <button onClick={() => setIsOpen(!isOpen)} data-tooltip={isOpen ? `Collapse ${characterName} details.` : `Expand ${characterName} details.`}>
                     {isOpen ? <AiOutlineUp/> : <AiOutlineDown/>}
                 </button>
             </div>
