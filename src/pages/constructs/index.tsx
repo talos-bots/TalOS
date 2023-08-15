@@ -1,13 +1,14 @@
 
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { FiPlus } from "react-icons/fi";
+import { FiPlus, FiX } from "react-icons/fi";
 import { Construct } from "@/classes/Construct";
 import { getConstructs, saveNewConstruct } from "@/api/dbapi";
 import ConstructBox from "@/components/construct-box";
 import './construct-page.scss';
 import { importTavernCharacter } from "@/api/extrasapi";
 import { AiOutlineUpload } from "react-icons/ai";
+import { removeAllActiveConstructs } from "@/api/constructapi";
 
 const ConstructsPage = () => {
     const [characters, setCharacters] = useState<Construct[]>([]);
@@ -53,14 +54,22 @@ const ConstructsPage = () => {
         retrieveCharacters();
     }, []);
 
+    const clearActive = async () => {
+        await removeAllActiveConstructs();
+        window.location.reload();
+    }
+
     return (
         <div className="w-full h-[calc(100vh-70px)] grid grid-rows-[auto,1fr] overflow-y-auto overflow-x-hidden themed-root gap-4">
             <h2 className="text-2xl font-bold text-theme-text text-shadow-xl">Constructs</h2>
             <div className="flex flex-col gap-8">
-                <div className="grid grid-cols-4 gap-0 w-15vw h-5vh">
+                <div className="grid grid-cols-5 gap-0 w-15vw h-5vh">
                     <Link to="/constructs/new" className="themed-button-pos flex items-center justify-center" data-tooltip="Add New Construct">
                         <FiPlus className='absolute'size={50}/>
                     </Link>
+                    <button onClick={clearActive} className="themed-button-pos flex items-center justify-center" data-tooltip="Clear Active Constructs">
+                        <FiX className='absolute'size={50}/>
+                    </button>
                     <label htmlFor="character-image-input" className="themed-button-pos flex items-center justify-center" data-tooltip="Import Character Card">
                         <AiOutlineUpload className='absolute'size={50}/>
                     </label>
