@@ -63,7 +63,7 @@ const ConstructBox: React.FC<Props> = ({character}) => {
     }
 
     return (
-        <div className="character-box themed-root h-calc(100vh/6) w-full justify-center">
+        <div className="character-box themed-box h-calc(100vh/6) w-full justify-center">
             <div className="text-2xl font-bold z-10 flex justify-between items-center">
                 {characterName}
                 <button onClick={() => setIsOpen(!isOpen)}>

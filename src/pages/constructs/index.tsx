@@ -63,7 +63,7 @@ const ConstructsPage = () => {
                     </Link>
                     <label htmlFor="character-image-input"  
                         className="themed-button-pos flex items-center justify-center" title="Import Character Card">
-                        <AiOutlineUpload/>
+                        <AiOutlineUpload className='absolute'size={50}/>
                     </label>
                     <input
                         type="file"
