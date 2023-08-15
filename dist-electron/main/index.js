@@ -1251,6 +1251,18 @@ const isConstructActive = (id) => {
   const existingIds = retrieveConstructs();
   return existingIds.includes(id);
 };
+const clearActiveConstructs = () => {
+  store$1.set("ids", []);
+};
+const setAsPrimary = (id) => {
+  const existingIds = retrieveConstructs();
+  const index = existingIds.indexOf(id);
+  if (index > -1) {
+    existingIds.splice(index, 1);
+  }
+  existingIds.unshift(id);
+  store$1.set("ids", existingIds);
+};
 function constructController() {
   ActiveConstructs = retrieveConstructs();
   electron.ipcMain.on("add-construct-to-active", (event, arg) => {
@@ -1270,6 +1282,16 @@ function constructController() {
   electron.ipcMain.on("is-construct-active", (event, arg) => {
     const isActive = isConstructActive(arg);
     event.reply("is-construct-active-reply", isActive);
+  });
+  electron.ipcMain.on("remove-all-constructs-active", (event, arg) => {
+    clearActiveConstructs();
+    ActiveConstructs = retrieveConstructs();
+    event.reply("remove-all-constructs-active-reply", ActiveConstructs);
+  });
+  electron.ipcMain.on("set-construct-primary", (event, arg) => {
+    setAsPrimary(arg);
+    ActiveConstructs = retrieveConstructs();
+    event.reply("set-construct-primary-reply", ActiveConstructs);
   });
 }
 process.env.DIST_ELECTRON = node_path.join(__dirname, "../");

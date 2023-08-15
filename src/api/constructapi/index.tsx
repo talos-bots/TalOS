@@ -31,3 +31,11 @@ export async function addConstructToActive(id: string): Promise<void> {
 export async function removeConstructFromActive(id: string): Promise<void> {
     ipcRenderer.send("remove-construct-active", id);
 }
+
+export async function removeAllActiveConstructs(): Promise<void> {
+    ipcRenderer.send("remove-all-constructs-active");
+}
+
+export async function setConstructAsPrimary(id: string): Promise<void> {
+    ipcRenderer.send("set-construct-primary", id);
+}

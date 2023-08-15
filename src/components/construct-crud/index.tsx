@@ -5,6 +5,8 @@ import { useParams } from "react-router-dom";
 import { RiQuestionMark } from "react-icons/ri";
 import './ConstructCrud.scss'
 import StringArrayEditor from "../string-array-editor";
+import { setConstructAsPrimary, addConstructToActive, constructIsActive, getActiveConstructList, removeConstructFromActive } from "@/api/constructapi";
+
 const ConstructManagement = () => {
     const { id } = useParams<{ id: string }>();
     const [construct, setConstruct] = useState<Construct>(new Construct());
@@ -20,7 +22,26 @@ const ConstructManagement = () => {
     const [constructInterests, setConstructInterests] = useState<string[]>([]);
     const [constructGreetings, setConstructGreetings] = useState<string[]>([]);
     const [constructFarewells, setConstructFarewells] = useState<string[]>([]);
+    const [isActive, setIsActive] = useState<boolean>(false);
+    const [isPrimary, setIsPrimary] = useState<boolean>(false);
 
+    const makeActive = async () => {
+        if(constructState !== null) {
+            await addConstructToActive(constructState._id);
+        }
+    }
+
+    const makePrimary = async () => {
+        if(constructState !== null) {
+            await setConstructAsPrimary(constructState._id);
+        }
+    }
+
+    const makeInactive = async () => {
+        if(constructState !== null) {
+            await removeConstructFromActive(constructState._id);
+        }
+    }
 
     useEffect(() => {
         const getPassedCharacter = async () => {
@@ -38,6 +59,23 @@ const ConstructManagement = () => {
                 setConstructInterests(character.interests);
                 setConstructGreetings(character.greetings);
                 setConstructFarewells(character.farewells);
+
+                const getActiveStatus = async () => {
+                    let status = await constructIsActive(character._id);
+                    setIsActive(status);
+                    getPrimaryStatus();
+                }
+                const getPrimaryStatus = async () => {
+                    if(isActive){
+                        let activeList = await getActiveConstructList();
+                        if(activeList.length > 0){
+                            if(activeList[0] === character._id){
+                                setIsPrimary(true);
+                            }
+                        }
+                    }
+                }
+                getActiveStatus();
             }
         }
         getPassedCharacter();
@@ -151,6 +189,9 @@ const ConstructManagement = () => {
                                 value={constructNickname}
                                 onChange={(event) => setConstructNick(event.target.value)}
                             />
+                            <div className="text-left">
+                                <b>Construct Status:</b> {isActive ? <span className="text-theme-flavor-text font-bold">Active</span> : <span className="text-theme-hover-neg font-bold">Inactive</span>}{isActive && <span className="text-theme-flavor-text font-bold"> + {isPrimary ? 'Primary': 'Secondary'}</span>}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -223,9 +264,9 @@ const ConstructManagement = () => {
                             <label htmlFor="construct-questions">User Actions</label>
                             <div className="grid grid-rows-2 h-full">
                                 <div className="row-span-1 flex flex-row">
-                                    <button className="themed-button-pos w-1/4" onClick={() => console.log('Primary')}>Set as Primary Construct</button>
-                                    <button className="themed-button-pos w-1/4" onClick={() => console.log('Secondary')}>Add as Secondary Construct</button>
-                                    <button className="themed-button-neg w-1/4" onClick={() => console.log('Remove')}>Remove Active Construct</button>
+                                    <button className="themed-button-pos w-1/4" onClick={() => makePrimary()}>Set as Primary Construct</button>
+                                    <button className="themed-button-pos w-1/4" onClick={() => makeActive()}>Add as Secondary Construct</button>
+                                    <button className="themed-button-neg w-1/4" onClick={() => makeInactive()}>Remove Active Construct</button>
                                     <button className="themed-button-neg w-1/4" onClick={() => deleteConstructAndReturn()}>{constructState ? 'Delete Construct' : 'Clear Values'}</button>
                                 </div>
                                 <div className="row-span-1 flex flex-row">

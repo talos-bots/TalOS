@@ -7,11 +7,11 @@ type ConstructID = string;
 
 export let ActiveConstructs: ConstructID[] = [];
 
-export const retrieveConstructs = (): ConstructID[] => {
+const retrieveConstructs = (): ConstructID[] => {
     return store.get('ids', []) as ConstructID[];
 }
 
-export const addConstruct = (newId: ConstructID): void => {
+const addConstruct = (newId: ConstructID): void => {
     const existingIds = retrieveConstructs();
     if (!existingIds.includes(newId)) {
         existingIds.push(newId);
@@ -19,15 +19,32 @@ export const addConstruct = (newId: ConstructID): void => {
     }
 }
 
-export const removeConstruct = (idToRemove: ConstructID): void => {
+const removeConstruct = (idToRemove: ConstructID): void => {
     const existingIds = retrieveConstructs();
     const updatedIds = existingIds.filter(id => id !== idToRemove);
     store.set('ids', updatedIds);
 }
 
-export const isConstructActive = (id: ConstructID): boolean => {
+const isConstructActive = (id: ConstructID): boolean => {
     const existingIds = retrieveConstructs();
     return existingIds.includes(id);
+}
+
+const clearActiveConstructs = (): void => {
+    store.set('ids', []);
+}
+
+const setAsPrimary = (id: ConstructID): void => {
+    const existingIds = retrieveConstructs();  // Assuming retrieveConstructs returns an array of ConstructID
+    const index = existingIds.indexOf(id);
+    
+    if (index > -1) {
+        existingIds.splice(index, 1);
+    }
+
+    existingIds.unshift(id);
+
+    store.set('ids', existingIds); 
 }
 
 function constructController() {
@@ -53,6 +70,18 @@ function constructController() {
     ipcMain.on('is-construct-active', (event, arg) => {
         const isActive = isConstructActive(arg);
         event.reply('is-construct-active-reply', isActive);
+    });
+
+    ipcMain.on('remove-all-constructs-active', (event, arg) => {
+        clearActiveConstructs();
+        ActiveConstructs = retrieveConstructs();
+        event.reply('remove-all-constructs-active-reply', ActiveConstructs);
+    });
+
+    ipcMain.on('set-construct-primary', (event, arg) => {
+        setAsPrimary(arg);
+        ActiveConstructs = retrieveConstructs();
+        event.reply('set-construct-primary-reply', ActiveConstructs);
     });
 }
 export default constructController;
