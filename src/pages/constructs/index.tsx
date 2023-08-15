@@ -3,12 +3,11 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { FiPlus } from "react-icons/fi";
 import { Construct } from "@/classes/Construct";
-import { getConstructs } from "@/api/dbapi";
+import { getConstructs, saveNewConstruct } from "@/api/dbapi";
 import ConstructBox from "@/components/construct-box";
 import './construct-page.scss';
 import { importTavernCharacter } from "@/api/extrasapi";
 import { AiOutlineUpload } from "react-icons/ai";
-import { addConstruct } from "electron/main/api/pouchdb";
 
 const ConstructsPage = () => {
     const [characters, setCharacters] = useState<Construct[]>([]);
@@ -37,12 +36,9 @@ const ConstructsPage = () => {
                 console.error(error);
             }
         });
-
-        const importData = await Promise.all(uploadPromises);
-        for(let i = 0; i < importData.length; i++){
-            await addConstruct(importData[i]);
-        }
-    };
+        await Promise.all(uploadPromises);
+        window.location.reload();
+    };    
 
     useEffect(() => {
         const retrieveCharacters = async () => {

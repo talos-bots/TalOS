@@ -1,5 +1,6 @@
 import { Construct } from "@/classes/Construct";
 import { ipcRenderer } from "electron";
+import { saveNewConstruct } from "../dbapi";
 
 export const importTavernCharacter = (
     file: File
@@ -15,14 +16,26 @@ export const importTavernCharacter = (
                 contents: fileContents
             });
 
-            ipcRenderer.once('import-tavern-character-reply', (event, characterData) => {
+            ipcRenderer.once('import-tavern-character-reply', async (event, characterData) => {
                 if (characterData) {
                     const construct = new Construct();
                     construct.avatar = characterData.avatar;
-                    construct.name = (characterData.name).replaceAll('\r', '');
-                    construct.background = (characterData.scenario).replaceAll('\r', '');
-                    construct.personality = (characterData.personality + '\n' + characterData.mes_example + '\n' + characterData.description).replaceAll('\r', '');
-                    construct.addGreeting((characterData.first_mes).replaceAll('\r', ''));
+                    construct.name = (characterData.name || '').replaceAll('\r', '');
+                    construct.background = (characterData.scenario || '').replaceAll('\r', '');
+
+                    // Construct personality field by filtering out empty or null parts
+                    const personalityParts = [
+                        characterData.personality,
+                        characterData.mes_example,
+                        characterData.description
+                    ].filter(part => part && part.trim().length > 0);
+                    construct.personality = personalityParts.join('\n').replaceAll('\r', '');
+
+                    if (characterData.first_mes && characterData.first_mes.trim().length > 0) {
+                        construct.addGreeting(characterData.first_mes.replaceAll('\r', ''));
+                    }
+
+                    await saveNewConstruct(construct);
                     resolve(construct);
                 } else {
                     reject(new Error("No data received from 'import-tavern-character' event."));
