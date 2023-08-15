@@ -783,6 +783,7 @@ function PouchDBRoutes() {
     chatsDB.destroy();
     commandDB.destroy();
     attachmentDB.destroy();
+    instructDB.destroy();
     createDBs();
   });
   function createDBs() {
@@ -792,13 +793,6 @@ function PouchDBRoutes() {
     attachmentDB = new PouchDB("attachments", { prefix: dataPath });
     instructDB = new PouchDB("instructs", { prefix: dataPath });
   }
-  return {
-    constructDB,
-    chatsDB,
-    commandDB,
-    attachmentDB,
-    instructDB
-  };
 }
 function FsAPIRoutes() {
   electron.ipcMain.handle("read-file", async (event, filePath) => {

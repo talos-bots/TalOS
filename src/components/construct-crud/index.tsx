@@ -75,6 +75,7 @@ const ConstructManagement = () => {
                 newConstruct.greetings = constructGreetings;
                 newConstruct.farewells = constructFarewells;
                 await saveNewConstruct(newConstruct);
+                returnToMenu();
             }
         }
     }
