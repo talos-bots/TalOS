@@ -13,17 +13,12 @@ interface Props {
 }
 const ConstructBox: React.FC<Props> = ({character}) => {
     const [characterName, setCharacterName] = useState<string>(character.name);
-    const [liveCharacter, setLiveCharacter] = useState<Construct | null>(null);
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const [isActive, setIsActive] = useState<boolean>(false);
     const [isPrimary, setIsPrimary] = useState<boolean>(false);
 
     useEffect(() => {
         setCharacterName(character.name);
-        let fetchedConstruct = getConstruct(character._id);
-        fetchedConstruct.then((construct) => {
-            setLiveCharacter(construct);
-        });
         const getActiveStatus = async () => {
             let status = await constructIsActive(character._id);
             setIsActive(status);
@@ -70,14 +65,14 @@ const ConstructBox: React.FC<Props> = ({character}) => {
                     {isOpen ? <AiOutlineUp/> : <AiOutlineDown/>}
                 </button>
             </div>
-            {isOpen && liveCharacter && (
+            {isOpen && character && (
             <div className="grid grid-cols-5 gap-4">
                 <div className="col-span-1">
                     <Link to={`/constructs/${character._id}`}>
-                        {liveCharacter && (liveCharacter.avatar === '' ? <RiQuestionMark className="construct-image-default"/> : <img src={liveCharacter.avatar} alt={characterName} className="cursor-pointer object-scale-down rounded-theme-border-radius"/>)}
+                        {character && (character.avatar === '' ? <RiQuestionMark className="construct-image-default"/> : <img id={character._id} src={character.avatar} alt={characterName} className="cursor-pointer object-scale-down rounded-theme-border-radius"/>)}
                     </Link>
                     <i className="mt-4">
-                        {liveCharacter.nickname}
+                        {character.nickname}
                     </i>
                     <div className="text-left">
                         <b>Construct Status:</b> {isActive ? <span className="text-theme-flavor-text font-bold">Active</span> : <span className="text-theme-hover-neg font-bold">Inactive</span>}{isActive && <span className="text-theme-flavor-text font-bold"> + {isPrimary ? 'Primary': 'Secondary'}</span>}
@@ -101,7 +96,7 @@ const ConstructBox: React.FC<Props> = ({character}) => {
                         </div>
                         <label className="text-xl">Commands</label>
                         <div className="w-full h-1/2 overflow-hidden themed-input">
-                            {liveCharacter.commands.map((command, index) => {
+                            {character.commands.map((command, index) => {
                                 return (
                                     <div key={index}>
                                         {command}
@@ -114,13 +109,13 @@ const ConstructBox: React.FC<Props> = ({character}) => {
                         <label className="text-xl">Personality</label>
                         <textarea
                             className="overflow-hidden w-full h-1/2 themed-input"
-                            value={liveCharacter.personality}
+                            value={character.personality}
                             disabled
                         />
                         <label className="text-xl">Background</label>
                         <textarea
                             className="overflow-hidden w-full h-1/2 themed-input"
-                            value={liveCharacter.background}
+                            value={character.background}
                             disabled
                         />
                     </div>
@@ -128,28 +123,28 @@ const ConstructBox: React.FC<Props> = ({character}) => {
                         <label className="text-xl">Relationships</label>
                         <div className="w-full h-1/4 overflow-hidden text-left themed-input">
                             <StringArrayEditor
-                                value={liveCharacter.relationships}
+                                value={character.relationships}
                                 disabled
                             />
                         </div>
                         <label className="text-xl">Interests</label>
                         <div className="w-full h-1/4 overflow-hidden themed-input">
                             <StringArrayEditor
-                                value={liveCharacter.interests}
+                                value={character.interests}
                                 disabled
                             />
                         </div>
                         <label className="text-xl">Greetings</label>
                         <div className="w-full h-1/4 overflow-hidden themed-input">
                             <StringArrayEditor
-                                value={liveCharacter.greetings}
+                                value={character.greetings}
                                 disabled
                             />
                         </div>
                         <label className="text-xl">Farewells</label>
                         <div className="w-full h-1/4 overflow-hidden themed-input">
                             <StringArrayEditor
-                                value={liveCharacter.farewells}
+                                value={character.farewells}
                                 disabled
                             />
                         </div>

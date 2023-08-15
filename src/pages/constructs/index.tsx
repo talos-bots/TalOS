@@ -84,7 +84,7 @@ const ConstructsPage = () => {
                         </div>
                     }
                 </div>
-                <div className="flex flex-col">
+                <div className="flex flex-col gap-4">
                     {Array.isArray(filteredCharacters) && filteredCharacters.map((character, index) => (
                         <ConstructBox key={index} character={character} />
                     ))}
