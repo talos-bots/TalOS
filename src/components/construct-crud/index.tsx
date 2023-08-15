@@ -197,6 +197,15 @@ const ConstructManagement = () => {
                 </div>
                 <div className="col-span-2 gap-4 grid grid-rows-2">
                     <div className="row-span-1 flex flex-col gap-4 flex-grow-0">
+                    <div className="flex flex-col h-1/2 flex-grow-0">
+                            <label htmlFor="construct-background">Background</label>
+                            <textarea
+                                id="construct-background"
+                                className="themed-input h-full"
+                                value={constructBackground}
+                                onChange={(event) => setConstructBackground(event.target.value)}
+                            />
+                        </div>
                         <div className="flex flex-col h-1/2 flex-grow-0">
                             <label htmlFor="construct-personality">Personality</label>
                             <textarea
@@ -206,6 +215,8 @@ const ConstructManagement = () => {
                                 onChange={(event) => setConstructPersonality(event.target.value)}
                             />
                         </div>
+                    </div>
+                    <div className="row-span-1 flex flex-col gap-4 flex-grow-0">
                         <div className="flex flex-col h-1/2 flex-grow-0">
                             <label htmlFor="construct-appearance">Visual Description</label>
                             <textarea
@@ -213,17 +224,6 @@ const ConstructManagement = () => {
                                 className="themed-input h-full"
                                 value={constructVisualDescription}
                                 onChange={(event) => setConstructVisualDescription(event.target.value)}
-                            />
-                        </div>
-                    </div>
-                    <div className="row-span-1 flex flex-col gap-4 flex-grow-0">
-                        <div className="flex flex-col h-1/2 flex-grow-0">
-                            <label htmlFor="construct-background">Background</label>
-                            <textarea
-                                id="construct-background"
-                                className="themed-input h-full"
-                                value={constructBackground}
-                                onChange={(event) => setConstructBackground(event.target.value)}
                             />
                         </div>
                         <div className="flex flex-col h-1/2 overflow-y-auto flex-grow-0">
