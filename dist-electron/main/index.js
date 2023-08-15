@@ -1174,15 +1174,15 @@ const txt2img = async (data, apiUrl) => {
   }
 };
 function BonusFeaturesRoutes() {
-  electron.ipcMain.on("import-tavern-character", async (event, img_url) => {
-    const agent = await import_tavern_character(img_url);
+  electron.ipcMain.on("import-tavern-character", async (event, fileData) => {
+    const agent = await import_tavern_character(fileData);
     event.reply("import-tavern-character-reply", agent);
   });
 }
-async function import_tavern_character(img_url) {
+async function import_tavern_character(fileData) {
   try {
     let format;
-    if (img_url.indexOf(".webp") !== -1) {
+    if (fileData.name.indexOf(".webp") !== -1) {
       format = "webp";
     } else {
       format = "png";
@@ -1190,7 +1190,7 @@ async function import_tavern_character(img_url) {
     let decoded_string = "";
     switch (format) {
       case "png":
-        const buffer = fs.readFileSync(img_url);
+        const buffer = Buffer.from(fileData.contents.split(",")[1], "base64");
         const chunks = extract(buffer);
         const textChunks = chunks.filter(function(chunk) {
           return chunk.name === "tEXt";
@@ -1209,7 +1209,6 @@ async function import_tavern_character(img_url) {
       characterData = {
         _id: Date.now().toString(),
         ..._json.data[0]
-        // assuming you want the first element from the data array
       };
     } else {
       characterData = {
@@ -1219,7 +1218,8 @@ async function import_tavern_character(img_url) {
         personality: _json.personality,
         scenario: _json.scenario,
         first_mes: _json.first_mes,
-        mes_example: _json.mes_example
+        mes_example: _json.mes_example,
+        avatar: fileData.contents
       };
     }
     return characterData;

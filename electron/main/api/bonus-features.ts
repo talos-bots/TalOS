@@ -6,17 +6,16 @@ import PNGtext from 'png-chunk-text';
 import { ipcMain } from 'electron';
 
 export function BonusFeaturesRoutes() {
-
-    ipcMain.on('import-tavern-character', async (event: any, img_url: any) => {
-        const agent = await import_tavern_character(img_url);
+    ipcMain.on('import-tavern-character', async (event: any, fileData: any) => {
+        const agent = await import_tavern_character(fileData);
         event.reply('import-tavern-character-reply', agent);
     });
 }
 
-async function import_tavern_character(img_url: any) {
+async function import_tavern_character(fileData: { contents: string, name: string }) {
     try {
         let format;
-        if (img_url.indexOf('.webp') !== -1) {
+        if (fileData.name.indexOf('.webp') !== -1) {
             format = 'webp';
         } else {
             format = 'png';
@@ -25,7 +24,8 @@ async function import_tavern_character(img_url: any) {
         let decoded_string: string = '';
         switch (format) {
             case 'png':
-                const buffer = fs.readFileSync(img_url);
+                // Decode the Base64 string to get the file content as a Buffer
+                const buffer = Buffer.from(fileData.contents.split(',')[1], 'base64');
                 const chunks = extract(buffer);
 
                 const textChunks = chunks.filter(function (chunk: any) {
@@ -48,7 +48,7 @@ async function import_tavern_character(img_url: any) {
         if (isV2) {
             characterData = {
                 _id: Date.now().toString(),
-                ..._json.data[0]  // assuming you want the first element from the data array
+                ..._json.data[0]
             };
         } else {
             characterData = {
@@ -58,11 +58,14 @@ async function import_tavern_character(img_url: any) {
                 personality: _json.personality,
                 scenario: _json.scenario,
                 first_mes: _json.first_mes,
-                mes_example: _json.mes_example
+                mes_example: _json.mes_example,
+                avatar: fileData.contents
             };
         }
 
+        // Include the Base64 image data in the object you are returning
         return characterData;
+
     } catch (error) {
         console.error(error);
         throw error;

@@ -6,6 +6,9 @@ import { Construct } from "@/classes/Construct";
 import { getConstructs } from "@/api/dbapi";
 import ConstructBox from "@/components/construct-box";
 import './construct-page.scss';
+import { importTavernCharacter } from "@/api/extrasapi";
+import { AiOutlineUpload } from "react-icons/ai";
+import { addConstruct } from "electron/main/api/pouchdb";
 
 const ConstructsPage = () => {
     const [characters, setCharacters] = useState<Construct[]>([]);
@@ -22,18 +25,24 @@ const ConstructsPage = () => {
     }) : [];
 
 
-    const returnToMenu = () => {
-        console.log('returning to menu');
-        location.href = '/';
-    }
+    const handleImageUpload = async (files: FileList | null) => {
+        if (!files) return;
+        const filesArray = Array.from(files);
+        
+        const uploadPromises = filesArray.map(async (file) => {
+            try {
+                const importData = await importTavernCharacter(file);
+                return importData;
+            } catch (error) {
+                console.error(error);
+            }
+        });
 
-    useEffect(() => {
-        const closeOnEscapeKey = (e: { key: string; }) => e.key === "Escape" ? returnToMenu() : null;
-        document.body.addEventListener("keydown", closeOnEscapeKey);
-        return () => {
-            document.body.removeEventListener("keydown", closeOnEscapeKey);
-        };
-    }, []);
+        const importData = await Promise.all(uploadPromises);
+        for(let i = 0; i < importData.length; i++){
+            await addConstruct(importData[i]);
+        }
+    };
 
     useEffect(() => {
         const retrieveCharacters = async () => {
@@ -56,6 +65,18 @@ const ConstructsPage = () => {
                     <Link to="/constructs/new" className="themed-button-pos flex items-center justify-center">
                         <FiPlus className='absolute'size={50}/>
                     </Link>
+                    <label htmlFor="character-image-input"  
+                        className="themed-button-pos flex items-center justify-center" title="Import Character Card">
+                        <AiOutlineUpload/>
+                    </label>
+                    <input
+                        type="file"
+                        accept="image/png, application/json"
+                        id="character-image-input"
+                        onChange={(e) => handleImageUpload(e.target.files)}
+                        style={{ display: 'none' }}
+                        multiple={true}
+                    />
                     {characters && 
                         <div className="construct-search-bar col-span-2">
                             <input
