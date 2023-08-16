@@ -15,6 +15,8 @@ const store = new Store({
     name: 'discordData',
 });
 
+getDiscordData();
+
 let disClient = new Client(intents);
 const commands = new Collection();
 let isReady = false;
@@ -182,11 +184,78 @@ export async function getWebhooksForChannel(channelID: Snowflake): Promise<strin
     return webhooks.map(webhook => webhook.name);
 }
 
+export async function setDiscordAuthToken(token: string): Promise<void> {
+    store.set('discordToken', token);
+}
+
+export async function setDiscordAppId(appId: string): Promise<void> {
+    store.set('discordAppId', appId);
+}
+
+export async function getDiscordData(): Promise<{savedToken: string, appId: string}> {
+    let savedToken;
+    const storedToken = store.get('discordToken');
+    if (storedToken !== undefined && typeof storedToken === 'string') {
+        savedToken = storedToken;
+    } else {
+        savedToken = '';
+    }
+
+    let appId;
+    const storedAppId = store.get('discordAppId');
+    if (storedAppId !== undefined && typeof storedAppId === 'string') {
+        appId = storedAppId;
+    } else {
+        appId = '';
+    }
+    token = savedToken;
+    applicationID = appId;
+    return {savedToken, appId};
+}
+
+export function saveDiscordData(newToken: string, newAppId: string){
+    if (newToken === '') {
+        const storedToken = store.get('discordToken');
+        
+        if (storedToken !== undefined && typeof storedToken === 'string') {
+            token = storedToken;
+        } else {
+            return false; // or return an error message
+        }
+    } else {
+        token = newToken;
+        store.set('discordToken', newToken);
+    }
+    
+    if (newAppId === '') {
+        const storedAppId = store.get('discordAppId');
+        
+        if (storedAppId !== undefined && typeof storedAppId === 'string') {
+            applicationID = storedAppId;
+        } else {
+            return false; // or return an error message
+        }
+    } else {
+        applicationID = newAppId;
+        store.set('discordAppId', newAppId);
+    }
+}
+
 export function DiscordJSRoutes(){
     ipcMain.on('discord-get-token', async (event) => {
         event.sender.send('discord-get-token-reply', token);
     });
 
+    ipcMain.on('discord-get-data', async (event) => {
+        let data = await getDiscordData();
+        event.sender.send('discord-get-data-reply', data);
+    });
+
+    ipcMain.on('discord-save-data', async (event, newToken: string, newAppId: string) => {
+        saveDiscordData(newToken, newAppId);
+        event.sender.send('discord-save-data-reply', {token, applicationID});
+    });
+    
     ipcMain.on('discord-get-application-id', async (event) => {
         event.sender.send('discord-get-application-id-reply', applicationID);
     });

@@ -1,5 +1,6 @@
 import { getActiveConstructList, removeConstructFromActive } from "@/api/constructapi";
 import { getConstruct } from "@/api/dbapi";
+import { getSavedDiscordData, saveDiscordData } from "@/api/discordapi";
 import { Construct } from "@/classes/Construct";
 import Accordian from "@/components/accordian";
 import { useEffect, useState } from "react";
@@ -15,6 +16,9 @@ const DiscordPage = () => {
 
     useEffect(() => {
         const getDiscordConfig = async () => {
+            let {token, appID} = await getSavedDiscordData();
+            setDiscordBotToken(token);
+            setDiscordApplicationID(appID);
         }
         const getActiveConstructs = async () => {
             let constructList = await getActiveConstructList();
@@ -34,11 +38,19 @@ const DiscordPage = () => {
         getActiveConstructs();
     }, []);
 
+    const saveDiscordConfig = async () => {
+        await saveDiscordData(discordBotToken, discordApplicationID);
+    }
+
     const removeActive = async (constructID: string) => {
         await removeConstructFromActive(constructID);
         window.location.reload();
     }
 
+    useEffect(() => {
+        saveDiscordConfig();
+    }, [discordCharacterMode, discordBotToken, discordApplicationID, discordMultiCharacterMode, discordMultiConstructMode]);
+    
     return (
         <div className="w-full h-[calc(100vh-70px)] flex flex-col gap-4 themed-root overflow-y-auto overflow-x-hidden">
             <h2 className="text-2xl font-bold text-theme-text text-shadow-xl">Discord Configuration Panel</h2>

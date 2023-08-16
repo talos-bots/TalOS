@@ -131,6 +131,24 @@ export const getGuilds = (): Promise<Array<any>> => {
     });
 }
 
+export const getSavedDiscordData = (): Promise<any> => {
+    return new Promise((resolve) => {
+        ipcRenderer.send('discord-get-data');
+        ipcRenderer.once('discord-get-data-reply', (_, data) => {
+            resolve(data);
+        });
+    });
+}
+
+export const saveDiscordData = (token : string, appID : string): Promise<boolean> => {
+    return new Promise((resolve) => {
+        ipcRenderer.send('discord-save-data', token, appID);
+        ipcRenderer.once('discord-save-data-reply', (_, success) => {
+            resolve(success);
+        });
+    });
+}
+
 // Utility Functions
 function fetchFromMain(event: string, replyEvent: string): Promise<any> {
     return new Promise((resolve) => {
