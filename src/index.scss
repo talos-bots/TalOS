@@ -20,6 +20,7 @@
   --theme-italic: rgba(245, 245, 245, 1);
   --theme-text: rgba(255, 253, 253, 1);
   --theme-button: rgba(2, 182, 26, 0.658);
+  --theme-bright-color: rgba(0, 255, 26, 0.25);
   --theme-accent: rgba(12, 151, 31, 0.295);
   --theme-border: rgba(0, 0, 0, 1);
   --theme-hover-pos: var(--theme-accent);
@@ -99,6 +100,14 @@ code {
 
 .themed-button-small {
   @apply theme-border-style shadow-md bg-theme-button text-theme-text border-theme-border border-theme-border-width p-1 backdrop-blur-theme-blur rounded-theme-border-radius;
+}
+
+.themed-chat-button {
+  @apply bg-theme-bright-color
+}
+
+.themed-chat-input {
+  border-color: var(--theme-bright-color)
 }
 
 /* This is the scrollbar track */
