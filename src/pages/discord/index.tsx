@@ -1,6 +1,6 @@
 import { getActiveConstructList, removeConstructFromActive } from "@/api/constructapi";
 import { getConstruct } from "@/api/dbapi";
-import { getSavedDiscordData, saveDiscordData } from "@/api/discordapi";
+import { getBotStatus, getSavedDiscordData, loginToDiscord, logoutFromDiscord, saveDiscordData } from "@/api/discordapi";
 import { Construct } from "@/classes/Construct";
 import Accordian from "@/components/accordian";
 import { useEffect, useState } from "react";
@@ -13,12 +13,17 @@ const DiscordPage = () => {
     const [discordMultiCharacterMode, setDiscordMultiCharacterMode] = useState(false);
     const [discordMultiConstructMode, setDiscordMultiConstructMode] = useState(false);
     const [discordActiveConstructs, setDiscordActiveConstructs] = useState<Construct[]>([]);
+    const [isBotActive, setIsBotActive] = useState(false);
 
     useEffect(() => {
         const getDiscordConfig = async () => {
-            let {token, appID} = await getSavedDiscordData();
-            setDiscordBotToken(token);
-            setDiscordApplicationID(appID);
+            const data = await getSavedDiscordData();
+            setDiscordBotToken(data.savedToken);
+            setDiscordApplicationID(data.appId);
+        }
+        const isBotActive = async () => {
+            const status = await getBotStatus();
+            setIsBotActive(status);
         }
         const getActiveConstructs = async () => {
             let constructList = await getActiveConstructList();
@@ -36,7 +41,26 @@ const DiscordPage = () => {
         }
         getDiscordConfig();
         getActiveConstructs();
+        isBotActive();
     }, []);
+
+    const toggleBotActive = async (e: boolean) => {
+        if (e) {
+            let result = await loginToDiscord(discordBotToken, discordApplicationID);
+            if (result) {
+                setIsBotActive(true);
+            } else {
+                setIsBotActive(false);
+            }
+        } else {
+            let result = await logoutFromDiscord();
+            if (result) {
+                setIsBotActive(false);
+            } else {
+                setIsBotActive(true);
+            }
+        }
+    }
 
     const saveDiscordConfig = async () => {
         await saveDiscordData(discordBotToken, discordApplicationID);
@@ -47,10 +71,6 @@ const DiscordPage = () => {
         window.location.reload();
     }
 
-    useEffect(() => {
-        saveDiscordConfig();
-    }, [discordCharacterMode, discordBotToken, discordApplicationID, discordMultiCharacterMode, discordMultiConstructMode]);
-    
     return (
         <div className="w-full h-[calc(100vh-70px)] flex flex-col gap-4 themed-root overflow-y-auto overflow-x-hidden">
             <h2 className="text-2xl font-bold text-theme-text text-shadow-xl">Discord Configuration Panel</h2>
@@ -155,6 +175,30 @@ const DiscordPage = () => {
                                     />
                                 </div>
                             </div>
+                        </div>
+                        <div className="flex flex-row text-left gap-4 mt-2">
+                            <div className="flex flex-col text-left w-1/2">
+                                <label className="text-theme-text font-semibold">Activate Bot</label>
+                                <div className="themed-input flex flex-col items-center w-full">
+                                    <i className="text-sm">Can only be activated when both the applicationID and auth token are set.</i>
+                                    <ReactSwitch
+                                        checked={isBotActive}
+                                        onChange={(e) => {
+                                            toggleBotActive(e);
+                                        }}
+                                        handleDiameter={30}
+                                        width={60}
+                                        uncheckedIcon={false}
+                                        checkedIcon={true}
+                                        id="isBotActive"
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex flex-col text-left w-1/2">
+                            </div>
+                        </div>
+                        <div className="flex flex-row text-left gap-4 mt-2">
+                            <button className="themed-button-pos w-full" onClick={() => saveDiscordConfig()}>Save</button>
                         </div>
                     </Accordian>
                 </div>

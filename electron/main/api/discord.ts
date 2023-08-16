@@ -1,6 +1,8 @@
 import { ipcMain } from 'electron';
 import { ActivityType, Client, GatewayIntentBits, Collection, REST, Routes, Partials, TextChannel, DMChannel, NewsChannel, Snowflake, Webhook } from 'discord.js';
 import Store from 'electron-store';
+import { resolve } from 'path';
+import { win } from '..';
 
 const intents = { 
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, 
@@ -253,7 +255,7 @@ export function DiscordJSRoutes(){
 
     ipcMain.on('discord-save-data', async (event, newToken: string, newAppId: string) => {
         saveDiscordData(newToken, newAppId);
-        event.sender.send('discord-save-data-reply', {token, applicationID});
+        event.sender.send('discord-save-data-reply', token, applicationID);
     });
     
     ipcMain.on('discord-get-application-id', async (event) => {
@@ -289,165 +291,178 @@ export function DiscordJSRoutes(){
 
     disClient.on('messageCreate', async (message) => {
         if (message.author.id === disClient.user?.id) return;
-        ipcMain.emit('discord-message', message);
+        win?.webContents.send('discord-message', message);
     });
 
     disClient.on('messageUpdate', async (oldMessage, newMessage) => {
         if (newMessage.author?.id === disClient.user?.id) return;
-        ipcMain.emit('discord-message-update', oldMessage, newMessage);
+        win?.webContents.send('discord-message-update', oldMessage, newMessage);
     });
 
     disClient.on('messageDelete', async (message) => {
         if (message.author?.id === disClient.user?.id) return;
-        ipcMain.emit('discord-message-delete', message);
+        win?.webContents.send('discord-message-delete', message);
     });
 
     disClient.on('messageReactionAdd', async (reaction, user) => {
         if (user.id === disClient.user?.id) return;
-        ipcMain.emit('discord-message-reaction-add', reaction, user);
+        win?.webContents.send('discord-message-reaction-add', reaction, user);
     });
 
     disClient.on('messageReactionRemove', async (reaction, user) => {
         if (user.id === disClient.user?.id) return;
-        ipcMain.emit('discord-message-reaction-remove', reaction, user);
+        win?.webContents.send('discord-message-reaction-remove', reaction, user);
     });
 
     disClient.on('messageReactionRemoveAll', async (message) => {
         if (message.author?.id === disClient.user?.id) return;
-        ipcMain.emit('discord-message-reaction-remove-all', message);
+        win?.webContents.send('discord-message-reaction-remove-all', message);
     });
 
     disClient.on('messageReactionRemoveEmoji', async (reaction) => {
-        ipcMain.emit('discord-message-reaction-remove-emoji', reaction);
+        win?.webContents.send('discord-message-reaction-remove-emoji', reaction);
     });
 
     disClient.on('channelCreate', async (channel) => {
-        ipcMain.emit('discord-channel-create', channel);
+        win?.webContents.send('discord-channel-create', channel);
     });
 
     disClient.on('channelDelete', async (channel) => {
-        ipcMain.emit('discord-channel-delete', channel);
+        win?.webContents.send('discord-channel-delete', channel);
     });
 
     disClient.on('channelPinsUpdate', async (channel, time) => {
-        ipcMain.emit('discord-channel-pins-update', channel, time);
+        win?.webContents.send('discord-channel-pins-update', channel, time);
     });
 
     disClient.on('channelUpdate', async (oldChannel, newChannel) => {
-        ipcMain.emit('discord-channel-update', oldChannel, newChannel);
+        win?.webContents.send('discord-channel-update', oldChannel, newChannel);
     });
 
     disClient.on('emojiCreate', async (emoji) => {
-        ipcMain.emit('discord-emoji-create', emoji);
+        win?.webContents.send('discord-emoji-create', emoji);
     });
 
     disClient.on('emojiDelete', async (emoji) => {
-        ipcMain.emit('discord-emoji-delete', emoji);
+        win?.webContents.send('discord-emoji-delete', emoji);
     });
 
     disClient.on('emojiUpdate', async (oldEmoji, newEmoji) => {
-        ipcMain.emit('discord-emoji-update', oldEmoji, newEmoji);
+        win?.webContents.send('discord-emoji-update', oldEmoji, newEmoji);
     });
 
     disClient.on('guildBanAdd', async (ban) => {
-        ipcMain.emit('discord-guild-ban-add', ban);
+        win?.webContents.send('discord-guild-ban-add', ban);
     });
 
     disClient.on('guildBanRemove', async (ban) => {
-        ipcMain.emit('discord-guild-ban-remove', ban);
+        win?.webContents.send('discord-guild-ban-remove', ban);
     });
 
     disClient.on('guildCreate', async (guild) => {
-        ipcMain.emit('discord-guild-create', guild);
+        win?.webContents.send('discord-guild-create', guild);
     });
 
     disClient.on('guildDelete', async (guild) => {
-        ipcMain.emit('discord-guild-delete', guild);
+        win?.webContents.send('discord-guild-delete', guild);
     });
 
     disClient.on('guildUnavailable', async (guild) => {
-        ipcMain.emit('discord-guild-unavailable', guild);
+        win?.webContents.send('discord-guild-unavailable', guild);
     });
 
     disClient.on('guildIntegrationsUpdate', async (guild) => {
-        ipcMain.emit('discord-guild-integrations-update', guild);
+        win?.webContents.send('discord-guild-integrations-update', guild);
     });
 
     disClient.on('guildMemberAdd', async (member) => {
-        ipcMain.emit('discord-guild-member-add', member);
+        win?.webContents.send('discord-guild-member-add', member);
     });
 
     disClient.on('guildMemberRemove', async (member) => {
-        ipcMain.emit('discord-guild-member-remove', member);
+        win?.webContents.send('discord-guild-member-remove', member);
     });
 
     disClient.on('guildMemberAvailable', async (member) => {
-        ipcMain.emit('discord-guild-member-available', member);
+        win?.webContents.send('discord-guild-member-available', member);
     });
 
     disClient.on('guildMemberUpdate', async (oldMember, newMember) => {
-        ipcMain.emit('discord-guild-member-update', oldMember, newMember);
+        win?.webContents.send('discord-guild-member-update', oldMember, newMember);
     });
 
     disClient.on('guildMembersChunk', async (members, guild) => {
-        ipcMain.emit('discord-guild-members-chunk', members, guild);
+        win?.webContents.send('discord-guild-members-chunk', members, guild);
     });
 
     disClient.on('guildUpdate', async (oldGuild, newGuild) => {
-        ipcMain.emit('discord-guild-update', oldGuild, newGuild);
+        win?.webContents.send('discord-guild-update', oldGuild, newGuild);
     });
 
     disClient.on('interactionCreate', async (interaction) => {
-        ipcMain.emit('discord-interaction-create', interaction);
+        win?.webContents.send('discord-interaction-create', interaction);
     });
 
     disClient.on('inviteCreate', async (invite) => {
-        ipcMain.emit('discord-invite-create', invite);
+        win?.webContents.send('discord-invite-create', invite);
     });
 
     disClient.on('inviteDelete', async (invite) => {
-        ipcMain.emit('discord-invite-delete', invite);
+        win?.webContents.send('discord-invite-delete', invite);
     });
 
     disClient.on('presenceUpdate', async (oldPresence, newPresence) => {
-        ipcMain.emit('discord-presence-update', oldPresence, newPresence);
+        win?.webContents.send('discord-presence-update', oldPresence, newPresence);
     });
 
     disClient.on('ready', () => {
         if(!disClient.user) return;
         isReady = true;
         console.log(`Logged in as ${disClient.user.tag}!`);
-        ipcMain.emit('discord-ready', disClient);
+        win?.webContents.send('discord-ready', disClient.user.tag);
     });
 
     ipcMain.handle('discord-login', async (event, rawToken: string, appId: string) => {
-        if (rawToken === '') {
-            const storedToken = store.get('discordToken');
-            
-            if (storedToken !== undefined && typeof storedToken === 'string') {
-                token = storedToken;
+        try {
+            if (rawToken === '') {
+                const storedToken = store.get('discordToken');
+                
+                if (storedToken !== undefined && typeof storedToken === 'string') {
+                    token = storedToken;
+                } else {
+                    return false; // or return an error message
+                }
             } else {
-                return false; // or return an error message
+                token = rawToken;
+                store.set('discordToken', rawToken);
             }
-        } else {
-            token = rawToken;
-            store.set('discordToken', rawToken);
-        }
-        
-        if (appId === '') {
-            const storedAppId = store.get('discordAppId');
             
-            if (storedAppId !== undefined && typeof storedAppId === 'string') {
-                applicationID = storedAppId;
+            if (appId === '') {
+                const storedAppId = store.get('discordAppId');
+                
+                if (storedAppId !== undefined && typeof storedAppId === 'string') {
+                    applicationID = storedAppId;
+                } else {
+                    return false; // or return an error message
+                }
             } else {
-                return false; // or return an error message
+                applicationID = appId;
+                store.set('discordAppId', appId);
             }
-        } else {
-            applicationID = appId;
-            store.set('discordAppId', appId);
+            
+            await disClient.login(token);
+            
+            if (!disClient.user) {
+                console.error("Discord client user is not initialized.");
+                return false;
+            } else {
+                return true;
+            }
+            
+        } catch (error) {
+            console.error('Failed to login to Discord:', error);
+            return false;
         }
-        await disClient.login(token);
-        return true;
     });    
 
     ipcMain.handle('discord-logout', async (event) => {
@@ -455,7 +470,8 @@ export function DiscordJSRoutes(){
         disClient.removeAllListeners();
         isReady = false;
         disClient = new Client(intents);
-        ipcMain.emit('discord-disconnected');
+        console.log('Logged out!');
+        win?.webContents.send('discord-disconnected');
         return true;
     });
 

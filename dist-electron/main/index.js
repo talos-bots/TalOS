@@ -10,8 +10,6 @@ const PouchDB = require("pouchdb");
 const fs = require("fs");
 const axios = require("axios");
 const openai = require("openai");
-const extract = require("png-chunks-extract");
-const PNGtext = require("png-chunk-text");
 const intents = {
   intents: [
     discord_js.GatewayIntentBits.Guilds,
@@ -28,6 +26,7 @@ const intents = {
 const store$2 = new Store({
   name: "discordData"
 });
+getDiscordData();
 let disClient = new discord_js.Client(intents);
 const commands = new discord_js.Collection();
 let isReady = false;
@@ -162,9 +161,60 @@ async function getWebhooksForChannel(channelID) {
   const webhooks = await channel.fetchWebhooks();
   return webhooks.map((webhook) => webhook.name);
 }
+async function getDiscordData() {
+  let savedToken;
+  const storedToken = store$2.get("discordToken");
+  if (storedToken !== void 0 && typeof storedToken === "string") {
+    savedToken = storedToken;
+  } else {
+    savedToken = "";
+  }
+  let appId;
+  const storedAppId = store$2.get("discordAppId");
+  if (storedAppId !== void 0 && typeof storedAppId === "string") {
+    appId = storedAppId;
+  } else {
+    appId = "";
+  }
+  token = savedToken;
+  applicationID = appId;
+  return { savedToken, appId };
+}
+function saveDiscordData(newToken, newAppId) {
+  if (newToken === "") {
+    const storedToken = store$2.get("discordToken");
+    if (storedToken !== void 0 && typeof storedToken === "string") {
+      token = storedToken;
+    } else {
+      return false;
+    }
+  } else {
+    token = newToken;
+    store$2.set("discordToken", newToken);
+  }
+  if (newAppId === "") {
+    const storedAppId = store$2.get("discordAppId");
+    if (storedAppId !== void 0 && typeof storedAppId === "string") {
+      applicationID = storedAppId;
+    } else {
+      return false;
+    }
+  } else {
+    applicationID = newAppId;
+    store$2.set("discordAppId", newAppId);
+  }
+}
 function DiscordJSRoutes() {
   electron.ipcMain.on("discord-get-token", async (event) => {
     event.sender.send("discord-get-token-reply", token);
+  });
+  electron.ipcMain.on("discord-get-data", async (event) => {
+    let data = await getDiscordData();
+    event.sender.send("discord-get-data-reply", data);
+  });
+  electron.ipcMain.on("discord-save-data", async (event, newToken, newAppId) => {
+    saveDiscordData(newToken, newAppId);
+    event.sender.send("discord-save-data-reply", token, applicationID);
   });
   electron.ipcMain.on("discord-get-application-id", async (event) => {
     event.sender.send("discord-get-application-id-reply", applicationID);
@@ -191,152 +241,189 @@ function DiscordJSRoutes() {
     event.sender.send("discord-get-guilds-reply", await getDiscordGuilds());
   });
   disClient.on("messageCreate", async (message) => {
-    var _a;
+    var _a, _b;
     if (message.author.id === ((_a = disClient.user) == null ? void 0 : _a.id))
       return;
-    electron.ipcMain.emit("discord-message", message);
+    (_b = exports.win) == null ? void 0 : _b.webContents.send("discord-message", message);
   });
   disClient.on("messageUpdate", async (oldMessage, newMessage) => {
-    var _a, _b;
+    var _a, _b, _c;
     if (((_a = newMessage.author) == null ? void 0 : _a.id) === ((_b = disClient.user) == null ? void 0 : _b.id))
       return;
-    electron.ipcMain.emit("discord-message-update", oldMessage, newMessage);
+    (_c = exports.win) == null ? void 0 : _c.webContents.send("discord-message-update", oldMessage, newMessage);
   });
   disClient.on("messageDelete", async (message) => {
-    var _a, _b;
+    var _a, _b, _c;
     if (((_a = message.author) == null ? void 0 : _a.id) === ((_b = disClient.user) == null ? void 0 : _b.id))
       return;
-    electron.ipcMain.emit("discord-message-delete", message);
+    (_c = exports.win) == null ? void 0 : _c.webContents.send("discord-message-delete", message);
   });
   disClient.on("messageReactionAdd", async (reaction, user) => {
-    var _a;
+    var _a, _b;
     if (user.id === ((_a = disClient.user) == null ? void 0 : _a.id))
       return;
-    electron.ipcMain.emit("discord-message-reaction-add", reaction, user);
+    (_b = exports.win) == null ? void 0 : _b.webContents.send("discord-message-reaction-add", reaction, user);
   });
   disClient.on("messageReactionRemove", async (reaction, user) => {
-    var _a;
+    var _a, _b;
     if (user.id === ((_a = disClient.user) == null ? void 0 : _a.id))
       return;
-    electron.ipcMain.emit("discord-message-reaction-remove", reaction, user);
+    (_b = exports.win) == null ? void 0 : _b.webContents.send("discord-message-reaction-remove", reaction, user);
   });
   disClient.on("messageReactionRemoveAll", async (message) => {
-    var _a, _b;
+    var _a, _b, _c;
     if (((_a = message.author) == null ? void 0 : _a.id) === ((_b = disClient.user) == null ? void 0 : _b.id))
       return;
-    electron.ipcMain.emit("discord-message-reaction-remove-all", message);
+    (_c = exports.win) == null ? void 0 : _c.webContents.send("discord-message-reaction-remove-all", message);
   });
   disClient.on("messageReactionRemoveEmoji", async (reaction) => {
-    electron.ipcMain.emit("discord-message-reaction-remove-emoji", reaction);
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-message-reaction-remove-emoji", reaction);
   });
   disClient.on("channelCreate", async (channel) => {
-    electron.ipcMain.emit("discord-channel-create", channel);
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-channel-create", channel);
   });
   disClient.on("channelDelete", async (channel) => {
-    electron.ipcMain.emit("discord-channel-delete", channel);
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-channel-delete", channel);
   });
   disClient.on("channelPinsUpdate", async (channel, time) => {
-    electron.ipcMain.emit("discord-channel-pins-update", channel, time);
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-channel-pins-update", channel, time);
   });
   disClient.on("channelUpdate", async (oldChannel, newChannel) => {
-    electron.ipcMain.emit("discord-channel-update", oldChannel, newChannel);
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-channel-update", oldChannel, newChannel);
   });
   disClient.on("emojiCreate", async (emoji) => {
-    electron.ipcMain.emit("discord-emoji-create", emoji);
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-emoji-create", emoji);
   });
   disClient.on("emojiDelete", async (emoji) => {
-    electron.ipcMain.emit("discord-emoji-delete", emoji);
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-emoji-delete", emoji);
   });
   disClient.on("emojiUpdate", async (oldEmoji, newEmoji) => {
-    electron.ipcMain.emit("discord-emoji-update", oldEmoji, newEmoji);
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-emoji-update", oldEmoji, newEmoji);
   });
   disClient.on("guildBanAdd", async (ban) => {
-    electron.ipcMain.emit("discord-guild-ban-add", ban);
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-ban-add", ban);
   });
   disClient.on("guildBanRemove", async (ban) => {
-    electron.ipcMain.emit("discord-guild-ban-remove", ban);
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-ban-remove", ban);
   });
   disClient.on("guildCreate", async (guild) => {
-    electron.ipcMain.emit("discord-guild-create", guild);
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-create", guild);
   });
   disClient.on("guildDelete", async (guild) => {
-    electron.ipcMain.emit("discord-guild-delete", guild);
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-delete", guild);
   });
   disClient.on("guildUnavailable", async (guild) => {
-    electron.ipcMain.emit("discord-guild-unavailable", guild);
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-unavailable", guild);
   });
   disClient.on("guildIntegrationsUpdate", async (guild) => {
-    electron.ipcMain.emit("discord-guild-integrations-update", guild);
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-integrations-update", guild);
   });
   disClient.on("guildMemberAdd", async (member) => {
-    electron.ipcMain.emit("discord-guild-member-add", member);
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-member-add", member);
   });
   disClient.on("guildMemberRemove", async (member) => {
-    electron.ipcMain.emit("discord-guild-member-remove", member);
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-member-remove", member);
   });
   disClient.on("guildMemberAvailable", async (member) => {
-    electron.ipcMain.emit("discord-guild-member-available", member);
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-member-available", member);
   });
   disClient.on("guildMemberUpdate", async (oldMember, newMember) => {
-    electron.ipcMain.emit("discord-guild-member-update", oldMember, newMember);
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-member-update", oldMember, newMember);
   });
   disClient.on("guildMembersChunk", async (members, guild) => {
-    electron.ipcMain.emit("discord-guild-members-chunk", members, guild);
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-members-chunk", members, guild);
   });
   disClient.on("guildUpdate", async (oldGuild, newGuild) => {
-    electron.ipcMain.emit("discord-guild-update", oldGuild, newGuild);
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-update", oldGuild, newGuild);
   });
   disClient.on("interactionCreate", async (interaction) => {
-    electron.ipcMain.emit("discord-interaction-create", interaction);
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-interaction-create", interaction);
   });
   disClient.on("inviteCreate", async (invite) => {
-    electron.ipcMain.emit("discord-invite-create", invite);
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-invite-create", invite);
   });
   disClient.on("inviteDelete", async (invite) => {
-    electron.ipcMain.emit("discord-invite-delete", invite);
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-invite-delete", invite);
   });
   disClient.on("presenceUpdate", async (oldPresence, newPresence) => {
-    electron.ipcMain.emit("discord-presence-update", oldPresence, newPresence);
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-presence-update", oldPresence, newPresence);
   });
   disClient.on("ready", () => {
+    var _a;
     if (!disClient.user)
       return;
     isReady = true;
     console.log(`Logged in as ${disClient.user.tag}!`);
-    electron.ipcMain.emit("discord-ready", disClient);
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-ready", disClient.user.tag);
   });
   electron.ipcMain.handle("discord-login", async (event, rawToken, appId) => {
-    if (rawToken === "") {
-      const storedToken = store$2.get("discordToken");
-      if (storedToken !== void 0 && typeof storedToken === "string") {
-        token = storedToken;
+    try {
+      if (rawToken === "") {
+        const storedToken = store$2.get("discordToken");
+        if (storedToken !== void 0 && typeof storedToken === "string") {
+          token = storedToken;
+        } else {
+          return false;
+        }
       } else {
-        return false;
+        token = rawToken;
+        store$2.set("discordToken", rawToken);
       }
-    } else {
-      token = rawToken;
-      store$2.set("discordToken", rawToken);
-    }
-    if (appId === "") {
-      const storedAppId = store$2.get("discordAppId");
-      if (storedAppId !== void 0 && typeof storedAppId === "string") {
-        applicationID = storedAppId;
+      if (appId === "") {
+        const storedAppId = store$2.get("discordAppId");
+        if (storedAppId !== void 0 && typeof storedAppId === "string") {
+          applicationID = storedAppId;
+        } else {
+          return false;
+        }
       } else {
-        return false;
+        applicationID = appId;
+        store$2.set("discordAppId", appId);
       }
-    } else {
-      applicationID = appId;
-      store$2.set("discordAppId", appId);
+      await disClient.login(token);
+      if (!disClient.user) {
+        console.error("Discord client user is not initialized.");
+        return false;
+      } else {
+        return true;
+      }
+    } catch (error) {
+      console.error("Failed to login to Discord:", error);
+      return false;
     }
-    await disClient.login(token);
-    return true;
   });
   electron.ipcMain.handle("discord-logout", async (event) => {
+    var _a;
     await disClient.destroy();
     disClient.removeAllListeners();
     isReady = false;
     disClient = new discord_js.Client(intents);
-    electron.ipcMain.emit("discord-disconnected");
+    console.log("Logged out!");
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-disconnected");
     return true;
   });
   electron.ipcMain.handle("discord-set-bot-info", async (event, botName, base64Avatar) => {
@@ -1196,61 +1283,6 @@ const txt2img = async (data, apiUrl) => {
     throw new Error(`Failed to send data: ${error.message}`);
   }
 };
-function BonusFeaturesRoutes() {
-  electron.ipcMain.on("import-tavern-character", async (event, fileData, uniqueEventName) => {
-    const agent = await import_tavern_character(fileData);
-    event.reply(uniqueEventName, agent);
-  });
-}
-async function import_tavern_character(fileData) {
-  try {
-    let format;
-    if (fileData.name.indexOf(".webp") !== -1) {
-      format = "webp";
-    } else {
-      format = "png";
-    }
-    let decoded_string = "";
-    switch (format) {
-      case "png":
-        const buffer = Buffer.from(fileData.contents.split(",")[1], "base64");
-        const chunks = extract(buffer);
-        const textChunks = chunks.filter(function(chunk) {
-          return chunk.name === "tEXt";
-        }).map(function(chunk) {
-          return PNGtext.decode(chunk.data);
-        });
-        decoded_string = Buffer.from(textChunks[0].text, "base64").toString("utf8");
-        break;
-      default:
-        return;
-    }
-    const _json = JSON.parse(decoded_string);
-    const isV2 = Array.isArray(_json.data);
-    let characterData;
-    if (isV2) {
-      characterData = {
-        _id: Date.now().toString(),
-        ..._json.data[0]
-      };
-    } else {
-      characterData = {
-        _id: Date.now().toString(),
-        name: _json.name,
-        description: _json.description,
-        personality: _json.personality,
-        scenario: _json.scenario,
-        first_mes: _json.first_mes,
-        mes_example: _json.mes_example,
-        avatar: fileData.contents
-      };
-    }
-    return characterData;
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
-}
 const store$1 = new Store({
   name: "constructData"
 });
@@ -1329,14 +1361,14 @@ if (!electron.app.requestSingleInstanceLock()) {
   process.exit(0);
 }
 process.env["ELECTRON_DISABLE_SECURITY_WARNINGS"] = "true";
-let win = null;
+exports.win = null;
 const preload = node_path.join(__dirname, "../preload/index.js");
 const url = process.env.VITE_DEV_SERVER_URL;
 const indexHtml = node_path.join(process.env.DIST, "index.html");
 const dataPath = path.join(electron.app.getPath("userData"), "data/");
 const store = new Store();
 async function createWindow() {
-  win = new electron.BrowserWindow({
+  exports.win = new electron.BrowserWindow({
     title: "ConstructOS - AI Agent Manager",
     icon: node_path.join(process.env.VITE_PUBLIC, "favicon.ico"),
     webPreferences: {
@@ -1354,12 +1386,12 @@ async function createWindow() {
     minimizable: false
   });
   if (url) {
-    win.loadURL(url);
-    win.webContents.openDevTools();
+    exports.win.loadURL(url);
+    exports.win.webContents.openDevTools();
   } else {
-    win.loadFile(indexHtml);
+    exports.win.loadFile(indexHtml);
   }
-  win.webContents.setWindowOpenHandler(({ url: url2 }) => {
+  exports.win.webContents.setWindowOpenHandler(({ url: url2 }) => {
     if (url2.startsWith("https:"))
       electron.shell.openExternal(url2);
     return { action: "deny" };
@@ -1369,20 +1401,19 @@ async function createWindow() {
   FsAPIRoutes();
   LanguageModelAPI();
   SDRoutes();
-  BonusFeaturesRoutes();
   constructController();
 }
 electron.app.whenReady().then(createWindow);
 electron.app.on("window-all-closed", () => {
-  win = null;
+  exports.win = null;
   if (process.platform !== "darwin")
     electron.app.quit();
 });
 electron.app.on("second-instance", () => {
-  if (win) {
-    if (win.isMinimized())
-      win.restore();
-    win.focus();
+  if (exports.win) {
+    if (exports.win.isMinimized())
+      exports.win.restore();
+    exports.win.focus();
   }
 });
 electron.app.on("activate", () => {

@@ -3,8 +3,8 @@ import { ipcRenderer } from 'electron';
 type ValidStatus = 'online' | 'dnd' | 'idle' | 'invisible';
 
 // Discord Login
-export const loginToDiscord = async (token: string): Promise<boolean> => {
-    return ipcRenderer.invoke('discord-login', token);
+export const loginToDiscord = async (rawToken?: string, appId?: string): Promise<boolean> => {
+    return ipcRenderer.invoke('discord-login', rawToken, appId);
 }
 
 // Discord Logout
@@ -135,6 +135,7 @@ export const getSavedDiscordData = (): Promise<any> => {
     return new Promise((resolve) => {
         ipcRenderer.send('discord-get-data');
         ipcRenderer.once('discord-get-data-reply', (_, data) => {
+            console.log(data);
             resolve(data);
         });
     });
@@ -143,9 +144,6 @@ export const getSavedDiscordData = (): Promise<any> => {
 export const saveDiscordData = (token : string, appID : string): Promise<boolean> => {
     return new Promise((resolve) => {
         ipcRenderer.send('discord-save-data', token, appID);
-        ipcRenderer.once('discord-save-data-reply', (_, success) => {
-            resolve(success);
-        });
     });
 }
 

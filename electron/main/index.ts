@@ -8,7 +8,6 @@ import Store from "electron-store";
 import { FsAPIRoutes } from "./api/fsapi";
 import { LanguageModelAPI } from "./api/llm";
 import { SDRoutes } from "./api/sd";
-import { BonusFeaturesRoutes } from "./api/bonus-features";
 import constructController from "./controllers/ConstructController";
 import fs from "fs";
 
@@ -44,7 +43,7 @@ if (!app.requestSingleInstanceLock()) {
 // Read more on https://www.electronjs.org/docs/latest/tutorial/security
 process.env["ELECTRON_DISABLE_SECURITY_WARNINGS"] = "true";
 
-let win: BrowserWindow | null = null;
+export let win: BrowserWindow | null = null;
 // Here, you can also use other preload
 const preload = join(__dirname, "../preload/index.js");
 const url = process.env.VITE_DEV_SERVER_URL;
@@ -87,7 +86,6 @@ async function createWindow() {
   FsAPIRoutes();
   LanguageModelAPI();
   SDRoutes();
-  BonusFeaturesRoutes();
   constructController();
   // update(win)
 }
