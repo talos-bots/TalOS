@@ -20,6 +20,9 @@ const DiscordPage = () => {
             const data = await getSavedDiscordData();
             setDiscordBotToken(data.savedToken);
             setDiscordApplicationID(data.appId);
+            setDiscordCharacterMode(data.discordCharacterMode);
+            setDiscordMultiCharacterMode(data.discordMultiCharacterMode);
+            setDiscordMultiConstructMode(data.discordMultiConstructMode);
         }
         const isBotActive = async () => {
             const status = await getBotStatus();
@@ -63,7 +66,7 @@ const DiscordPage = () => {
     }
 
     const saveDiscordConfig = async () => {
-        await saveDiscordData(discordBotToken, discordApplicationID);
+        await saveDiscordData(discordBotToken, discordApplicationID, discordCharacterMode, discordMultiCharacterMode, discordMultiConstructMode);
     }
 
     const removeActive = async (constructID: string) => {

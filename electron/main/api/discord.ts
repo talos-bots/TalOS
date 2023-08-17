@@ -1,8 +1,9 @@
 import { ipcMain } from 'electron';
-import { ActivityType, Client, GatewayIntentBits, Collection, REST, Routes, Partials, TextChannel, DMChannel, NewsChannel, Snowflake, Webhook } from 'discord.js';
+import { ActivityType, Client, GatewayIntentBits, Collection, REST, Routes, Partials, TextChannel, DMChannel, NewsChannel, Snowflake, Webhook, Message } from 'discord.js';
 import Store from 'electron-store';
 import { resolve } from 'path';
 import { win } from '..';
+import { handleDiscordMessage } from '../controllers/DiscordController';
 
 const intents = { 
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, 
@@ -24,6 +25,9 @@ const commands = new Collection();
 let isReady = false;
 let token = '';
 let applicationID = '';
+let characterMode = false;
+let multiCharacterMode = false;
+let multiConstructMode = false;
 
 export function cleanUsername(username: string) {
     // Remove leading characters
@@ -136,8 +140,33 @@ export async function setOnlineMode(type: ValidStatus) {
     if(!isReady) return;
     disClient.user.setStatus(type);
 }
+export async function getStopList(guildId: string){
+    if(!disClient.user || disClient.user === null) return;
+    if(!isReady) return;
+    let guild = disClient.guilds.cache.get(guildId);
+    let memberList = [];
+    if(!guild) return;
+    guild.members.cache.forEach(member => {
+        if(!disClient.user) return;
+        if(member.user.id !== disClient.user.id){
+            memberList.push(member.user.username);
+        }
+    });
+    for(let i = 0; i < memberList.length; i++){
+        let alias = cleanUsername(memberList[i]);
+        memberList[i] = `${alias}:`
+    }
+    console.log("Stop list fetched...");
+    return memberList;
+}
 
-export async function sendMessage(channelID: Snowflake, message: string): Promise<void> {
+export function sendTyping(message: Message){
+    if(!disClient.user) return;
+    if(!isReady) return;
+    message.channel.sendTyping();
+}
+
+export async function sendMessage(channelID: Snowflake, message: string){
     if(!isReady) return;
     if (!disClient.user) {
         console.error("Discord client user is not initialized.");
@@ -147,7 +176,7 @@ export async function sendMessage(channelID: Snowflake, message: string): Promis
 
     // Check if the channel is one of the types that can send messages
     if (channel instanceof TextChannel || channel instanceof DMChannel || channel instanceof NewsChannel) {
-        channel.send(message);
+        return channel.send(message);
     }
 }
 
@@ -194,7 +223,7 @@ export async function setDiscordAppId(appId: string): Promise<void> {
     store.set('discordAppId', appId);
 }
 
-export async function getDiscordData(): Promise<{savedToken: string, appId: string}> {
+export async function getDiscordData(): Promise<{savedToken: string, appId: string, discordCharacterMode: boolean, discordMultiCharacterMode: boolean, discordMultiConstructMode: boolean}> {
     let savedToken;
     const storedToken = store.get('discordToken');
     if (storedToken !== undefined && typeof storedToken === 'string') {
@@ -210,12 +239,40 @@ export async function getDiscordData(): Promise<{savedToken: string, appId: stri
     } else {
         appId = '';
     }
+
+    let discordCharacterMode;
+    const storedDiscordCharacterMode = store.get('discordCharacterMode');
+    if (storedDiscordCharacterMode !== undefined && typeof storedDiscordCharacterMode === 'boolean') {
+        discordCharacterMode = storedDiscordCharacterMode;
+    } else {
+        discordCharacterMode = false;
+    }
+
+    let discordMultiCharacterMode;
+    const storedDiscordMultiCharacterMode = store.get('discordMultiCharacterMode');
+    if (storedDiscordMultiCharacterMode !== undefined && typeof storedDiscordMultiCharacterMode === 'boolean') {
+        discordMultiCharacterMode = storedDiscordMultiCharacterMode;
+    } else {
+        discordMultiCharacterMode = false;
+    }
+
+    let discordMultiConstructMode;
+    const storedDiscordMultiConstructMode = store.get('discordMultiConstructMode');
+    if (storedDiscordMultiConstructMode !== undefined && typeof storedDiscordMultiConstructMode === 'boolean') {
+        discordMultiConstructMode = storedDiscordMultiConstructMode;
+    } else {
+        discordMultiConstructMode = false;
+    }
+
     token = savedToken;
     applicationID = appId;
-    return {savedToken, appId};
+    characterMode = discordCharacterMode;
+    multiCharacterMode = discordMultiCharacterMode;
+    multiConstructMode = discordMultiConstructMode;
+    return {savedToken, appId, discordCharacterMode, discordMultiCharacterMode, discordMultiConstructMode};
 }
 
-export function saveDiscordData(newToken: string, newAppId: string){
+export function saveDiscordData(newToken: string, newAppId: string, discordCharacterMode: boolean, discordMultiCharacterMode: boolean, discordMultiConstructMode: boolean){
     if (newToken === '') {
         const storedToken = store.get('discordToken');
         
@@ -241,6 +298,14 @@ export function saveDiscordData(newToken: string, newAppId: string){
         applicationID = newAppId;
         store.set('discordAppId', newAppId);
     }
+    
+    characterMode = discordCharacterMode;
+    multiCharacterMode = discordMultiCharacterMode;
+    multiConstructMode = discordMultiConstructMode;
+
+    store.set('discordCharacterMode', discordCharacterMode);
+    store.set('discordMultiCharacterMode', discordMultiCharacterMode);
+    store.set('discordMultiConstructMode', discordMultiConstructMode);
 }
 
 export function DiscordJSRoutes(){
@@ -253,8 +318,8 @@ export function DiscordJSRoutes(){
         event.sender.send('discord-get-data-reply', data);
     });
 
-    ipcMain.on('discord-save-data', async (event, newToken: string, newAppId: string) => {
-        saveDiscordData(newToken, newAppId);
+    ipcMain.on('discord-save-data', async (event, newToken: string, newAppId: string, discordCharacterMode: boolean, discordMultiCharacterMode: boolean, discordMultiConstructMode: boolean) => {
+        saveDiscordData(newToken, newAppId, discordCharacterMode, discordMultiCharacterMode, discordMultiConstructMode);
         event.sender.send('discord-save-data-reply', token, applicationID);
     });
     
@@ -291,6 +356,7 @@ export function DiscordJSRoutes(){
 
     disClient.on('messageCreate', async (message) => {
         if (message.author.id === disClient.user?.id) return;
+        await handleDiscordMessage(message);
         win?.webContents.send('discord-message', message);
     });
 

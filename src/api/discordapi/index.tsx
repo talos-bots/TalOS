@@ -141,9 +141,9 @@ export const getSavedDiscordData = (): Promise<any> => {
     });
 }
 
-export const saveDiscordData = (token : string, appID : string): Promise<boolean> => {
+export const saveDiscordData = (token : string, appID : string, discordCharacterMode: boolean, discordMultiCharacterMode: boolean, discordMultiConstructMode: boolean): Promise<boolean> => {
     return new Promise((resolve) => {
-        ipcRenderer.send('discord-save-data', token, appID);
+        ipcRenderer.send('discord-save-data', token, appID, discordCharacterMode, discordMultiCharacterMode, discordMultiConstructMode);
     });
 }
 
