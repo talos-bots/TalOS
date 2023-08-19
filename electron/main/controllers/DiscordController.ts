@@ -56,6 +56,7 @@ export const isChannelRegistered = (channel: string): boolean => {
 export async function handleDiscordMessage(message: Message) {
     if(message.author.bot) return;
     if(message.channel.isDMBased()) return;
+    if(message.content.startsWith('.')) return;
     let registeredChannels = getRegisteredChannels();
     let registered = false;
     for(let i = 0; i < registeredChannels.length; i++){
@@ -67,7 +68,6 @@ export async function handleDiscordMessage(message: Message) {
     if(!registered) return;
     const activeConstructs = retrieveConstructs();
     if(activeConstructs.length < 1) return;
-    sendTyping(message);
     const newMessage = convertDiscordMessageToMessage(message, activeConstructs);
     let constructArray = [];
     for (let i = 0; i < activeConstructs.length; i++) {
@@ -75,7 +75,6 @@ export async function handleDiscordMessage(message: Message) {
         let construct = assembleConstructFromData(constructDoc);
         constructArray.push(construct);
     }
-    const mode = getDiscordMode();
     let chatLogData = await getChat(message.channel.id);
     let chatLog;
     if (chatLogData) {
@@ -98,6 +97,12 @@ export async function handleDiscordMessage(message: Message) {
             return;
         }
     }
+    if(message.content.startsWith('-')){
+        await updateChat(chatLog);
+        return;
+    }
+    sendTyping(message);
+    const mode = getDiscordMode();
     if(mode === 'Character'){
         if(isMultiCharacterMode()){
             chatLog = await doRoundRobin(constructArray, chatLog, message);
