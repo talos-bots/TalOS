@@ -4,7 +4,7 @@ import { generateContinueChatLog, retrieveConstructs } from './ConstructControll
 import { addChat, getChat, getConstruct, updateChat } from '../api/pouchdb';
 import { assembleChatFromData, assembleConstructFromData, convertDiscordMessageToMessage } from '../helpers/helpers';
 import { Message } from 'discord.js';
-import { isMultiCharacterMode, sendMessage, sendMessageAsCharacter, sendTyping } from '../api/discord';
+import { isAutoReplyMode, isMultiCharacterMode, sendMessage, sendMessageAsCharacter, sendTyping } from '../api/discord';
 import { ChannelConfigInterface, ChatInterface, ConstructInterface } from '../types/types';
 
 const store = new Store({
@@ -108,8 +108,10 @@ export async function handleDiscordMessage(message: Message) {
         sendTyping(message);
         if(isMultiCharacterMode()){
             chatLog = await doRoundRobin(constructArray, chatLog, message);
-            if(0.5 > Math.random()){
-                chatLog = await doRoundRobin(constructArray, chatLog, message);
+            if(isAutoReplyMode()){
+                if(0.25 > Math.random()){
+                    chatLog = await doRoundRobin(constructArray, chatLog, message);
+                }
             }
         }else{
             chatLog = await doCharacterReply(constructArray[0], chatLog, message);
@@ -174,7 +176,7 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
                 continue;
             }
         }
-        const result = await generateContinueChatLog(constructArray[i], chatLog, message.author.username);
+        const result = await generateContinueChatLog(constructArray[i], chatLog, message.author.displayName);
         let reply: string;
         if (result !== null) {
             reply = result;
@@ -189,7 +191,7 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
             origin: 'Discord',
             isCommand: false,
             isPrivate: false,
-            participants: [message.author.username, constructArray[i].name],
+            participants: [message.author.displayName, constructArray[i].name],
             attachments: [],
         }
         chatLog.messages.push(replyMessage);

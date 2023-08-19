@@ -66,7 +66,7 @@ export function assemblePromptFromLog(data: any, messagesToInclude: number = 25)
     let messages = data.messages;
     messages = messages.slice(-messagesToInclude);
     for(let i = 0; i < messages.length; i++){
-        prompt += `${messages[i].user}: ${messages[i].text}` + '\n';
+        prompt += `${messages[i].user}: ${messages[i].text.trim()}` + '\n';
     }
     return prompt;
 }
@@ -85,13 +85,13 @@ export function convertDiscordMessageToMessage(message: Message, activeConstruct
     }
     const convertedMessage = {
         _id: message.id,
-        user: message.author.username,
-        text: message.content,
+        user: message.author.displayName,
+        text: message.content.trim(),
         timestamp: message.createdTimestamp,
         origin: message.channel.id,
         isCommand: false,
         isPrivate: false,
-        participants: [message.author.username, ...activeConstructs],
+        participants: [message.author.displayName, ...activeConstructs],
         attachments: attachments,
     }
     return convertedMessage;

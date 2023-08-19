@@ -4,8 +4,10 @@ import Store from 'electron-store';
 import { win } from '..';
 import { handleDiscordMessage } from '../controllers/DiscordController';
 import { ConstructInterface, SlashCommand } from '../types/types';
-import { base642Buffer } from '../helpers/helpers';
+import { assembleConstructFromData, base642Buffer } from '../helpers/helpers';
 import { DefaultCommands } from '../controllers/commands';
+import { retrieveConstructs } from '../controllers/ConstructController';
+import { getConstruct } from './pouchdb';
 
 const intents = { 
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, 
@@ -24,7 +26,7 @@ getDiscordData();
 
 let disClient = new Client(intents);
 const commands: SlashCommand[] = [...DefaultCommands];
-let isReady = false;
+export let isReady = false;
 let token = '';
 let applicationID = '';
 let characterMode = false;
@@ -56,6 +58,10 @@ export function isMultiConstructMode(){
     return multiConstructMode;
 }
 
+export function isAutoReplyMode(){
+    return false;
+}
+
 export function cleanUsername(username: string) {
     // Remove leading characters
     let cleaned = username.replace(/^[._-]+/, '');
@@ -69,6 +75,14 @@ export function cleanUsername(username: string) {
 export function cleanEmoji(text: string) {
     // Remove emoji characters using regex
     return text.replace(/<:[a-zA-Z0-9_]+:[0-9]+>/g, '');
+}
+
+export async function doGlobalNicknameChange(newName: string){
+    disClient.guilds.cache.forEach(guild => {
+        guild.members.cache.filter(member => member.user.id === disClient?.user?.id).forEach(member => {
+            member.setNickname(newName);
+        });
+    });
 }
 
 export async function setDiscordBotInfo(botName: string, base64Avatar: string): Promise<void> {
@@ -106,12 +120,13 @@ export async function setDiscordBotInfo(botName: string, base64Avatar: string): 
 
     // Change bot's avatar
     try {
-        const buffer = Buffer.from(base64Avatar, 'base64');
+        const buffer = await base642Buffer(base64Avatar);
         await disClient.user.setAvatar(buffer);
         console.log('New avatar set!');
     } catch (error) {
         console.error('Failed to set avatar:', error);
     }
+    doGlobalNicknameChange(botName);
 }
 
 export async function getDiscordGuilds() {
@@ -527,12 +542,16 @@ export function DiscordJSRoutes(){
         win?.webContents.send('discord-presence-update', oldPresence, newPresence);
     });
 
-    disClient.on('ready', () => {
+    disClient.on('ready', async () => {
         if(!disClient.user) return;
         isReady = true;
         console.log(`Logged in as ${disClient.user.tag}!`);
         win?.webContents.send('discord-ready', disClient.user.tag);
         registerCommands();
+        let constructs = retrieveConstructs();
+        let constructRaw = await getConstruct(constructs[0]);
+        let construct = assembleConstructFromData(constructRaw);
+        setDiscordBotInfo(construct.name, construct.avatar);
     });
 
     ipcMain.handle('discord-login', async (event, rawToken: string, appId: string) => {

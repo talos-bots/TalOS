@@ -1,7 +1,9 @@
 import { ipcMain } from 'electron';
 import Store from 'electron-store';
-import { assemblePromptFromLog } from '../helpers/helpers';
+import { assembleConstructFromData, assemblePromptFromLog } from '../helpers/helpers';
 import { generateText } from '../api/llm';
+import { isReady, setDiscordBotInfo } from '../api/discord';
+import { getConstruct } from '../api/pouchdb';
 const store = new Store({
     name: 'constructData',
 });
@@ -36,7 +38,7 @@ const clearActiveConstructs = (): void => {
     store.set('ids', []);
 }
 
-const setAsPrimary = (id: ConstructID): void => {
+const setAsPrimary = async (id: ConstructID): Promise<void> => {
     const existingIds = retrieveConstructs();  // Assuming retrieveConstructs returns an array of ConstructID
     const index = existingIds.indexOf(id);
     
@@ -47,6 +49,11 @@ const setAsPrimary = (id: ConstructID): void => {
     existingIds.unshift(id);
 
     store.set('ids', existingIds); 
+    if(isReady){
+        let constructRaw = await getConstruct(id);
+        let construct = assembleConstructFromData(constructRaw);
+        setDiscordBotInfo(construct.name, construct.avatar);
+    }
 }
 
 export function getCharacterPromptFromConstruct(construct: any) {

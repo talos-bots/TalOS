@@ -46,7 +46,7 @@ function assemblePromptFromLog(data, messagesToInclude = 25) {
   let messages = data.messages;
   messages = messages.slice(-messagesToInclude);
   for (let i = 0; i < messages.length; i++) {
-    prompt += `${messages[i].user}: ${messages[i].text}
+    prompt += `${messages[i].user}: ${messages[i].text.trim()}
 `;
   }
   return prompt;
@@ -66,13 +66,13 @@ function convertDiscordMessageToMessage(message, activeConstructs) {
   }
   const convertedMessage = {
     _id: message.id,
-    user: message.author.username,
-    text: message.content,
+    user: message.author.displayName,
+    text: message.content.trim(),
     timestamp: message.createdTimestamp,
     origin: message.channel.id,
     isCommand: false,
     isPrivate: false,
-    participants: [message.author.username, ...activeConstructs],
+    participants: [message.author.displayName, ...activeConstructs],
     attachments
   };
   return convertedMessage;
@@ -466,158 +466,6 @@ Assistant:
   }
   return results;
 };
-const store$3 = new Store({
-  name: "constructData"
-});
-let ActiveConstructs = [];
-const retrieveConstructs = () => {
-  return store$3.get("ids", []);
-};
-const addConstruct$1 = (newId) => {
-  const existingIds = retrieveConstructs();
-  if (!existingIds.includes(newId)) {
-    existingIds.push(newId);
-    store$3.set("ids", existingIds);
-  }
-};
-const removeConstruct$1 = (idToRemove) => {
-  const existingIds = retrieveConstructs();
-  const updatedIds = existingIds.filter((id) => id !== idToRemove);
-  store$3.set("ids", updatedIds);
-};
-const isConstructActive = (id) => {
-  const existingIds = retrieveConstructs();
-  return existingIds.includes(id);
-};
-const clearActiveConstructs = () => {
-  store$3.set("ids", []);
-};
-const setAsPrimary = (id) => {
-  const existingIds = retrieveConstructs();
-  const index = existingIds.indexOf(id);
-  if (index > -1) {
-    existingIds.splice(index, 1);
-  }
-  existingIds.unshift(id);
-  store$3.set("ids", existingIds);
-};
-function getCharacterPromptFromConstruct(construct) {
-  let prompt = "";
-  if (construct.background.length > 1) {
-    prompt += construct.background + "\n";
-  }
-  if (construct.interests.length > 1) {
-    prompt += "Interests:\n";
-    for (let i = 0; i < construct.interests.length; i++) {
-      prompt += "- " + construct.interests[i] + "\n";
-    }
-  }
-  if (construct.relationships.length > 1) {
-    prompt += "Relationships:\n";
-    for (let i = 0; i < construct.relationships.length; i++) {
-      prompt += "- " + construct.relationships[i] + "\n";
-    }
-  }
-  if (construct.personality.length > 1) {
-    prompt += construct.personality + "\n";
-  }
-  return prompt.replaceAll("{{char}}", `${construct.name}`);
-}
-function assemblePrompt(construct, chatLog, currentUser = "you", messagesToInclude) {
-  let prompt = "";
-  prompt += getCharacterPromptFromConstruct(construct);
-  prompt += "Current Conversation:\n";
-  prompt += assemblePromptFromLog(chatLog, messagesToInclude);
-  prompt += `${construct.name}:`;
-  return prompt.replaceAll("{{user}}", `${currentUser}`);
-}
-async function generateContinueChatLog(construct, chatLog, currentUser, messagesToInclude, stopList) {
-  let prompt = assemblePrompt(construct, chatLog, currentUser, messagesToInclude);
-  const response = await generateText(prompt, currentUser, stopList);
-  console.log(response);
-  let reply = "";
-  if (response) {
-    reply = response.results[0];
-    return breakUpCommands(construct.name, reply, currentUser, stopList);
-  } else {
-    console.log("No valid response from GenerateText");
-    return null;
-  }
-}
-function breakUpCommands(charName, commandString, user = "You", stopList = [], botSettings = { doMultiLine: false }) {
-  let lines = commandString.split("\n");
-  let formattedCommands = [];
-  let currentCommand = "";
-  let isFirstLine = true;
-  if (botSettings.doMultiLine === false) {
-    lines = lines.slice(0, 1);
-    let command = lines[0];
-    return command;
-  }
-  for (let i = 0; i < lines.length; i++) {
-    let lineToTest = lines[i].toLowerCase();
-    if (lineToTest.startsWith(`${user.toLowerCase()}:`) || lineToTest.startsWith("you:") || lineToTest.startsWith("<start>") || lineToTest.startsWith("<end>") || lineToTest.startsWith("<user>") || lineToTest.toLowerCase().startsWith("user:")) {
-      break;
-    }
-    if (stopList !== null) {
-      for (let j = 0; j < stopList.length; j++) {
-        if (lineToTest.startsWith(`${stopList[j].toLowerCase()}`)) {
-          break;
-        }
-      }
-    }
-    if (lineToTest.startsWith(`${charName}:`)) {
-      isFirstLine = false;
-      if (currentCommand !== "") {
-        currentCommand = currentCommand.replace(new RegExp(`${charName}:`, "g"), "");
-        formattedCommands.push(currentCommand.trim());
-      }
-      currentCommand = lines[i];
-    } else {
-      if (currentCommand !== "" || isFirstLine) {
-        currentCommand += (isFirstLine ? "" : "\n") + lines[i];
-      }
-      if (isFirstLine)
-        isFirstLine = false;
-    }
-  }
-  if (currentCommand !== "") {
-    formattedCommands.push(currentCommand);
-  }
-  let final = formattedCommands.join("\n");
-  return final;
-}
-function constructController() {
-  ActiveConstructs = retrieveConstructs();
-  electron.ipcMain.on("add-construct-to-active", (event, arg) => {
-    addConstruct$1(arg);
-    ActiveConstructs = retrieveConstructs();
-    event.reply("add-construct-to-active-reply", ActiveConstructs);
-  });
-  electron.ipcMain.on("remove-construct-active", (event, arg) => {
-    removeConstruct$1(arg);
-    ActiveConstructs = retrieveConstructs();
-    event.reply("remove-construct-active-reply", ActiveConstructs);
-  });
-  electron.ipcMain.on("get-construct-active-list", (event, arg) => {
-    ActiveConstructs = retrieveConstructs();
-    event.reply("get-construct-active-list-reply", ActiveConstructs);
-  });
-  electron.ipcMain.on("is-construct-active", (event, arg) => {
-    const isActive = isConstructActive(arg);
-    event.reply("is-construct-active-reply", isActive);
-  });
-  electron.ipcMain.on("remove-all-constructs-active", (event, arg) => {
-    clearActiveConstructs();
-    ActiveConstructs = retrieveConstructs();
-    event.reply("remove-all-constructs-active-reply", ActiveConstructs);
-  });
-  electron.ipcMain.on("set-construct-primary", (event, arg) => {
-    setAsPrimary(arg);
-    ActiveConstructs = retrieveConstructs();
-    event.reply("set-construct-primary-reply", ActiveConstructs);
-  });
-}
 let constructDB;
 let chatsDB;
 let commandDB;
@@ -638,14 +486,14 @@ async function getConstruct(id) {
     console.log(err);
   });
 }
-async function addConstruct(construct) {
+async function addConstruct$1(construct) {
   return constructDB.put(construct).then((result) => {
     return result;
   }).catch((err) => {
     console.log(err);
   });
 }
-async function removeConstruct(id) {
+async function removeConstruct$1(id) {
   return constructDB.get(id).then((doc) => {
     return constructDB.remove(doc);
   }).catch((err) => {
@@ -852,7 +700,7 @@ function PouchDBRoutes() {
     });
   });
   electron.ipcMain.on("add-construct", (event, arg) => {
-    addConstruct(arg).then((result) => {
+    addConstruct$1(arg).then((result) => {
       event.sender.send("add-construct-reply", result);
     });
   });
@@ -862,7 +710,7 @@ function PouchDBRoutes() {
     });
   });
   electron.ipcMain.on("delete-construct", (event, arg) => {
-    removeConstruct(arg).then((result) => {
+    removeConstruct$1(arg).then((result) => {
       event.sender.send("delete-construct-reply", result);
     });
   });
@@ -987,6 +835,163 @@ function PouchDBRoutes() {
     instructDB = new PouchDB("instructs", { prefix: dataPath });
   }
 }
+const store$3 = new Store({
+  name: "constructData"
+});
+let ActiveConstructs = [];
+const retrieveConstructs = () => {
+  return store$3.get("ids", []);
+};
+const addConstruct = (newId) => {
+  const existingIds = retrieveConstructs();
+  if (!existingIds.includes(newId)) {
+    existingIds.push(newId);
+    store$3.set("ids", existingIds);
+  }
+};
+const removeConstruct = (idToRemove) => {
+  const existingIds = retrieveConstructs();
+  const updatedIds = existingIds.filter((id) => id !== idToRemove);
+  store$3.set("ids", updatedIds);
+};
+const isConstructActive = (id) => {
+  const existingIds = retrieveConstructs();
+  return existingIds.includes(id);
+};
+const clearActiveConstructs = () => {
+  store$3.set("ids", []);
+};
+const setAsPrimary = async (id) => {
+  const existingIds = retrieveConstructs();
+  const index = existingIds.indexOf(id);
+  if (index > -1) {
+    existingIds.splice(index, 1);
+  }
+  existingIds.unshift(id);
+  store$3.set("ids", existingIds);
+  if (isReady) {
+    let constructRaw = await getConstruct(id);
+    let construct = assembleConstructFromData(constructRaw);
+    setDiscordBotInfo(construct.name, construct.avatar);
+  }
+};
+function getCharacterPromptFromConstruct(construct) {
+  let prompt = "";
+  if (construct.background.length > 1) {
+    prompt += construct.background + "\n";
+  }
+  if (construct.interests.length > 1) {
+    prompt += "Interests:\n";
+    for (let i = 0; i < construct.interests.length; i++) {
+      prompt += "- " + construct.interests[i] + "\n";
+    }
+  }
+  if (construct.relationships.length > 1) {
+    prompt += "Relationships:\n";
+    for (let i = 0; i < construct.relationships.length; i++) {
+      prompt += "- " + construct.relationships[i] + "\n";
+    }
+  }
+  if (construct.personality.length > 1) {
+    prompt += construct.personality + "\n";
+  }
+  return prompt.replaceAll("{{char}}", `${construct.name}`);
+}
+function assemblePrompt(construct, chatLog, currentUser = "you", messagesToInclude) {
+  let prompt = "";
+  prompt += getCharacterPromptFromConstruct(construct);
+  prompt += "Current Conversation:\n";
+  prompt += assemblePromptFromLog(chatLog, messagesToInclude);
+  prompt += `${construct.name}:`;
+  return prompt.replaceAll("{{user}}", `${currentUser}`);
+}
+async function generateContinueChatLog(construct, chatLog, currentUser, messagesToInclude, stopList) {
+  let prompt = assemblePrompt(construct, chatLog, currentUser, messagesToInclude);
+  const response = await generateText(prompt, currentUser, stopList);
+  console.log(response);
+  let reply = "";
+  if (response) {
+    reply = response.results[0];
+    return breakUpCommands(construct.name, reply, currentUser, stopList);
+  } else {
+    console.log("No valid response from GenerateText");
+    return null;
+  }
+}
+function breakUpCommands(charName, commandString, user = "You", stopList = [], botSettings = { doMultiLine: false }) {
+  let lines = commandString.split("\n");
+  let formattedCommands = [];
+  let currentCommand = "";
+  let isFirstLine = true;
+  if (botSettings.doMultiLine === false) {
+    lines = lines.slice(0, 1);
+    let command = lines[0];
+    return command;
+  }
+  for (let i = 0; i < lines.length; i++) {
+    let lineToTest = lines[i].toLowerCase();
+    if (lineToTest.startsWith(`${user.toLowerCase()}:`) || lineToTest.startsWith("you:") || lineToTest.startsWith("<start>") || lineToTest.startsWith("<end>") || lineToTest.startsWith("<user>") || lineToTest.toLowerCase().startsWith("user:")) {
+      break;
+    }
+    if (stopList !== null) {
+      for (let j = 0; j < stopList.length; j++) {
+        if (lineToTest.startsWith(`${stopList[j].toLowerCase()}`)) {
+          break;
+        }
+      }
+    }
+    if (lineToTest.startsWith(`${charName}:`)) {
+      isFirstLine = false;
+      if (currentCommand !== "") {
+        currentCommand = currentCommand.replace(new RegExp(`${charName}:`, "g"), "");
+        formattedCommands.push(currentCommand.trim());
+      }
+      currentCommand = lines[i];
+    } else {
+      if (currentCommand !== "" || isFirstLine) {
+        currentCommand += (isFirstLine ? "" : "\n") + lines[i];
+      }
+      if (isFirstLine)
+        isFirstLine = false;
+    }
+  }
+  if (currentCommand !== "") {
+    formattedCommands.push(currentCommand);
+  }
+  let final = formattedCommands.join("\n");
+  return final;
+}
+function constructController() {
+  ActiveConstructs = retrieveConstructs();
+  electron.ipcMain.on("add-construct-to-active", (event, arg) => {
+    addConstruct(arg);
+    ActiveConstructs = retrieveConstructs();
+    event.reply("add-construct-to-active-reply", ActiveConstructs);
+  });
+  electron.ipcMain.on("remove-construct-active", (event, arg) => {
+    removeConstruct(arg);
+    ActiveConstructs = retrieveConstructs();
+    event.reply("remove-construct-active-reply", ActiveConstructs);
+  });
+  electron.ipcMain.on("get-construct-active-list", (event, arg) => {
+    ActiveConstructs = retrieveConstructs();
+    event.reply("get-construct-active-list-reply", ActiveConstructs);
+  });
+  electron.ipcMain.on("is-construct-active", (event, arg) => {
+    const isActive = isConstructActive(arg);
+    event.reply("is-construct-active-reply", isActive);
+  });
+  electron.ipcMain.on("remove-all-constructs-active", (event, arg) => {
+    clearActiveConstructs();
+    ActiveConstructs = retrieveConstructs();
+    event.reply("remove-all-constructs-active-reply", ActiveConstructs);
+  });
+  electron.ipcMain.on("set-construct-primary", (event, arg) => {
+    setAsPrimary(arg);
+    ActiveConstructs = retrieveConstructs();
+    event.reply("set-construct-primary-reply", ActiveConstructs);
+  });
+}
 const store$2 = new Store({
   name: "discordData"
 });
@@ -1083,9 +1088,6 @@ async function handleDiscordMessage(message) {
     sendTyping(message);
     if (isMultiCharacterMode()) {
       chatLog = await doRoundRobin(constructArray, chatLog, message);
-      if (0.5 > Math.random()) {
-        chatLog = await doRoundRobin(constructArray, chatLog, message);
-      }
     } else {
       chatLog = await doCharacterReply(constructArray[0], chatLog, message);
     }
@@ -1143,7 +1145,7 @@ async function doRoundRobin(constructArray, chatLog, message) {
         continue;
       }
     }
-    const result = await generateContinueChatLog(constructArray[i], chatLog, message.author.username);
+    const result = await generateContinueChatLog(constructArray[i], chatLog, message.author.displayName);
     let reply;
     if (result !== null) {
       reply = result;
@@ -1158,7 +1160,7 @@ async function doRoundRobin(constructArray, chatLog, message) {
       origin: "Discord",
       isCommand: false,
       isPrivate: false,
-      participants: [message.author.username, constructArray[i].name],
+      participants: [message.author.displayName, constructArray[i].name],
       attachments: []
     };
     chatLog.messages.push(replyMessage);
@@ -1394,6 +1396,16 @@ async function registerCommands() {
 function isMultiCharacterMode() {
   return multiCharacterMode;
 }
+async function doGlobalNicknameChange(newName) {
+  disClient.guilds.cache.forEach((guild) => {
+    guild.members.cache.filter((member) => {
+      var _a;
+      return member.user.id === ((_a = disClient == null ? void 0 : disClient.user) == null ? void 0 : _a.id);
+    }).forEach((member) => {
+      member.setNickname(newName);
+    });
+  });
+}
 async function setDiscordBotInfo(botName, base64Avatar) {
   if (!isReady)
     return;
@@ -1424,12 +1436,13 @@ async function setDiscordBotInfo(botName, base64Avatar) {
     }
   }
   try {
-    const buffer = Buffer.from(base64Avatar, "base64");
+    const buffer = await base642Buffer(base64Avatar);
     await disClient.user.setAvatar(buffer);
     console.log("New avatar set!");
   } catch (error) {
     console.error("Failed to set avatar:", error);
   }
+  doGlobalNicknameChange(botName);
 }
 async function getDiscordGuilds() {
   if (!isReady)
@@ -1792,7 +1805,7 @@ function DiscordJSRoutes() {
     var _a;
     (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-presence-update", oldPresence, newPresence);
   });
-  disClient.on("ready", () => {
+  disClient.on("ready", async () => {
     var _a;
     if (!disClient.user)
       return;
@@ -1800,6 +1813,10 @@ function DiscordJSRoutes() {
     console.log(`Logged in as ${disClient.user.tag}!`);
     (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-ready", disClient.user.tag);
     registerCommands();
+    let constructs = retrieveConstructs();
+    let constructRaw = await getConstruct(constructs[0]);
+    let construct = assembleConstructFromData(constructRaw);
+    setDiscordBotInfo(construct.name, construct.avatar);
   });
   electron.ipcMain.handle("discord-login", async (event, rawToken, appId) => {
     try {

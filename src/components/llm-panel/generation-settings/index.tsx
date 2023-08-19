@@ -1,6 +1,6 @@
-import { setLLMSettings } from "@/api/llmapi";
+import { getLLMSettings, setLLMSettings } from "@/api/llmapi";
 import { EndpointType, Settings } from "@/types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ReactSwitch from "react-switch";
 
 const GenerationSettings = () => {
@@ -20,6 +20,27 @@ const GenerationSettings = () => {
     const [samplerOrder, setSamplerOrder] = useState<number[]>([6,3,2,5,0,1,4]);
     const [stopBrackets, setStopBrackets] = useState<boolean>(false);
 
+    useEffect(() => {
+        const fetchGenerationSettings = async () => {
+            let {settings, stopBrackets} = await getLLMSettings()
+            setMaxContextLength(settings.max_context_length);
+            setMaxLength(settings.max_length);
+            setRepPen(settings.rep_pen);
+            setRepPenRange(settings.rep_pen_range);
+            setTemperature(settings.temperature);
+            setTfs(settings.tfs);
+            setTopA(settings.top_a);
+            setTopK(settings.top_k);
+            setTopP(settings.top_p);
+            setTypical(settings.typical);
+            setMinLength(settings.min_length);
+            setMaxTokens(settings.max_tokens);
+            setSamplerOrder(settings.sampler_order);
+            setStopBrackets(stopBrackets);
+        }
+        fetchGenerationSettings();
+    }, []);
+    
     const saveSettings = async () => {
         const settings: Settings = {
             max_context_length: maxContextLength,

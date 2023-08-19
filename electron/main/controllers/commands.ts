@@ -154,6 +154,30 @@ export const ClearLogCommand: SlashCommand = {
     }
 }
 
+export const SetBotNameCommand: SlashCommand = {
+    name: 'setbotname',
+    description: 'Sets the name of the bot.',
+    execute: async (interaction: CommandInteraction) => {
+        await interaction.deferReply({ephemeral: true});
+        if (interaction.channelId === null) {
+            await interaction.editReply({
+            content: "This command can only be used in a server channel.",
+            });
+            return;
+        }
+        if(interaction.guildId === null){
+            await interaction.editReply({
+            content: "This command can only be used in a server channel.",
+            });
+            return;
+        }
+        
+        await interaction.editReply({
+            content: "Not implemented yet.",
+        });
+    }
+}
+
 export const DefaultCommands = [
     RegisterCommand,
     UnregisterCommand,
