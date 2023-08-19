@@ -67,7 +67,7 @@ async function createWindow() {
     autoHideMenuBar: true,
     resizable: true,
     maximizable: true,
-    minimizable: false,
+    minimizable: true,
   });
 
   win.maximize();
