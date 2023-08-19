@@ -1028,6 +1028,8 @@ async function handleDiscordMessage(message) {
     return;
   if (message.channel.isDMBased())
     return;
+  if (message.content.startsWith("."))
+    return;
   let registeredChannels = getRegisteredChannels();
   let registered = false;
   for (let i = 0; i < registeredChannels.length; i++) {
@@ -1041,7 +1043,6 @@ async function handleDiscordMessage(message) {
   const activeConstructs = retrieveConstructs();
   if (activeConstructs.length < 1)
     return;
-  sendTyping(message);
   const newMessage = convertDiscordMessageToMessage(message, activeConstructs);
   let constructArray = [];
   for (let i = 0; i < activeConstructs.length; i++) {
@@ -1049,7 +1050,6 @@ async function handleDiscordMessage(message) {
     let construct = assembleConstructFromData(constructDoc);
     constructArray.push(construct);
   }
-  getDiscordMode();
   let chatLogData = await getChat(message.channel.id);
   let chatLog;
   if (chatLogData) {
@@ -1072,9 +1072,45 @@ async function handleDiscordMessage(message) {
       return;
     }
   }
-  chatLog = await doRoundRobin(constructArray, chatLog, message);
-  if (0.5 > Math.random()) {
-    chatLog = await doRoundRobin(constructArray, chatLog, message);
+  if (message.content.startsWith("-")) {
+    await updateChat(chatLog);
+    return;
+  }
+  sendTyping(message);
+  const mode = getDiscordMode();
+  if (mode === "Character") {
+    if (isMultiCharacterMode()) {
+      chatLog = await doRoundRobin(constructArray, chatLog, message);
+      if (0.5 > Math.random()) {
+        chatLog = await doRoundRobin(constructArray, chatLog, message);
+      }
+    } else {
+      const result = await generateContinueChatLog(constructArray[0], chatLog, message.author.username);
+      let reply;
+      if (result !== null) {
+        reply = result;
+      } else {
+        return;
+      }
+      const replyMessage = {
+        _id: Date.now().toString(),
+        user: constructArray[0].name,
+        text: reply,
+        timestamp: Date.now(),
+        origin: "Discord",
+        isCommand: false,
+        isPrivate: false,
+        participants: [message.author.username, constructArray[0].name],
+        attachments: []
+      };
+      chatLog.messages.push(replyMessage);
+      chatLog.lastMessage = replyMessage;
+      chatLog.lastMessageDate = replyMessage.timestamp;
+      await sendMessage(message.channel.id, reply);
+      await updateChat(chatLog);
+    }
+  } else if (mode === "Construct") {
+    await sendMessage(message.channel.id, "Construct Mode is not yet implemented.");
   }
   await updateChat(chatLog);
 }
@@ -1333,6 +1369,7 @@ const commands = [...DefaultCommands];
 let isReady = false;
 let token = "";
 let applicationID = "";
+let multiCharacterMode = false;
 async function registerCommands() {
   if (!isReady)
     return;
@@ -1347,6 +1384,9 @@ async function registerCommands() {
   } catch (error) {
     console.error(error);
   }
+}
+function isMultiCharacterMode() {
+  return multiCharacterMode;
 }
 async function setDiscordBotInfo(botName, base64Avatar) {
   if (!isReady)
@@ -1548,6 +1588,7 @@ async function getDiscordData() {
   }
   token = savedToken;
   applicationID = appId;
+  multiCharacterMode = discordMultiCharacterMode;
   return { savedToken, appId, discordCharacterMode, discordMultiCharacterMode, discordMultiConstructMode };
 }
 function saveDiscordData(newToken, newAppId, discordCharacterMode, discordMultiCharacterMode, discordMultiConstructMode) {
@@ -1573,6 +1614,7 @@ function saveDiscordData(newToken, newAppId, discordCharacterMode, discordMultiC
     applicationID = newAppId;
     store$1.set("discordAppId", newAppId);
   }
+  multiCharacterMode = discordMultiCharacterMode;
   store$1.set("discordCharacterMode", discordCharacterMode);
   store$1.set("discordMultiCharacterMode", discordMultiCharacterMode);
   store$1.set("discordMultiConstructMode", discordMultiConstructMode);

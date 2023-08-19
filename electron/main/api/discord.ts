@@ -48,6 +48,14 @@ async function registerCommands() {
     }
 }
 
+export function isMultiCharacterMode(){
+    return multiCharacterMode;
+}
+
+export function isMultiConstructMode(){
+    return multiConstructMode;
+}
+
 export function cleanUsername(username: string) {
     // Remove leading characters
     let cleaned = username.replace(/^[._-]+/, '');
