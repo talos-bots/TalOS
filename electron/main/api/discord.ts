@@ -356,6 +356,11 @@ export function saveDiscordData(newToken: string, newAppId: string, discordChara
     multiConstructMode = discordMultiConstructMode;
 
     store.set('discordCharacterMode', discordCharacterMode);
+    if(!discordCharacterMode){
+        store.set('mode', 'Construct');
+    }else{
+        store.set('mode', 'Character');
+    }
     store.set('discordMultiCharacterMode', discordMultiCharacterMode);
     store.set('discordMultiConstructMode', discordMultiConstructMode);
 }

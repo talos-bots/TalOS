@@ -992,8 +992,10 @@ const store$2 = new Store({
 });
 const setDiscordMode = (mode) => {
   store$2.set("mode", mode);
+  console.log(store$2.get("mode"));
 };
 const getDiscordMode = () => {
+  console.log(store$2.get("mode"));
   return store$2.get("mode");
 };
 const clearDiscordMode = () => {
@@ -1076,9 +1078,9 @@ async function handleDiscordMessage(message) {
     await updateChat(chatLog);
     return;
   }
-  sendTyping(message);
   const mode = getDiscordMode();
   if (mode === "Character") {
+    sendTyping(message);
     if (isMultiCharacterMode()) {
       chatLog = await doRoundRobin(constructArray, chatLog, message);
       if (0.5 > Math.random()) {
@@ -1620,6 +1622,11 @@ function saveDiscordData(newToken, newAppId, discordCharacterMode, discordMultiC
   }
   multiCharacterMode = discordMultiCharacterMode;
   store$1.set("discordCharacterMode", discordCharacterMode);
+  if (!discordCharacterMode) {
+    store$1.set("mode", "Construct");
+  } else {
+    store$1.set("mode", "Character");
+  }
   store$1.set("discordMultiCharacterMode", discordMultiCharacterMode);
   store$1.set("discordMultiConstructMode", discordMultiConstructMode);
 }

@@ -15,9 +15,11 @@ type DiscordMode = 'Character' | 'Construct';
 
 const setDiscordMode = (mode: DiscordMode) => {
     store.set('mode', mode);
+    console.log(store.get('mode'));
 };
 
 const getDiscordMode = (): DiscordMode => {
+    console.log(store.get('mode'));
     return store.get('mode') as DiscordMode;
 };
 
@@ -101,9 +103,9 @@ export async function handleDiscordMessage(message: Message) {
         await updateChat(chatLog);
         return;
     }
-    sendTyping(message);
     const mode = getDiscordMode();
     if(mode === 'Character'){
+        sendTyping(message);
         if(isMultiCharacterMode()){
             chatLog = await doRoundRobin(constructArray, chatLog, message);
             if(0.5 > Math.random()){
