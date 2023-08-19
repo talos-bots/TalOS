@@ -1085,34 +1085,38 @@ async function handleDiscordMessage(message) {
         chatLog = await doRoundRobin(constructArray, chatLog, message);
       }
     } else {
-      const result = await generateContinueChatLog(constructArray[0], chatLog, message.author.username);
-      let reply;
-      if (result !== null) {
-        reply = result;
-      } else {
-        return;
-      }
-      const replyMessage = {
-        _id: Date.now().toString(),
-        user: constructArray[0].name,
-        text: reply,
-        timestamp: Date.now(),
-        origin: "Discord",
-        isCommand: false,
-        isPrivate: false,
-        participants: [message.author.username, constructArray[0].name],
-        attachments: []
-      };
-      chatLog.messages.push(replyMessage);
-      chatLog.lastMessage = replyMessage;
-      chatLog.lastMessageDate = replyMessage.timestamp;
-      await sendMessage(message.channel.id, reply);
-      await updateChat(chatLog);
+      chatLog = await doCharacterReply(constructArray[0], chatLog, message);
     }
   } else if (mode === "Construct") {
     await sendMessage(message.channel.id, "Construct Mode is not yet implemented.");
   }
   await updateChat(chatLog);
+}
+async function doCharacterReply(construct, chatLog, message) {
+  const result = await generateContinueChatLog(construct, chatLog, message.author.username);
+  let reply;
+  if (result !== null) {
+    reply = result;
+  } else {
+    return;
+  }
+  const replyMessage = {
+    _id: Date.now().toString(),
+    user: construct.name,
+    text: reply,
+    timestamp: Date.now(),
+    origin: "Discord",
+    isCommand: false,
+    isPrivate: false,
+    participants: [message.author.username, construct.name],
+    attachments: []
+  };
+  chatLog.messages.push(replyMessage);
+  chatLog.lastMessage = replyMessage;
+  chatLog.lastMessageDate = replyMessage.timestamp;
+  await sendMessage(message.channel.id, reply);
+  await updateChat(chatLog);
+  return chatLog;
 }
 async function doRoundRobin(constructArray, chatLog, message) {
   let primaryConstruct = retrieveConstructs()[0];
