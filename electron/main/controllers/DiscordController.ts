@@ -37,9 +37,9 @@ export const addRegisteredChannel = (newChannel: ChannelConfigInterface): void =
     }
 }
 
-export const removeRegisteredChannel = (channelToRemove: ChannelConfigInterface): void => {
+export const removeRegisteredChannel = (channelToRemove: string): void => {
     const existingChannels = getRegisteredChannels();
-    const updatedChannels = existingChannels.filter(channel => channel !== channelToRemove);
+    const updatedChannels = existingChannels.filter(channel => channel._id !== channelToRemove);
     store.set('channels', updatedChannels);
 }
 
@@ -56,7 +56,15 @@ export const isChannelRegistered = (channel: string): boolean => {
 export async function handleDiscordMessage(message: Message) {
     if(message.author.bot) return;
     if(message.channel.isDMBased()) return;
-    if(message.channel.id !== '1119404483600994414') return;
+    let registeredChannels = getRegisteredChannels();
+    let registered = false;
+    for(let i = 0; i < registeredChannels.length; i++){
+        if(registeredChannels[i]._id === message.channel.id){
+            registered = true;
+            break;
+        }
+    }
+    if(!registered) return;
     const activeConstructs = retrieveConstructs();
     if(activeConstructs.length < 1) return;
     sendTyping(message);

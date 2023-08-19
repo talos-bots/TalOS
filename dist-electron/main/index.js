@@ -990,15 +990,53 @@ function PouchDBRoutes() {
 const store$2 = new Store({
   name: "discordData"
 });
+const setDiscordMode = (mode) => {
+  store$2.set("mode", mode);
+};
 const getDiscordMode = () => {
   return store$2.get("mode");
+};
+const clearDiscordMode = () => {
+  store$2.set("mode", null);
+};
+const getRegisteredChannels = () => {
+  return store$2.get("channels", []);
+};
+const addRegisteredChannel = (newChannel) => {
+  const existingChannels = getRegisteredChannels();
+  if (!existingChannels.includes(newChannel)) {
+    existingChannels.push(newChannel);
+    store$2.set("channels", existingChannels);
+  }
+};
+const removeRegisteredChannel = (channelToRemove) => {
+  const existingChannels = getRegisteredChannels();
+  const updatedChannels = existingChannels.filter((channel) => channel._id !== channelToRemove);
+  store$2.set("channels", updatedChannels);
+};
+const isChannelRegistered = (channel) => {
+  const existingChannels = getRegisteredChannels();
+  for (let i = 0; i < existingChannels.length; i++) {
+    if (existingChannels[i]._id === channel) {
+      return true;
+    }
+  }
+  return false;
 };
 async function handleDiscordMessage(message) {
   if (message.author.bot)
     return;
   if (message.channel.isDMBased())
     return;
-  if (message.channel.id !== "1119404483600994414")
+  let registeredChannels = getRegisteredChannels();
+  let registered = false;
+  for (let i = 0; i < registeredChannels.length; i++) {
+    if (registeredChannels[i]._id === message.channel.id) {
+      registered = true;
+      break;
+    }
+  }
+  if (!registered)
     return;
   const activeConstructs = retrieveConstructs();
   if (activeConstructs.length < 1)
@@ -1101,6 +1139,154 @@ function containsName(message, chars) {
   }
   return false;
 }
+function DiscordController() {
+  electron.ipcMain.on("discordMode", (event, arg) => {
+    setDiscordMode(arg);
+  });
+  electron.ipcMain.handle("getDiscordMode", () => {
+    return getDiscordMode();
+  });
+  electron.ipcMain.on("clearDiscordMode", () => {
+    clearDiscordMode();
+  });
+  electron.ipcMain.handle("getRegisteredChannels", () => {
+    return getRegisteredChannels();
+  });
+  electron.ipcMain.handle("addRegisteredChannel", (event, arg) => {
+    addRegisteredChannel(arg);
+  });
+  electron.ipcMain.handle("removeRegisteredChannel", (event, arg) => {
+    removeRegisteredChannel(arg);
+  });
+  electron.ipcMain.handle("isChannelRegistered", (event, arg) => {
+    return isChannelRegistered(arg);
+  });
+}
+const RegisterCommand = {
+  name: "register",
+  description: "Registers the current channel.",
+  execute: async (interaction) => {
+    await interaction.deferReply({ ephemeral: true });
+    if (interaction.channelId === null) {
+      await interaction.editReply({
+        content: "This command can only be used in a server channel."
+      });
+      return;
+    }
+    if (interaction.guildId === null) {
+      await interaction.editReply({
+        content: "This command can only be used in a server channel."
+      });
+      return;
+    }
+    addRegisteredChannel({
+      _id: interaction.channelId,
+      guildId: interaction.guildId,
+      constructs: []
+    });
+    await interaction.editReply({
+      content: "Channel registered."
+    });
+  }
+};
+const UnregisterCommand = {
+  name: "unregister",
+  description: "Unregisters the current channel.",
+  execute: async (interaction) => {
+    await interaction.deferReply({ ephemeral: true });
+    if (interaction.channelId === null) {
+      await interaction.editReply({
+        content: "This command can only be used in a server channel."
+      });
+      return;
+    }
+    if (interaction.guildId === null) {
+      await interaction.editReply({
+        content: "This command can only be used in a server channel."
+      });
+      return;
+    }
+    removeRegisteredChannel(interaction.channelId);
+    await interaction.editReply({
+      content: "Channel unregistered."
+    });
+  }
+};
+const ListRegisteredCommand = {
+  name: "listregistered",
+  description: "Lists all registered channels.",
+  execute: async (interaction) => {
+    await interaction.deferReply({ ephemeral: true });
+    if (interaction.channelId === null) {
+      await interaction.editReply({
+        content: "This command can only be used in a server channel."
+      });
+      return;
+    }
+    if (interaction.guildId === null) {
+      await interaction.editReply({
+        content: "This command can only be used in a server channel."
+      });
+      return;
+    }
+    const registeredChannels = getRegisteredChannels();
+    let reply = "Registered Channels:\n";
+    for (let i = 0; i < registeredChannels.length; i++) {
+      reply += `<#${registeredChannels[i]._id}>
+`;
+    }
+    await interaction.editReply({
+      content: reply
+    });
+  }
+};
+const ListCharactersCommand = {
+  name: "charlist",
+  description: "Lists all registered characters.",
+  execute: async (interaction) => {
+    await interaction.deferReply();
+    if (interaction.channelId === null) {
+      await interaction.editReply({
+        content: "This command can only be used in a server channel."
+      });
+      return;
+    }
+    if (interaction.guildId === null) {
+      await interaction.editReply({
+        content: "This command can only be used in a server channel."
+      });
+      return;
+    }
+    const constructs = retrieveConstructs();
+    let constructArray = [];
+    for (let i = 0; i < constructs.length; i++) {
+      let constructDoc = await getConstruct(constructs[i]);
+      let construct = assembleConstructFromData(constructDoc);
+      constructArray.push(construct);
+    }
+    let fields = [];
+    for (let i = 0; i < constructArray.length; i++) {
+      let status = "Secondary";
+      if (i === 0) {
+        status = "Primary";
+      }
+      fields.push({
+        name: constructArray[i].name,
+        value: status
+      });
+    }
+    let embed = new discord_js.EmbedBuilder().setTitle("Registered Characters").addFields(fields);
+    await interaction.editReply({
+      embeds: [embed]
+    });
+  }
+};
+const DefaultCommands = [
+  RegisterCommand,
+  UnregisterCommand,
+  ListRegisteredCommand,
+  ListCharactersCommand
+];
 const intents = {
   intents: [
     discord_js.GatewayIntentBits.Guilds,
@@ -1119,9 +1305,25 @@ const store$1 = new Store({
 });
 getDiscordData();
 let disClient = new discord_js.Client(intents);
+const commands = [...DefaultCommands];
 let isReady = false;
 let token = "";
 let applicationID = "";
+async function registerCommands() {
+  if (!isReady)
+    return;
+  const rest = new discord_js.REST().setToken(token);
+  try {
+    console.log("Started refreshing application (/) commands.");
+    await rest.put(
+      discord_js.Routes.applicationCommands(applicationID),
+      { body: commands.map((cmd) => ({ name: cmd.name, description: cmd.description })) }
+    );
+    console.log("Successfully reloaded application (/) commands.");
+  } catch (error) {
+    console.error(error);
+  }
+}
 async function setDiscordBotInfo(botName, base64Avatar) {
   if (!isReady)
     return;
@@ -1488,6 +1690,17 @@ function DiscordJSRoutes() {
   });
   disClient.on("interactionCreate", async (interaction) => {
     var _a;
+    if (!interaction.isCommand())
+      return;
+    const command = commands.find((cmd) => cmd.name === interaction.commandName);
+    if (!command)
+      return;
+    try {
+      await command.execute(interaction);
+    } catch (error) {
+      console.error(error);
+      await interaction.reply({ content: "There was an error while executing this command!", ephemeral: true });
+    }
     (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-interaction-create", interaction);
   });
   disClient.on("inviteCreate", async (invite) => {
@@ -1509,6 +1722,7 @@ function DiscordJSRoutes() {
     isReady = true;
     console.log(`Logged in as ${disClient.user.tag}!`);
     (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-ready", disClient.user.tag);
+    registerCommands();
   });
   electron.ipcMain.handle("discord-login", async (event, rawToken, appId) => {
     try {
@@ -1822,6 +2036,7 @@ async function createWindow() {
   LanguageModelAPI();
   SDRoutes();
   constructController();
+  DiscordController();
 }
 electron.app.whenReady().then(createWindow);
 electron.app.on("window-all-closed", () => {

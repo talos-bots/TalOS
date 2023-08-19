@@ -5,6 +5,7 @@ import { win } from '..';
 import { handleDiscordMessage } from '../controllers/DiscordController';
 import { ConstructInterface, SlashCommand } from '../types/types';
 import { base642Buffer } from '../helpers/helpers';
+import { DefaultCommands } from '../controllers/commands';
 
 const intents = { 
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, 
@@ -22,7 +23,7 @@ const store = new Store({
 getDiscordData();
 
 let disClient = new Client(intents);
-const commands: SlashCommand[] = [];
+const commands: SlashCommand[] = [...DefaultCommands];
 let isReady = false;
 let token = '';
 let applicationID = '';
@@ -486,6 +487,18 @@ export function DiscordJSRoutes(){
     });
 
     disClient.on('interactionCreate', async (interaction) => {
+        if (!interaction.isCommand()) return;
+
+        const command = commands.find(cmd => cmd.name === interaction.commandName);
+      
+        if (!command) return;
+      
+        try {
+            await command.execute(interaction);
+        } catch (error) {
+            console.error(error);
+            await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+        }
         win?.webContents.send('discord-interaction-create', interaction);
     });
 
@@ -506,6 +519,7 @@ export function DiscordJSRoutes(){
         isReady = true;
         console.log(`Logged in as ${disClient.user.tag}!`);
         win?.webContents.send('discord-ready', disClient.user.tag);
+        registerCommands();
     });
 
     ipcMain.handle('discord-login', async (event, rawToken: string, appId: string) => {

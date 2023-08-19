@@ -10,6 +10,7 @@ import { LanguageModelAPI } from "./api/llm";
 import { SDRoutes } from "./api/sd";
 import constructController from "./controllers/ConstructController";
 import fs from "fs";
+import DiscordController from "./controllers/DiscordController";
 
 // The built directory structure
 //
@@ -70,7 +71,7 @@ async function createWindow() {
   });
 
   win.maximize();
-  
+
   if (url) {
     win.loadURL(url);
     win.webContents.openDevTools();
@@ -89,6 +90,7 @@ async function createWindow() {
   LanguageModelAPI();
   SDRoutes();
   constructController();
+  DiscordController();
   // update(win)
 }
 
