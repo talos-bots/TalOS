@@ -169,20 +169,26 @@ ipcMain.handle("get-server-port", (event) => {
 });
 
 async function requestFullDiskAccess() {
-  // Check if the app is running on macOS
   if (process.platform === 'darwin') {
-    const { response } = await dialog.showMessageBox({
-      type: 'info',
-      title: 'Full Disk Access Required',
-      message: 'This application requires full disk access to function properly.',
-      detail: 'Please enable full disk access for this application in System Preferences.',
-      buttons: ['Open System Preferences', 'Cancel'],
-      defaultId: 0,
-      cancelId: 1
-    });
+    // Try to read a directory that requires Full Disk Access
+    try {
+      fs.readdirSync('/Library/Application Support/com.apple.TCC');
+    } catch (e) {
+      // Reading the directory failed, which likely means that Full Disk Access
+      // has not been granted. Show the dialog that prompts the user to grant access.
+      const { response } = await dialog.showMessageBox({
+        type: 'info',
+        title: 'Full Disk Access Required',
+        message: 'This application requires full disk access to function properly.',
+        detail: 'Please enable full disk access for this application in System Preferences.',
+        buttons: ['Open System Preferences', 'Cancel'],
+        defaultId: 0,
+        cancelId: 1
+      });
 
-    if (response === 0) {
-      shell.openExternal('x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles');
+      if (response === 0) {
+        shell.openExternal('x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles');
+      }
     }
   }
 }

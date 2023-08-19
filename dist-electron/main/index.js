@@ -2171,17 +2171,21 @@ electron.ipcMain.handle("get-server-port", (event) => {
 });
 async function requestFullDiskAccess() {
   if (process.platform === "darwin") {
-    const { response } = await electron.dialog.showMessageBox({
-      type: "info",
-      title: "Full Disk Access Required",
-      message: "This application requires full disk access to function properly.",
-      detail: "Please enable full disk access for this application in System Preferences.",
-      buttons: ["Open System Preferences", "Cancel"],
-      defaultId: 0,
-      cancelId: 1
-    });
-    if (response === 0) {
-      electron.shell.openExternal("x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles");
+    try {
+      fs.readdirSync("/Library/Application Support/com.apple.TCC");
+    } catch (e) {
+      const { response } = await electron.dialog.showMessageBox({
+        type: "info",
+        title: "Full Disk Access Required",
+        message: "This application requires full disk access to function properly.",
+        detail: "Please enable full disk access for this application in System Preferences.",
+        buttons: ["Open System Preferences", "Cancel"],
+        defaultId: 0,
+        cancelId: 1
+      });
+      if (response === 0) {
+        electron.shell.openExternal("x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles");
+      }
     }
   }
 }
