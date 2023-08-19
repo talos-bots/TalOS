@@ -1,9 +1,10 @@
 import { ipcMain } from 'electron';
 import { ActivityType, Client, GatewayIntentBits, Collection, REST, Routes, Partials, TextChannel, DMChannel, NewsChannel, Snowflake, Webhook, Message } from 'discord.js';
 import Store from 'electron-store';
-import { resolve } from 'path';
 import { win } from '..';
 import { handleDiscordMessage } from '../controllers/DiscordController';
+import { ConstructInterface, SlashCommand } from '../types/types';
+import { base642Buffer } from '../helpers/helpers';
 
 const intents = { 
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, 
@@ -21,13 +22,30 @@ const store = new Store({
 getDiscordData();
 
 let disClient = new Client(intents);
-const commands = new Collection();
+const commands: SlashCommand[] = [];
 let isReady = false;
 let token = '';
 let applicationID = '';
 let characterMode = false;
 let multiCharacterMode = false;
 let multiConstructMode = false;
+
+async function registerCommands() {
+    if(!isReady) return;
+    const rest = new REST().setToken(token);
+    try {
+      console.log('Started refreshing application (/) commands.');
+  
+      await rest.put(
+        Routes.applicationCommands(applicationID),
+        { body: commands.map(cmd => ({ name: cmd.name, description: cmd.description })) },
+      );
+  
+      console.log('Successfully reloaded application (/) commands.');
+    } catch (error) {
+      console.error(error);
+    }
+}
 
 export function cleanUsername(username: string) {
     // Remove leading characters
@@ -140,6 +158,7 @@ export async function setOnlineMode(type: ValidStatus) {
     if(!isReady) return;
     disClient.user.setStatus(type);
 }
+
 export async function getStopList(guildId: string){
     if(!disClient.user || disClient.user === null) return;
     if(!isReady) return;
@@ -192,15 +211,39 @@ export async function getWebhookForCharacter(charName: string, channelID: Snowfl
     return webhooks.find(webhook => webhook.name === charName);
 }
 
-export async function sendMessageAsCharacter(charName: string, channelID: Snowflake, message: string): Promise<void> {
+export async function sendMessageAsCharacter(char: ConstructInterface, channelID: Snowflake, message: string): Promise<void> {
     if(!isReady) return;
-    const webhook = await getWebhookForCharacter(charName, channelID);
+    let webhook = await getWebhookForCharacter(char.name, channelID);
     
     if (!webhook) {
-        throw new Error(`Webhook for character ${charName} not found.`);
+        webhook = await createWebhookForChannel(channelID, char);
     }
-
+    if (!webhook) {
+        console.error("Failed to create webhook.");
+        return;
+    }
     await webhook.send(message);
+}
+
+export async function createWebhookForChannel(channelID: string, char: ConstructInterface){
+    if(!isReady) return;
+    if (!disClient.user) return;
+    let channel = disClient.channels.cache.get(channelID);
+    if (!(channel instanceof TextChannel || channel instanceof NewsChannel)) {
+        return;
+    }
+    let webhooks = await channel.fetchWebhooks();
+    let webhook = webhooks.find(webhook => webhook.name === char.name);
+    let charImage = await base642Buffer(char.avatar);
+    if(!webhook){
+        webhook = await channel.createWebhook({
+            name: char.name,
+            avatar: charImage
+        });
+    }else {
+        console.log("Webhook already exists.");
+    }
+    return webhook;
 }
 
 export async function getWebhooksForChannel(channelID: Snowflake): Promise<string[]> {
@@ -325,29 +368,6 @@ export function DiscordJSRoutes(){
     
     ipcMain.on('discord-get-application-id', async (event) => {
         event.sender.send('discord-get-application-id-reply', applicationID);
-    });
-
-    ipcMain.on('discord-get-commands', async (event) => {
-        event.sender.send('discord-get-commands-reply', commands);
-    });
-
-    ipcMain.on('discord-get-command', async (event, commandName: string) => {
-        event.sender.send('discord-get-command-reply', commands.get(commandName));
-    });
-
-    ipcMain.on('discord-add-command', async (event, commandName: string, commandFunction: Function) => {
-        commands.set(commandName, commandFunction);
-        event.sender.send('discord-add-command-reply', commands);
-    });
-
-    ipcMain.on('discord-remove-command', async (event, commandName: string) => {
-        commands.delete(commandName);
-        event.sender.send('discord-remove-command-reply', commands);
-    });
-
-    ipcMain.on('discord-remove-all-commands', async (event) => {
-        commands.clear();
-        event.sender.send('discord-remove-all-commands-reply', commands);
     });
 
     ipcMain.on('discord-get-guilds', async (event) => {
@@ -565,9 +585,9 @@ export function DiscordJSRoutes(){
         return true;
     });
 
-    ipcMain.handle('discord-send-message-as-character', async (event, charName: string, channelID: Snowflake, message: string) => {
+    ipcMain.handle('discord-send-message-as-character', async (event, char: ConstructInterface, channelID: Snowflake, message: string) => {
         if(!isReady) return false;
-        await sendMessageAsCharacter(charName, channelID, message);
+        await sendMessageAsCharacter(char, channelID, message);
         return true;
     });
 

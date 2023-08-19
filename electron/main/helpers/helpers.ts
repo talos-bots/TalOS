@@ -1,5 +1,7 @@
 import { Message } from "discord.js";
 import { AttachmentInferface } from "../types/types";
+import FormData from 'form-data';
+import axios from "axios";
 
 export function assembleConstructFromData(data: any){
     const construct = {
@@ -93,4 +95,53 @@ export function convertDiscordMessageToMessage(message: Message, activeConstruct
         attachments: attachments,
     }
     return convertedMessage;
+}
+
+export async function base642Buffer(base64: string): Promise<string| Buffer> {
+  let buffer: Buffer;
+
+  // Check if the input is in data URL format
+  const match = base64.match(/^data:image\/[^;]+;base64,(.+)/);
+
+  if (match) {
+    // Extract the actual base64 string
+    const actualBase64 = match[1];
+    // Convert the base64 string into a Buffer
+    buffer = Buffer.from(actualBase64, 'base64');
+  } else {
+    // If the input is not in data URL format, assume it is already a plain base64 string
+    try {
+      buffer = Buffer.from(base64, 'base64');
+    } catch (error) {
+      // Handle errors (e.g., invalid base64 string)
+      console.error('Invalid base64 string:', error);
+      return base64;
+    }
+  }
+
+  // Create form data
+  const form = new FormData();
+  form.append('file', buffer, {
+    filename: 'file.png', // You can name the file whatever you like
+    contentType: 'image/png', // Be sure this matches the actual file type
+  });
+
+  try {
+    // Upload file to file.io
+    const response = await axios.post('https://file.io', form, {
+      headers: {
+        ...form.getHeaders()
+      }
+    });
+    if (response.status !== 200) {
+      // Handle non-200 responses
+      console.error('Failed to upload file:', response.statusText);
+      return buffer;
+    }
+    return response.data.link;
+  } catch (error) {
+    // Handle errors (e.g., upload failed)
+    console.error('Failed to upload file:', error);
+    return buffer;
+  }
 }

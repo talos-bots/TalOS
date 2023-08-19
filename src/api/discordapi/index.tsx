@@ -96,31 +96,6 @@ export const getApplicationID = (): Promise<string> => {
     return fetchFromMain('discord-get-application-id', 'discord-get-application-id-reply');
 }
 
-// Get Commands
-export const getCommands = (): Promise<Map<string, Function>> => {
-    return fetchFromMain('discord-get-commands', 'discord-get-commands-reply');
-}
-
-// Get Specific Command
-export const getCommand = (commandName: string): Promise<Function> => {
-    return fetchFromMainWithArgs('discord-get-command', 'discord-get-command-reply', commandName);
-}
-
-// Add Command
-export const addCommand = (commandName: string, commandFunction: Function): Promise<Map<string, Function>> => {
-    return fetchFromMainWithArgs('discord-add-command', 'discord-add-command-reply', commandName, commandFunction);
-}
-
-// Remove Command
-export const removeCommand = (commandName: string): Promise<Map<string, Function>> => {
-    return fetchFromMainWithArgs('discord-remove-command', 'discord-remove-command-reply', commandName);
-}
-
-// Remove All Commands
-export const removeAllCommands = (): Promise<Map<string, Function>> => {
-    return fetchFromMain('discord-remove-all-commands', 'discord-remove-all-commands-reply');
-}
-
 // Get Guilds
 export const getGuilds = (): Promise<Array<any>> => {
     return new Promise((resolve) => {

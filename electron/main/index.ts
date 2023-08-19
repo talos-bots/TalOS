@@ -69,6 +69,8 @@ async function createWindow() {
     minimizable: false,
   });
 
+  win.maximize();
+  
   if (url) {
     win.loadURL(url);
     win.webContents.openDevTools();

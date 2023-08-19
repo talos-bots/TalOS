@@ -1,11 +1,12 @@
-export type Chat = {
+import { CommandInteraction } from 'discord.js';
+export type ChatInterface = {
     _id: string;
     name: string;
     type: string;
     messages: MessageInterface[];
     lastMessage: MessageInterface;
-    lastMessageDate: Date;
-    firstMessageDate: Date;
+    lastMessageDate: number;
+    firstMessageDate: number;
     agents: string[];
 }
 export type MessageInterface = {
@@ -39,4 +40,14 @@ export type ConstructInterface = {
     interests: string[];
     greetings: string[];
     farewells: string[];
+}
+export type ChannelConfigInterface = {
+    _id: string;
+    guildId: string;
+    constructs: string[];
+}
+export interface SlashCommand {
+  name: string;
+  description: string;
+  execute: (interaction: CommandInteraction) => void | Promise<void>;
 }

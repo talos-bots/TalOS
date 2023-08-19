@@ -10,6 +10,7 @@ const PouchDB = require("pouchdb");
 const fs = require("fs");
 const axios = require("axios");
 const openai = require("openai");
+const FormData = require("form-data");
 function assembleConstructFromData(data) {
   const construct = {
     _id: data._id,
@@ -75,6 +76,43 @@ function convertDiscordMessageToMessage(message, activeConstructs) {
     attachments
   };
   return convertedMessage;
+}
+async function base642Buffer(base64) {
+  let buffer;
+  const match = base64.match(/^data:image\/[^;]+;base64,(.+)/);
+  if (match) {
+    const actualBase64 = match[1];
+    buffer = Buffer.from(actualBase64, "base64");
+  } else {
+    try {
+      buffer = Buffer.from(base64, "base64");
+    } catch (error) {
+      console.error("Invalid base64 string:", error);
+      return base64;
+    }
+  }
+  const form = new FormData();
+  form.append("file", buffer, {
+    filename: "file.png",
+    // You can name the file whatever you like
+    contentType: "image/png"
+    // Be sure this matches the actual file type
+  });
+  try {
+    const response = await axios.post("https://file.io", form, {
+      headers: {
+        ...form.getHeaders()
+      }
+    });
+    if (response.status !== 200) {
+      console.error("Failed to upload file:", response.statusText);
+      return buffer;
+    }
+    return response.data.link;
+  } catch (error) {
+    console.error("Failed to upload file:", error);
+    return buffer;
+  }
 }
 const HORDE_API_URL = "https://aihorde.net/api/";
 const store$4 = new Store({
@@ -975,7 +1013,6 @@ async function handleDiscordMessage(message) {
   }
   getDiscordMode();
   let chatLogData = await getChat(message.channel.id);
-  console.log(chatLogData);
   let chatLog;
   if (chatLogData) {
     chatLog = assembleChatFromData(chatLogData);
@@ -997,29 +1034,72 @@ async function handleDiscordMessage(message) {
       return;
     }
   }
-  const result = await generateContinueChatLog(constructArray[0], chatLog, message.author.username);
-  let reply;
-  if (result !== null) {
-    reply = result;
-  } else {
-    reply = "Default reply or error message";
+  chatLog = await doRoundRobin(constructArray, chatLog, message);
+  if (0.5 > Math.random()) {
+    chatLog = await doRoundRobin(constructArray, chatLog, message);
   }
-  await sendMessage(message.channel.id, reply);
-  const replyMessage = {
-    _id: Date.now().toString(),
-    user: constructArray[0].name,
-    text: reply,
-    timestamp: Date.now(),
-    origin: "Discord",
-    isCommand: false,
-    isPrivate: false,
-    participants: [message.author.username, constructArray[0].name],
-    attachments: []
-  };
-  chatLog.messages.push(replyMessage);
-  chatLog.lastMessage = replyMessage;
-  chatLog.lastMessageDate = replyMessage.timestamp;
   await updateChat(chatLog);
+}
+async function doRoundRobin(constructArray, chatLog, message) {
+  let primaryConstruct = retrieveConstructs()[0];
+  let lastMessageContent = chatLog.lastMessage.text;
+  let mentionedConstruct = containsName(lastMessageContent, constructArray);
+  if (mentionedConstruct) {
+    let mentionedIndex = -1;
+    for (let i = 0; i < constructArray.length; i++) {
+      if (constructArray[i].name === mentionedConstruct) {
+        mentionedIndex = i;
+        break;
+      }
+    }
+    if (mentionedIndex !== -1) {
+      const [mentioned] = constructArray.splice(mentionedIndex, 1);
+      constructArray.unshift(mentioned);
+    }
+  }
+  for (let i = 0; i < constructArray.length; i++) {
+    if (i !== 0) {
+      if (0.25 > Math.random()) {
+        continue;
+      }
+    }
+    const result = await generateContinueChatLog(constructArray[i], chatLog, message.author.username);
+    let reply;
+    if (result !== null) {
+      reply = result;
+    } else {
+      continue;
+    }
+    const replyMessage = {
+      _id: Date.now().toString(),
+      user: constructArray[i].name,
+      text: reply,
+      timestamp: Date.now(),
+      origin: "Discord",
+      isCommand: false,
+      isPrivate: false,
+      participants: [message.author.username, constructArray[i].name],
+      attachments: []
+    };
+    chatLog.messages.push(replyMessage);
+    chatLog.lastMessage = replyMessage;
+    chatLog.lastMessageDate = replyMessage.timestamp;
+    if (primaryConstruct === constructArray[i]._id) {
+      await sendMessage(message.channel.id, reply);
+    } else {
+      await sendMessageAsCharacter(constructArray[i], message.channel.id, reply);
+    }
+    await updateChat(chatLog);
+  }
+  return chatLog;
+}
+function containsName(message, chars) {
+  for (let i = 0; i < chars.length; i++) {
+    if (message.includes(chars[i].name)) {
+      return chars[i].name;
+    }
+  }
+  return false;
 }
 const intents = {
   intents: [
@@ -1039,7 +1119,6 @@ const store$1 = new Store({
 });
 getDiscordData();
 let disClient = new discord_js.Client(intents);
-const commands = new discord_js.Collection();
 let isReady = false;
 let token = "";
 let applicationID = "";
@@ -1160,14 +1239,40 @@ async function getWebhookForCharacter(charName, channelID) {
   const webhooks = await channel.fetchWebhooks();
   return webhooks.find((webhook) => webhook.name === charName);
 }
-async function sendMessageAsCharacter(charName, channelID, message) {
+async function sendMessageAsCharacter(char, channelID, message) {
   if (!isReady)
     return;
-  const webhook = await getWebhookForCharacter(charName, channelID);
+  let webhook = await getWebhookForCharacter(char.name, channelID);
   if (!webhook) {
-    throw new Error(`Webhook for character ${charName} not found.`);
+    webhook = await createWebhookForChannel(channelID, char);
+  }
+  if (!webhook) {
+    console.error("Failed to create webhook.");
+    return;
   }
   await webhook.send(message);
+}
+async function createWebhookForChannel(channelID, char) {
+  if (!isReady)
+    return;
+  if (!disClient.user)
+    return;
+  let channel = disClient.channels.cache.get(channelID);
+  if (!(channel instanceof discord_js.TextChannel || channel instanceof discord_js.NewsChannel)) {
+    return;
+  }
+  let webhooks = await channel.fetchWebhooks();
+  let webhook = webhooks.find((webhook2) => webhook2.name === char.name);
+  let charImage = await base642Buffer(char.avatar);
+  if (!webhook) {
+    webhook = await channel.createWebhook({
+      name: char.name,
+      avatar: charImage
+    });
+  } else {
+    console.log("Webhook already exists.");
+  }
+  return webhook;
 }
 async function getWebhooksForChannel(channelID) {
   if (!isReady)
@@ -1260,24 +1365,6 @@ function DiscordJSRoutes() {
   });
   electron.ipcMain.on("discord-get-application-id", async (event) => {
     event.sender.send("discord-get-application-id-reply", applicationID);
-  });
-  electron.ipcMain.on("discord-get-commands", async (event) => {
-    event.sender.send("discord-get-commands-reply", commands);
-  });
-  electron.ipcMain.on("discord-get-command", async (event, commandName) => {
-    event.sender.send("discord-get-command-reply", commands.get(commandName));
-  });
-  electron.ipcMain.on("discord-add-command", async (event, commandName, commandFunction) => {
-    commands.set(commandName, commandFunction);
-    event.sender.send("discord-add-command-reply", commands);
-  });
-  electron.ipcMain.on("discord-remove-command", async (event, commandName) => {
-    commands.delete(commandName);
-    event.sender.send("discord-remove-command-reply", commands);
-  });
-  electron.ipcMain.on("discord-remove-all-commands", async (event) => {
-    commands.clear();
-    event.sender.send("discord-remove-all-commands-reply", commands);
   });
   electron.ipcMain.on("discord-get-guilds", async (event) => {
     event.sender.send("discord-get-guilds-reply", await getDiscordGuilds());
@@ -1493,10 +1580,10 @@ function DiscordJSRoutes() {
     await sendMessage(channelID, message);
     return true;
   });
-  electron.ipcMain.handle("discord-send-message-as-character", async (event, charName, channelID, message) => {
+  electron.ipcMain.handle("discord-send-message-as-character", async (event, char, channelID, message) => {
     if (!isReady)
       return false;
-    await sendMessageAsCharacter(charName, channelID, message);
+    await sendMessageAsCharacter(char, channelID, message);
     return true;
   });
   electron.ipcMain.on("discord-get-webhooks-for-channel", async (event, channelID) => {
@@ -1717,6 +1804,7 @@ async function createWindow() {
     maximizable: true,
     minimizable: false
   });
+  exports.win.maximize();
   if (url) {
     exports.win.loadURL(url);
     exports.win.webContents.openDevTools();
