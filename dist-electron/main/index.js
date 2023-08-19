@@ -1281,11 +1281,35 @@ const ListCharactersCommand = {
     });
   }
 };
+const ClearLogCommand = {
+  name: "clear",
+  description: "Clears the chat log for the current channel.",
+  execute: async (interaction) => {
+    await interaction.deferReply({ ephemeral: true });
+    if (interaction.channelId === null) {
+      await interaction.editReply({
+        content: "This command can only be used in a server channel."
+      });
+      return;
+    }
+    if (interaction.guildId === null) {
+      await interaction.editReply({
+        content: "This command can only be used in a server channel."
+      });
+      return;
+    }
+    await removeChat(interaction.channelId);
+    await interaction.editReply({
+      content: "Chat log cleared."
+    });
+  }
+};
 const DefaultCommands = [
   RegisterCommand,
   UnregisterCommand,
   ListRegisteredCommand,
-  ListCharactersCommand
+  ListCharactersCommand,
+  ClearLogCommand
 ];
 const intents = {
   intents: [

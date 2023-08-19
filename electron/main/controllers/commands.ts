@@ -1,7 +1,7 @@
 import { CommandInteraction, EmbedBuilder } from "discord.js";
 import { SlashCommand } from "../types/types";
 import { addRegisteredChannel, getRegisteredChannels, removeRegisteredChannel } from "./DiscordController";
-import { getConstruct } from "../api/pouchdb";
+import { getConstruct, removeChat } from "../api/pouchdb";
 import { assembleConstructFromData } from "../helpers/helpers";
 import { retrieveConstructs } from "./ConstructController";
 
@@ -130,9 +130,34 @@ export const ListCharactersCommand: SlashCommand = {
     }
 }
 
+export const ClearLogCommand: SlashCommand = {
+    name: 'clear',
+    description: 'Clears the chat log for the current channel.',
+    execute: async (interaction: CommandInteraction) => {
+        await interaction.deferReply({ephemeral: true});
+        if (interaction.channelId === null) {
+            await interaction.editReply({
+            content: "This command can only be used in a server channel.",
+            });
+            return;
+        }
+        if(interaction.guildId === null){
+            await interaction.editReply({
+            content: "This command can only be used in a server channel.",
+            });
+            return;
+        }
+        await removeChat(interaction.channelId);
+        await interaction.editReply({
+            content: "Chat log cleared.",
+        });
+    }
+}
+
 export const DefaultCommands = [
     RegisterCommand,
     UnregisterCommand,
     ListRegisteredCommand,
     ListCharactersCommand,
+    ClearLogCommand,
 ];

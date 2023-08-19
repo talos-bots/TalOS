@@ -4,7 +4,7 @@ import { generateContinueChatLog, retrieveConstructs } from './ConstructControll
 import { addChat, getChat, getConstruct, updateChat } from '../api/pouchdb';
 import { assembleChatFromData, assembleConstructFromData, convertDiscordMessageToMessage } from '../helpers/helpers';
 import { Message } from 'discord.js';
-import { sendMessage, sendMessageAsCharacter, sendTyping } from '../api/discord';
+import { isMultiCharacterMode, sendMessage, sendMessageAsCharacter, sendTyping } from '../api/discord';
 import { ChannelConfigInterface, ChatInterface, ConstructInterface } from '../types/types';
 
 const store = new Store({
@@ -98,9 +98,39 @@ export async function handleDiscordMessage(message: Message) {
             return;
         }
     }
-    chatLog = await doRoundRobin(constructArray, chatLog, message);
-    if(0.5 > Math.random()){
-        chatLog = await doRoundRobin(constructArray, chatLog, message);
+    if(mode === 'Character'){
+        if(isMultiCharacterMode()){
+            chatLog = await doRoundRobin(constructArray, chatLog, message);
+            if(0.5 > Math.random()){
+                chatLog = await doRoundRobin(constructArray, chatLog, message);
+            }
+        }else{
+            const result = await generateContinueChatLog(constructArray[0], chatLog, message.author.username);
+            let reply: string;
+            if (result !== null) {
+                reply = result;
+            } else {
+                return;
+            }
+            const replyMessage = {
+                _id: Date.now().toString(),
+                user: constructArray[0].name,
+                text: reply,
+                timestamp: Date.now(),
+                origin: 'Discord',
+                isCommand: false,
+                isPrivate: false,
+                participants: [message.author.username, constructArray[0].name],
+                attachments: [],
+            }
+            chatLog.messages.push(replyMessage);
+            chatLog.lastMessage = replyMessage;
+            chatLog.lastMessageDate = replyMessage.timestamp;
+            await sendMessage(message.channel.id, reply);
+            await updateChat(chatLog);
+        }
+    }else if (mode === 'Construct'){
+        await sendMessage(message.channel.id, 'Construct Mode is not yet implemented.');
     }
     await updateChat(chatLog);
 }
