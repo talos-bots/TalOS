@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell, ipcMain } from "electron";
+import { app, BrowserWindow, shell, ipcMain, dialog } from "electron";
 import { release } from "node:os";
 import { join } from "node:path";
 import path from "path";
@@ -71,7 +71,7 @@ async function createWindow() {
   });
 
   win.maximize();
-
+  await requestFullDiskAccess();
   if (url) {
     win.loadURL(url);
     win.webContents.openDevTools();
@@ -167,3 +167,22 @@ ipcMain.handle("get-server-port", (event) => {
     throw error; // This will send the error back to the renderer
   }
 });
+
+async function requestFullDiskAccess() {
+  // Check if the app is running on macOS
+  if (process.platform === 'darwin') {
+    const { response } = await dialog.showMessageBox({
+      type: 'info',
+      title: 'Full Disk Access Required',
+      message: 'This application requires full disk access to function properly.',
+      detail: 'Please enable full disk access for this application in System Preferences.',
+      buttons: ['Open System Preferences', 'Cancel'],
+      defaultId: 0,
+      cancelId: 1
+    });
+
+    if (response === 0) {
+      shell.openExternal('x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles');
+    }
+  }
+}
