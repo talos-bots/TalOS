@@ -41,18 +41,25 @@ export type ConstructInterface = {
     greetings: string[];
     farewells: string[];
 }
+export type Alias = {
+    _id: string;
+    name: string;
+    location: string;
+}
 export type ChannelConfigInterface = {
     _id: string;
     guildId: string;
     constructs: string[];
+    aliases: Alias[];
 }
 interface SlashCommandOption {
     name: string;
     description: string;
-    type: 'STRING' | 'INTEGER' | 'BOOLEAN' | 'USER' | 'CHANNEL' | 'ROLE';
+    type: number;  // Changed this from 'STRING' | 'INTEGER' ... to number
     required?: boolean;
     choices?: { name: string; value: string | number }[];
 }
+  
 
 export interface SlashCommand {
     name: string;

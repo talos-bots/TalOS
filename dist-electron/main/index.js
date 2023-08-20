@@ -54,6 +54,10 @@ function assemblePromptFromLog(data, messagesToInclude = 25) {
 }
 function convertDiscordMessageToMessage(message, activeConstructs) {
   let attachments = [];
+  let username = getUsername(message.author.id);
+  if (username === null) {
+    username = message.author.displayName;
+  }
   if (message.attachments.size > 0) {
     message.attachments.forEach((attachment) => {
       attachments.push({
@@ -67,13 +71,13 @@ function convertDiscordMessageToMessage(message, activeConstructs) {
   }
   const convertedMessage = {
     _id: message.id,
-    user: message.author.displayName,
+    user: username,
     text: message.content.trim(),
     timestamp: message.createdTimestamp,
     origin: message.channel.id,
     isCommand: false,
     isPrivate: false,
-    participants: [message.author.displayName, ...activeConstructs],
+    participants: [message.author.id, ...activeConstructs],
     attachments
   };
   return convertedMessage;
@@ -1116,6 +1120,9 @@ let ActiveConstructs = [];
 const retrieveConstructs = () => {
   return store$4.get("ids", []);
 };
+const setDoMultiLine = (doMultiLine) => {
+  store$4.set("doMultiLine", doMultiLine);
+};
 const getDoMultiLine = () => {
   return store$4.get("doMultiLine", false);
 };
@@ -1238,6 +1245,66 @@ function breakUpCommands(charName, commandString, user = "You", stopList = []) {
   let final = formattedCommands.join("\n");
   return final;
 }
+async function removeMessagesFromChatLog(chatLog, messageContent) {
+  let newChatLog = chatLog;
+  let messages = newChatLog.messages;
+  for (let i = 0; i < messages.length; i++) {
+    if (messages[i].text === messageContent) {
+      messages.splice(i, 1);
+      break;
+    }
+  }
+  newChatLog.messages = messages;
+  await updateChat(newChatLog);
+  return newChatLog;
+}
+async function regenerateMessageFromChatLog(chatLog, messageContent) {
+  let messages = chatLog.messages;
+  let beforeMessages = [];
+  let afterMessages = [];
+  let foundMessage;
+  let messageIndex = -1;
+  for (let i = 0; i < messages.length; i++) {
+    if (messages[i].text === messageContent) {
+      messageIndex = i;
+      foundMessage = messages[i];
+      break;
+    }
+  }
+  if (foundMessage === void 0) {
+    return;
+  }
+  if (messageIndex !== -1) {
+    beforeMessages = messages.slice(0, messageIndex);
+    afterMessages = messages.slice(messageIndex + 1);
+    messages.splice(messageIndex, 1);
+  }
+  chatLog.messages = messages;
+  let constructData = await getConstruct(foundMessage.user);
+  if (constructData === null) {
+    return;
+  }
+  let construct = assembleConstructFromData(constructData);
+  let newReply = await generateContinueChatLog(construct, chatLog, foundMessage.participants[0]);
+  if (newReply === null) {
+    return;
+  }
+  let newMessage = {
+    _id: Date.now().toString(),
+    user: construct.name,
+    text: newReply,
+    timestamp: Date.now(),
+    origin: "Discord",
+    isCommand: false,
+    isPrivate: false,
+    participants: foundMessage.participants,
+    attachments: []
+  };
+  messages = beforeMessages.concat(newMessage, afterMessages);
+  chatLog.messages = messages;
+  await updateChat(chatLog);
+  return newReply;
+}
 function constructController() {
   ActiveConstructs = retrieveConstructs();
   electron.ipcMain.on("add-construct-to-active", (event, arg) => {
@@ -1272,6 +1339,13 @@ function constructController() {
 const store$3 = new Store({
   name: "discordData"
 });
+let maxMessages = 25;
+let doAutoReply = false;
+function getDiscordSettings() {
+  maxMessages = getMaxMessages();
+  getDoMultiLine();
+  doAutoReply = getDoAutoReply();
+}
 const setDiscordMode = (mode) => {
   store$3.set("mode", mode);
   console.log(store$3.get("mode"));
@@ -1282,6 +1356,37 @@ const getDiscordMode = () => {
 };
 const clearDiscordMode = () => {
   store$3.set("mode", null);
+};
+const setDoAutoReply = (doAutoReply2) => {
+  store$3.set("doAutoReply", doAutoReply2);
+};
+const getDoAutoReply = () => {
+  return store$3.get("doAutoReply", false);
+};
+const getUsername = (userID) => {
+  var _a;
+  const channels = getRegisteredChannels();
+  for (let i = 0; i < channels.length; i++) {
+    if (((_a = channels[i]) == null ? void 0 : _a.aliases) === void 0)
+      continue;
+    for (let j = 0; j < channels[i].aliases.length; j++) {
+      if (channels[i].aliases[j]._id === userID) {
+        return channels[i].aliases[j].name;
+      }
+    }
+  }
+  disClient.users.fetch(userID).then((user) => {
+    if (user.displayName !== void 0) {
+      return user.displayName;
+    }
+  });
+  return null;
+};
+const setMaxMessages = (max) => {
+  store$3.set("maxMessages", max);
+};
+const getMaxMessages = () => {
+  return store$3.get("maxMessages", 25);
 };
 const getRegisteredChannels = () => {
   return store$3.get("channels", []);
@@ -1307,17 +1412,17 @@ const isChannelRegistered = (channel) => {
   }
   return false;
 };
-async function handleDiscordMessage(message2) {
-  if (message2.author.bot)
+async function handleDiscordMessage(message) {
+  if (message.author.bot)
     return;
-  if (message2.channel.isDMBased())
+  if (message.channel.isDMBased())
     return;
-  if (message2.content.startsWith("."))
+  if (message.content.startsWith("."))
     return;
   let registeredChannels = getRegisteredChannels();
   let registered = false;
   for (let i = 0; i < registeredChannels.length; i++) {
-    if (registeredChannels[i]._id === message2.channel.id) {
+    if (registeredChannels[i]._id === message.channel.id) {
       registered = true;
       break;
     }
@@ -1327,22 +1432,22 @@ async function handleDiscordMessage(message2) {
   const activeConstructs = retrieveConstructs();
   if (activeConstructs.length < 1)
     return;
-  const newMessage = convertDiscordMessageToMessage(message2, activeConstructs);
+  const newMessage = convertDiscordMessageToMessage(message, activeConstructs);
   let constructArray = [];
   for (let i = 0; i < activeConstructs.length; i++) {
     let constructDoc = await getConstruct(activeConstructs[i]);
     let construct = assembleConstructFromData(constructDoc);
     constructArray.push(construct);
   }
-  let chatLogData = await getChat(message2.channel.id);
+  let chatLogData = await getChat(message.channel.id);
   let chatLog;
   if (chatLogData) {
     chatLog = assembleChatFromData(chatLogData);
     chatLog.messages.push(newMessage);
   } else {
     chatLog = {
-      _id: message2.channel.id,
-      name: message2.channel.id + " Chat " + constructArray[0].name,
+      _id: message.channel.id,
+      name: message.channel.id + " Chat " + constructArray[0].name,
       type: "Discord",
       messages: [newMessage],
       lastMessage: newMessage,
@@ -1356,25 +1461,48 @@ async function handleDiscordMessage(message2) {
       return;
     }
   }
-  if (message2.content.startsWith("-")) {
+  if (message.content.startsWith("-")) {
     await updateChat(chatLog);
     return;
   }
   const mode = getDiscordMode();
   if (mode === "Character") {
-    sendTyping(message2);
+    sendTyping(message);
     if (isMultiCharacterMode()) {
-      chatLog = await doRoundRobin(constructArray, chatLog, message2);
+      chatLog = await doRoundRobin(constructArray, chatLog, message);
+      if (chatLog !== void 0) {
+        if (doAutoReply) {
+          if (0.25 > Math.random()) {
+            chatLog = await doRoundRobin(constructArray, chatLog, message);
+          }
+        }
+      }
     } else {
-      chatLog = await doCharacterReply(constructArray[0], chatLog, message2);
+      chatLog = await doCharacterReply(constructArray[0], chatLog, message);
     }
   } else if (mode === "Construct") {
-    await sendMessage(message2.channel.id, "Construct Mode is not yet implemented.");
+    await sendMessage(message.channel.id, "Construct Mode is not yet implemented.");
   }
   await updateChat(chatLog);
 }
-async function doCharacterReply(construct, chatLog, message2) {
-  const result = await generateContinueChatLog(construct, chatLog, message2.author.username);
+async function doCharacterReply(construct, chatLog, message) {
+  let username = "You";
+  let authorID = "You";
+  if (message instanceof discord_js.Message) {
+    username = message.author.displayName;
+    authorID = message.author.id;
+  }
+  if (message instanceof discord_js.CommandInteraction) {
+    username = message.user.displayName;
+    authorID = message.user.id;
+  }
+  let alias = getUsername(authorID);
+  if (alias !== null) {
+    username = alias;
+  }
+  if (message.channel === null)
+    return;
+  const result = await generateContinueChatLog(construct, chatLog, username, maxMessages);
   let reply;
   if (result !== null) {
     reply = result;
@@ -1383,24 +1511,40 @@ async function doCharacterReply(construct, chatLog, message2) {
   }
   const replyMessage = {
     _id: Date.now().toString(),
-    user: construct._id,
+    user: construct.name,
     text: reply,
     timestamp: Date.now(),
     origin: "Discord",
     isCommand: false,
     isPrivate: false,
-    participants: [message2.author.username, construct._id],
+    participants: [authorID, construct._id],
     attachments: []
   };
   chatLog.messages.push(replyMessage);
   chatLog.lastMessage = replyMessage;
   chatLog.lastMessageDate = replyMessage.timestamp;
-  await sendMessage(message2.channel.id, reply);
+  await sendMessage(message.channel.id, reply);
   await updateChat(chatLog);
   return chatLog;
 }
-async function doRoundRobin(constructArray, chatLog, message2) {
+async function doRoundRobin(constructArray, chatLog, message) {
   let primaryConstruct = retrieveConstructs()[0];
+  let username = "You";
+  let authorID = "You";
+  if (message instanceof discord_js.Message) {
+    username = message.author.displayName;
+    authorID = message.author.id;
+  }
+  if (message instanceof discord_js.CommandInteraction) {
+    username = message.user.displayName;
+    authorID = message.user.id;
+  }
+  let alias = getUsername(authorID);
+  if (alias !== null) {
+    username = alias;
+  }
+  if (message.channel === null)
+    return;
   let lastMessageContent = chatLog.lastMessage.text;
   let mentionedConstruct = containsName(lastMessageContent, constructArray);
   if (mentionedConstruct) {
@@ -1422,7 +1566,7 @@ async function doRoundRobin(constructArray, chatLog, message2) {
         continue;
       }
     }
-    const result = await generateContinueChatLog(constructArray[i], chatLog, message2.author.displayName);
+    const result = await generateContinueChatLog(constructArray[i], chatLog, username, maxMessages);
     let reply;
     if (result !== null) {
       reply = result;
@@ -1437,30 +1581,140 @@ async function doRoundRobin(constructArray, chatLog, message2) {
       origin: "Discord",
       isCommand: false,
       isPrivate: false,
-      participants: [message2.author.displayName, constructArray[i].name],
+      participants: [authorID, constructArray[i]._id],
       attachments: []
     };
     chatLog.messages.push(replyMessage);
     chatLog.lastMessage = replyMessage;
     chatLog.lastMessageDate = replyMessage.timestamp;
     if (primaryConstruct === constructArray[i]._id) {
-      await sendMessage(message2.channel.id, reply);
+      await sendMessage(message.channel.id, reply);
     } else {
-      await sendMessageAsCharacter(constructArray[i], message2.channel.id, reply);
+      await sendMessageAsCharacter(constructArray[i], message.channel.id, reply);
     }
     await updateChat(chatLog);
   }
   return chatLog;
 }
-function containsName(message2, chars) {
+async function continueChatLog(interaction) {
+  let registeredChannels = getRegisteredChannels();
+  let registered = false;
+  if (interaction.channel === null)
+    return;
+  for (let i = 0; i < registeredChannels.length; i++) {
+    if (registeredChannels[i]._id === interaction.channel.id) {
+      registered = true;
+      break;
+    }
+  }
+  if (!registered)
+    return;
+  const activeConstructs = retrieveConstructs();
+  if (activeConstructs.length < 1)
+    return;
+  let constructArray = [];
+  for (let i = 0; i < activeConstructs.length; i++) {
+    let constructDoc = await getConstruct(activeConstructs[i]);
+    let construct = assembleConstructFromData(constructDoc);
+    constructArray.push(construct);
+  }
+  let chatLogData = await getChat(interaction.channel.id);
+  let chatLog;
+  if (chatLogData) {
+    chatLog = assembleChatFromData(chatLogData);
+  }
+  if (chatLog === void 0) {
+    return;
+  }
+  if (chatLog.messages.length < 1) {
+    return;
+  }
+  const mode = getDiscordMode();
+  if (mode === "Character") {
+    sendTyping(interaction);
+    if (isMultiCharacterMode()) {
+      chatLog = await doRoundRobin(constructArray, chatLog, interaction);
+      if (chatLog !== void 0) {
+        if (doAutoReply) {
+          if (0.25 > Math.random()) {
+            chatLog = await doRoundRobin(constructArray, chatLog, interaction);
+          }
+        }
+      }
+    } else {
+      chatLog = await doCharacterReply(constructArray[0], chatLog, interaction);
+    }
+  } else if (mode === "Construct") {
+    await sendMessage(interaction.channel.id, "Construct Mode is not yet implemented.");
+  }
+  await updateChat(chatLog);
+}
+async function handleRengenerateMessage(message) {
+  let registeredChannels = getRegisteredChannels();
+  let registered = false;
+  if (message.channel === null)
+    return;
+  for (let i = 0; i < registeredChannels.length; i++) {
+    if (registeredChannels[i]._id === message.channel.id) {
+      registered = true;
+      break;
+    }
+  }
+  if (!registered)
+    return;
+  let chatLogData = await getChat(message.channel.id);
+  let chatLog;
+  if (chatLogData) {
+    chatLog = assembleChatFromData(chatLogData);
+  }
+  if (chatLog === void 0) {
+    return;
+  }
+  if (chatLog.messages.length < 1) {
+    return;
+  }
+  let edittedMessage = await regenerateMessageFromChatLog(chatLog, message.content);
+  if (edittedMessage === void 0)
+    return;
+  await editMessage(message, edittedMessage);
+}
+async function handleRemoveMessage(message) {
+  let registeredChannels = getRegisteredChannels();
+  let registered = false;
+  if (message.channel === null)
+    return;
+  for (let i = 0; i < registeredChannels.length; i++) {
+    if (registeredChannels[i]._id === message.channel.id) {
+      registered = true;
+      break;
+    }
+  }
+  if (!registered)
+    return;
+  let chatLogData = await getChat(message.channel.id);
+  let chatLog;
+  if (chatLogData) {
+    chatLog = assembleChatFromData(chatLogData);
+  }
+  if (chatLog === void 0) {
+    return;
+  }
+  if (chatLog.messages.length < 1) {
+    return;
+  }
+  await removeMessagesFromChatLog(chatLog, message.content);
+  await deleteMessage(message);
+}
+function containsName(message, chars) {
   for (let i = 0; i < chars.length; i++) {
-    if (message2.includes(chars[i].name)) {
+    if (message.includes(chars[i].name)) {
       return chars[i].name;
     }
   }
   return false;
 }
 function DiscordController() {
+  getDiscordSettings();
   electron.ipcMain.on("discordMode", (event, arg) => {
     setDiscordMode(arg);
   });
@@ -1503,7 +1757,8 @@ const RegisterCommand = {
     addRegisteredChannel({
       _id: interaction.channelId,
       guildId: interaction.guildId,
-      constructs: []
+      constructs: [],
+      aliases: []
     });
     await interaction.editReply({
       content: "Channel registered."
@@ -1625,12 +1880,222 @@ const ClearLogCommand = {
     });
   }
 };
+const SetBotNameCommand = {
+  name: "setbotname",
+  description: "Sets the name of the bot.",
+  options: [
+    {
+      name: "name",
+      description: "The name to set.",
+      type: 3,
+      required: true
+    }
+  ],
+  execute: async (interaction) => {
+    var _a;
+    await interaction.deferReply({ ephemeral: true });
+    if (interaction.channelId === null) {
+      await interaction.editReply({
+        content: "This command can only be used in a server channel."
+      });
+      return;
+    }
+    if (interaction.guildId === null) {
+      await interaction.editReply({
+        content: "This command can only be used in a server channel."
+      });
+      return;
+    }
+    const name = (_a = interaction.options.get("name")) == null ? void 0 : _a.value;
+    doGlobalNicknameChange(name);
+    await interaction.editReply({
+      content: "Changed bot name to " + name + " across all servers."
+    });
+  }
+};
+const ContinueChatCommand = {
+  name: "cont",
+  description: "Continues the chat log for the current channel.",
+  execute: async (interaction) => {
+    await interaction.deferReply();
+    if (interaction.channelId === null) {
+      await interaction.editReply({
+        content: "This command can only be used in a server channel."
+      });
+      return;
+    }
+    if (interaction.guildId === null) {
+      await interaction.editReply({
+        content: "This command can only be used in a server channel."
+      });
+      return;
+    }
+    await continueChatLog(interaction);
+    await interaction.editReply({
+      content: "Continuing..."
+    });
+  }
+};
+const SetMultiLineCommand = {
+  name: "setmultiline",
+  description: "Sets whether the bot will send multiple lines of text at once.",
+  options: [
+    {
+      name: "multiline",
+      description: "Whether to send multiple lines of text at once.",
+      type: 5,
+      required: true
+    }
+  ],
+  execute: async (interaction) => {
+    var _a;
+    await interaction.deferReply({ ephemeral: true });
+    if (interaction.channelId === null) {
+      await interaction.editReply({
+        content: "This command can only be used in a server channel."
+      });
+      return;
+    }
+    if (interaction.guildId === null) {
+      await interaction.editReply({
+        content: "This command can only be used in a server channel."
+      });
+      return;
+    }
+    const multiline = (_a = interaction.options.get("multiline")) == null ? void 0 : _a.value;
+    setDoMultiLine(multiline);
+    await interaction.editReply({
+      content: "Set multiline to " + multiline
+    });
+  }
+};
+const SetMaxMessagesCommand = {
+  name: "hismessages",
+  description: "Sets the maximum number of messages to include in the prompt.",
+  options: [
+    {
+      name: "maxmessages",
+      description: "The maximum number of messages to include in the prompt.",
+      type: 4,
+      required: true
+    }
+  ],
+  execute: async (interaction) => {
+    var _a;
+    await interaction.deferReply({ ephemeral: true });
+    if (interaction.channelId === null) {
+      await interaction.editReply({
+        content: "This command can only be used in a server channel."
+      });
+      return;
+    }
+    if (interaction.guildId === null) {
+      await interaction.editReply({
+        content: "This command can only be used in a server channel."
+      });
+      return;
+    }
+    const maxMessages2 = (_a = interaction.options.get("maxmessages")) == null ? void 0 : _a.value;
+    setMaxMessages(maxMessages2);
+    await interaction.editReply({
+      content: "Set max messages to " + maxMessages2
+    });
+  }
+};
+const SetDoAutoReply = {
+  name: "setautoreply",
+  description: "Sets whether the bot will automatically reply to messages.",
+  options: [
+    {
+      name: "autoreply",
+      description: "Whether to automatically reply to messages.",
+      type: 5,
+      required: true
+    }
+  ],
+  execute: async (interaction) => {
+    var _a;
+    await interaction.deferReply({ ephemeral: true });
+    if (interaction.channelId === null) {
+      await interaction.editReply({
+        content: "This command can only be used in a server channel."
+      });
+      return;
+    }
+    if (interaction.guildId === null) {
+      await interaction.editReply({
+        content: "This command can only be used in a server channel."
+      });
+      return;
+    }
+    const autoreply = (_a = interaction.options.get("autoreply")) == null ? void 0 : _a.value;
+    setDoAutoReply(autoreply);
+    await interaction.editReply({
+      content: "Set autoreply to " + autoreply
+    });
+  }
+};
+const SetAliasCommand = {
+  name: "alias",
+  description: "Sets an alias for a user in the current channel.",
+  options: [
+    {
+      name: "alias",
+      description: "The alias to set.",
+      type: 3,
+      required: true
+    },
+    {
+      name: "user",
+      description: "The user to set the alias for.",
+      type: 6,
+      required: false
+    }
+  ],
+  execute: async (interaction) => {
+    var _a, _b;
+    await interaction.deferReply({ ephemeral: true });
+    if (interaction.channelId === null) {
+      await interaction.editReply({
+        content: "This command can only be used in a server."
+      });
+      return;
+    }
+    if (interaction.guildId === null) {
+      await interaction.editReply({
+        content: "This command can only be used in a server."
+      });
+      return;
+    }
+    const user = (_a = interaction.options.get("user")) == null ? void 0 : _a.value;
+    const alias = (_b = interaction.options.get("alias")) == null ? void 0 : _b.value;
+    addRegisteredChannel({
+      _id: interaction.channelId,
+      guildId: interaction.guildId,
+      constructs: [],
+      aliases: [{
+        _id: user ? user : interaction.user.id,
+        name: alias,
+        location: "Discord"
+      }]
+    });
+    await interaction.editReply({
+      content: `Alias ${alias} set for <@${user ? user : interaction.user.id}>.`
+    });
+  }
+};
 const DefaultCommands = [
   RegisterCommand,
   UnregisterCommand,
   ListRegisteredCommand,
   ListCharactersCommand,
-  ClearLogCommand
+  ClearLogCommand,
+  ContinueChatCommand,
+  SetBotNameCommand,
+  SetMultiLineCommand,
+  SetMaxMessagesCommand,
+  SetDoAutoReply,
+  SetAliasCommand
 ];
 const intents = {
   intents: [
@@ -1777,7 +2242,27 @@ function sendTyping(message) {
     return;
   if (!isReady)
     return;
-  message.channel.sendTyping();
+  if (message instanceof discord_js.Message) {
+    message.channel.sendTyping();
+  } else if (message instanceof discord_js.CommandInteraction) {
+    if (message.channel instanceof discord_js.TextChannel || message.channel instanceof discord_js.DMChannel || message.channel instanceof discord_js.NewsChannel) {
+      message.channel.sendTyping();
+    }
+  }
+}
+async function editMessage(message, newMessage) {
+  if (!disClient.user)
+    return;
+  if (!isReady)
+    return;
+  message.edit(newMessage);
+}
+async function deleteMessage(message) {
+  if (!disClient.user)
+    return;
+  if (!isReady)
+    return;
+  message.delete();
 }
 async function sendMessage(channelID, message) {
   if (!isReady)
@@ -1961,7 +2446,24 @@ function DiscordJSRoutes() {
     var _a, _b;
     if (user.id === ((_a = disClient.user) == null ? void 0 : _a.id))
       return;
-    (_b = exports.win) == null ? void 0 : _b.webContents.send("discord-message-reaction-add", reaction, user);
+    try {
+      if (reaction.partial) {
+        await reaction.fetch();
+      }
+      if (reaction.message.partial) {
+        await reaction.message.fetch();
+      }
+      const message = reaction.message;
+      if (reaction.emoji.name === "♻️") {
+        await handleRengenerateMessage(message);
+      }
+      if (reaction.emoji.name === "🗑️") {
+        await handleRemoveMessage(message);
+      }
+      (_b = exports.win) == null ? void 0 : _b.webContents.send("discord-message-reaction-add", reaction, user);
+    } catch (error) {
+      console.error("Something went wrong when fetching the message:", error);
+    }
   });
   disClient.on("messageReactionRemove", async (reaction, user) => {
     var _a, _b;

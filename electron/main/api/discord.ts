@@ -24,7 +24,7 @@ const store = new Store({
 
 getDiscordData();
 
-let disClient = new Client(intents);
+export let disClient = new Client(intents);
 const commands: SlashCommand[] = [...DefaultCommands];
 export let isReady = false;
 let token = '';

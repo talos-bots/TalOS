@@ -1,9 +1,9 @@
 import { CommandInteraction, EmbedBuilder } from "discord.js";
 import { SlashCommand } from "../types/types";
-import { addRegisteredChannel, continueChatLog, getRegisteredChannels, removeRegisteredChannel } from "./DiscordController";
+import { addRegisteredChannel, continueChatLog, getRegisteredChannels, removeRegisteredChannel, setDoAutoReply, setMaxMessages } from "./DiscordController";
 import { getConstruct, removeChat } from "../api/pouchdb";
 import { assembleConstructFromData } from "../helpers/helpers";
-import { retrieveConstructs } from "./ConstructController";
+import { retrieveConstructs, setDoMultiLine } from "./ConstructController";
 import { doGlobalNicknameChange } from "../api/discord";
 
 export const RegisterCommand: SlashCommand = {
@@ -27,6 +27,7 @@ export const RegisterCommand: SlashCommand = {
             _id: interaction.channelId,
             guildId: interaction.guildId,
             constructs: [],
+            aliases: [],
         });
         await interaction.editReply({
             content: "Channel registered.",
@@ -162,7 +163,7 @@ export const SetBotNameCommand: SlashCommand = {
         {
             name: 'name',
             description: 'The name to set.',
-            type: 'STRING',
+            type: 3,
             required: true,
         },
     ],
@@ -183,7 +184,7 @@ export const SetBotNameCommand: SlashCommand = {
         const name = interaction.options.get('name')?.value as string;
         doGlobalNicknameChange(name);
         await interaction.editReply({
-            content: "Changed bot name to " + name + " across all servers.",
+            content: `Set bot name to ${name}`,
         });
     }
 }
@@ -212,6 +213,153 @@ export const ContinueChatCommand: SlashCommand = {
     }
 }
 
+export const SetMultiLineCommand: SlashCommand = {
+    name: 'setmultiline',
+    description: 'Sets whether the bot will send multiple lines of text at once.',
+    options: [
+        {
+            name: 'multiline',
+            description: 'Whether to send multiple lines of text at once.',
+            type: 5,
+            required: true,
+        },
+    ],
+    execute: async (interaction: CommandInteraction) => {
+        await interaction.deferReply({ephemeral: true});
+        if (interaction.channelId === null) {
+            await interaction.editReply({
+            content: "This command can only be used in a server channel.",
+            });
+            return;
+        }
+        if(interaction.guildId === null){
+            await interaction.editReply({
+            content: "This command can only be used in a server channel.",
+            });
+            return;
+        }
+        const multiline = interaction.options.get('multiline')?.value as boolean;
+        setDoMultiLine(multiline);
+        await interaction.editReply({
+            content: `Set multiline to ${multiline}`,
+        });
+    }
+}
+
+export const SetMaxMessagesCommand: SlashCommand = {
+    name: 'hismessages',
+    description: 'Sets the maximum number of messages to include in the prompt.',
+    options: [
+        {
+            name: 'maxmessages',
+            description: 'The maximum number of messages to include in the prompt.',
+            type: 4,
+            required: true,
+        },
+    ],
+    execute: async (interaction: CommandInteraction) => {
+        await interaction.deferReply({ephemeral: true});
+        if (interaction.channelId === null) {
+            await interaction.editReply({
+            content: "This command can only be used in a server channel.",
+            });
+            return;
+        }
+        if(interaction.guildId === null){
+            await interaction.editReply({
+            content: "This command can only be used in a server channel.",
+            });
+            return;
+        }
+        const maxMessages = interaction.options.get('maxmessages')?.value as number;
+        setMaxMessages(maxMessages);
+        await interaction.editReply({
+            content: `Set max messages to ${maxMessages}`,
+        });
+    }
+}
+
+export const SetDoAutoReply: SlashCommand = {
+    name: 'setautoreply',
+    description: 'Sets whether the bot will automatically reply to messages.',
+    options: [
+        {
+            name: 'autoreply',
+            description: 'Whether to automatically reply to messages.',
+            type: 5,
+            required: true,
+        },
+    ],
+    execute: async (interaction: CommandInteraction) => {
+        await interaction.deferReply({ephemeral: true});
+        if (interaction.channelId === null) {
+            await interaction.editReply({
+            content: "This command can only be used in a server channel.",
+            });
+            return;
+        }
+        if(interaction.guildId === null){
+            await interaction.editReply({
+            content: "This command can only be used in a server channel.",
+            });
+            return;
+        }
+        const autoreply = interaction.options.get('autoreply')?.value as boolean;
+        setDoAutoReply(autoreply);
+        await interaction.editReply({
+            content: `Set auto reply to ${autoreply}`,
+        });
+    }
+}
+
+export const SetAliasCommand: SlashCommand = {
+    name: 'alias',
+    description: 'Sets an alias for a user in the current channel.',
+    options: [
+        {
+            name: 'alias',
+            description: 'The alias to set.',
+            type: 3,
+            required: true,
+        },
+        {
+            name: 'user',
+            description: 'The user to set the alias for.',
+            type: 6,
+            required: false,
+        },
+    ],
+    execute: async (interaction: CommandInteraction) => {
+        await interaction.deferReply({ephemeral: true});
+        if (interaction.channelId === null) {
+            await interaction.editReply({
+            content: "This command can only be used in a server.",
+            });
+            return;
+        }
+        if(interaction.guildId === null){
+            await interaction.editReply({
+            content: "This command can only be used in a server.",
+            });
+            return;
+        }
+        const user = interaction.options.get('user')?.value as string;
+        const alias = interaction.options.get('alias')?.value as string;
+        addRegisteredChannel({
+            _id: interaction.channelId,
+            guildId: interaction.guildId,
+            constructs: [],
+            aliases: [{
+                _id: user ? user : interaction.user.id,
+                name: alias,
+                location: 'Discord',
+            }],
+        });
+        await interaction.editReply({
+            content: `Alias ${alias} set for <@${user ? user : interaction.user.id}>.`,
+        });
+    }
+}
 export const DefaultCommands = [
     RegisterCommand,
     UnregisterCommand,
@@ -219,4 +367,9 @@ export const DefaultCommands = [
     ListCharactersCommand,
     ClearLogCommand,
     ContinueChatCommand,
+    SetBotNameCommand,
+    SetMultiLineCommand,
+    SetMaxMessagesCommand,
+    SetDoAutoReply,
+    SetAliasCommand,
 ];

@@ -2,6 +2,7 @@ import { Message } from "discord.js";
 import { AttachmentInferface } from "../types/types";
 import FormData from 'form-data';
 import axios from "axios";
+import { getUsername } from "../controllers/DiscordController";
 
 export function assembleConstructFromData(data: any){
     const construct = {
@@ -70,8 +71,13 @@ export function assemblePromptFromLog(data: any, messagesToInclude: number = 25)
     }
     return prompt;
 }
+
 export function convertDiscordMessageToMessage(message: Message, activeConstructs: string[]){
     let attachments: AttachmentInferface[] = [];
+    let username = getUsername(message.author.id)
+    if(username === null){
+        username = message.author.displayName;
+    }
     if(message.attachments.size > 0){
         message.attachments.forEach(attachment => {
             attachments.push({
@@ -85,13 +91,13 @@ export function convertDiscordMessageToMessage(message: Message, activeConstruct
     }
     const convertedMessage = {
         _id: message.id,
-        user: message.author.displayName,
+        user: username,
         text: message.content.trim(),
         timestamp: message.createdTimestamp,
         origin: message.channel.id,
         isCommand: false,
         isPrivate: false,
-        participants: [message.author.displayName, ...activeConstructs],
+        participants: [message.author.id, ...activeConstructs],
         attachments: attachments,
     }
     return convertedMessage;
