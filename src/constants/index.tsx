@@ -19,6 +19,7 @@ defaultGreen.themeBorderType = 'solid';
 defaultGreen.themeTextHover = 'rgb(255, 255, 255)';
 defaultGreen.themeBackground = "url('./backgrounds/greendefault.svg')";
 defaultGreen.themeButton = 'rgba(14, 34, 19, 0.658)';
+defaultGreen.ThemeBrightColor = 'rgba(0, 255, 26, 0.25)'
 defaultGreen.themeFlavorText = 'rgba(0, 255, 13, 0.5)';
 
 const defaultBlue = new UITheme();
@@ -40,6 +41,7 @@ defaultBlue.themeBorderType = 'solid';
 defaultBlue.themeTextHover = 'rgb(255, 255, 255)';
 defaultBlue.themeBackground = "url('./backgrounds/bluedefault.svg";
 defaultBlue.themeButton = 'rgba(14, 18, 33, 0.658)';
+defaultBlue.ThemeBrightColor = 'rgba(0, 30, 52)';
 defaultBlue.themeFlavorText = 'rgba(0, 162, 255, 0.5)';
 
 export const defaultThemes: UITheme[] = [defaultGreen, defaultBlue];
