@@ -1329,7 +1329,7 @@ const ClearLogCommand = {
   name: "clear",
   description: "Clears the chat log for the current channel.",
   execute: async (interaction) => {
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply();
     if (interaction.channelId === null) {
       await interaction.editReply({
         content: "This command can only be used in a server channel."
@@ -1386,7 +1386,7 @@ async function registerCommands() {
     console.log("Started refreshing application (/) commands.");
     await rest.put(
       discord_js.Routes.applicationCommands(applicationID),
-      { body: commands.map((cmd) => ({ name: cmd.name, description: cmd.description })) }
+      { body: commands.map((cmd) => ({ name: cmd.name, description: cmd.description, options: cmd.options })) }
     );
     console.log("Successfully reloaded application (/) commands.");
   } catch (error) {

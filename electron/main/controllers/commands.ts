@@ -4,6 +4,7 @@ import { addRegisteredChannel, getRegisteredChannels, removeRegisteredChannel } 
 import { getConstruct, removeChat } from "../api/pouchdb";
 import { assembleConstructFromData } from "../helpers/helpers";
 import { retrieveConstructs } from "./ConstructController";
+import { doGlobalNicknameChange } from "../api/discord";
 
 export const RegisterCommand: SlashCommand = {
     name: 'register',
@@ -134,7 +135,7 @@ export const ClearLogCommand: SlashCommand = {
     name: 'clear',
     description: 'Clears the chat log for the current channel.',
     execute: async (interaction: CommandInteraction) => {
-        await interaction.deferReply({ephemeral: true});
+        await interaction.deferReply();
         if (interaction.channelId === null) {
             await interaction.editReply({
             content: "This command can only be used in a server channel.",
@@ -157,6 +158,14 @@ export const ClearLogCommand: SlashCommand = {
 export const SetBotNameCommand: SlashCommand = {
     name: 'setbotname',
     description: 'Sets the name of the bot.',
+    options: [
+        {
+            name: 'name',
+            description: 'The name to set.',
+            type: 'STRING',
+            required: true,
+        },
+    ],
     execute: async (interaction: CommandInteraction) => {
         await interaction.deferReply({ephemeral: true});
         if (interaction.channelId === null) {
@@ -171,9 +180,10 @@ export const SetBotNameCommand: SlashCommand = {
             });
             return;
         }
-        
+        const name = interaction.options.get('name')?.value as string;
+        doGlobalNicknameChange(name);
         await interaction.editReply({
-            content: "Not implemented yet.",
+            content: "Changed bot name to " + name + " across all servers.",
         });
     }
 }

@@ -41,7 +41,7 @@ async function registerCommands() {
   
       await rest.put(
         Routes.applicationCommands(applicationID),
-        { body: commands.map(cmd => ({ name: cmd.name, description: cmd.description })) },
+        { body: commands.map(cmd => ({ name: cmd.name, description: cmd.description, options: cmd.options })) },
       );
   
       console.log('Successfully reloaded application (/) commands.');

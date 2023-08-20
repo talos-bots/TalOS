@@ -46,8 +46,17 @@ export type ChannelConfigInterface = {
     guildId: string;
     constructs: string[];
 }
+interface SlashCommandOption {
+    name: string;
+    description: string;
+    type: 'STRING' | 'INTEGER' | 'BOOLEAN' | 'USER' | 'CHANNEL' | 'ROLE';
+    required?: boolean;
+    choices?: { name: string; value: string | number }[];
+}
+
 export interface SlashCommand {
-  name: string;
-  description: string;
-  execute: (interaction: CommandInteraction) => void | Promise<void>;
+    name: string;
+    description: string;
+    options?: SlashCommandOption[];
+    execute: (interaction: CommandInteraction) => void | Promise<void>;
 }
