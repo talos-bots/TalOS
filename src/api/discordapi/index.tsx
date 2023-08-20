@@ -3,8 +3,8 @@ import { ipcRenderer } from 'electron';
 type ValidStatus = 'online' | 'dnd' | 'idle' | 'invisible';
 
 // Discord Login
-export const loginToDiscord = async (token: string): Promise<boolean> => {
-    return ipcRenderer.invoke('discord-login', token);
+export const loginToDiscord = async (rawToken?: string, appId?: string): Promise<boolean> => {
+    return ipcRenderer.invoke('discord-login', rawToken, appId);
 }
 
 // Discord Logout
@@ -96,31 +96,6 @@ export const getApplicationID = (): Promise<string> => {
     return fetchFromMain('discord-get-application-id', 'discord-get-application-id-reply');
 }
 
-// Get Commands
-export const getCommands = (): Promise<Map<string, Function>> => {
-    return fetchFromMain('discord-get-commands', 'discord-get-commands-reply');
-}
-
-// Get Specific Command
-export const getCommand = (commandName: string): Promise<Function> => {
-    return fetchFromMainWithArgs('discord-get-command', 'discord-get-command-reply', commandName);
-}
-
-// Add Command
-export const addCommand = (commandName: string, commandFunction: Function): Promise<Map<string, Function>> => {
-    return fetchFromMainWithArgs('discord-add-command', 'discord-add-command-reply', commandName, commandFunction);
-}
-
-// Remove Command
-export const removeCommand = (commandName: string): Promise<Map<string, Function>> => {
-    return fetchFromMainWithArgs('discord-remove-command', 'discord-remove-command-reply', commandName);
-}
-
-// Remove All Commands
-export const removeAllCommands = (): Promise<Map<string, Function>> => {
-    return fetchFromMain('discord-remove-all-commands', 'discord-remove-all-commands-reply');
-}
-
 // Get Guilds
 export const getGuilds = (): Promise<Array<any>> => {
     return new Promise((resolve) => {
@@ -135,17 +110,15 @@ export const getSavedDiscordData = (): Promise<any> => {
     return new Promise((resolve) => {
         ipcRenderer.send('discord-get-data');
         ipcRenderer.once('discord-get-data-reply', (_, data) => {
+            console.log(data);
             resolve(data);
         });
     });
 }
 
-export const saveDiscordData = (token : string, appID : string): Promise<boolean> => {
+export const saveDiscordData = (token : string, appID : string, discordCharacterMode: boolean, discordMultiCharacterMode: boolean, discordMultiConstructMode: boolean): Promise<boolean> => {
     return new Promise((resolve) => {
-        ipcRenderer.send('discord-save-data', token, appID);
-        ipcRenderer.once('discord-save-data-reply', (_, success) => {
-            resolve(success);
-        });
+        ipcRenderer.send('discord-save-data', token, appID, discordCharacterMode, discordMultiCharacterMode, discordMultiConstructMode);
     });
 }
 

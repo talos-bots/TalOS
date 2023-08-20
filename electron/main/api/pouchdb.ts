@@ -1,12 +1,15 @@
 import { ipcMain } from 'electron';
 import PouchDB from 'pouchdb';
-import { dataPath } from '../';
+import { dataPath, isDarwin } from '../';
+import LeveldbAdapter from 'pouchdb-adapter-leveldb';
 
 let constructDB: PouchDB.Database<any>;
 let chatsDB: PouchDB.Database<any>;
 let commandDB: PouchDB.Database<any>;
 let attachmentDB: PouchDB.Database<any>;
 let instructDB: PouchDB.Database<any>;
+
+PouchDB.plugin(LeveldbAdapter);
 
 export async function getAllConstructs() {
     return constructDB.allDocs({include_docs: true})
@@ -259,11 +262,11 @@ export async function updateInstruct(instruct: any) {
 }
 
 export function PouchDBRoutes(){
-    constructDB = new PouchDB('constructs', {prefix: dataPath});
-    chatsDB = new PouchDB('chats', {prefix: dataPath});
-    commandDB = new PouchDB('commands', {prefix: dataPath});
-    attachmentDB = new PouchDB('attachments', {prefix: dataPath});
-    instructDB = new PouchDB('instructs', {prefix: dataPath});
+    constructDB = new PouchDB('constructs', {prefix: dataPath, adapter : 'leveldb'});
+    chatsDB = new PouchDB('chats', {prefix: dataPath, adapter : 'leveldb'});
+    commandDB = new PouchDB('commands', {prefix: dataPath, adapter : 'leveldb'});
+    attachmentDB = new PouchDB('attachments', {prefix: dataPath, adapter : 'leveldb'});
+    instructDB = new PouchDB('instructs', {prefix: dataPath, adapter : 'leveldb'});
 
     ipcMain.on('get-constructs', (event, replyName) => {
         getAllConstructs().then((result) => {
@@ -431,10 +434,10 @@ export function PouchDBRoutes(){
     });
 
     function createDBs (){
-        constructDB = new PouchDB('constructs', {prefix: dataPath});
-        chatsDB = new PouchDB('chats', {prefix: dataPath});
-        commandDB = new PouchDB('commands', {prefix: dataPath});
-        attachmentDB = new PouchDB('attachments', {prefix: dataPath});
-        instructDB = new PouchDB('instructs', {prefix: dataPath});
+        constructDB = new PouchDB('constructs', {prefix: dataPath, adapter : 'leveldb'});
+        chatsDB = new PouchDB('chats', {prefix: dataPath, adapter : 'leveldb'});
+        commandDB = new PouchDB('commands', {prefix: dataPath, adapter : 'leveldb'});
+        attachmentDB = new PouchDB('attachments', {prefix: dataPath, adapter : 'leveldb'});
+        instructDB = new PouchDB('instructs', {prefix: dataPath, adapter : 'leveldb'});
     }
 };

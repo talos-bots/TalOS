@@ -1,6 +1,13 @@
 import { ipcMain } from 'electron';
-import { ActivityType, Client, GatewayIntentBits, Collection, REST, Routes, Partials, TextChannel, DMChannel, NewsChannel, Snowflake, Webhook } from 'discord.js';
+import { ActivityType, Client, GatewayIntentBits, Collection, REST, Routes, Partials, TextChannel, DMChannel, NewsChannel, Snowflake, Webhook, Message } from 'discord.js';
 import Store from 'electron-store';
+import { win } from '..';
+import { handleDiscordMessage } from '../controllers/DiscordController';
+import { ConstructInterface, SlashCommand } from '../types/types';
+import { assembleConstructFromData, base642Buffer } from '../helpers/helpers';
+import { DefaultCommands } from '../controllers/commands';
+import { retrieveConstructs } from '../controllers/ConstructController';
+import { getConstruct } from './pouchdb';
 
 const intents = { 
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, 
@@ -18,10 +25,42 @@ const store = new Store({
 getDiscordData();
 
 let disClient = new Client(intents);
-const commands = new Collection();
-let isReady = false;
+const commands: SlashCommand[] = [...DefaultCommands];
+export let isReady = false;
 let token = '';
 let applicationID = '';
+let characterMode = false;
+let multiCharacterMode = false;
+let multiConstructMode = false;
+
+async function registerCommands() {
+    if(!isReady) return;
+    const rest = new REST().setToken(token);
+    try {
+      console.log('Started refreshing application (/) commands.');
+  
+      await rest.put(
+        Routes.applicationCommands(applicationID),
+        { body: commands.map(cmd => ({ name: cmd.name, description: cmd.description, options: cmd.options })) },
+      );
+  
+      console.log('Successfully reloaded application (/) commands.');
+    } catch (error) {
+      console.error(error);
+    }
+}
+
+export function isMultiCharacterMode(){
+    return multiCharacterMode;
+}
+
+export function isMultiConstructMode(){
+    return multiConstructMode;
+}
+
+export function isAutoReplyMode(){
+    return false;
+}
 
 export function cleanUsername(username: string) {
     // Remove leading characters
@@ -36,6 +75,14 @@ export function cleanUsername(username: string) {
 export function cleanEmoji(text: string) {
     // Remove emoji characters using regex
     return text.replace(/<:[a-zA-Z0-9_]+:[0-9]+>/g, '');
+}
+
+export async function doGlobalNicknameChange(newName: string){
+    disClient.guilds.cache.forEach(guild => {
+        guild.members.cache.filter(member => member.user.id === disClient?.user?.id).forEach(member => {
+            member.setNickname(newName);
+        });
+    });
 }
 
 export async function setDiscordBotInfo(botName: string, base64Avatar: string): Promise<void> {
@@ -73,12 +120,13 @@ export async function setDiscordBotInfo(botName: string, base64Avatar: string): 
 
     // Change bot's avatar
     try {
-        const buffer = Buffer.from(base64Avatar, 'base64');
+        const buffer = await base642Buffer(base64Avatar);
         await disClient.user.setAvatar(buffer);
         console.log('New avatar set!');
     } catch (error) {
         console.error('Failed to set avatar:', error);
     }
+    doGlobalNicknameChange(botName);
 }
 
 export async function getDiscordGuilds() {
@@ -135,7 +183,33 @@ export async function setOnlineMode(type: ValidStatus) {
     disClient.user.setStatus(type);
 }
 
-export async function sendMessage(channelID: Snowflake, message: string): Promise<void> {
+export async function getStopList(guildId: string){
+    if(!disClient.user || disClient.user === null) return;
+    if(!isReady) return;
+    let guild = disClient.guilds.cache.get(guildId);
+    let memberList = [];
+    if(!guild) return;
+    guild.members.cache.forEach(member => {
+        if(!disClient.user) return;
+        if(member.user.id !== disClient.user.id){
+            memberList.push(member.user.username);
+        }
+    });
+    for(let i = 0; i < memberList.length; i++){
+        let alias = cleanUsername(memberList[i]);
+        memberList[i] = `${alias}:`
+    }
+    console.log("Stop list fetched...");
+    return memberList;
+}
+
+export function sendTyping(message: Message){
+    if(!disClient.user) return;
+    if(!isReady) return;
+    message.channel.sendTyping();
+}
+
+export async function sendMessage(channelID: Snowflake, message: string){
     if(!isReady) return;
     if (!disClient.user) {
         console.error("Discord client user is not initialized.");
@@ -145,7 +219,7 @@ export async function sendMessage(channelID: Snowflake, message: string): Promis
 
     // Check if the channel is one of the types that can send messages
     if (channel instanceof TextChannel || channel instanceof DMChannel || channel instanceof NewsChannel) {
-        channel.send(message);
+        return channel.send(message);
     }
 }
 
@@ -161,15 +235,39 @@ export async function getWebhookForCharacter(charName: string, channelID: Snowfl
     return webhooks.find(webhook => webhook.name === charName);
 }
 
-export async function sendMessageAsCharacter(charName: string, channelID: Snowflake, message: string): Promise<void> {
+export async function sendMessageAsCharacter(char: ConstructInterface, channelID: Snowflake, message: string): Promise<void> {
     if(!isReady) return;
-    const webhook = await getWebhookForCharacter(charName, channelID);
+    let webhook = await getWebhookForCharacter(char.name, channelID);
     
     if (!webhook) {
-        throw new Error(`Webhook for character ${charName} not found.`);
+        webhook = await createWebhookForChannel(channelID, char);
     }
-
+    if (!webhook) {
+        console.error("Failed to create webhook.");
+        return;
+    }
     await webhook.send(message);
+}
+
+export async function createWebhookForChannel(channelID: string, char: ConstructInterface){
+    if(!isReady) return;
+    if (!disClient.user) return;
+    let channel = disClient.channels.cache.get(channelID);
+    if (!(channel instanceof TextChannel || channel instanceof NewsChannel)) {
+        return;
+    }
+    let webhooks = await channel.fetchWebhooks();
+    let webhook = webhooks.find(webhook => webhook.name === char.name);
+    let charImage = await base642Buffer(char.avatar);
+    if(!webhook){
+        webhook = await channel.createWebhook({
+            name: char.name,
+            avatar: charImage
+        });
+    }else {
+        console.log("Webhook already exists.");
+    }
+    return webhook;
 }
 
 export async function getWebhooksForChannel(channelID: Snowflake): Promise<string[]> {
@@ -192,7 +290,7 @@ export async function setDiscordAppId(appId: string): Promise<void> {
     store.set('discordAppId', appId);
 }
 
-export async function getDiscordData(): Promise<{savedToken: string, appId: string}> {
+export async function getDiscordData(): Promise<{savedToken: string, appId: string, discordCharacterMode: boolean, discordMultiCharacterMode: boolean, discordMultiConstructMode: boolean}> {
     let savedToken;
     const storedToken = store.get('discordToken');
     if (storedToken !== undefined && typeof storedToken === 'string') {
@@ -208,12 +306,40 @@ export async function getDiscordData(): Promise<{savedToken: string, appId: stri
     } else {
         appId = '';
     }
+
+    let discordCharacterMode;
+    const storedDiscordCharacterMode = store.get('discordCharacterMode');
+    if (storedDiscordCharacterMode !== undefined && typeof storedDiscordCharacterMode === 'boolean') {
+        discordCharacterMode = storedDiscordCharacterMode;
+    } else {
+        discordCharacterMode = false;
+    }
+
+    let discordMultiCharacterMode;
+    const storedDiscordMultiCharacterMode = store.get('discordMultiCharacterMode');
+    if (storedDiscordMultiCharacterMode !== undefined && typeof storedDiscordMultiCharacterMode === 'boolean') {
+        discordMultiCharacterMode = storedDiscordMultiCharacterMode;
+    } else {
+        discordMultiCharacterMode = false;
+    }
+
+    let discordMultiConstructMode;
+    const storedDiscordMultiConstructMode = store.get('discordMultiConstructMode');
+    if (storedDiscordMultiConstructMode !== undefined && typeof storedDiscordMultiConstructMode === 'boolean') {
+        discordMultiConstructMode = storedDiscordMultiConstructMode;
+    } else {
+        discordMultiConstructMode = false;
+    }
+
     token = savedToken;
     applicationID = appId;
-    return {savedToken, appId};
+    characterMode = discordCharacterMode;
+    multiCharacterMode = discordMultiCharacterMode;
+    multiConstructMode = discordMultiConstructMode;
+    return {savedToken, appId, discordCharacterMode, discordMultiCharacterMode, discordMultiConstructMode};
 }
 
-export function saveDiscordData(newToken: string, newAppId: string){
+export function saveDiscordData(newToken: string, newAppId: string, discordCharacterMode: boolean, discordMultiCharacterMode: boolean, discordMultiConstructMode: boolean){
     if (newToken === '') {
         const storedToken = store.get('discordToken');
         
@@ -239,6 +365,19 @@ export function saveDiscordData(newToken: string, newAppId: string){
         applicationID = newAppId;
         store.set('discordAppId', newAppId);
     }
+    
+    characterMode = discordCharacterMode;
+    multiCharacterMode = discordMultiCharacterMode;
+    multiConstructMode = discordMultiConstructMode;
+
+    store.set('discordCharacterMode', discordCharacterMode);
+    if(!discordCharacterMode){
+        store.set('mode', 'Construct');
+    }else{
+        store.set('mode', 'Character');
+    }
+    store.set('discordMultiCharacterMode', discordMultiCharacterMode);
+    store.set('discordMultiConstructMode', discordMultiConstructMode);
 }
 
 export function DiscordJSRoutes(){
@@ -251,36 +390,13 @@ export function DiscordJSRoutes(){
         event.sender.send('discord-get-data-reply', data);
     });
 
-    ipcMain.on('discord-save-data', async (event, newToken: string, newAppId: string) => {
-        saveDiscordData(newToken, newAppId);
-        event.sender.send('discord-save-data-reply', {token, applicationID});
+    ipcMain.on('discord-save-data', async (event, newToken: string, newAppId: string, discordCharacterMode: boolean, discordMultiCharacterMode: boolean, discordMultiConstructMode: boolean) => {
+        saveDiscordData(newToken, newAppId, discordCharacterMode, discordMultiCharacterMode, discordMultiConstructMode);
+        event.sender.send('discord-save-data-reply', token, applicationID);
     });
     
     ipcMain.on('discord-get-application-id', async (event) => {
         event.sender.send('discord-get-application-id-reply', applicationID);
-    });
-
-    ipcMain.on('discord-get-commands', async (event) => {
-        event.sender.send('discord-get-commands-reply', commands);
-    });
-
-    ipcMain.on('discord-get-command', async (event, commandName: string) => {
-        event.sender.send('discord-get-command-reply', commands.get(commandName));
-    });
-
-    ipcMain.on('discord-add-command', async (event, commandName: string, commandFunction: Function) => {
-        commands.set(commandName, commandFunction);
-        event.sender.send('discord-add-command-reply', commands);
-    });
-
-    ipcMain.on('discord-remove-command', async (event, commandName: string) => {
-        commands.delete(commandName);
-        event.sender.send('discord-remove-command-reply', commands);
-    });
-
-    ipcMain.on('discord-remove-all-commands', async (event) => {
-        commands.clear();
-        event.sender.send('discord-remove-all-commands-reply', commands);
     });
 
     ipcMain.on('discord-get-guilds', async (event) => {
@@ -289,165 +405,196 @@ export function DiscordJSRoutes(){
 
     disClient.on('messageCreate', async (message) => {
         if (message.author.id === disClient.user?.id) return;
-        ipcMain.emit('discord-message', message);
+        await handleDiscordMessage(message);
+        win?.webContents.send('discord-message', message);
     });
 
     disClient.on('messageUpdate', async (oldMessage, newMessage) => {
         if (newMessage.author?.id === disClient.user?.id) return;
-        ipcMain.emit('discord-message-update', oldMessage, newMessage);
+        win?.webContents.send('discord-message-update', oldMessage, newMessage);
     });
 
     disClient.on('messageDelete', async (message) => {
         if (message.author?.id === disClient.user?.id) return;
-        ipcMain.emit('discord-message-delete', message);
+        win?.webContents.send('discord-message-delete', message);
     });
 
     disClient.on('messageReactionAdd', async (reaction, user) => {
         if (user.id === disClient.user?.id) return;
-        ipcMain.emit('discord-message-reaction-add', reaction, user);
+        win?.webContents.send('discord-message-reaction-add', reaction, user);
     });
 
     disClient.on('messageReactionRemove', async (reaction, user) => {
         if (user.id === disClient.user?.id) return;
-        ipcMain.emit('discord-message-reaction-remove', reaction, user);
+        win?.webContents.send('discord-message-reaction-remove', reaction, user);
     });
 
     disClient.on('messageReactionRemoveAll', async (message) => {
         if (message.author?.id === disClient.user?.id) return;
-        ipcMain.emit('discord-message-reaction-remove-all', message);
+        win?.webContents.send('discord-message-reaction-remove-all', message);
     });
 
     disClient.on('messageReactionRemoveEmoji', async (reaction) => {
-        ipcMain.emit('discord-message-reaction-remove-emoji', reaction);
+        win?.webContents.send('discord-message-reaction-remove-emoji', reaction);
     });
 
     disClient.on('channelCreate', async (channel) => {
-        ipcMain.emit('discord-channel-create', channel);
+        win?.webContents.send('discord-channel-create', channel);
     });
 
     disClient.on('channelDelete', async (channel) => {
-        ipcMain.emit('discord-channel-delete', channel);
+        win?.webContents.send('discord-channel-delete', channel);
     });
 
     disClient.on('channelPinsUpdate', async (channel, time) => {
-        ipcMain.emit('discord-channel-pins-update', channel, time);
+        win?.webContents.send('discord-channel-pins-update', channel, time);
     });
 
     disClient.on('channelUpdate', async (oldChannel, newChannel) => {
-        ipcMain.emit('discord-channel-update', oldChannel, newChannel);
+        win?.webContents.send('discord-channel-update', oldChannel, newChannel);
     });
 
     disClient.on('emojiCreate', async (emoji) => {
-        ipcMain.emit('discord-emoji-create', emoji);
+        win?.webContents.send('discord-emoji-create', emoji);
     });
 
     disClient.on('emojiDelete', async (emoji) => {
-        ipcMain.emit('discord-emoji-delete', emoji);
+        win?.webContents.send('discord-emoji-delete', emoji);
     });
 
     disClient.on('emojiUpdate', async (oldEmoji, newEmoji) => {
-        ipcMain.emit('discord-emoji-update', oldEmoji, newEmoji);
+        win?.webContents.send('discord-emoji-update', oldEmoji, newEmoji);
     });
 
     disClient.on('guildBanAdd', async (ban) => {
-        ipcMain.emit('discord-guild-ban-add', ban);
+        win?.webContents.send('discord-guild-ban-add', ban);
     });
 
     disClient.on('guildBanRemove', async (ban) => {
-        ipcMain.emit('discord-guild-ban-remove', ban);
+        win?.webContents.send('discord-guild-ban-remove', ban);
     });
 
     disClient.on('guildCreate', async (guild) => {
-        ipcMain.emit('discord-guild-create', guild);
+        win?.webContents.send('discord-guild-create', guild);
     });
 
     disClient.on('guildDelete', async (guild) => {
-        ipcMain.emit('discord-guild-delete', guild);
+        win?.webContents.send('discord-guild-delete', guild);
     });
 
     disClient.on('guildUnavailable', async (guild) => {
-        ipcMain.emit('discord-guild-unavailable', guild);
+        win?.webContents.send('discord-guild-unavailable', guild);
     });
 
     disClient.on('guildIntegrationsUpdate', async (guild) => {
-        ipcMain.emit('discord-guild-integrations-update', guild);
+        win?.webContents.send('discord-guild-integrations-update', guild);
     });
 
     disClient.on('guildMemberAdd', async (member) => {
-        ipcMain.emit('discord-guild-member-add', member);
+        win?.webContents.send('discord-guild-member-add', member);
     });
 
     disClient.on('guildMemberRemove', async (member) => {
-        ipcMain.emit('discord-guild-member-remove', member);
+        win?.webContents.send('discord-guild-member-remove', member);
     });
 
     disClient.on('guildMemberAvailable', async (member) => {
-        ipcMain.emit('discord-guild-member-available', member);
+        win?.webContents.send('discord-guild-member-available', member);
     });
 
     disClient.on('guildMemberUpdate', async (oldMember, newMember) => {
-        ipcMain.emit('discord-guild-member-update', oldMember, newMember);
+        win?.webContents.send('discord-guild-member-update', oldMember, newMember);
     });
 
     disClient.on('guildMembersChunk', async (members, guild) => {
-        ipcMain.emit('discord-guild-members-chunk', members, guild);
+        win?.webContents.send('discord-guild-members-chunk', members, guild);
     });
 
     disClient.on('guildUpdate', async (oldGuild, newGuild) => {
-        ipcMain.emit('discord-guild-update', oldGuild, newGuild);
+        win?.webContents.send('discord-guild-update', oldGuild, newGuild);
     });
 
     disClient.on('interactionCreate', async (interaction) => {
-        ipcMain.emit('discord-interaction-create', interaction);
+        if (!interaction.isCommand()) return;
+
+        const command = commands.find(cmd => cmd.name === interaction.commandName);
+      
+        if (!command) return;
+      
+        try {
+            await command.execute(interaction);
+        } catch (error) {
+            console.error(error);
+            await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+        }
+        win?.webContents.send('discord-interaction-create', interaction);
     });
 
     disClient.on('inviteCreate', async (invite) => {
-        ipcMain.emit('discord-invite-create', invite);
+        win?.webContents.send('discord-invite-create', invite);
     });
 
     disClient.on('inviteDelete', async (invite) => {
-        ipcMain.emit('discord-invite-delete', invite);
+        win?.webContents.send('discord-invite-delete', invite);
     });
 
     disClient.on('presenceUpdate', async (oldPresence, newPresence) => {
-        ipcMain.emit('discord-presence-update', oldPresence, newPresence);
+        win?.webContents.send('discord-presence-update', oldPresence, newPresence);
     });
 
-    disClient.on('ready', () => {
+    disClient.on('ready', async () => {
         if(!disClient.user) return;
         isReady = true;
         console.log(`Logged in as ${disClient.user.tag}!`);
-        ipcMain.emit('discord-ready', disClient);
+        win?.webContents.send('discord-ready', disClient.user.tag);
+        registerCommands();
+        let constructs = retrieveConstructs();
+        let constructRaw = await getConstruct(constructs[0]);
+        let construct = assembleConstructFromData(constructRaw);
+        setDiscordBotInfo(construct.name, construct.avatar);
     });
 
     ipcMain.handle('discord-login', async (event, rawToken: string, appId: string) => {
-        if (rawToken === '') {
-            const storedToken = store.get('discordToken');
-            
-            if (storedToken !== undefined && typeof storedToken === 'string') {
-                token = storedToken;
+        try {
+            if (rawToken === '') {
+                const storedToken = store.get('discordToken');
+                
+                if (storedToken !== undefined && typeof storedToken === 'string') {
+                    token = storedToken;
+                } else {
+                    return false; // or return an error message
+                }
             } else {
-                return false; // or return an error message
+                token = rawToken;
+                store.set('discordToken', rawToken);
             }
-        } else {
-            token = rawToken;
-            store.set('discordToken', rawToken);
-        }
-        
-        if (appId === '') {
-            const storedAppId = store.get('discordAppId');
             
-            if (storedAppId !== undefined && typeof storedAppId === 'string') {
-                applicationID = storedAppId;
+            if (appId === '') {
+                const storedAppId = store.get('discordAppId');
+                
+                if (storedAppId !== undefined && typeof storedAppId === 'string') {
+                    applicationID = storedAppId;
+                } else {
+                    return false; // or return an error message
+                }
             } else {
-                return false; // or return an error message
+                applicationID = appId;
+                store.set('discordAppId', appId);
             }
-        } else {
-            applicationID = appId;
-            store.set('discordAppId', appId);
+            
+            await disClient.login(token);
+            
+            if (!disClient.user) {
+                console.error("Discord client user is not initialized.");
+                return false;
+            } else {
+                return true;
+            }
+            
+        } catch (error) {
+            console.error('Failed to login to Discord:', error);
+            return false;
         }
-        await disClient.login(token);
-        return true;
     });    
 
     ipcMain.handle('discord-logout', async (event) => {
@@ -455,7 +602,8 @@ export function DiscordJSRoutes(){
         disClient.removeAllListeners();
         isReady = false;
         disClient = new Client(intents);
-        ipcMain.emit('discord-disconnected');
+        console.log('Logged out!');
+        win?.webContents.send('discord-disconnected');
         return true;
     });
 
@@ -483,9 +631,9 @@ export function DiscordJSRoutes(){
         return true;
     });
 
-    ipcMain.handle('discord-send-message-as-character', async (event, charName: string, channelID: Snowflake, message: string) => {
+    ipcMain.handle('discord-send-message-as-character', async (event, char: ConstructInterface, channelID: Snowflake, message: string) => {
         if(!isReady) return false;
-        await sendMessageAsCharacter(charName, channelID, message);
+        await sendMessageAsCharacter(char, channelID, message);
         return true;
     });
 

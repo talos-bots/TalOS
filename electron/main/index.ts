@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell, ipcMain } from "electron";
+import { app, BrowserWindow, shell, ipcMain, dialog } from "electron";
 import { release } from "node:os";
 import { join } from "node:path";
 import path from "path";
@@ -8,9 +8,10 @@ import Store from "electron-store";
 import { FsAPIRoutes } from "./api/fsapi";
 import { LanguageModelAPI } from "./api/llm";
 import { SDRoutes } from "./api/sd";
-import { BonusFeaturesRoutes } from "./api/bonus-features";
 import constructController from "./controllers/ConstructController";
 import fs from "fs";
+import DiscordController from "./controllers/DiscordController";
+import { ElectronDBRoutes } from "./api/electrondb";
 
 // The built directory structure
 //
@@ -43,8 +44,8 @@ if (!app.requestSingleInstanceLock()) {
 // This warning only shows in development mode
 // Read more on https://www.electronjs.org/docs/latest/tutorial/security
 process.env["ELECTRON_DISABLE_SECURITY_WARNINGS"] = "true";
-
-let win: BrowserWindow | null = null;
+export let isDarwin = process.platform === "darwin";
+export let win: BrowserWindow | null = null;
 // Here, you can also use other preload
 const preload = join(__dirname, "../preload/index.js");
 const url = process.env.VITE_DEV_SERVER_URL;
@@ -67,9 +68,11 @@ async function createWindow() {
     autoHideMenuBar: true,
     resizable: true,
     maximizable: true,
-    minimizable: false,
+    minimizable: true,
   });
 
+  win.maximize();
+  await requestFullDiskAccess();
   if (url) {
     win.loadURL(url);
     win.webContents.openDevTools();
@@ -87,8 +90,9 @@ async function createWindow() {
   FsAPIRoutes();
   LanguageModelAPI();
   SDRoutes();
-  BonusFeaturesRoutes();
+  ElectronDBRoutes();
   constructController();
+  DiscordController();
   // update(win)
 }
 
@@ -165,3 +169,28 @@ ipcMain.handle("get-server-port", (event) => {
     throw error; // This will send the error back to the renderer
   }
 });
+
+async function requestFullDiskAccess() {
+  if (process.platform === 'darwin') {
+    // Try to read a directory that requires Full Disk Access
+    try {
+      fs.readdirSync('/Library/Application Support/com.apple.TCC');
+    } catch (e) {
+      // Reading the directory failed, which likely means that Full Disk Access
+      // has not been granted. Show the dialog that prompts the user to grant access.
+      const { response } = await dialog.showMessageBox({
+        type: 'info',
+        title: 'Full Disk Access Required',
+        message: 'This application requires full disk access to function properly.',
+        detail: 'Please enable full disk access for this application in System Preferences.',
+        buttons: ['Open System Preferences', 'Cancel'],
+        defaultId: 0,
+        cancelId: 1
+      });
+
+      if (response === 0) {
+        shell.openExternal('x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles');
+      }
+    }
+  }
+}

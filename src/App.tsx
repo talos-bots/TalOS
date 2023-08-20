@@ -20,6 +20,10 @@ function App() {
   }
 
   useEffect(() => {
+    DiscordListeners();
+  }, []);
+
+  useEffect(() => {
       const closeOnEscapeKey = (e: { key: string; }) => e.key === "Escape" ? returnToMenu() : null;
       document.body.addEventListener("keydown", closeOnEscapeKey);
       return () => {
@@ -28,11 +32,11 @@ function App() {
   }, []);
   
   const isDev = process.env.NODE_ENV === 'development';
+  
   return (
     <div id='App'>
     <Router>
       <MenuThemeLoader needsReload setNeedsReload={setNeedsReload}/>
-      <DiscordListeners/>
       <NavBar />
       <div className='main-content'>
       <Routes>
