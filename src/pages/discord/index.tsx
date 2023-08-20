@@ -80,12 +80,33 @@ const DiscordPage = () => {
             <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-1">
                     <Accordian title="What is this?">
-                        <p className="text-theme-text text-left">Welcome to the ConstructOS</p>
                     </Accordian>
                 </div>
                 <div className="col-span-1">
                     <Accordian title="How do I use this?">
-                        <p className="text-theme-text text-left">Welcome to the ConstructOS</p>
+                        <div className="text-left ">
+                            <h3>Creating the Discord Bot</h3>
+                            <ol>
+                                <li>Go to <a>https://discord.com/developers/applications</a></li>
+                                <li>Click "New Application"</li>
+                                <li>Give it a name and click "Create"</li>
+                                <li>Click "Bot" on the left side</li>
+                                <li>Click "Add Bot"</li>
+                                <li>Click "Copy" under the token</li>
+                                <li>Paste the token into the "Bot Token" field in the "Bot Configuration" tab of this page.</li>
+                                <li>Click "Save"</li>
+                                <li>Return the the Discord Developer Portal</li>
+                                <li>Go to your application and find the "Application ID" field</li>
+                                <li>Copy the Application ID</li>
+                                <li>Paste the Application ID into the "Application ID" field in the "Bot Configuration" tab of this page.</li>
+                                <li>Click "Save"</li>
+                                <li>Return to the Discord Developer Portal</li>
+                                <li>Go to your application and find the "Bot" tab</li>
+                                <li>Turn on all of the "Privileged Gateway Intents"</li>
+                                <li>Click "Save Changes"</li>
+                                <li>Flip the "Activate Bot" switch in the "Bot Configuration" tab.</li>
+                            </ol>
+                        </div>
                     </Accordian>
                 </div>
             </div>

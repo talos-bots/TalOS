@@ -503,7 +503,6 @@ const getConstructsFromEDB = () => {
         id,
         key: id,
         value: {
-          // We don't have 'rev' in ElectronDb, so we can either omit it or add a dummy value
           rev: "unknown"
         }
       });
@@ -531,7 +530,6 @@ const getChatsFromEDB = () => {
         id,
         key: id,
         value: {
-          // We don't have 'rev' in ElectronDb, so we can either omit it or add a dummy value
           rev: "unknown"
         }
       });
@@ -546,14 +544,11 @@ const getChatsByConstructFromEDB = (id) => {
     if (chat.agents.includes(id)) {
       constructChats.push({
         doc: {
-          // This is a simple structure assuming all fields from chat should be in 'doc'. Adjust as needed.
           ...chat
         },
         id: chat._id,
-        // Assuming each chat has a unique _id field
         key: chat._id,
         value: {
-          // Again, we don't have 'rev' in ElectronDb, so use a placeholder or omit
           rev: "unknown"
         }
       });
@@ -581,7 +576,6 @@ const getCommandsFromEDB = () => {
         id,
         key: id,
         value: {
-          // We don't have 'rev' in ElectronDb, so we can either omit it or add a dummy value
           rev: "unknown"
         }
       });
@@ -609,7 +603,6 @@ const getAttachmentsFromEDB = () => {
         id,
         key: id,
         value: {
-          // We don't have 'rev' in ElectronDb, so we can either omit it or add a dummy value
           rev: "unknown"
         }
       });
@@ -637,7 +630,6 @@ const getInstructsFromEDB = () => {
         id,
         key: id,
         value: {
-          // We don't have 'rev' in ElectronDb, so we can either omit it or add a dummy value
           rev: "unknown"
         }
       });
@@ -1124,6 +1116,9 @@ let ActiveConstructs = [];
 const retrieveConstructs = () => {
   return store$4.get("ids", []);
 };
+const getDoMultiLine = () => {
+  return store$4.get("doMultiLine", false);
+};
 const addConstruct = (newId) => {
   const existingIds = retrieveConstructs();
   if (!existingIds.includes(newId)) {
@@ -1200,12 +1195,12 @@ async function generateContinueChatLog(construct, chatLog, currentUser, messages
     return null;
   }
 }
-function breakUpCommands(charName, commandString, user = "You", stopList = [], botSettings = { doMultiLine: false }) {
+function breakUpCommands(charName, commandString, user = "You", stopList = []) {
   let lines = commandString.split("\n");
   let formattedCommands = [];
   let currentCommand = "";
   let isFirstLine = true;
-  if (botSettings.doMultiLine === false) {
+  if (getDoMultiLine() === false) {
     lines = lines.slice(0, 1);
     let command = lines[0];
     return command;
@@ -1312,17 +1307,17 @@ const isChannelRegistered = (channel) => {
   }
   return false;
 };
-async function handleDiscordMessage(message) {
-  if (message.author.bot)
+async function handleDiscordMessage(message2) {
+  if (message2.author.bot)
     return;
-  if (message.channel.isDMBased())
+  if (message2.channel.isDMBased())
     return;
-  if (message.content.startsWith("."))
+  if (message2.content.startsWith("."))
     return;
   let registeredChannels = getRegisteredChannels();
   let registered = false;
   for (let i = 0; i < registeredChannels.length; i++) {
-    if (registeredChannels[i]._id === message.channel.id) {
+    if (registeredChannels[i]._id === message2.channel.id) {
       registered = true;
       break;
     }
@@ -1332,22 +1327,22 @@ async function handleDiscordMessage(message) {
   const activeConstructs = retrieveConstructs();
   if (activeConstructs.length < 1)
     return;
-  const newMessage = convertDiscordMessageToMessage(message, activeConstructs);
+  const newMessage = convertDiscordMessageToMessage(message2, activeConstructs);
   let constructArray = [];
   for (let i = 0; i < activeConstructs.length; i++) {
     let constructDoc = await getConstruct(activeConstructs[i]);
     let construct = assembleConstructFromData(constructDoc);
     constructArray.push(construct);
   }
-  let chatLogData = await getChat(message.channel.id);
+  let chatLogData = await getChat(message2.channel.id);
   let chatLog;
   if (chatLogData) {
     chatLog = assembleChatFromData(chatLogData);
     chatLog.messages.push(newMessage);
   } else {
     chatLog = {
-      _id: message.channel.id,
-      name: message.channel.id + " Chat " + constructArray[0].name,
+      _id: message2.channel.id,
+      name: message2.channel.id + " Chat " + constructArray[0].name,
       type: "Discord",
       messages: [newMessage],
       lastMessage: newMessage,
@@ -1361,25 +1356,25 @@ async function handleDiscordMessage(message) {
       return;
     }
   }
-  if (message.content.startsWith("-")) {
+  if (message2.content.startsWith("-")) {
     await updateChat(chatLog);
     return;
   }
   const mode = getDiscordMode();
   if (mode === "Character") {
-    sendTyping(message);
+    sendTyping(message2);
     if (isMultiCharacterMode()) {
-      chatLog = await doRoundRobin(constructArray, chatLog, message);
+      chatLog = await doRoundRobin(constructArray, chatLog, message2);
     } else {
-      chatLog = await doCharacterReply(constructArray[0], chatLog, message);
+      chatLog = await doCharacterReply(constructArray[0], chatLog, message2);
     }
   } else if (mode === "Construct") {
-    await sendMessage(message.channel.id, "Construct Mode is not yet implemented.");
+    await sendMessage(message2.channel.id, "Construct Mode is not yet implemented.");
   }
   await updateChat(chatLog);
 }
-async function doCharacterReply(construct, chatLog, message) {
-  const result = await generateContinueChatLog(construct, chatLog, message.author.username);
+async function doCharacterReply(construct, chatLog, message2) {
+  const result = await generateContinueChatLog(construct, chatLog, message2.author.username);
   let reply;
   if (result !== null) {
     reply = result;
@@ -1388,23 +1383,23 @@ async function doCharacterReply(construct, chatLog, message) {
   }
   const replyMessage = {
     _id: Date.now().toString(),
-    user: construct.name,
+    user: construct._id,
     text: reply,
     timestamp: Date.now(),
     origin: "Discord",
     isCommand: false,
     isPrivate: false,
-    participants: [message.author.username, construct.name],
+    participants: [message2.author.username, construct._id],
     attachments: []
   };
   chatLog.messages.push(replyMessage);
   chatLog.lastMessage = replyMessage;
   chatLog.lastMessageDate = replyMessage.timestamp;
-  await sendMessage(message.channel.id, reply);
+  await sendMessage(message2.channel.id, reply);
   await updateChat(chatLog);
   return chatLog;
 }
-async function doRoundRobin(constructArray, chatLog, message) {
+async function doRoundRobin(constructArray, chatLog, message2) {
   let primaryConstruct = retrieveConstructs()[0];
   let lastMessageContent = chatLog.lastMessage.text;
   let mentionedConstruct = containsName(lastMessageContent, constructArray);
@@ -1427,7 +1422,7 @@ async function doRoundRobin(constructArray, chatLog, message) {
         continue;
       }
     }
-    const result = await generateContinueChatLog(constructArray[i], chatLog, message.author.displayName);
+    const result = await generateContinueChatLog(constructArray[i], chatLog, message2.author.displayName);
     let reply;
     if (result !== null) {
       reply = result;
@@ -1442,24 +1437,24 @@ async function doRoundRobin(constructArray, chatLog, message) {
       origin: "Discord",
       isCommand: false,
       isPrivate: false,
-      participants: [message.author.displayName, constructArray[i].name],
+      participants: [message2.author.displayName, constructArray[i].name],
       attachments: []
     };
     chatLog.messages.push(replyMessage);
     chatLog.lastMessage = replyMessage;
     chatLog.lastMessageDate = replyMessage.timestamp;
     if (primaryConstruct === constructArray[i]._id) {
-      await sendMessage(message.channel.id, reply);
+      await sendMessage(message2.channel.id, reply);
     } else {
-      await sendMessageAsCharacter(constructArray[i], message.channel.id, reply);
+      await sendMessageAsCharacter(constructArray[i], message2.channel.id, reply);
     }
     await updateChat(chatLog);
   }
   return chatLog;
 }
-function containsName(message, chars) {
+function containsName(message2, chars) {
   for (let i = 0; i < chars.length; i++) {
-    if (message.includes(chars[i].name)) {
+    if (message2.includes(chars[i].name)) {
       return chars[i].name;
     }
   }

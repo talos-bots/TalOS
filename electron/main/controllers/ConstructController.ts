@@ -3,7 +3,8 @@ import Store from 'electron-store';
 import { assembleConstructFromData, assemblePromptFromLog } from '../helpers/helpers';
 import { generateText } from '../api/llm';
 import { isReady, setDiscordBotInfo } from '../api/discord';
-import { getConstruct } from '../api/pouchdb';
+import { getConstruct, updateChat } from '../api/pouchdb';
+import { ChatInterface, MessageInterface } from '../types/types';
 const store = new Store({
     name: 'constructData',
 });
@@ -13,6 +14,14 @@ export let ActiveConstructs: ConstructID[] = [];
 
 export const retrieveConstructs = (): ConstructID[] => {
     return store.get('ids', []) as ConstructID[];
+}
+
+export const setDoMultiLine = (doMultiLine: boolean): void => {
+    store.set('doMultiLine', doMultiLine);
+}
+
+export const getDoMultiLine = (): boolean => {
+    return store.get('doMultiLine', false) as boolean;
 }
 
 const addConstruct = (newId: ConstructID): void => {
@@ -102,13 +111,13 @@ export async function generateContinueChatLog(construct: any, chatLog: any, curr
     }
 }
 
-export function breakUpCommands(charName: string, commandString: string, user = 'You', stopList: string[] = [], botSettings: any = {doMultiLine: false}): string {
+export function breakUpCommands(charName: string, commandString: string, user = 'You', stopList: string[] = []): string {
     let lines = commandString.split('\n');
     let formattedCommands = [];
     let currentCommand = '';
     let isFirstLine = true;
     
-    if (botSettings.doMultiLine === false){
+    if (getDoMultiLine() === false){
         lines = lines.slice(0, 1);
         let command = lines[0];
         return command;
@@ -153,6 +162,70 @@ export function breakUpCommands(charName: string, commandString: string, user = 
     
     let final = formattedCommands.join('\n');
     return final;
+}
+
+export async function removeMessagesFromChatLog(chatLog: ChatInterface, messageContent: string){
+    let newChatLog = chatLog;
+    let messages = newChatLog.messages;
+    for(let i = 0; i < messages.length; i++){
+        if(messages[i].text === messageContent){
+            messages.splice(i, 1);
+            break;
+        }
+    }
+    newChatLog.messages = messages;
+    await updateChat(newChatLog);
+    return newChatLog;
+}
+
+export async function regenerateMessageFromChatLog(chatLog: ChatInterface, messageContent: string){
+    let messages = chatLog.messages;
+    let beforeMessages: MessageInterface[] = [];
+    let afterMessages: MessageInterface[] = [];
+    let foundMessage: MessageInterface | undefined;
+    let messageIndex = -1;
+    for(let i = 0; i < messages.length; i++){
+        if(messages[i].text === messageContent){
+            messageIndex = i;
+            foundMessage = messages[i];
+            break;
+        }
+    }
+    if(foundMessage === undefined){
+        return;
+    }
+    if (messageIndex !== -1) {
+        beforeMessages = messages.slice(0, messageIndex);
+        afterMessages = messages.slice(messageIndex + 1);
+        messages.splice(messageIndex, 1);
+    }
+    
+    // If you want to update the chat without the target message
+    chatLog.messages = messages;
+    let constructData = await getConstruct(foundMessage.user);
+    if(constructData === null){
+        return;
+    }
+    let construct = assembleConstructFromData(constructData);
+    let newReply = await generateContinueChatLog(construct, chatLog, foundMessage.participants[0]);
+    if(newReply === null){
+        return;
+    }
+    let newMessage = {
+        _id: Date.now().toString(),
+        user: construct.name,
+        text: newReply,
+        timestamp: Date.now(),
+        origin: 'Discord',
+        isCommand: false,
+        isPrivate: false,
+        participants: foundMessage.participants,
+        attachments: [],
+    }
+    messages = beforeMessages.concat(newMessage, afterMessages);    
+    chatLog.messages = messages;
+    await updateChat(chatLog);
+    return newReply;
 }
 
 function constructController() {

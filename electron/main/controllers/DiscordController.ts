@@ -1,10 +1,10 @@
 import { ipcMain } from 'electron';
 import Store from 'electron-store';
-import { generateContinueChatLog, retrieveConstructs } from './ConstructController';
+import { generateContinueChatLog, regenerateMessageFromChatLog, removeMessagesFromChatLog, retrieveConstructs } from './ConstructController';
 import { addChat, getChat, getConstruct, updateChat } from '../api/pouchdb';
 import { assembleChatFromData, assembleConstructFromData, convertDiscordMessageToMessage } from '../helpers/helpers';
-import { Message } from 'discord.js';
-import { isAutoReplyMode, isMultiCharacterMode, sendMessage, sendMessageAsCharacter, sendTyping } from '../api/discord';
+import { CommandInteraction, Message } from 'discord.js';
+import { deleteMessage, editMessage, isAutoReplyMode, isMultiCharacterMode, sendMessage, sendMessageAsCharacter, sendTyping } from '../api/discord';
 import { ChannelConfigInterface, ChatInterface, ConstructInterface } from '../types/types';
 
 const store = new Store({
@@ -108,6 +108,7 @@ export async function handleDiscordMessage(message: Message) {
         sendTyping(message);
         if(isMultiCharacterMode()){
             chatLog = await doRoundRobin(constructArray, chatLog, message);
+            if(chatLog !== undefined)
             if(isAutoReplyMode()){
                 if(0.25 > Math.random()){
                     chatLog = await doRoundRobin(constructArray, chatLog, message);
@@ -122,8 +123,16 @@ export async function handleDiscordMessage(message: Message) {
     await updateChat(chatLog);
 }
 
-async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInterface, message: Message){
-    const result = await generateContinueChatLog(construct, chatLog, message.author.username);
+async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInterface, message: Message | CommandInteraction){
+    let username: string = 'You';
+    if(message instanceof Message){
+        username = message.author.displayName;
+    }
+    if(message instanceof CommandInteraction){
+        username = message.user.displayName;
+    }
+    if(message.channel === null) return;
+    const result = await generateContinueChatLog(construct, chatLog, username);
     let reply: string;
     if (result !== null) {
         reply = result;
@@ -132,13 +141,13 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
     }
     const replyMessage = {
         _id: Date.now().toString(),
-        user: construct.name,
+        user: construct._id,
         text: reply,
         timestamp: Date.now(),
         origin: 'Discord',
         isCommand: false,
         isPrivate: false,
-        participants: [message.author.username, construct.name],
+        participants: [username, construct._id],
         attachments: [],
     }
     chatLog.messages.push(replyMessage);
@@ -149,8 +158,16 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
     return chatLog;
 }
 
-async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatInterface, message: Message){
+async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatInterface, message: Message | CommandInteraction){
     let primaryConstruct = retrieveConstructs()[0];
+    let username: string = 'You';
+    if(message instanceof Message){
+        username = message.author.displayName;
+    }
+    if(message instanceof CommandInteraction){
+        username = message.user.displayName;
+    }
+    if(message.channel === null) return;
     let lastMessageContent = chatLog.lastMessage.text;
     let mentionedConstruct = containsName(lastMessageContent, constructArray);
     if (mentionedConstruct) {
@@ -176,7 +193,7 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
                 continue;
             }
         }
-        const result = await generateContinueChatLog(constructArray[i], chatLog, message.author.displayName);
+        const result = await generateContinueChatLog(constructArray[i], chatLog, username);
         let reply: string;
         if (result !== null) {
             reply = result;
@@ -191,7 +208,7 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
             origin: 'Discord',
             isCommand: false,
             isPrivate: false,
-            participants: [message.author.displayName, constructArray[i].name],
+            participants: [username, constructArray[i]._id],
             attachments: [],
         }
         chatLog.messages.push(replyMessage);
@@ -205,6 +222,109 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
         await updateChat(chatLog);
     }
     return chatLog;
+}
+
+export async function continueChatLog(interaction: CommandInteraction) {
+    let registeredChannels = getRegisteredChannels();
+    let registered = false;
+    if(interaction.channel === null) return;
+    for(let i = 0; i < registeredChannels.length; i++){
+        if(registeredChannels[i]._id === interaction.channel.id){
+            registered = true;
+            break;
+        }
+    }
+    if(!registered) return;
+    const activeConstructs = retrieveConstructs();
+    if(activeConstructs.length < 1) return;
+    let constructArray = [];
+    for (let i = 0; i < activeConstructs.length; i++) {
+        let constructDoc = await getConstruct(activeConstructs[i]);
+        let construct = assembleConstructFromData(constructDoc);
+        constructArray.push(construct);
+    }
+    let chatLogData = await getChat(interaction.channel.id);
+    let chatLog;
+    if (chatLogData) {
+        chatLog = assembleChatFromData(chatLogData);
+    }
+    if(chatLog === undefined){
+        return;
+    }
+    if(chatLog.messages.length < 1){
+        return;
+    }
+    const mode = getDiscordMode();
+    if(mode === 'Character'){
+        sendTyping(interaction);
+        if(isMultiCharacterMode()){
+            chatLog = await doRoundRobin(constructArray, chatLog, interaction);
+            if(chatLog !== undefined)
+            if(isAutoReplyMode()){
+                if(0.25 > Math.random()){
+                    chatLog = await doRoundRobin(constructArray, chatLog, interaction);
+                }
+            }
+        }else{
+            chatLog = await doCharacterReply(constructArray[0], chatLog, interaction);
+        }
+    }else if (mode === 'Construct'){
+        await sendMessage(interaction.channel.id, 'Construct Mode is not yet implemented.');
+    }
+    await updateChat(chatLog);
+}
+
+export async function handleRengenerateMessage(message: Message){
+    let registeredChannels = getRegisteredChannels();
+    let registered = false;
+    if(message.channel === null) return;
+    for(let i = 0; i < registeredChannels.length; i++){
+        if(registeredChannels[i]._id === message.channel.id){
+            registered = true;
+            break;
+        }
+    }
+    if(!registered) return;
+    let chatLogData = await getChat(message.channel.id);
+    let chatLog;
+    if (chatLogData) {
+        chatLog = assembleChatFromData(chatLogData);
+    }
+    if(chatLog === undefined){
+        return;
+    }
+    if(chatLog.messages.length < 1){
+        return;
+    }
+    let edittedMessage = await regenerateMessageFromChatLog(chatLog, message.content);
+    if(edittedMessage === undefined) return;
+    await editMessage(message, edittedMessage);
+}
+
+export async function handleRemoveMessage(message: Message){
+    let registeredChannels = getRegisteredChannels();
+    let registered = false;
+    if(message.channel === null) return;
+    for(let i = 0; i < registeredChannels.length; i++){
+        if(registeredChannels[i]._id === message.channel.id){
+            registered = true;
+            break;
+        }
+    }
+    if(!registered) return;
+    let chatLogData = await getChat(message.channel.id);
+    let chatLog;
+    if (chatLogData) {
+        chatLog = assembleChatFromData(chatLogData);
+    }
+    if(chatLog === undefined){
+        return;
+    }
+    if(chatLog.messages.length < 1){
+        return;
+    }
+    await removeMessagesFromChatLog(chatLog, message.content);
+    await deleteMessage(message);
 }
 
 function containsName(message: string, chars: ConstructInterface[]){

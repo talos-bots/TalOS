@@ -1,6 +1,6 @@
 import { CommandInteraction, EmbedBuilder } from "discord.js";
 import { SlashCommand } from "../types/types";
-import { addRegisteredChannel, getRegisteredChannels, removeRegisteredChannel } from "./DiscordController";
+import { addRegisteredChannel, continueChatLog, getRegisteredChannels, removeRegisteredChannel } from "./DiscordController";
 import { getConstruct, removeChat } from "../api/pouchdb";
 import { assembleConstructFromData } from "../helpers/helpers";
 import { retrieveConstructs } from "./ConstructController";
@@ -188,10 +188,35 @@ export const SetBotNameCommand: SlashCommand = {
     }
 }
 
+export const ContinueChatCommand: SlashCommand = {
+    name: 'cont',
+    description: 'Continues the chat log for the current channel.',
+    execute: async (interaction: CommandInteraction) => {
+        await interaction.deferReply();
+        if (interaction.channelId === null) {
+            await interaction.editReply({
+            content: "This command can only be used in a server channel.",
+            });
+            return;
+        }
+        if(interaction.guildId === null){
+            await interaction.editReply({
+            content: "This command can only be used in a server channel.",
+            });
+            return;
+        }
+        await continueChatLog(interaction);
+        await interaction.editReply({
+            content: "Continuing...",
+        });
+    }
+}
+
 export const DefaultCommands = [
     RegisterCommand,
     UnregisterCommand,
     ListRegisteredCommand,
     ListCharactersCommand,
     ClearLogCommand,
+    ContinueChatCommand,
 ];

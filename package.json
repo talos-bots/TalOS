@@ -53,6 +53,7 @@
     "react-router-hash-link": "^2.4.3",
     "react-select": "^5.7.4",
     "react-switch": "^7.0.0",
+    "remark-gfm": "^3.0.1",
     "tailwindcss": "^3.3.3",
     "tw-elements": "^1.0.0-beta3",
     "twilio": "^4.15.0"

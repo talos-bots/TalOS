@@ -1,8 +1,8 @@
 import { ipcMain } from 'electron';
-import { ActivityType, Client, GatewayIntentBits, Collection, REST, Routes, Partials, TextChannel, DMChannel, NewsChannel, Snowflake, Webhook, Message } from 'discord.js';
+import { ActivityType, Client, GatewayIntentBits, Collection, REST, Routes, Partials, TextChannel, DMChannel, NewsChannel, Snowflake, Webhook, Message, CommandInteraction } from 'discord.js';
 import Store from 'electron-store';
 import { win } from '..';
-import { handleDiscordMessage } from '../controllers/DiscordController';
+import { handleDiscordMessage, handleRemoveMessage, handleRengenerateMessage } from '../controllers/DiscordController';
 import { ConstructInterface, SlashCommand } from '../types/types';
 import { assembleConstructFromData, base642Buffer } from '../helpers/helpers';
 import { DefaultCommands } from '../controllers/commands';
@@ -203,10 +203,28 @@ export async function getStopList(guildId: string){
     return memberList;
 }
 
-export function sendTyping(message: Message){
+export function sendTyping(message: Message | CommandInteraction){
     if(!disClient.user) return;
     if(!isReady) return;
-    message.channel.sendTyping();
+    if(message instanceof Message){
+        message.channel.sendTyping();
+    }else if(message instanceof CommandInteraction){
+        if(message.channel instanceof TextChannel || message.channel instanceof DMChannel || message.channel instanceof NewsChannel){
+            message.channel.sendTyping();
+        }
+    }
+}
+
+export async function editMessage(message: Message, newMessage: string){
+    if(!disClient.user) return;
+    if(!isReady) return;
+    message.edit(newMessage);
+}
+
+export async function deleteMessage(message: Message){
+    if(!disClient.user) return;
+    if(!isReady) return;
+    message.delete();
 }
 
 export async function sendMessage(channelID: Snowflake, message: string){
@@ -421,8 +439,35 @@ export function DiscordJSRoutes(){
 
     disClient.on('messageReactionAdd', async (reaction, user) => {
         if (user.id === disClient.user?.id) return;
-        win?.webContents.send('discord-message-reaction-add', reaction, user);
+    
+        try {
+            // Ensure the reaction itself is fully fetched
+            if (reaction.partial) {
+                await reaction.fetch();
+            }
+    
+            // Ensure the associated message of the reaction is fully fetched
+            if (reaction.message.partial) {
+                await reaction.message.fetch();
+            }
+    
+            // Now, reaction.message should be the fully fetched message
+            const message = reaction.message;
+    
+            if(reaction.emoji.name === '♻️'){
+                await handleRengenerateMessage(message as Message);
+            }
+    
+            if(reaction.emoji.name === '🗑️'){
+                await handleRemoveMessage(message as Message);
+            }
+    
+            win?.webContents.send('discord-message-reaction-add', reaction, user);
+        } catch (error) {
+            console.error('Something went wrong when fetching the message:', error);
+        }
     });
+    
 
     disClient.on('messageReactionRemove', async (reaction, user) => {
         if (user.id === disClient.user?.id) return;
