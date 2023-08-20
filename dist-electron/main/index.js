@@ -1909,7 +1909,7 @@ const SetBotNameCommand = {
     const name = (_a = interaction.options.get("name")) == null ? void 0 : _a.value;
     doGlobalNicknameChange(name);
     await interaction.editReply({
-      content: "Changed bot name to " + name + " across all servers."
+      content: `Set bot name to ${name}`
     });
   }
 };
@@ -1965,7 +1965,7 @@ const SetMultiLineCommand = {
     const multiline = (_a = interaction.options.get("multiline")) == null ? void 0 : _a.value;
     setDoMultiLine(multiline);
     await interaction.editReply({
-      content: "Set multiline to " + multiline
+      content: `Set multiline to ${multiline}`
     });
   }
 };
@@ -1998,7 +1998,7 @@ const SetMaxMessagesCommand = {
     const maxMessages2 = (_a = interaction.options.get("maxmessages")) == null ? void 0 : _a.value;
     setMaxMessages(maxMessages2);
     await interaction.editReply({
-      content: "Set max messages to " + maxMessages2
+      content: `Set max messages to ${maxMessages2}`
     });
   }
 };
@@ -2031,7 +2031,7 @@ const SetDoAutoReply = {
     const autoreply = (_a = interaction.options.get("autoreply")) == null ? void 0 : _a.value;
     setDoAutoReply(autoreply);
     await interaction.editReply({
-      content: "Set autoreply to " + autoreply
+      content: `Set auto reply to ${autoreply}`
     });
   }
 };
@@ -2442,7 +2442,7 @@ function DiscordJSRoutes() {
       return;
     (_c = exports.win) == null ? void 0 : _c.webContents.send("discord-message-delete", message);
   });
-  disClient.on("messageReactionAdd", async (reaction, user) => {
+  disClient.on(discord_js.Events.MessageReactionAdd, async (reaction, user) => {
     var _a, _b;
     if (user.id === ((_a = disClient.user) == null ? void 0 : _a.id))
       return;

@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron';
-import { ActivityType, Client, GatewayIntentBits, Collection, REST, Routes, Partials, TextChannel, DMChannel, NewsChannel, Snowflake, Webhook, Message, CommandInteraction } from 'discord.js';
+import { ActivityType, Client, GatewayIntentBits, Collection, REST, Routes, Partials, TextChannel, DMChannel, NewsChannel, Snowflake, Webhook, Message, CommandInteraction, Events } from 'discord.js';
 import Store from 'electron-store';
 import { win } from '..';
 import { handleDiscordMessage, handleRemoveMessage, handleRengenerateMessage } from '../controllers/DiscordController';
@@ -437,7 +437,7 @@ export function DiscordJSRoutes(){
         win?.webContents.send('discord-message-delete', message);
     });
 
-    disClient.on('messageReactionAdd', async (reaction, user) => {
+    disClient.on(Events.MessageReactionAdd, async (reaction, user) => {
         if (user.id === disClient.user?.id) return;
     
         try {
