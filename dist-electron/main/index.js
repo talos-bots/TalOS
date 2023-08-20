@@ -7,6 +7,7 @@ const path = require("path");
 const discord_js = require("discord.js");
 const Store = require("electron-store");
 const PouchDB = require("pouchdb");
+const LeveldbAdapter = require("pouchdb-adapter-leveldb");
 const fs = require("fs");
 const axios = require("axios");
 const openai = require("openai");
@@ -115,7 +116,7 @@ async function base642Buffer(base64) {
   }
 }
 const HORDE_API_URL = "https://aihorde.net/api/";
-const store$4 = new Store({
+const store$5 = new Store({
   name: "llmData"
 });
 const defaultSettings = {
@@ -135,33 +136,33 @@ const defaultSettings = {
   max_context_length: 2048,
   max_tokens: 350
 };
-let endpoint = store$4.get("endpoint", "");
-let endpointType = store$4.get("endpointType", "");
-let password = store$4.get("password", "");
-let settings = store$4.get("settings", defaultSettings);
-let hordeModel = store$4.get("hordeModel", "");
-let stopBrackets = store$4.get("stopBrackets", true);
+let endpoint = store$5.get("endpoint", "");
+let endpointType = store$5.get("endpointType", "");
+let password = store$5.get("password", "");
+let settings = store$5.get("settings", defaultSettings);
+let hordeModel = store$5.get("hordeModel", "");
+let stopBrackets = store$5.get("stopBrackets", true);
 const getLLMConnectionInformation = () => {
   return { endpoint, endpointType, password, settings, hordeModel, stopBrackets };
 };
 const setLLMConnectionInformation = (newEndpoint, newEndpointType, newPassword, newHordeModel) => {
-  store$4.set("endpoint", newEndpoint);
-  store$4.set("endpointType", newEndpointType);
+  store$5.set("endpoint", newEndpoint);
+  store$5.set("endpointType", newEndpointType);
   if (newPassword) {
-    store$4.set("password", newPassword);
+    store$5.set("password", newPassword);
     password = newPassword;
   }
   if (newHordeModel) {
-    store$4.set("hordeModel", newHordeModel);
+    store$5.set("hordeModel", newHordeModel);
     hordeModel = newHordeModel;
   }
   endpoint = newEndpoint;
   endpointType = newEndpointType;
 };
 const setLLMSettings = (newSettings, newStopBrackts) => {
-  store$4.set("settings", newSettings);
+  store$5.set("settings", newSettings);
   if (newStopBrackts) {
-    store$4.set("stopBrackets", newStopBrackts);
+    store$5.set("stopBrackets", newStopBrackts);
     stopBrackets = newStopBrackts;
   }
   settings = newSettings;
@@ -471,6 +472,7 @@ let chatsDB;
 let commandDB;
 let attachmentDB;
 let instructDB;
+PouchDB.plugin(LeveldbAdapter);
 async function getAllConstructs() {
   return constructDB.allDocs({ include_docs: true }).then((result) => {
     return result.rows;
@@ -684,11 +686,11 @@ async function updateInstruct(instruct) {
   });
 }
 function PouchDBRoutes() {
-  constructDB = new PouchDB("constructs", { prefix: dataPath });
-  chatsDB = new PouchDB("chats", { prefix: dataPath });
-  commandDB = new PouchDB("commands", { prefix: dataPath });
-  attachmentDB = new PouchDB("attachments", { prefix: dataPath });
-  instructDB = new PouchDB("instructs", { prefix: dataPath });
+  constructDB = new PouchDB("constructs", { prefix: dataPath, adapter: "leveldb" });
+  chatsDB = new PouchDB("chats", { prefix: dataPath, adapter: "leveldb" });
+  commandDB = new PouchDB("commands", { prefix: dataPath, adapter: "leveldb" });
+  attachmentDB = new PouchDB("attachments", { prefix: dataPath, adapter: "leveldb" });
+  instructDB = new PouchDB("instructs", { prefix: dataPath, adapter: "leveldb" });
   electron.ipcMain.on("get-constructs", (event, replyName) => {
     getAllConstructs().then((result) => {
       event.sender.send(replyName, result);
@@ -828,38 +830,38 @@ function PouchDBRoutes() {
     createDBs();
   });
   function createDBs() {
-    constructDB = new PouchDB("constructs", { prefix: dataPath });
-    chatsDB = new PouchDB("chats", { prefix: dataPath });
-    commandDB = new PouchDB("commands", { prefix: dataPath });
-    attachmentDB = new PouchDB("attachments", { prefix: dataPath });
-    instructDB = new PouchDB("instructs", { prefix: dataPath });
+    constructDB = new PouchDB("constructs", { prefix: dataPath, adapter: "leveldb" });
+    chatsDB = new PouchDB("chats", { prefix: dataPath, adapter: "leveldb" });
+    commandDB = new PouchDB("commands", { prefix: dataPath, adapter: "leveldb" });
+    attachmentDB = new PouchDB("attachments", { prefix: dataPath, adapter: "leveldb" });
+    instructDB = new PouchDB("instructs", { prefix: dataPath, adapter: "leveldb" });
   }
 }
-const store$3 = new Store({
+const store$4 = new Store({
   name: "constructData"
 });
 let ActiveConstructs = [];
 const retrieveConstructs = () => {
-  return store$3.get("ids", []);
+  return store$4.get("ids", []);
 };
 const addConstruct = (newId) => {
   const existingIds = retrieveConstructs();
   if (!existingIds.includes(newId)) {
     existingIds.push(newId);
-    store$3.set("ids", existingIds);
+    store$4.set("ids", existingIds);
   }
 };
 const removeConstruct = (idToRemove) => {
   const existingIds = retrieveConstructs();
   const updatedIds = existingIds.filter((id) => id !== idToRemove);
-  store$3.set("ids", updatedIds);
+  store$4.set("ids", updatedIds);
 };
 const isConstructActive = (id) => {
   const existingIds = retrieveConstructs();
   return existingIds.includes(id);
 };
 const clearActiveConstructs = () => {
-  store$3.set("ids", []);
+  store$4.set("ids", []);
 };
 const setAsPrimary = async (id) => {
   const existingIds = retrieveConstructs();
@@ -868,7 +870,7 @@ const setAsPrimary = async (id) => {
     existingIds.splice(index, 1);
   }
   existingIds.unshift(id);
-  store$3.set("ids", existingIds);
+  store$4.set("ids", existingIds);
   if (isReady) {
     let constructRaw = await getConstruct(id);
     let construct = assembleConstructFromData(constructRaw);
@@ -992,34 +994,34 @@ function constructController() {
     event.reply("set-construct-primary-reply", ActiveConstructs);
   });
 }
-const store$2 = new Store({
+const store$3 = new Store({
   name: "discordData"
 });
 const setDiscordMode = (mode) => {
-  store$2.set("mode", mode);
-  console.log(store$2.get("mode"));
+  store$3.set("mode", mode);
+  console.log(store$3.get("mode"));
 };
 const getDiscordMode = () => {
-  console.log(store$2.get("mode"));
-  return store$2.get("mode");
+  console.log(store$3.get("mode"));
+  return store$3.get("mode");
 };
 const clearDiscordMode = () => {
-  store$2.set("mode", null);
+  store$3.set("mode", null);
 };
 const getRegisteredChannels = () => {
-  return store$2.get("channels", []);
+  return store$3.get("channels", []);
 };
 const addRegisteredChannel = (newChannel) => {
   const existingChannels = getRegisteredChannels();
   if (!existingChannels.includes(newChannel)) {
     existingChannels.push(newChannel);
-    store$2.set("channels", existingChannels);
+    store$3.set("channels", existingChannels);
   }
 };
 const removeRegisteredChannel = (channelToRemove) => {
   const existingChannels = getRegisteredChannels();
   const updatedChannels = existingChannels.filter((channel) => channel._id !== channelToRemove);
-  store$2.set("channels", updatedChannels);
+  store$3.set("channels", updatedChannels);
 };
 const isChannelRegistered = (channel) => {
   const existingChannels = getRegisteredChannels();
@@ -1368,7 +1370,7 @@ const intents = {
   ],
   partials: [discord_js.Partials.Channel, discord_js.Partials.GuildMember, discord_js.Partials.User, discord_js.Partials.Reaction, discord_js.Partials.Message]
 };
-const store$1 = new Store({
+const store$2 = new Store({
   name: "discordData"
 });
 getDiscordData();
@@ -1571,35 +1573,35 @@ async function getWebhooksForChannel(channelID) {
 }
 async function getDiscordData() {
   let savedToken;
-  const storedToken = store$1.get("discordToken");
+  const storedToken = store$2.get("discordToken");
   if (storedToken !== void 0 && typeof storedToken === "string") {
     savedToken = storedToken;
   } else {
     savedToken = "";
   }
   let appId;
-  const storedAppId = store$1.get("discordAppId");
+  const storedAppId = store$2.get("discordAppId");
   if (storedAppId !== void 0 && typeof storedAppId === "string") {
     appId = storedAppId;
   } else {
     appId = "";
   }
   let discordCharacterMode;
-  const storedDiscordCharacterMode = store$1.get("discordCharacterMode");
+  const storedDiscordCharacterMode = store$2.get("discordCharacterMode");
   if (storedDiscordCharacterMode !== void 0 && typeof storedDiscordCharacterMode === "boolean") {
     discordCharacterMode = storedDiscordCharacterMode;
   } else {
     discordCharacterMode = false;
   }
   let discordMultiCharacterMode;
-  const storedDiscordMultiCharacterMode = store$1.get("discordMultiCharacterMode");
+  const storedDiscordMultiCharacterMode = store$2.get("discordMultiCharacterMode");
   if (storedDiscordMultiCharacterMode !== void 0 && typeof storedDiscordMultiCharacterMode === "boolean") {
     discordMultiCharacterMode = storedDiscordMultiCharacterMode;
   } else {
     discordMultiCharacterMode = false;
   }
   let discordMultiConstructMode;
-  const storedDiscordMultiConstructMode = store$1.get("discordMultiConstructMode");
+  const storedDiscordMultiConstructMode = store$2.get("discordMultiConstructMode");
   if (storedDiscordMultiConstructMode !== void 0 && typeof storedDiscordMultiConstructMode === "boolean") {
     discordMultiConstructMode = storedDiscordMultiConstructMode;
   } else {
@@ -1612,7 +1614,7 @@ async function getDiscordData() {
 }
 function saveDiscordData(newToken, newAppId, discordCharacterMode, discordMultiCharacterMode, discordMultiConstructMode) {
   if (newToken === "") {
-    const storedToken = store$1.get("discordToken");
+    const storedToken = store$2.get("discordToken");
     if (storedToken !== void 0 && typeof storedToken === "string") {
       token = storedToken;
     } else {
@@ -1620,10 +1622,10 @@ function saveDiscordData(newToken, newAppId, discordCharacterMode, discordMultiC
     }
   } else {
     token = newToken;
-    store$1.set("discordToken", newToken);
+    store$2.set("discordToken", newToken);
   }
   if (newAppId === "") {
-    const storedAppId = store$1.get("discordAppId");
+    const storedAppId = store$2.get("discordAppId");
     if (storedAppId !== void 0 && typeof storedAppId === "string") {
       applicationID = storedAppId;
     } else {
@@ -1631,17 +1633,17 @@ function saveDiscordData(newToken, newAppId, discordCharacterMode, discordMultiC
     }
   } else {
     applicationID = newAppId;
-    store$1.set("discordAppId", newAppId);
+    store$2.set("discordAppId", newAppId);
   }
   multiCharacterMode = discordMultiCharacterMode;
-  store$1.set("discordCharacterMode", discordCharacterMode);
+  store$2.set("discordCharacterMode", discordCharacterMode);
   if (!discordCharacterMode) {
-    store$1.set("mode", "Construct");
+    store$2.set("mode", "Construct");
   } else {
-    store$1.set("mode", "Character");
+    store$2.set("mode", "Character");
   }
-  store$1.set("discordMultiCharacterMode", discordMultiCharacterMode);
-  store$1.set("discordMultiConstructMode", discordMultiConstructMode);
+  store$2.set("discordMultiCharacterMode", discordMultiCharacterMode);
+  store$2.set("discordMultiConstructMode", discordMultiConstructMode);
 }
 function DiscordJSRoutes() {
   electron.ipcMain.on("discord-get-token", async (event) => {
@@ -1821,7 +1823,7 @@ function DiscordJSRoutes() {
   electron.ipcMain.handle("discord-login", async (event, rawToken, appId) => {
     try {
       if (rawToken === "") {
-        const storedToken = store$1.get("discordToken");
+        const storedToken = store$2.get("discordToken");
         if (storedToken !== void 0 && typeof storedToken === "string") {
           token = storedToken;
         } else {
@@ -1829,10 +1831,10 @@ function DiscordJSRoutes() {
         }
       } else {
         token = rawToken;
-        store$1.set("discordToken", rawToken);
+        store$2.set("discordToken", rawToken);
       }
       if (appId === "") {
-        const storedAppId = store$1.get("discordAppId");
+        const storedAppId = store$2.get("discordAppId");
         if (storedAppId !== void 0 && typeof storedAppId === "string") {
           applicationID = storedAppId;
         } else {
@@ -1840,7 +1842,7 @@ function DiscordJSRoutes() {
         }
       } else {
         applicationID = appId;
-        store$1.set("discordAppId", appId);
+        store$2.set("discordAppId", appId);
       }
       await disClient.login(token);
       if (!disClient.user) {
@@ -2059,7 +2061,34 @@ function FsAPIRoutes() {
     }
   });
 }
+const store$1 = new Store({
+  name: "stableDiffusionData"
+});
+const getSDApiUrl = () => {
+  return store$1.get("apiUrl", "");
+};
+const setSDApiUrl = (apiUrl) => {
+  store$1.set("apiUrl", apiUrl);
+};
+const setDefaultPrompt = (prompt) => {
+  store$1.set("defaultPrompt", prompt);
+};
+const getDefaultPrompt = () => {
+  return store$1.get("defaultPrompt", "");
+};
 function SDRoutes() {
+  electron.ipcMain.on("setDefaultPrompt", (event, prompt) => {
+    setDefaultPrompt(prompt);
+  });
+  electron.ipcMain.on("getDefaultPrompt", (event) => {
+    event.sender.send("getDefaultPrompt-reply", getDefaultPrompt());
+  });
+  electron.ipcMain.on("setSDApiUrl", (event, apiUrl) => {
+    setSDApiUrl(apiUrl);
+  });
+  electron.ipcMain.on("getSDApiUrl", (event) => {
+    event.sender.send("getSDApiUrl-reply", getSDApiUrl());
+  });
   electron.ipcMain.on("txt2img", (event, data, endpoint2) => {
     txt2img(data, endpoint2).then((result) => {
       event.sender.send("txt2img-reply", result);
@@ -2076,6 +2105,26 @@ const txt2img = async (data, apiUrl) => {
     throw new Error(`Failed to send data: ${error.message}`);
   }
 };
+const initEDB = () => {
+  new Store({
+    name: "constructData"
+  });
+  new Store({
+    name: "chatsData"
+  });
+  new Store({
+    name: "commandsData"
+  });
+  new Store({
+    name: "attachmentsData"
+  });
+  new Store({
+    name: "instructData"
+  });
+};
+async function ElectronDBRoutes() {
+  initEDB();
+}
 process.env.DIST_ELECTRON = node_path.join(__dirname, "../");
 process.env.DIST = node_path.join(process.env.DIST_ELECTRON, "../dist");
 process.env.VITE_PUBLIC = process.env.VITE_DEV_SERVER_URL ? node_path.join(process.env.DIST_ELECTRON, "../public") : process.env.DIST;
@@ -2088,6 +2137,7 @@ if (!electron.app.requestSingleInstanceLock()) {
   process.exit(0);
 }
 process.env["ELECTRON_DISABLE_SECURITY_WARNINGS"] = "true";
+let isDarwin = process.platform === "darwin";
 exports.win = null;
 const preload = node_path.join(__dirname, "../preload/index.js");
 const url = process.env.VITE_DEV_SERVER_URL;
@@ -2130,6 +2180,7 @@ async function createWindow() {
   FsAPIRoutes();
   LanguageModelAPI();
   SDRoutes();
+  ElectronDBRoutes();
   constructController();
   DiscordController();
 }
@@ -2214,5 +2265,6 @@ async function requestFullDiskAccess() {
   }
 }
 exports.dataPath = dataPath;
+exports.isDarwin = isDarwin;
 exports.store = store;
 //# sourceMappingURL=index.js.map

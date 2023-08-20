@@ -44,6 +44,7 @@
     "png-chunks-extract": "^1.0.0",
     "postcss": "^8.4.26",
     "pouchdb": "^8.0.1",
+    "pouchdb-adapter-leveldb": "^8.0.1",
     "python-shell": "^5.0.0",
     "react-icons": "^4.10.1",
     "react-redux": "^8.1.1",

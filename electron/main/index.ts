@@ -11,6 +11,7 @@ import { SDRoutes } from "./api/sd";
 import constructController from "./controllers/ConstructController";
 import fs from "fs";
 import DiscordController from "./controllers/DiscordController";
+import { ElectronDBRoutes } from "./api/electrondb";
 
 // The built directory structure
 //
@@ -43,7 +44,7 @@ if (!app.requestSingleInstanceLock()) {
 // This warning only shows in development mode
 // Read more on https://www.electronjs.org/docs/latest/tutorial/security
 process.env["ELECTRON_DISABLE_SECURITY_WARNINGS"] = "true";
-
+export let isDarwin = process.platform === "darwin";
 export let win: BrowserWindow | null = null;
 // Here, you can also use other preload
 const preload = join(__dirname, "../preload/index.js");
@@ -89,6 +90,7 @@ async function createWindow() {
   FsAPIRoutes();
   LanguageModelAPI();
   SDRoutes();
+  ElectronDBRoutes();
   constructController();
   DiscordController();
   // update(win)
