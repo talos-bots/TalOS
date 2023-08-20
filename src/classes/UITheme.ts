@@ -10,6 +10,7 @@ class UITheme{
         public themeText: string = '',
         public themeBox: string = '',
         public themeButton: string = '',
+        public ThemeBrightColor: string = '',
         public themeBorder: string = '',
         public themeHoverPos: string = '',
         public themeHoverNeg: string = '',
@@ -97,6 +98,10 @@ class UITheme{
 
     setThemeButton(themeButton: string) {
         this.themeButton = themeButton;
+    }
+
+    setThemeBrightColor(ThemeBrightColor: string) {
+        this.ThemeBrightColor = ThemeBrightColor;
     }
 
     setThemeFlavorText(themeFlavorText: string) {
