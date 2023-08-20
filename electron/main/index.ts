@@ -45,6 +45,7 @@ if (!app.requestSingleInstanceLock()) {
 // Read more on https://www.electronjs.org/docs/latest/tutorial/security
 process.env["ELECTRON_DISABLE_SECURITY_WARNINGS"] = "true";
 export let isDarwin = process.platform === "darwin";
+// export let isDarwin = true;
 export let win: BrowserWindow | null = null;
 // Here, you can also use other preload
 const preload = join(__dirname, "../preload/index.js");

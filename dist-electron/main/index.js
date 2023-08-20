@@ -467,6 +467,193 @@ Assistant:
   }
   return results;
 };
+let constructDB$1;
+let chatsDB$1;
+let commandDB$1;
+let attachmentDB$1;
+let instructDB$1;
+const initEDB = () => {
+  constructDB$1 = new Store({
+    name: "constructData"
+  });
+  chatsDB$1 = new Store({
+    name: "chatsData"
+  });
+  commandDB$1 = new Store({
+    name: "commandsData"
+  });
+  attachmentDB$1 = new Store({
+    name: "attachmentsData"
+  });
+  instructDB$1 = new Store({
+    name: "instructData"
+  });
+};
+const getConstructFromEDB = (id) => {
+  return constructDB$1.get(id);
+};
+const getConstructsFromEDB = () => {
+  const storeData = constructDB$1.store;
+  const result = [];
+  for (let id in storeData) {
+    if (id !== "ids") {
+      const construct = storeData[id];
+      result.push({
+        doc: construct,
+        id,
+        key: id,
+        value: {
+          // We don't have 'rev' in ElectronDb, so we can either omit it or add a dummy value
+          rev: "unknown"
+        }
+      });
+    }
+  }
+  return result;
+};
+const addConstructFromEDB = (id, data) => {
+  constructDB$1.set(id, data);
+};
+const removeConstructFromEDB = (id) => {
+  constructDB$1.delete(id);
+};
+const getChatFromEDB = (id) => {
+  return chatsDB$1.get(id);
+};
+const getChatsFromEDB = () => {
+  const storeData = chatsDB$1.store;
+  const result = [];
+  for (let id in storeData) {
+    if (id !== "ids") {
+      const construct = storeData[id];
+      result.push({
+        doc: construct,
+        id,
+        key: id,
+        value: {
+          // We don't have 'rev' in ElectronDb, so we can either omit it or add a dummy value
+          rev: "unknown"
+        }
+      });
+    }
+  }
+  return result;
+};
+const getChatsByConstructFromEDB = (id) => {
+  const chats = chatsDB$1.store;
+  let constructChats = [];
+  for (let chat of chats) {
+    if (chat.agents.includes(id)) {
+      constructChats.push({
+        doc: {
+          // This is a simple structure assuming all fields from chat should be in 'doc'. Adjust as needed.
+          ...chat
+        },
+        id: chat._id,
+        // Assuming each chat has a unique _id field
+        key: chat._id,
+        value: {
+          // Again, we don't have 'rev' in ElectronDb, so use a placeholder or omit
+          rev: "unknown"
+        }
+      });
+    }
+  }
+  return constructChats;
+};
+const addChatFromEDB = (id, data) => {
+  chatsDB$1.set(id, data);
+};
+const removeChatFromEDB = (id) => {
+  chatsDB$1.delete(id);
+};
+const getCommandFromEDB = (id) => {
+  return commandDB$1.get(id);
+};
+const getCommandsFromEDB = () => {
+  const storeData = commandDB$1.store;
+  const result = [];
+  for (let id in storeData) {
+    if (id !== "ids") {
+      const construct = storeData[id];
+      result.push({
+        doc: construct,
+        id,
+        key: id,
+        value: {
+          // We don't have 'rev' in ElectronDb, so we can either omit it or add a dummy value
+          rev: "unknown"
+        }
+      });
+    }
+  }
+  return result;
+};
+const addCommandFromEDB = (id, data) => {
+  commandDB$1.set(id, data);
+};
+const removeCommandFromEDB = (id) => {
+  commandDB$1.delete(id);
+};
+const getAttachmentFromEDB = (id) => {
+  return attachmentDB$1.get(id);
+};
+const getAttachmentsFromEDB = () => {
+  const storeData = attachmentDB$1.store;
+  const result = [];
+  for (let id in storeData) {
+    if (id !== "ids") {
+      const construct = storeData[id];
+      result.push({
+        doc: construct,
+        id,
+        key: id,
+        value: {
+          // We don't have 'rev' in ElectronDb, so we can either omit it or add a dummy value
+          rev: "unknown"
+        }
+      });
+    }
+  }
+  return result;
+};
+const addAttachmentFromEDB = (id, data) => {
+  attachmentDB$1.set(id, data);
+};
+const removeAttachmentFromEDB = (id) => {
+  attachmentDB$1.delete(id);
+};
+const getInstructFromEDB = (id) => {
+  return instructDB$1.get(id);
+};
+const getInstructsFromEDB = () => {
+  const storeData = instructDB$1.store;
+  const result = [];
+  for (let id in storeData) {
+    if (id !== "ids") {
+      const construct = storeData[id];
+      result.push({
+        doc: construct,
+        id,
+        key: id,
+        value: {
+          // We don't have 'rev' in ElectronDb, so we can either omit it or add a dummy value
+          rev: "unknown"
+        }
+      });
+    }
+  }
+  return result;
+};
+const addInstructFromEDB = (id, data) => {
+  instructDB$1.set(id, data);
+};
+const removeInstructFromEDB = (id) => {
+  instructDB$1.delete(id);
+};
+async function ElectronDBRoutes() {
+  initEDB();
+}
 let constructDB;
 let chatsDB;
 let commandDB;
@@ -474,6 +661,9 @@ let attachmentDB;
 let instructDB;
 PouchDB.plugin(LeveldbAdapter);
 async function getAllConstructs() {
+  if (isDarwin) {
+    return getConstructsFromEDB();
+  }
   return constructDB.allDocs({ include_docs: true }).then((result) => {
     return result.rows;
   }).catch((err) => {
@@ -482,6 +672,9 @@ async function getAllConstructs() {
   });
 }
 async function getConstruct(id) {
+  if (isDarwin) {
+    return getConstructFromEDB(id);
+  }
   return constructDB.get(id).then((result) => {
     return result;
   }).catch((err) => {
@@ -489,6 +682,10 @@ async function getConstruct(id) {
   });
 }
 async function addConstruct$1(construct) {
+  if (isDarwin) {
+    addConstructFromEDB(construct._id, construct);
+    return;
+  }
   return constructDB.put(construct).then((result) => {
     return result;
   }).catch((err) => {
@@ -496,6 +693,10 @@ async function addConstruct$1(construct) {
   });
 }
 async function removeConstruct$1(id) {
+  if (isDarwin) {
+    removeConstructFromEDB(id);
+    return;
+  }
   return constructDB.get(id).then((doc) => {
     return constructDB.remove(doc);
   }).catch((err) => {
@@ -503,6 +704,10 @@ async function removeConstruct$1(id) {
   });
 }
 async function updateConstruct(construct) {
+  if (isDarwin) {
+    addConstructFromEDB(construct._id, construct);
+    return;
+  }
   return constructDB.get(construct._id).then((doc) => {
     let updatedDoc = { ...doc, ...construct };
     constructDB.put(updatedDoc).then((result) => {
@@ -515,6 +720,9 @@ async function updateConstruct(construct) {
   });
 }
 async function getAllChats() {
+  if (isDarwin) {
+    return getChatsFromEDB();
+  }
   return chatsDB.allDocs({ include_docs: true }).then((result) => {
     return result.rows;
   }).catch((err) => {
@@ -522,6 +730,9 @@ async function getAllChats() {
   });
 }
 async function getChatsByConstruct(constructId) {
+  if (isDarwin) {
+    return getChatsByConstructFromEDB(constructId);
+  }
   return chatsDB.find({
     selector: {
       constructs: constructId
@@ -533,6 +744,9 @@ async function getChatsByConstruct(constructId) {
   });
 }
 async function getChat(id) {
+  if (isDarwin) {
+    return getChatFromEDB(id);
+  }
   return chatsDB.get(id).then((result) => {
     return result;
   }).catch((err) => {
@@ -540,6 +754,10 @@ async function getChat(id) {
   });
 }
 async function addChat(chat) {
+  if (isDarwin) {
+    addChatFromEDB(chat._id, chat);
+    return;
+  }
   return chatsDB.put(chat).then((result) => {
     return result;
   }).catch((err) => {
@@ -547,6 +765,10 @@ async function addChat(chat) {
   });
 }
 async function removeChat(id) {
+  if (isDarwin) {
+    removeChatFromEDB(id);
+    return;
+  }
   return chatsDB.get(id).then((doc) => {
     return chatsDB.remove(doc);
   }).catch((err) => {
@@ -554,6 +776,10 @@ async function removeChat(id) {
   });
 }
 async function updateChat(chat) {
+  if (isDarwin) {
+    addChatFromEDB(chat._id, chat);
+    return;
+  }
   return chatsDB.get(chat._id).then((doc) => {
     let updatedDoc = { ...doc, ...chat };
     chatsDB.put(updatedDoc).then((result) => {
@@ -566,6 +792,9 @@ async function updateChat(chat) {
   });
 }
 async function getAllCommands() {
+  if (isDarwin) {
+    return getCommandsFromEDB();
+  }
   return commandDB.allDocs({ include_docs: true }).then((result) => {
     return result.rows;
   }).catch((err) => {
@@ -573,6 +802,9 @@ async function getAllCommands() {
   });
 }
 async function getCommand(id) {
+  if (isDarwin) {
+    return getCommandFromEDB(id);
+  }
   return commandDB.get(id).then((result) => {
     return result;
   }).catch((err) => {
@@ -580,6 +812,10 @@ async function getCommand(id) {
   });
 }
 async function addCommand(command) {
+  if (isDarwin) {
+    addCommandFromEDB(command._id, command);
+    return;
+  }
   return commandDB.put(command).then((result) => {
     return result;
   }).catch((err) => {
@@ -587,6 +823,10 @@ async function addCommand(command) {
   });
 }
 async function removeCommand(id) {
+  if (isDarwin) {
+    removeCommandFromEDB(id);
+    return;
+  }
   return commandDB.get(id).then((doc) => {
     return commandDB.remove(doc);
   }).catch((err) => {
@@ -594,6 +834,10 @@ async function removeCommand(id) {
   });
 }
 async function updateCommand(command) {
+  if (isDarwin) {
+    addCommandFromEDB(command._id, command);
+    return;
+  }
   return commandDB.get(command._id).then((doc) => {
     let updatedDoc = { ...doc, ...command };
     commandDB.put(updatedDoc).then((result) => {
@@ -606,6 +850,9 @@ async function updateCommand(command) {
   });
 }
 async function getAllAttachments() {
+  if (isDarwin) {
+    return getAttachmentsFromEDB();
+  }
   return attachmentDB.allDocs({ include_docs: true }).then((result) => {
     return result.rows;
   }).catch((err) => {
@@ -613,6 +860,9 @@ async function getAllAttachments() {
   });
 }
 async function getAttachment(id) {
+  if (isDarwin) {
+    return getAttachmentFromEDB(id);
+  }
   return attachmentDB.get(id).then((result) => {
     return result;
   }).catch((err) => {
@@ -620,6 +870,10 @@ async function getAttachment(id) {
   });
 }
 async function addAttachment(attachment) {
+  if (isDarwin) {
+    addAttachmentFromEDB(attachment._id, attachment);
+    return;
+  }
   return attachmentDB.put(attachment).then((result) => {
     return result;
   }).catch((err) => {
@@ -627,6 +881,10 @@ async function addAttachment(attachment) {
   });
 }
 async function removeAttachment(id) {
+  if (isDarwin) {
+    removeAttachmentFromEDB(id);
+    return;
+  }
   return attachmentDB.get(id).then((doc) => {
     return attachmentDB.remove(doc);
   }).catch((err) => {
@@ -634,6 +892,10 @@ async function removeAttachment(id) {
   });
 }
 async function updateAttachment(attachment) {
+  if (isDarwin) {
+    addAttachmentFromEDB(attachment._id, attachment);
+    return;
+  }
   return attachmentDB.get(attachment._id).then((doc) => {
     let updatedDoc = { ...doc, ...attachment };
     attachmentDB.put(updatedDoc).then((result) => {
@@ -646,6 +908,9 @@ async function updateAttachment(attachment) {
   });
 }
 async function getAllInstructs() {
+  if (isDarwin) {
+    return getInstructsFromEDB();
+  }
   return instructDB.allDocs({ include_docs: true }).then((result) => {
     return result.rows;
   }).catch((err) => {
@@ -653,6 +918,9 @@ async function getAllInstructs() {
   });
 }
 async function getInstruct(id) {
+  if (isDarwin) {
+    return getInstructFromEDB(id);
+  }
   return instructDB.get(id).then((result) => {
     return result;
   }).catch((err) => {
@@ -660,6 +928,10 @@ async function getInstruct(id) {
   });
 }
 async function addInstruct(instruct) {
+  if (isDarwin) {
+    addInstructFromEDB(instruct._id, instruct);
+    return;
+  }
   return instructDB.put(instruct).then((result) => {
     return result;
   }).catch((err) => {
@@ -667,6 +939,10 @@ async function addInstruct(instruct) {
   });
 }
 async function removeInstruct(id) {
+  if (isDarwin) {
+    removeInstructFromEDB(id);
+    return;
+  }
   return instructDB.get(id).then((doc) => {
     return instructDB.remove(doc);
   }).catch((err) => {
@@ -674,6 +950,10 @@ async function removeInstruct(id) {
   });
 }
 async function updateInstruct(instruct) {
+  if (isDarwin) {
+    addInstructFromEDB(instruct._id, instruct);
+    return;
+  }
   return instructDB.get(instruct._id).then((doc) => {
     let updatedDoc = { ...doc, ...instruct };
     instructDB.put(updatedDoc).then((result) => {
@@ -2105,26 +2385,6 @@ const txt2img = async (data, apiUrl) => {
     throw new Error(`Failed to send data: ${error.message}`);
   }
 };
-const initEDB = () => {
-  new Store({
-    name: "constructData"
-  });
-  new Store({
-    name: "chatsData"
-  });
-  new Store({
-    name: "commandsData"
-  });
-  new Store({
-    name: "attachmentsData"
-  });
-  new Store({
-    name: "instructData"
-  });
-};
-async function ElectronDBRoutes() {
-  initEDB();
-}
 process.env.DIST_ELECTRON = node_path.join(__dirname, "../");
 process.env.DIST = node_path.join(process.env.DIST_ELECTRON, "../dist");
 process.env.VITE_PUBLIC = process.env.VITE_DEV_SERVER_URL ? node_path.join(process.env.DIST_ELECTRON, "../public") : process.env.DIST;

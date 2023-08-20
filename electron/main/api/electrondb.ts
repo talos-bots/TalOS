@@ -31,8 +31,28 @@ export const getConstructFromEDB = (id: string): any => {
 }
 
 export const getConstructsFromEDB = (): any[] => {
-    return constructDB.store;
+    const storeData = constructDB.store;
+    const result = [];
+
+    for (let id in storeData) {
+        // Exclude non-construct data (like 'ids')
+        if (id !== 'ids') {
+            const construct = storeData[id];
+            result.push({
+                doc: construct,
+                id: id,
+                key: id,
+                value: {
+                    // We don't have 'rev' in ElectronDb, so we can either omit it or add a dummy value
+                    rev: 'unknown'
+                }
+            });
+        }
+    }
+
+    return result;
 }
+
 
 export const addConstructFromEDB = (id: string, data: any): void => {
     constructDB.set(id, data);
@@ -47,17 +67,51 @@ export const getChatFromEDB = (id: string): any => {
 }
 
 export const getChatsFromEDB = (): any[] => {
-    return chatsDB.store;
+    const storeData = chatsDB.store;
+
+    const result = [];
+
+    for (let id in storeData) {
+        // Exclude non-construct data (like 'ids')
+        if (id !== 'ids') {
+            const construct = storeData[id];
+            result.push({
+                doc: construct,
+                id: id,
+                key: id,
+                value: {
+                    // We don't have 'rev' in ElectronDb, so we can either omit it or add a dummy value
+                    rev: 'unknown'
+                }
+            });
+        }
+    }
+
+    return result;
 }
 
 export const getChatsByConstructFromEDB = (id: string): any[] => {
-    let chats = chatsDB.store;
+    const chats = chatsDB.store;
     let constructChats: any[] = [];
-    for(let i = 0; i < chats.length; i++){
-        if(chats[i].agents.includes(id)){
-            constructChats.push(chats[i]);
+
+    // Assuming chatsDB.store is an array
+    for(let chat of chats) {
+        if(chat.agents.includes(id)) {
+            constructChats.push({
+                doc: {
+                    // This is a simple structure assuming all fields from chat should be in 'doc'. Adjust as needed.
+                    ...chat
+                },
+                id: chat._id,  // Assuming each chat has a unique _id field
+                key: chat._id,
+                value: {
+                    // Again, we don't have 'rev' in ElectronDb, so use a placeholder or omit
+                    rev: 'unknown'
+                }
+            });
         }
     }
+
     return constructChats;
 }
 
@@ -74,7 +128,27 @@ export const getCommandFromEDB = (id: string): any => {
 }
 
 export const getCommandsFromEDB = (): any[] => {
-    return commandDB.store;
+    const storeData = commandDB.store;
+
+    const result = [];
+
+    for (let id in storeData) {
+        // Exclude non-construct data (like 'ids')
+        if (id !== 'ids') {
+            const construct = storeData[id];
+            result.push({
+                doc: construct,
+                id: id,
+                key: id,
+                value: {
+                    // We don't have 'rev' in ElectronDb, so we can either omit it or add a dummy value
+                    rev: 'unknown'
+                }
+            });
+        }
+    }
+
+    return result;
 }
 
 export const addCommandFromEDB = (id: string, data: any): void => {
@@ -90,7 +164,27 @@ export const getAttachmentFromEDB = (id: string): any => {
 }
 
 export const getAttachmentsFromEDB = (): any[] => {
-    return attachmentDB.store;
+    const storeData = attachmentDB.store;
+
+    const result = [];
+
+    for (let id in storeData) {
+        // Exclude non-construct data (like 'ids')
+        if (id !== 'ids') {
+            const construct = storeData[id];
+            result.push({
+                doc: construct,
+                id: id,
+                key: id,
+                value: {
+                    // We don't have 'rev' in ElectronDb, so we can either omit it or add a dummy value
+                    rev: 'unknown'
+                }
+            });
+        }
+    }
+
+    return result;
 }
 
 export const addAttachmentFromEDB = (id: string, data: any): void => {
@@ -106,7 +200,27 @@ export const getInstructFromEDB = (id: string): any => {
 }
 
 export const getInstructsFromEDB = (): any[] => {
-    return instructDB.store;
+    const storeData = instructDB.store;
+
+    const result = [];
+
+    for (let id in storeData) {
+        // Exclude non-construct data (like 'ids')
+        if (id !== 'ids') {
+            const construct = storeData[id];
+            result.push({
+                doc: construct,
+                id: id,
+                key: id,
+                value: {
+                    // We don't have 'rev' in ElectronDb, so we can either omit it or add a dummy value
+                    rev: 'unknown'
+                }
+            });
+        }
+    }
+
+    return result;
 }
 
 export const addInstructFromEDB = (id: string, data: any): void => {

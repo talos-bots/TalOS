@@ -2,6 +2,7 @@ import { ipcMain } from 'electron';
 import PouchDB from 'pouchdb';
 import { dataPath, isDarwin } from '../';
 import LeveldbAdapter from 'pouchdb-adapter-leveldb';
+import { addAttachmentFromEDB, addChatFromEDB, addCommandFromEDB, addConstructFromEDB, addInstructFromEDB, getAttachmentFromEDB, getAttachmentsFromEDB, getChatFromEDB, getChatsByConstructFromEDB, getChatsFromEDB, getCommandFromEDB, getCommandsFromEDB, getConstructFromEDB, getConstructsFromEDB, getInstructFromEDB, getInstructsFromEDB, removeAttachmentFromEDB, removeChatFromEDB, removeCommandFromEDB, removeConstructFromEDB, removeInstructFromEDB } from './electrondb';
 
 let constructDB: PouchDB.Database<any>;
 let chatsDB: PouchDB.Database<any>;
@@ -12,6 +13,9 @@ let instructDB: PouchDB.Database<any>;
 PouchDB.plugin(LeveldbAdapter);
 
 export async function getAllConstructs() {
+    if(isDarwin){
+        return getConstructsFromEDB();
+    }
     return constructDB.allDocs({include_docs: true})
     .then((result) => {
         return result.rows;
@@ -23,6 +27,9 @@ export async function getAllConstructs() {
 }
 
 export async function getConstruct(id: string) {
+    if(isDarwin){
+        return getConstructFromEDB(id);
+    }
     return constructDB.get(id).then((result) => {
         return result;
     }).catch((err) => {
@@ -31,6 +38,10 @@ export async function getConstruct(id: string) {
 }
 
 export async function addConstruct(construct: any) {
+    if(isDarwin){
+        addConstructFromEDB(construct._id, construct);
+        return;
+    }
     return constructDB.put(construct).then((result) => {
         return result;
     }).catch((err) => {
@@ -39,6 +50,10 @@ export async function addConstruct(construct: any) {
 }
 
 export async function removeConstruct(id: string) {
+    if(isDarwin){
+        removeConstructFromEDB(id);
+        return;
+    }
     return constructDB.get(id).then((doc) => {
         return constructDB.remove(doc);
     }).catch((err) => {
@@ -47,6 +62,10 @@ export async function removeConstruct(id: string) {
 }
 
 export async function updateConstruct(construct: any) {
+    if(isDarwin){
+        addConstructFromEDB(construct._id, construct);
+        return;
+    }
     return constructDB.get(construct._id).then((doc) => {
         // Merge existing fields with updated fields and retain _rev
         let updatedDoc = {...doc, ...construct};
@@ -62,6 +81,9 @@ export async function updateConstruct(construct: any) {
 }
 
 export async function getAllChats() {
+    if(isDarwin){
+        return getChatsFromEDB();
+    }
     return chatsDB.allDocs({include_docs: true}).then((result) => {
         return result.rows;
     }).catch((err) => {
@@ -70,6 +92,9 @@ export async function getAllChats() {
 }
 
 export async function getChatsByConstruct(constructId: string) {
+    if(isDarwin){
+        return getChatsByConstructFromEDB(constructId);
+    }
     return chatsDB.find({
         selector: {
             constructs: constructId
@@ -82,6 +107,9 @@ export async function getChatsByConstruct(constructId: string) {
 }
 
 export async function getChat(id: string) {
+    if(isDarwin){
+        return getChatFromEDB(id);
+    }
     return chatsDB.get(id).then((result) => {
         return result;
     }).catch((err) => {
@@ -90,6 +118,10 @@ export async function getChat(id: string) {
 }
 
 export async function addChat(chat: any) {
+    if(isDarwin){
+        addChatFromEDB(chat._id, chat);
+        return;
+    }
     return chatsDB.put(chat).then((result) => {
         return result;
     }).catch((err) => {
@@ -98,6 +130,10 @@ export async function addChat(chat: any) {
 }
 
 export async function removeChat(id: string) {
+    if(isDarwin){
+        removeChatFromEDB(id);
+        return;
+    }
     return chatsDB.get(id).then((doc) => {
         return chatsDB.remove(doc);
     }).catch((err) => {
@@ -106,6 +142,10 @@ export async function removeChat(id: string) {
 }
 
 export async function updateChat(chat: any) {
+    if(isDarwin){
+        addChatFromEDB(chat._id, chat);
+        return;
+    }
     return chatsDB.get(chat._id).then((doc) => {
         // Merge existing fields with updated fields and retain _rev
         let updatedDoc = {...doc, ...chat};
@@ -121,6 +161,9 @@ export async function updateChat(chat: any) {
 }
 
 export async function getAllCommands() {
+    if(isDarwin){
+        return getCommandsFromEDB();
+    }
     return commandDB.allDocs({include_docs: true}).then((result) => {
         return result.rows;
     }).catch((err) => {
@@ -129,6 +172,9 @@ export async function getAllCommands() {
 }
 
 export async function getCommand(id: string) {
+    if(isDarwin){
+        return getCommandFromEDB(id);
+    }
     return commandDB.get(id).then((result) => {
         return result;
     }).catch((err) => {
@@ -137,6 +183,10 @@ export async function getCommand(id: string) {
 }
 
 export async function addCommand(command: any) {
+    if(isDarwin){
+        addCommandFromEDB(command._id, command);
+        return;
+    }
     return commandDB.put(command).then((result) => {
         return result;
     }).catch((err) => {
@@ -145,6 +195,10 @@ export async function addCommand(command: any) {
 }
 
 export async function removeCommand(id: string) {
+    if(isDarwin){
+        removeCommandFromEDB(id);
+        return;
+    }
     return commandDB.get(id).then((doc) => {
         return commandDB.remove(doc);
     }).catch((err) => {
@@ -153,6 +207,10 @@ export async function removeCommand(id: string) {
 }
 
 export async function updateCommand(command: any) {
+    if(isDarwin){
+        addCommandFromEDB(command._id, command);
+        return;
+    }
     return commandDB.get(command._id).then((doc) => {
         // Merge existing fields with updated fields and retain _rev
         let updatedDoc = {...doc, ...command};
@@ -168,6 +226,9 @@ export async function updateCommand(command: any) {
 }
 
 export async function getAllAttachments() {
+    if(isDarwin){
+        return getAttachmentsFromEDB();
+    }
     return attachmentDB.allDocs({include_docs: true}).then((result) => {
         return result.rows;
     }).catch((err) => {
@@ -176,6 +237,9 @@ export async function getAllAttachments() {
 }
 
 export async function getAttachment(id: string) {
+    if(isDarwin){
+        return getAttachmentFromEDB(id);
+    }
     return attachmentDB.get(id).then((result) => {
         return result;
     }).catch((err) => {
@@ -184,6 +248,10 @@ export async function getAttachment(id: string) {
 }
 
 export async function addAttachment(attachment: any) {
+    if(isDarwin){
+        addAttachmentFromEDB(attachment._id, attachment);
+        return;
+    }
     return attachmentDB.put(attachment).then((result) => {
         return result;
     }).catch((err) => {
@@ -192,6 +260,10 @@ export async function addAttachment(attachment: any) {
 }
 
 export async function removeAttachment(id: string) {
+    if(isDarwin){
+        removeAttachmentFromEDB(id);
+        return;
+    }
     return attachmentDB.get(id).then((doc) => {
         return attachmentDB.remove(doc);
     }).catch((err) => {
@@ -200,6 +272,10 @@ export async function removeAttachment(id: string) {
 }
 
 export async function updateAttachment(attachment: any) {
+    if(isDarwin){
+        addAttachmentFromEDB(attachment._id, attachment);
+        return;
+    }
     return attachmentDB.get(attachment._id).then((doc) => {
         // Merge existing fields with updated fields and retain _rev
         let updatedDoc = {...doc, ...attachment};
@@ -215,6 +291,9 @@ export async function updateAttachment(attachment: any) {
 }
 
 export async function getAllInstructs() {
+    if(isDarwin){
+        return getInstructsFromEDB();
+    }
     return instructDB.allDocs({include_docs: true}).then((result) => {
         return result.rows;
     }).catch((err) => {
@@ -223,6 +302,9 @@ export async function getAllInstructs() {
 }
 
 export async function getInstruct(id: string) {
+    if(isDarwin){
+        return getInstructFromEDB(id);
+    }
     return instructDB.get(id).then((result) => {
         return result;
     }).catch((err) => {
@@ -231,6 +313,10 @@ export async function getInstruct(id: string) {
 }
 
 export async function addInstruct(instruct: any) {
+    if(isDarwin){
+        addInstructFromEDB(instruct._id, instruct);
+        return;
+    }
     return instructDB.put(instruct).then((result) => {
         return result;
     }).catch((err) => {
@@ -239,6 +325,10 @@ export async function addInstruct(instruct: any) {
 }
 
 export async function removeInstruct(id: string) {
+    if(isDarwin){
+        removeInstructFromEDB(id);
+        return;
+    }
     return instructDB.get(id).then((doc) => {
         return instructDB.remove(doc);
     }).catch((err) => {
@@ -247,6 +337,10 @@ export async function removeInstruct(id: string) {
 }
 
 export async function updateInstruct(instruct: any) {
+    if(isDarwin){
+        addInstructFromEDB(instruct._id, instruct);
+        return;
+    }
     return instructDB.get(instruct._id).then((doc) => {
         // Merge existing fields with updated fields and retain _rev
         let updatedDoc = {...doc, ...instruct};

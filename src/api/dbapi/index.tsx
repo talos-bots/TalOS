@@ -11,6 +11,7 @@ export async function getConstructs(): Promise<Construct[]> {
         ipcRenderer.send("get-constructs", uniqueEventName);
         ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any[]) => {
             if (data) {
+                console.log(data);
                 const constructs = data.map((doc: any) => {
                     return new Construct(
                         doc.doc._id,
