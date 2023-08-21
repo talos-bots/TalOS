@@ -422,7 +422,7 @@ export async function handleRemoveMessage(message: Message){
 
 function containsName(message: string, chars: ConstructInterface[]){
     for(let i = 0; i < chars.length; i++){
-        if(message.includes(chars[i].name)){
+        if(message.toLowerCase().trim().includes(chars[i].name.toLowerCase().trim())){
             return chars[i].name;
         }
     }

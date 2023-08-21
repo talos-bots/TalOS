@@ -1707,7 +1707,7 @@ async function handleRemoveMessage(message) {
 }
 function containsName(message, chars) {
   for (let i = 0; i < chars.length; i++) {
-    if (message.includes(chars[i].name)) {
+    if (message.toLowerCase().trim().includes(chars[i].name.toLowerCase().trim())) {
       return chars[i].name;
     }
   }
