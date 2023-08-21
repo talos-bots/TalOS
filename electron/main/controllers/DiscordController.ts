@@ -44,13 +44,15 @@ export const getDoAutoReply = (): boolean => {
     return store.get('doAutoReply', false) as boolean;
 }
 
-export const getUsername = (userID: string) => {
+export const getUsername = (userID: string, channelID: string) => {
     const channels = getRegisteredChannels();
     for(let i = 0; i < channels.length; i++){
-        if(channels[i]?.aliases === undefined) continue;
-        for(let j = 0; j < channels[i].aliases.length; j++){
-            if(channels[i].aliases[j]._id === userID){
-                return channels[i].aliases[j].name;
+        if(channels[i]._id === channelID){
+            if(channels[i]?.aliases === undefined) continue;
+            for(let j = 0; j < channels[i].aliases.length; j++){
+                if(channels[i].aliases[j]._id === userID){
+                    return channels[i].aliases[j].name;
+                }
             }
         }
     }
@@ -211,7 +213,7 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
         username = message.user.displayName;
         authorID = message.user.id;
     }
-    let alias = getUsername(authorID);
+    let alias = getUsername(authorID, chatLog._id);
     if(alias !== null){
         username = alias;
     }
@@ -254,7 +256,7 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
         username = message.user.displayName;
         authorID = message.user.id;
     }
-    let alias = getUsername(authorID);
+    let alias = getUsername(authorID, chatLog._id);
     if(alias !== null){
         username = alias;
     }

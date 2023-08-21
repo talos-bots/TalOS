@@ -2,7 +2,7 @@ import { ipcMain } from 'electron';
 import { ActivityType, Client, GatewayIntentBits, Collection, REST, Routes, Partials, TextChannel, DMChannel, NewsChannel, Snowflake, Webhook, Message, CommandInteraction, Events } from 'discord.js';
 import Store from 'electron-store';
 import { win } from '..';
-import { handleDiscordMessage, handleRemoveMessage, handleRengenerateMessage } from '../controllers/DiscordController';
+import { getUsername, handleDiscordMessage, handleRemoveMessage, handleRengenerateMessage } from '../controllers/DiscordController';
 import { ConstructInterface, SlashCommand } from '../types/types';
 import { assembleConstructFromData, base642Buffer } from '../helpers/helpers';
 import { DefaultCommands } from '../controllers/commands';
@@ -192,7 +192,7 @@ export async function getStopList(guildId: string){
     guild.members.cache.forEach(member => {
         if(!disClient.user) return;
         if(member.user.id !== disClient.user.id){
-            memberList.push(member.user.username);
+            memberList.push(member.user.displayName);
         }
     });
     for(let i = 0; i < memberList.length; i++){
