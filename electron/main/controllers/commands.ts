@@ -397,4 +397,5 @@ export const DefaultCommands = [
     SetMaxMessagesCommand,
     SetDoAutoReply,
     SetAliasCommand,
+    ClearAllWebhooksCommand,
 ];

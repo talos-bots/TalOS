@@ -2084,6 +2084,29 @@ const SetAliasCommand = {
     });
   }
 };
+const ClearAllWebhooksCommand = {
+  name: "clearallwebhooks",
+  description: "Clears all webhooks for the current channel.",
+  execute: async (interaction) => {
+    await interaction.deferReply({ ephemeral: true });
+    if (interaction.channelId === null) {
+      await interaction.editReply({
+        content: "This command can only be used in a server."
+      });
+      return;
+    }
+    if (interaction.guildId === null) {
+      await interaction.editReply({
+        content: "This command can only be used in a server."
+      });
+      return;
+    }
+    await clearWebhooksFromChannel(interaction.channelId);
+    await interaction.editReply({
+      content: `Cleared all webhooks for this channel.`
+    });
+  }
+};
 const DefaultCommands = [
   RegisterCommand,
   UnregisterCommand,
@@ -2095,7 +2118,8 @@ const DefaultCommands = [
   SetMultiLineCommand,
   SetMaxMessagesCommand,
   SetDoAutoReply,
-  SetAliasCommand
+  SetAliasCommand,
+  ClearAllWebhooksCommand
 ];
 const intents = {
   intents: [
@@ -2299,6 +2323,20 @@ async function sendMessageAsCharacter(char, channelID, message) {
   }
   await webhook.send(message);
   await webhook.delete();
+}
+async function clearWebhooksFromChannel(channelID) {
+  if (!isReady)
+    return;
+  const channel = disClient.channels.cache.get(channelID);
+  if (!(channel instanceof discord_js.TextChannel || channel instanceof discord_js.NewsChannel)) {
+    return;
+  }
+  const webhooks = await channel.fetchWebhooks();
+  try {
+    await Promise.all(webhooks.map((webhook) => webhook.delete()));
+  } catch (error) {
+    console.error(error);
+  }
 }
 async function createWebhookForChannel(channelID, char) {
   if (!isReady)
