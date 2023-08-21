@@ -265,7 +265,6 @@ export async function sendMessageAsCharacter(char: ConstructInterface, channelID
         return;
     }
     await webhook.send(message);
-    await webhook.delete();
 }
 
 export async function clearWebhooksFromChannel(channelID: Snowflake): Promise<void> {

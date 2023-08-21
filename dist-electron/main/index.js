@@ -2322,7 +2322,6 @@ async function sendMessageAsCharacter(char, channelID, message) {
     return;
   }
   await webhook.send(message);
-  await webhook.delete();
 }
 async function clearWebhooksFromChannel(channelID) {
   if (!isReady)
