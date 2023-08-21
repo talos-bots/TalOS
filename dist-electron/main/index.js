@@ -54,7 +54,7 @@ function assemblePromptFromLog(data, messagesToInclude = 25) {
 }
 function convertDiscordMessageToMessage(message, activeConstructs) {
   let attachments = [];
-  let username = getUsername(message.author.id);
+  let username = getUsername(message.author.id, message.channelId);
   if (username === null) {
     username = message.author.displayName;
   }
@@ -3017,6 +3017,9 @@ electron.ipcMain.handle("open-win", (_, arg) => {
   } else {
     childWindow.loadFile(indexHtml, { hash: arg });
   }
+});
+electron.ipcMain.on("open-external-url", (event, url2) => {
+  electron.shell.openExternal(url2);
 });
 electron.ipcMain.handle("get-data-path", () => {
   return dataPath;

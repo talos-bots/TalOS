@@ -74,7 +74,7 @@ export function assemblePromptFromLog(data: any, messagesToInclude: number = 25)
 
 export function convertDiscordMessageToMessage(message: Message, activeConstructs: string[]){
     let attachments: AttachmentInferface[] = [];
-    let username = getUsername(message.author.id)
+    let username = getUsername(message.author.id, message.channelId)
     if(username === null){
         username = message.author.displayName;
     }

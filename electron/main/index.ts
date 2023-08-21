@@ -142,6 +142,10 @@ ipcMain.handle("open-win", (_, arg) => {
   }
 });
 
+ipcMain.on('open-external-url', (event, url: string) => {
+  shell.openExternal(url);
+});
+
 ipcMain.handle("get-data-path", () => {
   return dataPath;
 });

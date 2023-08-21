@@ -12,6 +12,12 @@ import { useEffect, useState } from 'react';
 import MenuThemeLoader from './components/menu-theme-loader';
 import ConstructsPage from './pages/constructs';
 import DiscordPage from './pages/discord';
+import { ipcRenderer } from 'electron';
+
+export const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, url: string) => {
+  e.preventDefault();
+  ipcRenderer.send('open-external-url', url);
+};
 
 function App() {
   const [needsReload, setNeedsReload] = useState(false);

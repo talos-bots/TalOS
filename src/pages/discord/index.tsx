@@ -1,3 +1,4 @@
+import { handleLinkClick } from "@/App";
 import { getActiveConstructList, removeConstructFromActive } from "@/api/constructapi";
 import { getConstruct } from "@/api/dbapi";
 import { getBotStatus, getSavedDiscordData, loginToDiscord, logoutFromDiscord, saveDiscordData } from "@/api/discordapi";
@@ -119,9 +120,9 @@ const DiscordPage = () => {
                             <div className="themed-input flex flex-col items-center w-full h-15vh overflow-y-auto">
                                 {Array.isArray(discordActiveConstructs) && discordActiveConstructs.length > 0 && discordActiveConstructs.map((construct, index) => {
                                     return(
-                                        <div className="flex flex-row w-full" key={index}>
-                                            <label key={index} className="text-theme-text font-semibold themed-button w-2/3">{construct.name} {index === 0 ? '(Primary)' : '(Secondary)'}</label>
-                                            <button key={index} className="themed-button-neg w-1/3" onClick={() => {removeActive(construct._id)}}>Remove</button>
+                                        <div className="flex flex-row w-full" key={construct._id}>
+                                            <label className="text-theme-text font-semibold themed-button w-2/3">{construct.name} {index === 0 ? '(Primary)' : '(Secondary)'}</label>
+                                            <button className="themed-button-neg w-1/3" onClick={() => {removeActive(construct._id)}}>Remove</button>
                                         </div>
                                 )})}
                             </div>
@@ -219,6 +220,11 @@ const DiscordPage = () => {
                                 </div>
                             </div>
                             <div className="flex flex-col text-left w-1/2">
+                                <label className="text-theme-text font-semibold">Invite Link</label>
+                                <div className="themed-input flex flex-col items-center w-full">
+                                    <i className="text-sm">This is the link you will use to invite the bot to your server. Only uses this after entering your applicationId and following the tutorial.</i>
+                                    <a href={`https://discord.com/oauth2/authorize?client_id=${discordApplicationID}&scope=bot&permissions=1099511627775`} onClick={(e) => handleLinkClick(e, `https://discord.com/oauth2/authorize?client_id=${discordApplicationID}&scope=bot&permissions=1099511627775`)} className="themed-button-pos w-full">Invite Bot</a>
+                                </div>
                             </div>
                         </div>
                         <div className="flex flex-row text-left gap-4 mt-2">
