@@ -279,18 +279,18 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
         }
     }
     for(let i = 0; i < constructArray.length; i++){
-        if(i !== 0){
-            if(0.25 > Math.random()){
+        if (i !== 0) {
+            if (0.10 > Math.random()) {
                 continue;
             }
         }
-        const result = await generateContinueChatLog(constructArray[i], chatLog, username, maxMessages);
-        let reply: string;
-        if (result !== null) {
-            reply = result;
-        } else {
-            continue;
-        }
+        let result;
+        do {
+            result = await generateContinueChatLog(constructArray[i], chatLog, username, maxMessages);
+        } while (result === null);
+        
+        let reply: string = result;
+        
         const replyMessage = {
             _id: Date.now().toString(),
             user: constructArray[i].name,
