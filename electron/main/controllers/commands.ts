@@ -4,7 +4,7 @@ import { addRegisteredChannel, continueChatLog, getRegisteredChannels, removeReg
 import { getConstruct, removeChat } from "../api/pouchdb";
 import { assembleConstructFromData } from "../helpers/helpers";
 import { retrieveConstructs, setDoMultiLine } from "./ConstructController";
-import { doGlobalNicknameChange } from "../api/discord";
+import { clearWebhooksFromChannel, doGlobalNicknameChange } from "../api/discord";
 
 export const RegisterCommand: SlashCommand = {
     name: 'register',
@@ -360,6 +360,31 @@ export const SetAliasCommand: SlashCommand = {
         });
     }
 }
+
+export const ClearAllWebhooksCommand: SlashCommand = {
+    name: 'clearallwebhooks',
+    description: 'Clears all webhooks for the current channel.',
+    execute: async (interaction: CommandInteraction) => {
+        await interaction.deferReply({ephemeral: true});
+        if (interaction.channelId === null) {
+            await interaction.editReply({
+            content: "This command can only be used in a server.",
+            });
+            return;
+        }
+        if(interaction.guildId === null){
+            await interaction.editReply({
+            content: "This command can only be used in a server.",
+            });
+            return;
+        }
+        await clearWebhooksFromChannel(interaction.channelId);
+        await interaction.editReply({
+            content: `Cleared all webhooks for this channel.`,
+        });
+    }
+}
+
 export const DefaultCommands = [
     RegisterCommand,
     UnregisterCommand,

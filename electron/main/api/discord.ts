@@ -248,8 +248,8 @@ export async function getWebhookForCharacter(charName: string, channelID: Snowfl
     if (!(channel instanceof TextChannel || channel instanceof NewsChannel)) {
         return undefined;
     }
-
     const webhooks = await channel.fetchWebhooks();
+
     return webhooks.find(webhook => webhook.name === charName);
 }
 
@@ -265,6 +265,23 @@ export async function sendMessageAsCharacter(char: ConstructInterface, channelID
         return;
     }
     await webhook.send(message);
+    await webhook.delete();
+}
+
+export async function clearWebhooksFromChannel(channelID: Snowflake): Promise<void> {
+    if(!isReady) return;
+    const channel = disClient.channels.cache.get(channelID);
+
+    if (!(channel instanceof TextChannel || channel instanceof NewsChannel)) {
+        return;
+    }
+
+    const webhooks = await channel.fetchWebhooks();
+    try{
+        await Promise.all(webhooks.map(webhook => webhook.delete()));
+    }catch(error){
+        console.error(error);
+    }
 }
 
 export async function createWebhookForChannel(channelID: string, char: ConstructInterface){
