@@ -482,7 +482,9 @@ Assistant:
         },
         temperature: settings.temperature ? settings.temperature : 0.9,
         top_p: settings.top_p ? settings.top_p : 0.9,
-        top_k: settings.top_k ? settings.top_k : 0
+        top_k: settings.top_k ? settings.top_k : 0,
+        stopSequences: stops,
+        maxOutputTokens: settings.max_tokens ? settings.max_tokens : 350
       }).then((response2) => {
         return { results: [response2[0].candidates[0].output] };
       }).catch((err) => {
