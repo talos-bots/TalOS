@@ -1,12 +1,17 @@
 import { getConstruct } from "@/api/dbapi";
 import { Attachment } from "@/classes/Attachment";
 import { Message } from "@/classes/Message";
+import { Edit, EditIcon, RefreshCw, TrashIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { RiQuestionMark } from "react-icons/ri";
 
 interface Props {
     message: Message;
+    onDelete?: (messageID: string) => void;
+    onEdit?: (messageID: string, newText: string) => void;
+    onRegenerate?: (messageID: string) => void;
 }
+
 function getFormattedTime(timestamp: number): string {
     const date = new Date(timestamp);
     const hours = date.getHours();
@@ -15,7 +20,7 @@ function getFormattedTime(timestamp: number): string {
     return `${hours}:${minutes}:${seconds} ${date.toLocaleDateString()}`;
 }
 
-const MessageComponent = ({ message }: Props) => {
+const MessageComponent = ({ message, onDelete, onEdit, onRegenerate }: Props) => {
     const [text, setText] = useState<string>("");
     const [user, setUser] = useState<string>("");
     const [userID, setUserID] = useState<string>("");
@@ -57,7 +62,33 @@ const MessageComponent = ({ message }: Props) => {
                         <div className="themed-message-info">{user} {getFormattedTime(time)}</div>
                     </div>
                     <div className="flex flex-row items-center">
-                        <div className="text-theme-italic text-xs top-2 absolute right-2 italic">{origin}</div>
+                        <div className="flex flex-row text-xs top-3 absolute right-2 italic gap-1">
+                            {isHuman ? null : 
+                                <button className="message-button" 
+                                    onClick={() => {
+                                        if(onRegenerate === undefined) return;
+                                        onRegenerate(message._id)
+                                    }}>
+                                    <RefreshCw size={14} />
+                                </button>
+                            }
+                            <button className="message-button"
+                                onClick={() => {
+                                    if(onEdit === undefined) return;
+                                    onEdit(message._id, text);
+                                }}
+                            >
+                                <EditIcon size={14} />
+                            </button>
+                            <button className="message-button"
+                                onClick={() => {
+                                    if(onDelete === undefined) return;
+                                    onDelete(message._id);
+                                }}
+                            >
+                                <TrashIcon size={14} />
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <div className="flex flex-col">

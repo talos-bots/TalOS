@@ -87,4 +87,38 @@ export class Chat{
     removeAgent(agent: string){
         this.agents = this.agents.filter((a) => a !== agent);
     }
+
+    removeMessage(messageID: string){
+        // Check if the message to be removed is the last message.
+        const isLastMessage = this.lastMessage && this.lastMessage._id === messageID;
+        
+        // Filter out the message with the given ID.
+        this.messages = this.messages.filter((m) => m._id !== messageID);
+        
+        // If the removed message was the last message, then update the lastMessage property.
+        if (isLastMessage && this.messages.length) {
+            this.lastMessage = this.messages[this.messages.length - 1];
+            this.lastMessageDate = new Date(this.lastMessage.timestamp);  // Assuming your Message object has a 'date' property.
+        } else if (!this.messages.length) {
+            this.lastMessage = new Message();
+            this.lastMessageDate = new Date();
+        }
+    }
+
+    editMessageText(messageID: string, newText: string){
+        // Find the message with the given ID.
+        const message = this.messages.find((m) => m._id === messageID);
+        
+        // If the message exists, update its text property.
+        if (message) {
+            message.text = newText;
+            
+            // If the edited message is the last message, update the lastMessage as well.
+            if (this.lastMessage && this.lastMessage._id === messageID) {
+                this.lastMessage.text = newText;
+            }
+        } else {
+            console.error(`No message found with ID: ${messageID}`);
+        }
+    }
 }

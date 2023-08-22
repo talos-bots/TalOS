@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import InputGroup from "@/components/chat-page/ChatInput";
+import InputGroup from "@/components/chat-page/chat-input";
 import { Chat } from "@/classes/Chat";
 import { Message } from "@/classes/Message";
 import { getChat, saveNewChat, updateChat } from "@/api/dbapi";
@@ -24,7 +24,7 @@ const ChatPage: React.FC = () => {
 		document.body.style.overflow = "auto"; // i might be royally retarded but uhh yeah this is the only way i could disable scrolling while keeping the vh calc
 		};
 	}, []);
-	
+
 	const handleMessageSend = async (message: string) => {
 		console.log(message);
 		let isNewChat = false;
@@ -58,6 +58,17 @@ const ChatPage: React.FC = () => {
 		setMessages([...messages, newMessage])
 	};
 
+	const deleteMessage = (messageID: string) => {
+		if(chatLog === null) return;
+		chatLog.removeMessage(messageID);
+		setChatLog(chatLog);
+		updateChat(chatLog);
+		let newMessages = messages.filter((message) => {
+			return message._id !== messageID;
+		});
+		setMessages(newMessages);
+	}
+
 	return (
 		<div className="relative w-full h-screen flex flex-col items-center justify-center">
 			<div className="box-border w-4/6 h-[calc(100vh-70px)] flex flex-col gap-6">
@@ -65,7 +76,7 @@ const ChatPage: React.FC = () => {
 					<div className="themed-message-box">
 						{Array.isArray(messages) && messages.map((message) => {
 							return (
-								<MessageComponent key={message.timestamp} message={message} />
+								<MessageComponent key={message.timestamp} message={message} onDelete={deleteMessage} />
 							);
 						})}
 					</div>

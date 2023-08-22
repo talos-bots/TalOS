@@ -144,7 +144,7 @@ ul {
 }
 
 .themed-message {
-  @apply shadow-md bg-theme-box rounded-theme-border-radius backdrop-blur-theme-blur w-full p-2 text-left;
+  @apply shadow-md bg-theme-root rounded-theme-border-radius backdrop-blur-theme-blur w-full p-2 text-left;
 }
 
 .themed-message-info {
@@ -152,12 +152,23 @@ ul {
 }
 
 .themed-message-text {
-  @apply text-theme-text text-left mt-1;
+  @apply text-theme-text text-left mt-1 ml-1;
 }
 
 .themed-message-avatar {
   @apply w-12 h-12 rounded-full object-cover border-theme-border border-theme-border-width bg-theme-box;
 }
+
+.message-button {
+  transition: transform 0.3s;
+  font-style: italic;
+  color: var(--theme-text-italic); 
+}
+
+.message-button:hover {
+  transform: scale(1.1);
+}
+
 /* This is the scrollbar itself */
 ::-webkit-scrollbar-thumb {
   background: var(--theme-box); 
