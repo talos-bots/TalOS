@@ -11,6 +11,7 @@ const LeveldbAdapter = require("pouchdb-adapter-leveldb");
 const fs = require("fs");
 const axios = require("axios");
 const openai = require("openai");
+const googleAuthLibrary = require("google-auth-library");
 const FormData = require("form-data");
 function assembleConstructFromData(data) {
   const construct = {
@@ -119,6 +120,7 @@ async function base642Buffer(base64) {
     return buffer;
   }
 }
+const { TextServiceClient } = require("@google-ai/generativelanguage").v1beta2;
 const HORDE_API_URL = "https://aihorde.net/api/";
 const store$5 = new Store({
   name: "llmData"
@@ -469,7 +471,24 @@ Assistant:
       }
       break;
     case "PaLM":
-      console.log("PaLM");
+      const MODEL_NAME = "models/text-bison-001";
+      const client = new TextServiceClient({
+        authClient: new googleAuthLibrary.GoogleAuth().fromAPIKey(endpoint)
+      });
+      const googleReply = await client.generateText({
+        model: MODEL_NAME,
+        prompt: {
+          text: prompt
+        },
+        temperature: settings.temperature ? settings.temperature : 0.9,
+        top_p: settings.top_p ? settings.top_p : 0.9,
+        top_k: settings.top_k ? settings.top_k : 0
+      }).then((response2) => {
+        return { results: [response2[0].candidates[0].output] };
+      }).catch((err) => {
+        results = false;
+      });
+      results = googleReply;
       break;
     default:
       throw new Error("Invalid endpoint type or endpoint.");
