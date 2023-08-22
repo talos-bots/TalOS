@@ -2182,7 +2182,17 @@ const ClearAllWebhooksCommand = {
     });
   }
 };
+const PingCommand = {
+  name: "ping",
+  description: "Ping!",
+  execute: async (interaction) => {
+    await interaction.deferReply();
+    const status = await getStatus();
+    await interaction.editReply(`Pong! I'm currently connected to: ${status}`);
+  }
+};
 const DefaultCommands = [
+  PingCommand,
   RegisterCommand,
   UnregisterCommand,
   ListRegisteredCommand,

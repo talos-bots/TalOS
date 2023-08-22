@@ -1,5 +1,6 @@
 import { FunctionComponent, useState, useEffect } from "react";
 import InputGroup from "@/components/chat-page/ChatInput";
+import MessageRenderer from "@/components/chat-page/message-renderer";
 
 const ChatPage: React.FC = () => {
 	useEffect(() => {
@@ -15,9 +16,16 @@ const ChatPage: React.FC = () => {
 	};
 
 	return (
-		<div className={`relative w-full flex flex-col items-center justify-center themed-root`}>
-			<div className="box-border w-[1440px] h-[calc(100vh-70px)] shrink-0 flex flex-col pt-[740px] px-[145px] pb-[47px] items-start justify-end gap-[10px]">
-				<InputGroup sendMessage={handleMessageSend}/>
+		<div className={`relative w-full flex flex-col items-center justify-center`}>
+			<div className="box-border w-4/6 h-[calc(100vh-70px)] grid grid-cols-1 items-center justify-center">
+				<div className="col-span-1 flex flex-col w-full h-full gap-4 justify-center items-end">
+					<div className="w-full h-5/6 pt-4">
+						<MessageRenderer />
+					</div>
+					<div className="w-full h-1/6">
+						<InputGroup sendMessage={handleMessageSend}/>
+					</div>
+				</div>
 			</div>
 		</div>
 	);

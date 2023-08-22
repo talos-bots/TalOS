@@ -5,6 +5,7 @@ import { getConstruct, removeChat } from "../api/pouchdb";
 import { assembleConstructFromData } from "../helpers/helpers";
 import { retrieveConstructs, setDoMultiLine } from "./ConstructController";
 import { clearWebhooksFromChannel, doGlobalNicknameChange } from "../api/discord";
+import { getStatus } from "../api/llm";
 
 export const RegisterCommand: SlashCommand = {
     name: 'register',
@@ -385,7 +386,17 @@ export const ClearAllWebhooksCommand: SlashCommand = {
     }
 }
 
+export const PingCommand: SlashCommand = {
+    name: 'ping',
+    description: 'Ping!',
+    execute: async (interaction: CommandInteraction) => {
+        await interaction.deferReply();
+        const status = await getStatus();
+        await interaction.editReply(`Pong! I'm currently connected to: ${status}`);
+    }
+}
 export const DefaultCommands = [
+    PingCommand,
     RegisterCommand,
     UnregisterCommand,
     ListRegisteredCommand,
