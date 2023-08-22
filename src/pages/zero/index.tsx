@@ -1,13 +1,13 @@
+import ZeroShotResponse from "@/components/zero-shot";
 import React from "react";
-import ZeroShot from "@/components/zeroshot/";
 
 const ZeroPage = () => {
   return (
     <div className="zero">
       <div
-        className={`relative w-full h-screen overflow-hidden flex flex-col items-center justify-center`}
+        className={`relative w-full h-[calc(100vh-70px)] overflow-hidden flex flex-col items-center justify-center`}
       >
-        <ZeroShot />
+        <ZeroShotResponse />
       </div>
     </div>
   );

@@ -10,6 +10,7 @@ const ChatPage: React.FC = () => {
     };
   }, []);
 
+  
   return (
     <div className={`relative w-full flex flex-col items-center justify-center themed-root`}>
       <div className="box-border w-[1440px] h-[calc(100vh-70px)] shrink-0 flex flex-col pt-[740px] px-[145px] pb-[47px] items-start justify-end gap-[10px]">

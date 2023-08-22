@@ -4,8 +4,8 @@ import { ipcRenderer } from 'electron';
 // Generate Text
 export const generateText = (
     prompt: string,
-    configuredName: string,
-    stopList: string[]
+    configuredName?: string,
+    stopList?: string[]
 ): Promise<any> => {
     return new Promise((resolve, reject) => {
         ipcRenderer.send('generate-text', prompt, configuredName, stopList);
