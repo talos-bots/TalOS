@@ -97,6 +97,12 @@ export function assemblePrompt(construct: any, chatLog: any, currentUser: string
     return prompt.replaceAll('{{user}}', `${currentUser}`);
 }
 
+export function assembleInstructPrompt(construct: any, chatLog: any, currentUser: string = 'you', messagesToInclude?: any){
+    let prompt = '';
+    
+    return prompt.replaceAll('{{user}}', `${currentUser}`);
+}
+
 export async function generateContinueChatLog(construct: any, chatLog: any, currentUser?: string, messagesToInclude?: any, stopList?: string[]){
     let prompt = assemblePrompt(construct, chatLog, currentUser, messagesToInclude);
     const response = await generateText(prompt, currentUser, stopList);
@@ -264,5 +270,53 @@ function constructController() {
         ActiveConstructs = retrieveConstructs();
         event.reply('set-construct-primary-reply', ActiveConstructs);
     });
+
+    ipcMain.on('set-do-multi-line', (event, arg) => {
+        setDoMultiLine(arg);
+        event.reply('set-do-multi-line-reply', getDoMultiLine());
+    });
+
+    ipcMain.on('get-do-multi-line', (event, arg) => {
+        event.reply('get-do-multi-line-reply', getDoMultiLine());
+    });
+
+    ipcMain.on('get-character-prompt-from-construct', (event, arg) => {
+        let prompt = getCharacterPromptFromConstruct(arg);
+        event.reply('get-character-prompt-from-construct-reply', prompt);
+    });
+
+    ipcMain.on('assemble-prompt', (event, construct, chatLog, currentUser, messagesToInclude) => {
+        let prompt = assemblePrompt(construct, chatLog, currentUser, messagesToInclude);
+        event.reply('assemble-prompt-reply', prompt);
+    });
+
+    ipcMain.on('assemble-instruct-prompt', (event, construct, chatLog, currentUser, messagesToInclude) => {
+        let prompt = assembleInstructPrompt(construct, chatLog, currentUser, messagesToInclude);
+        event.reply('assemble-instruct-prompt-reply', prompt);
+    });
+
+    ipcMain.on('generate-continue-chat-log', (event, construct, chatLog, currentUser, messagesToInclude, stopList) => {
+        generateContinueChatLog(construct, chatLog, currentUser, messagesToInclude, stopList).then((response) => {
+            event.reply('generate-continue-chat-log-reply', response);
+        });
+    });
+
+    ipcMain.on('remove-messages-from-chat-log', (event, chatLog, messageContent) => {
+        removeMessagesFromChatLog(chatLog, messageContent).then((response) => {
+            event.reply('remove-messages-from-chat-log-reply', response);
+        });
+    });
+
+    ipcMain.on('regenerate-message-from-chat-log', (event, chatLog, messageContent) => {
+        regenerateMessageFromChatLog(chatLog, messageContent).then((response) => {
+            event.reply('regenerate-message-from-chat-log-reply', response);
+        });
+    });
+
+    ipcMain.on('break-up-commands', (event, charName, commandString, user, stopList) => {
+        let response = breakUpCommands(charName, commandString, user, stopList);
+        event.reply('break-up-commands-reply', response);
+    });
+
 }
 export default constructController;

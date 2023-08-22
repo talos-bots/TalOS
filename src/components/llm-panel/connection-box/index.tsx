@@ -9,7 +9,7 @@ const ConnectionBox = (props: ConnectionBoxProps) => {
     const [endpointType, setEndpointType] = useState<EndpointType>("Ooba");
     const [password, setPassword] = useState<string>("");
     const [status, setStatus] = useState<string>("Disconnected");
-    const endpointTypes = ["Kobold", "Ooba", "OAI", "P-OAI", "P-Claude"]
+    const endpointTypes = ["Kobold", "Ooba", "OAI", "P-OAI", "P-Claude", "PaLM"]
 
     useEffect(() => {
         const getConnectionSettings = async () => {

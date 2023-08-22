@@ -6,7 +6,7 @@ const HORDE_API_URL = 'https://aihorde.net/api/';
 const store = new Store({
     name: 'llmData',
 });
-type EndpointType = 'Kobold' | 'Ooba' | 'OAI' | 'Horde' | 'P-OAI' | 'P-Claude';
+type EndpointType = 'Kobold' | 'Ooba' | 'OAI' | 'Horde' | 'P-OAI' | 'P-Claude' | 'PaLM';
 
 const defaultSettings = {
     rep_pen: 1.0,
@@ -159,6 +159,8 @@ export async function getStatus(testEndpoint?: string, testEndpointType?: string
             } else {
                 return { error: 'Horde heartbeat failed.' };
             }
+        case 'PaLM':
+            return { error: 'PaLM is not yet supported.' };
         default:
             return { error: 'Invalid endpoint type.' };
         }
@@ -383,6 +385,9 @@ export const generateText = async (
                 console.log(error);
                 results = false;
             }
+        break;
+        case 'PaLM':
+            console.log("PaLM");
         break;
     default:
         throw new Error('Invalid endpoint type or endpoint.');

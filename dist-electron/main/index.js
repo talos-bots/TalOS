@@ -11,6 +11,7 @@ const LeveldbAdapter = require("pouchdb-adapter-leveldb");
 const fs = require("fs");
 const axios = require("axios");
 const openai = require("openai");
+const PaLM = require("palm-api");
 const FormData = require("form-data");
 function assembleConstructFromData(data) {
   const construct = {
@@ -246,6 +247,8 @@ async function getStatus(testEndpoint, testEndpointType) {
         } else {
           return { error: "Horde heartbeat failed." };
         }
+      case "PaLM":
+        return { error: "PaLM is not yet supported." };
       default:
         return { error: "Invalid endpoint type." };
     }
@@ -465,6 +468,19 @@ Assistant:
         console.log(error);
         results = false;
       }
+      break;
+    case "PaLM":
+      const GooglePaLM = new PaLM(endpoint);
+      GooglePaLM.generateText(prompt, {
+        temperature: settings.temperature ? settings.temperature : 0.9,
+        top_p: settings.top_p ? settings.top_p : 0.9,
+        top_k: settings.top_k ? settings.top_k : 0
+      }).then((response2) => {
+        results = { results: [response2] };
+      }).catch((error) => {
+        console.log(error);
+        results = false;
+      });
       break;
     default:
       throw new Error("Invalid endpoint type or endpoint.");
@@ -1189,6 +1205,10 @@ function assemblePrompt(construct, chatLog, currentUser = "you", messagesToInclu
   prompt += `${construct.name}:`;
   return prompt.replaceAll("{{user}}", `${currentUser}`);
 }
+function assembleInstructPrompt(construct, chatLog, currentUser = "you", messagesToInclude) {
+  let prompt = "";
+  return prompt.replaceAll("{{user}}", `${currentUser}`);
+}
 async function generateContinueChatLog(construct, chatLog, currentUser, messagesToInclude, stopList) {
   let prompt = assemblePrompt(construct, chatLog, currentUser, messagesToInclude);
   const response = await generateText(prompt, currentUser, stopList);
@@ -1334,6 +1354,44 @@ function constructController() {
     setAsPrimary(arg);
     ActiveConstructs = retrieveConstructs();
     event.reply("set-construct-primary-reply", ActiveConstructs);
+  });
+  electron.ipcMain.on("set-do-multi-line", (event, arg) => {
+    setDoMultiLine(arg);
+    event.reply("set-do-multi-line-reply", getDoMultiLine());
+  });
+  electron.ipcMain.on("get-do-multi-line", (event, arg) => {
+    event.reply("get-do-multi-line-reply", getDoMultiLine());
+  });
+  electron.ipcMain.on("get-character-prompt-from-construct", (event, arg) => {
+    let prompt = getCharacterPromptFromConstruct(arg);
+    event.reply("get-character-prompt-from-construct-reply", prompt);
+  });
+  electron.ipcMain.on("assemble-prompt", (event, construct, chatLog, currentUser, messagesToInclude) => {
+    let prompt = assemblePrompt(construct, chatLog, currentUser, messagesToInclude);
+    event.reply("assemble-prompt-reply", prompt);
+  });
+  electron.ipcMain.on("assemble-instruct-prompt", (event, construct, chatLog, currentUser, messagesToInclude) => {
+    let prompt = assembleInstructPrompt(construct, chatLog, currentUser);
+    event.reply("assemble-instruct-prompt-reply", prompt);
+  });
+  electron.ipcMain.on("generate-continue-chat-log", (event, construct, chatLog, currentUser, messagesToInclude, stopList) => {
+    generateContinueChatLog(construct, chatLog, currentUser, messagesToInclude, stopList).then((response) => {
+      event.reply("generate-continue-chat-log-reply", response);
+    });
+  });
+  electron.ipcMain.on("remove-messages-from-chat-log", (event, chatLog, messageContent) => {
+    removeMessagesFromChatLog(chatLog, messageContent).then((response) => {
+      event.reply("remove-messages-from-chat-log-reply", response);
+    });
+  });
+  electron.ipcMain.on("regenerate-message-from-chat-log", (event, chatLog, messageContent) => {
+    regenerateMessageFromChatLog(chatLog, messageContent).then((response) => {
+      event.reply("regenerate-message-from-chat-log-reply", response);
+    });
+  });
+  electron.ipcMain.on("break-up-commands", (event, charName, commandString, user, stopList) => {
+    let response = breakUpCommands(charName, commandString, user, stopList);
+    event.reply("break-up-commands-reply", response);
   });
 }
 const store$3 = new Store({
