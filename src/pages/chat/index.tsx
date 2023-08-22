@@ -16,19 +16,19 @@ const ChatPage: React.FC = () => {
 	};
 
 	return (
-		<div className={`relative w-full flex flex-col items-center justify-center`}>
-			<div className="box-border w-4/6 h-[calc(100vh-70px)] grid grid-cols-1 items-center justify-center">
-				<div className="col-span-1 flex flex-col w-full h-full gap-4 justify-center items-end">
-					<div className="w-full h-5/6 pt-4">
-						<MessageRenderer />
-					</div>
-					<div className="w-full h-1/6">
-						<InputGroup sendMessage={handleMessageSend}/>
-					</div>
+		<div className="relative w-full h-screen flex flex-col items-center justify-center">
+			<div className="box-border w-4/6 h-[calc(100vh-70px)] flex flex-col gap-6">
+				<div className="h-5/6">
+					<MessageRenderer />
 				</div>
+				<div className="w-full">
+					<InputGroup sendMessage={handleMessageSend} />
+				</div>
+	
 			</div>
 		</div>
 	);
+	
 };
 
 export default ChatPage;
