@@ -19,11 +19,8 @@ const InputGroup = (props: InputGroupProps) => {
 				style={{ outline: "none" }}
 				required={true}
 				onChange={(e) => setMessage(e.target.value)}
-				onKeyDown={(e) => {
-					if (e.key === "Enter") {
-						if (message === "") {
-							return;
-						}
+				onKeyUp={(e) => {
+					if (e.key === "Enter" && message.trim() !== "") {
 						sendMessage(message);
 						setMessage("");
 					}

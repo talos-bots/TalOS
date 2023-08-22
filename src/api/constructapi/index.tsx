@@ -87,7 +87,7 @@ export const assembleInstructPrompt = (construct: Construct, chatLog: Chat, curr
     });
 }
 
-export const generateContinueChatLog = (construct: Construct, chatLog: Chat, currentUser?: any, messagesToInclude?: any, stopList?: any): Promise<any> => {
+export const generateContinueChatLog = (construct: Construct, chatLog: Chat, currentUser?: any, messagesToInclude?: any, stopList?: any): Promise<string> => {
     return new Promise((resolve, reject) => {
         ipcRenderer.send('generate-continue-chat-log', construct, chatLog, currentUser, messagesToInclude, stopList);
         ipcRenderer.once('generate-continue-chat-log-reply', (event, response) => {

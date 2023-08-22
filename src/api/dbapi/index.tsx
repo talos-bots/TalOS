@@ -192,6 +192,7 @@ export async function getChats(): Promise<Chat[]> {
                         doc.doc.lastMessageDate,
                         doc.doc.firstMessageDate,
                         doc.doc.constructs,
+                        doc.doc.humans
                     );
                 });
                 resolve(chats);
@@ -210,15 +211,15 @@ export async function getChatsByConstruct(constructId: string): Promise<Chat> {
         ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any) => {
             if (data) {
                 const chat = new Chat(
-                    data._id,
-                    data.name,
-                    data.type,
-                    data.messages,
-                    data.lastMessage,
-                    data.lastMessageDate,
-                    data.firstMessageDate,
-                    data.constructs,
-                    data.humans
+                    data.doc._id,
+                    data.doc.name,
+                    data.doc.type,
+                    data.doc.messages,
+                    data.doc.lastMessage,
+                    data.doc.lastMessageDate,
+                    data.doc.firstMessageDate,
+                    data.doc.constructs,
+                    data.doc.humans
                 );
                 resolve(chat);
             } else {

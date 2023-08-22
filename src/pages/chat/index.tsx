@@ -4,6 +4,8 @@ import { Chat } from "@/classes/Chat";
 import { Message } from "@/classes/Message";
 import { getChat, saveNewChat, updateChat } from "@/api/dbapi";
 import MessageComponent from "@/components/chat-page/message";
+import { addUserMessage, sendMessage } from "./helpers";
+import { getActiveConstructList } from "@/api/constructapi";
 
 const ChatPage: React.FC = () => {
 	const [chatLog, setChatLog] = useState<Chat | null>(null);
@@ -32,30 +34,43 @@ const ChatPage: React.FC = () => {
 			isNewChat = true;
 			console.log("new chat");
 			chat = new Chat();
-		}else{
+		} else {
 			chat = chatLog;
 		}
 		if(chat === null) return;
 		chat._id = "testchat";
-		console.log(chat);
-		let newMessage = new Message()
-		newMessage.text = message;
-		newMessage.user = "testuser";
-		newMessage.timestamp = Date.now();
-		newMessage.origin = "ConstructOS";
-		newMessage.isHuman = true;
-		newMessage.attachments = [];
+		if(chat.constructs.length === 0) {
+			let activeConstructs = await getActiveConstructList();
+			for(let i = 0; i < activeConstructs.length; i++) {
+				chat.addConstruct(activeConstructs[i]);
+			}
+		}
+		let newMessage = addUserMessage(message);
 		chat.addMessage(newMessage);
+
+		setMessages(prevMessages => [...prevMessages, newMessage]);
+
+		for (let i = 0; i < chat.constructs.length; i++) {
+			let botMessage = await sendMessage(chat, chat.constructs[i]);
+			if (botMessage){
+				chat.addMessage(botMessage);
+				setMessages(prevMessages => {
+					if(botMessage === null) return prevMessages; 
+					const updatedMessages = [...prevMessages];
+					updatedMessages.push(botMessage);
+					return updatedMessages;
+				});
+			}
+		}
 		setChatLog(chat);
 		if(isNewChat) {
 			console.log("saving new chat");
 			await saveNewChat(chat);
-		}else{
+		} else {
 			console.log("updating chat");
 			await updateChat(chat);
 		}
-		setMessages([...messages, newMessage])
-	};
+	};	
 
 	const deleteMessage = (messageID: string) => {
 		if(chatLog === null) return;
@@ -75,7 +90,7 @@ const ChatPage: React.FC = () => {
 					<div className="themed-message-box">
 						{Array.isArray(messages) && messages.map((message) => {
 							return (
-								<MessageComponent key={message.timestamp} message={message} onDelete={deleteMessage} />
+								<MessageComponent key={message._id} message={message} onDelete={deleteMessage} />
 							);
 						})}
 					</div>

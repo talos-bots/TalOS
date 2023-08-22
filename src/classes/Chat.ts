@@ -73,15 +73,15 @@ export class Chat{
         this.firstMessageDate = date;
     }
 
-    getAgents(){
+    getConstructs(){
         return this.constructs;
     }
 
-    setAgents(constructs: string[]){
+    setConstructs(constructs: string[]){
         this.constructs = constructs;
     }
 
-    addAgent(agent: string){
+    addConstruct(agent: string){
         this.constructs.push(agent);
     }
 
@@ -101,7 +101,7 @@ export class Chat{
         this.humans = this.humans.filter((h) => h !== human);
     }
 
-    removeAgent(agent: string){
+    removeConstruct(agent: string){
         this.constructs = this.constructs.filter((a) => a !== agent);
     }
 
