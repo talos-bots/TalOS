@@ -218,6 +218,7 @@ export async function getChatsByConstruct(constructId: string): Promise<Chat> {
                     data.lastMessageDate,
                     data.firstMessageDate,
                     data.constructs,
+                    data.humans
                 );
                 resolve(chat);
             } else {
@@ -243,6 +244,7 @@ export async function getChat(id: string): Promise<Chat> {
                     data.lastMessageDate,
                     data.firstMessageDate,
                     data.constructs,
+                    data.humans
                 );
                 resolve(chat);
             } else {

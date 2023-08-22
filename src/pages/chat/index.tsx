@@ -26,7 +26,6 @@ const ChatPage: React.FC = () => {
 	}, []);
 
 	const handleMessageSend = async (message: string) => {
-		console.log(message);
 		let isNewChat = false;
 		let chat;
 		if(chatLog === null) {
@@ -71,7 +70,7 @@ const ChatPage: React.FC = () => {
 
 	return (
 		<div className="relative w-full h-screen flex flex-col items-center justify-center">
-			<div className="box-border w-4/6 h-[calc(100vh-70px)] flex flex-col gap-6">
+			<div className="box-border w-3/6 h-[calc(100vh-70px)] flex flex-col gap-6">
 				<div className="h-5/6">
 					<div className="themed-message-box">
 						{Array.isArray(messages) && messages.map((message) => {

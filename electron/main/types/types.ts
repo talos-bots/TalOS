@@ -7,7 +7,8 @@ export type ChatInterface = {
     lastMessage: MessageInterface;
     lastMessageDate: number;
     firstMessageDate: number;
-    agents: string[];
+    constructs: string[];
+    humans: string[];
 }
 export type MessageInterface = {
     _id: string;

@@ -161,6 +161,14 @@ export async function handleDiscordMessage(message: Message) {
     if (chatLogData) {
         chatLog = assembleChatFromData(chatLogData);
         chatLog.messages.push(newMessage);
+        chatLog.lastMessage = newMessage;
+        chatLog.lastMessageDate = newMessage.timestamp;
+        if(!chatLog.constructs.includes(newMessage.userID)){
+            chatLog.constructs.push(newMessage.userID);
+        }
+        if(!chatLog.humans.includes(message.author.id)){
+            chatLog.humans.push(message.author.id);
+        }
     }else{
         chatLog = {
             _id: message.channel.id,
@@ -170,7 +178,8 @@ export async function handleDiscordMessage(message: Message) {
             lastMessage: newMessage,
             lastMessageDate: newMessage.timestamp,
             firstMessageDate: newMessage.timestamp,
-            agents: activeConstructs,
+            constructs: activeConstructs,
+            humans: [message.author.id],
         }
         if(chatLog.messages.length > 0){
             await addChat(chatLog);

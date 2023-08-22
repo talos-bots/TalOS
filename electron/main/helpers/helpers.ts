@@ -46,7 +46,8 @@ export function assembleChatFromData(data: any){
         lastMessage: data.lastMessage,
         lastMessageDate: data.lastMessageDate,
         firstMessageDate: data.firstMessageDate,
-        agents: data.agents,
+        constructs: data.constructs,
+        humans: data.humans,
     }
     return chat;
 }

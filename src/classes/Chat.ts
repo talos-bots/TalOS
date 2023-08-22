@@ -9,7 +9,8 @@ export class Chat{
         public lastMessage: Message = new Message(),
         public lastMessageDate: Date = new Date(),
         public firstMessageDate: Date = new Date(),
-        public agents: string[] = [],
+        public constructs: string[] = [],
+        public humans: string[] = [],
     ) {}
 
     setChat(name: string, type: string, messages: Message[]){
@@ -73,19 +74,35 @@ export class Chat{
     }
 
     getAgents(){
-        return this.agents;
+        return this.constructs;
     }
 
-    setAgents(agents: string[]){
-        this.agents = agents;
+    setAgents(constructs: string[]){
+        this.constructs = constructs;
     }
 
     addAgent(agent: string){
-        this.agents.push(agent);
+        this.constructs.push(agent);
+    }
+
+    setHumans(humans: string[]){
+        this.humans = humans;
+    }
+
+    getHumans(){
+        return this.humans;
+    }
+
+    addHuman(human: string){
+        this.humans.push(human);
+    }
+
+    removeHuman(human: string){
+        this.humans = this.humans.filter((h) => h !== human);
     }
 
     removeAgent(agent: string){
-        this.agents = this.agents.filter((a) => a !== agent);
+        this.constructs = this.constructs.filter((a) => a !== agent);
     }
 
     removeMessage(messageID: string){
