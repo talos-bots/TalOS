@@ -7,7 +7,7 @@ const GenerationSettings = () => {
     const [maxContextLength, setMaxContextLength] = useState<number>(2048);
     const [maxLength, setMaxLength] = useState<number>(180);
     const [repPen, setRepPen] = useState<number>(1.1);
-    const [repPenRange, setRepPenRange] = useState<number>(1024);
+    const [repPenRange, setRepPenRange] = useState<number>(2048);
     const [repPenSlope, setRepPenSlope] = useState<number>(0.9);
     const [temperature, setTemperature] = useState<number>(0.71);
     const [tfs, setTfs] = useState<number>(1);
@@ -89,8 +89,8 @@ const GenerationSettings = () => {
                 <div className="flex flex-col ">
                     <span className=" font-semibold">Repetition Pen Range</span>
                     <div className="w-full flex flex-row">
-                        <input className="w-2/3 themed-input" type="range" min='0' step="16" max="2048" value={repPenRange} onChange={async (e) => {setRepPenRange(parseInt(e.target.value));}} />
-                        <input className="w-1/3 themed-input" id='input-container' type="number" min='0' step="16" max="2048" value={repPenRange} onChange={async (e) => {setRepPenRange(parseInt(e.target.value))}} />
+                        <input className="w-2/3 themed-input" type="range" min='0' step="16" max="8192" value={repPenRange} onChange={async (e) => {setRepPenRange(parseInt(e.target.value));}} />
+                        <input className="w-1/3 themed-input" id='input-container' type="number" min='0' step="16" max="8192" value={repPenRange} onChange={async (e) => {setRepPenRange(parseInt(e.target.value))}} />
                     </div>
                 </div>
                 <div className="flex flex-col ">
