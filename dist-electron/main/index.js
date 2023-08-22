@@ -286,7 +286,7 @@ const generateText = async (prompt, configuredName = "You", stopList = null) => 
         const koboldPayload = {
           prompt,
           stop_sequence: stops,
-          frmtrmblln: true,
+          frmtrmblln: false,
           rep_pen: settings.rep_pen ? settings.rep_pen : 1,
           rep_pen_range: settings.rep_pen_range ? settings.rep_pen_range : 512,
           temperature: settings.temperature ? settings.temperature : 0.9,
@@ -296,8 +296,9 @@ const generateText = async (prompt, configuredName = "You", stopList = null) => 
           top_a: settings.top_a ? settings.top_a : 0,
           tfs: settings.tfs ? settings.tfs : 0,
           typical: settings.typical ? settings.typical : 0.9,
-          singleline: settings.singleline ? settings.singleline : true,
-          sampler_full_determinism: settings.sampler_full_determinism ? settings.sampler_full_determinism : false
+          singleline: settings.singleline ? settings.singleline : false,
+          sampler_full_determinism: settings.sampler_full_determinism ? settings.sampler_full_determinism : false,
+          max_length: settings.max_length ? settings.max_length : 350
         };
         response = await axios.post(`${endpoint}/api/v1/generate`, koboldPayload);
         if (response.status === 200) {
