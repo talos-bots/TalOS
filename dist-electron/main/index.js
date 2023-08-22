@@ -74,8 +74,10 @@ function convertDiscordMessageToMessage(message, activeConstructs) {
     _id: message.id,
     user: username,
     text: message.content.trim(),
+    userID: message.author.id,
     timestamp: message.createdTimestamp,
     origin: message.channel.id,
+    isHuman: true,
     isCommand: false,
     isPrivate: false,
     participants: [message.author.id, ...activeConstructs],
@@ -1035,8 +1037,10 @@ function PouchDBRoutes() {
     });
   });
   electron.ipcMain.on("add-chat", (event, arg) => {
+    console.log(arg);
     addChat(arg).then((result) => {
       event.sender.send("add-chat-reply", result);
+      console.log(result);
     });
   });
   electron.ipcMain.on("update-chat", (event, arg) => {
@@ -1324,8 +1328,10 @@ async function regenerateMessageFromChatLog(chatLog, messageContent) {
     _id: Date.now().toString(),
     user: construct.name,
     text: newReply,
+    userID: construct._id,
     timestamp: Date.now(),
     origin: "Discord",
+    isHuman: false,
     isCommand: false,
     isPrivate: false,
     participants: foundMessage.participants,
@@ -1584,8 +1590,10 @@ async function doCharacterReply(construct, chatLog, message) {
     _id: Date.now().toString(),
     user: construct.name,
     text: reply,
+    userID: construct._id,
     timestamp: Date.now(),
     origin: "Discord",
+    isHuman: false,
     isCommand: false,
     isPrivate: false,
     participants: [authorID, construct._id],
@@ -1652,8 +1660,10 @@ async function doRoundRobin(constructArray, chatLog, message) {
       _id: Date.now().toString(),
       user: constructArray[i].name,
       text: reply,
+      userID: constructArray[i]._id,
       timestamp: Date.now(),
       origin: "Discord",
+      isHuman: false,
       isCommand: false,
       isPrivate: false,
       participants: [authorID, constructArray[i]._id],

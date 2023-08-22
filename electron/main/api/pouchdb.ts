@@ -411,8 +411,10 @@ export function PouchDBRoutes(){
     });
 
     ipcMain.on('add-chat', (event, arg) => {
+        console.log(arg);
         addChat(arg).then((result) => {
             event.sender.send('add-chat-reply', result);
+            console.log(result);
         });
     });
 

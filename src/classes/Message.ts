@@ -5,19 +5,23 @@ export class Message{
         public _id: string = (new Date().getTime()).toString(),
         public user: string = '',
         public text: string = '',
+        public userID: string = '',
         public timestamp: number = new Date().getTime(),
         public origin: string = '',
+        public isHuman: boolean = false,
         public isCommand: boolean = false,
         public isPrivate: boolean = false,
         public participants: string[] = [],
         public attachments: Attachment[] = [],
     ) {}
 
-    setMessage(user: string, text: string, timestamp: number, origin: string, isCommand: boolean, isPrivate: boolean, participants: string[], attachments: Attachment[]){
+    setMessage(user: string, userID: string, text: string, timestamp: number, origin: string, isHuman: boolean, isCommand: boolean, isPrivate: boolean, participants: string[], attachments: Attachment[]){
         this.user = user;
         this.text = text;
+        this.userID = userID;
         this.timestamp = timestamp;
         this.origin = origin;
+        this.isHuman = isHuman;
         this.isCommand = isCommand;
         this.isPrivate = isPrivate;
         this.participants = participants;
@@ -28,6 +32,7 @@ export class Message{
         return {
             user: this.user,
             text: this.text,
+            userID: this.userID,
             timestamp: this.timestamp,
             origin: this.origin,
             isCommand: this.isCommand,
@@ -115,5 +120,21 @@ export class Message{
             attachments.push(attachment.data);
         });
         return attachments;
+    }
+
+    setUserID(userID: string){
+        this.userID = userID;
+    }
+
+    getUserID(){
+        return this.userID
+    }
+
+    setIsHuman(isHuman: boolean){
+        this.isHuman = isHuman;
+    }
+
+    getIsHuman(){
+        return this.isHuman;
     }
 }

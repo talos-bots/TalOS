@@ -17,7 +17,7 @@
   --background-image: null;
   --theme-root: rgba(0, 0, 0, 0.5);
   --theme-box: rgba(8, 57, 131, 0.767);
-  --theme-italic: rgba(245, 245, 245, 1);
+  --theme-italic: rgb(197, 196, 196);
   --theme-text: rgba(255, 253, 253, 1);
   --theme-button: rgba(2, 182, 26, 0.658);
   --theme-bright-color: rgba(0, 255, 26, 0.25);
@@ -139,6 +139,25 @@ ul {
   width: 10px;
 }
 
+.themed-message-box {
+  @apply w-full h-full min-h-full overflow-y-auto overflow-x-hidden gap-2 flex flex-col;
+}
+
+.themed-message {
+  @apply shadow-md bg-theme-box rounded-theme-border-radius backdrop-blur-theme-blur w-full p-2 text-left;
+}
+
+.themed-message-info {
+  @apply text-theme-italic italic text-sm absolute top-2 left-16;
+}
+
+.themed-message-text {
+  @apply text-theme-text text-left mt-1;
+}
+
+.themed-message-avatar {
+  @apply w-12 h-12 rounded-full object-cover border-theme-border border-theme-border-width bg-theme-box;
+}
 /* This is the scrollbar itself */
 ::-webkit-scrollbar-thumb {
   background: var(--theme-box); 

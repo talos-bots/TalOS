@@ -13,8 +13,10 @@ export type MessageInterface = {
     _id: string;
     user: string;
     text: string;
+    userID: string;
     timestamp: number;
     origin: string;
+    isHuman: boolean;
     isCommand: boolean;
     isPrivate: boolean;
     participants: string[];
