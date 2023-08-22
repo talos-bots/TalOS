@@ -286,9 +286,15 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
                 continue;
             }
         }
+        let tries = 0;
         let result;
         do {
             result = await generateContinueChatLog(constructArray[i], chatLog, username, maxMessages);
+            tries++;
+            if (tries > 10) {
+                result = '**No response from LLM within 10 tries. Check your endpoint and try again.**'
+                break;
+            }
         } while (result === null);
         
         let reply: string = result;

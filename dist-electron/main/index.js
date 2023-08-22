@@ -11,7 +11,6 @@ const LeveldbAdapter = require("pouchdb-adapter-leveldb");
 const fs = require("fs");
 const axios = require("axios");
 const openai = require("openai");
-const PaLM = require("palm-api");
 const FormData = require("form-data");
 function assembleConstructFromData(data) {
   const construct = {
@@ -470,17 +469,7 @@ Assistant:
       }
       break;
     case "PaLM":
-      const GooglePaLM = new PaLM(endpoint);
-      GooglePaLM.generateText(prompt, {
-        temperature: settings.temperature ? settings.temperature : 0.9,
-        top_p: settings.top_p ? settings.top_p : 0.9,
-        top_k: settings.top_k ? settings.top_k : 0
-      }).then((response2) => {
-        results = { results: [response2] };
-      }).catch((error) => {
-        console.log(error);
-        results = false;
-      });
+      console.log("PaLM");
       break;
     default:
       throw new Error("Invalid endpoint type or endpoint.");
