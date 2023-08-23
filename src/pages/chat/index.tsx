@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import InputGroup from "@/components/chat-page/chat-input";
 import { Chat } from "@/classes/Chat";
 import { Message } from "@/classes/Message";
@@ -10,7 +10,8 @@ import { getActiveConstructList } from "@/api/constructapi";
 const ChatPage: React.FC = () => {
 	const [chatLog, setChatLog] = useState<Chat | null>(null);
 	const [messages, setMessages] = useState<Message[]>([]);
-
+	const messagesEndRef = useRef<HTMLDivElement | null>(null);
+	
 	useEffect(() => {
 		const getChatLog = async () => {
 			await getChat("testchat").then((chat) => {
@@ -26,6 +27,13 @@ const ChatPage: React.FC = () => {
 		document.body.style.overflow = "auto"; // i might be royally retarded but uhh yeah this is the only way i could disable scrolling while keeping the vh calc
 		};
 	}, []);
+
+	useEffect(() => {
+		// scroll to last message when messages state updates
+		if (messagesEndRef.current !== null) {
+		  messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+		}
+	}, [messages]);
 
 	const handleMessageSend = async (message: string) => {
 		let isNewChat = false;
@@ -47,30 +55,30 @@ const ChatPage: React.FC = () => {
 		}
 		let newMessage = addUserMessage(message);
 		chat.addMessage(newMessage);
-
-		setMessages(prevMessages => [...prevMessages, newMessage]);
+		if(messages.includes(newMessage)){
+			console.log("message already exists");
+		}else{
+			setMessages(prevMessages => [...prevMessages, newMessage]);
+		}
 
 		for (let i = 0; i < chat.constructs.length; i++) {
 			let loadingMessage = await getLoadingMessage(chat.constructs[i]);
-			loadingMessage._id += "-loading";  // append a unique suffix to identify it later
 	
 			setMessages(prevMessages => [...prevMessages, loadingMessage]);
 	
 			let botMessage = await sendMessage(chat, chat.constructs[i]);
 			if (botMessage){
+				botMessage._id = loadingMessage._id;
 				chat.addMessage(botMessage);
-	
-				setMessages(prevMessages => {
-					// Remove the loadingMessage
-					const updatedMessages = prevMessages.filter(msg => msg._id !== loadingMessage._id);
-	
-					// Add the botMessage
-					if (botMessage !== null) {
-						updatedMessages.push(botMessage);
+				let newMessages = messages.map((message) => {
+					if(message._id === loadingMessage._id) {
+						if(botMessage?.text !== undefined){
+							message.text = botMessage.text;
+						}
 					}
-	
-					return updatedMessages;
+					return message;
 				});
+				setMessages(newMessages);
 			}
 		}
 		setChatLog(chat);
@@ -134,6 +142,7 @@ const ChatPage: React.FC = () => {
 								<MessageComponent key={message._id} message={message} onDelete={deleteMessage} onEdit={editMessage} onRegenerate={onRegenerate}/>
 							);
 						})}
+						<div ref={messagesEndRef}></div>
 					</div>
 				</div>
 				<div className="w-full">
