@@ -1,4 +1,4 @@
-import { generateContinueChatLog } from "@/api/constructapi";
+import { generateContinueChatLog, regenerateMessageFromChatLog } from "@/api/constructapi";
 import { getConstruct, updateChat } from "@/api/dbapi";
 import { Chat } from "@/classes/Chat";
 import { Construct } from "@/classes/Construct";
@@ -21,6 +21,21 @@ export async function sendMessage(chatlog: Chat, constructID: string, userID?: s
     return newMessage;
 }
 
+export async function getLoadingMessage(constructID: string){
+    let activeConstruct = await getConstruct(constructID);
+    let newMessage = new Message();
+    newMessage.origin = 'ConstructOS';
+    newMessage.text = 'Loading...';
+    newMessage.user = activeConstruct.name;
+    newMessage.timestamp = new Date().getTime();
+    newMessage.isCommand = false;
+    newMessage.isPrivate = true;
+    newMessage.isHuman = false;
+    newMessage.participants = [constructID];
+    newMessage.userID = constructID;
+    return newMessage;
+}
+
 export function addUserMessage(messageText: string, userID?: string){
     let newMessage = new Message();
     newMessage.origin = 'ConstructOS';
@@ -33,4 +48,11 @@ export function addUserMessage(messageText: string, userID?: string){
     newMessage.participants = [userID? userID : 'DefaultUser'];
     newMessage.userID = userID? userID : 'DefaultUser';
     return newMessage;
+}
+
+export async function regenerateMessage(chatlog: Chat, messageText: string, messageID?: string){
+    if(!messageID) return null;
+    let newReply = await regenerateMessageFromChatLog(chatlog, messageText, messageID);
+    if(!newReply) return null;
+    return newReply;
 }

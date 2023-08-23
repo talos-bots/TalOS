@@ -11,9 +11,9 @@ const InputGroup = (props: InputGroupProps) => {
 			<button className={`cursor-pointer p-0 themed-chat-button relative rounded-3xl w-[35px] h-[35px] overflow-hidden shrink-0 transition-all duration-125 hover:opacity-75`}>
 				<img className="absolute top-[10px] left-[10px] w-[15px] h-[15px] overflow-hidden" alt="" src="/chat-page-assets/pluscircle.svg" />
 			</button>
-			<input
-				className="border-none font-inter text-lg bg-transparent flex-grow h-10 overflow-hidden py-0 px-5 box-border items-start justify-center"
-				type="text"
+			<textarea
+				autoComplete="off"
+				className="border-none font-inter text-lg bg-transparent flex-grow h-10 overflow-hidden py-0 px-5 box-border items-start justify-center max-h-8 resize-none overflow-y-auto"
 				value={message}
 				placeholder="Type your message..."
 				style={{ outline: "none" }}

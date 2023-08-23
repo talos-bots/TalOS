@@ -184,13 +184,20 @@ export async function removeMessagesFromChatLog(chatLog: ChatInterface, messageC
     return newChatLog;
 }
 
-export async function regenerateMessageFromChatLog(chatLog: ChatInterface, messageContent: string){
+export async function regenerateMessageFromChatLog(chatLog: ChatInterface, messageContent: string, messageID?: string){
     let messages = chatLog.messages;
     let beforeMessages: MessageInterface[] = [];
     let afterMessages: MessageInterface[] = [];
     let foundMessage: MessageInterface | undefined;
     let messageIndex = -1;
     for(let i = 0; i < messages.length; i++){
+        if(messageID !== undefined){
+            if(messages[i]._id === messageID){
+                messageIndex = i;
+                foundMessage = messages[i];
+                break;
+            }
+        }
         if(messages[i].text === messageContent){
             messageIndex = i;
             foundMessage = messages[i];
@@ -208,7 +215,7 @@ export async function regenerateMessageFromChatLog(chatLog: ChatInterface, messa
     
     // If you want to update the chat without the target message
     chatLog.messages = messages;
-    let constructData = await getConstruct(foundMessage.user);
+    let constructData = await getConstruct(foundMessage.userID);
     if(constructData === null){
         return;
     }
@@ -309,8 +316,8 @@ function constructController() {
         });
     });
 
-    ipcMain.on('regenerate-message-from-chat-log', (event, chatLog, messageContent) => {
-        regenerateMessageFromChatLog(chatLog, messageContent).then((response) => {
+    ipcMain.on('regenerate-message-from-chat-log', (event, chatLog, messageContent, messageID) => {
+        regenerateMessageFromChatLog(chatLog, messageContent, messageID).then((response) => {
             event.reply('regenerate-message-from-chat-log-reply', response);
         });
     });

@@ -1294,13 +1294,20 @@ async function removeMessagesFromChatLog(chatLog, messageContent) {
   await updateChat(newChatLog);
   return newChatLog;
 }
-async function regenerateMessageFromChatLog(chatLog, messageContent) {
+async function regenerateMessageFromChatLog(chatLog, messageContent, messageID) {
   let messages = chatLog.messages;
   let beforeMessages = [];
   let afterMessages = [];
   let foundMessage;
   let messageIndex = -1;
   for (let i = 0; i < messages.length; i++) {
+    if (messageID !== void 0) {
+      if (messages[i]._id === messageID) {
+        messageIndex = i;
+        foundMessage = messages[i];
+        break;
+      }
+    }
     if (messages[i].text === messageContent) {
       messageIndex = i;
       foundMessage = messages[i];
@@ -1316,7 +1323,7 @@ async function regenerateMessageFromChatLog(chatLog, messageContent) {
     messages.splice(messageIndex, 1);
   }
   chatLog.messages = messages;
-  let constructData = await getConstruct(foundMessage.user);
+  let constructData = await getConstruct(foundMessage.userID);
   if (constructData === null) {
     return;
   }
@@ -1402,8 +1409,8 @@ function constructController() {
       event.reply("remove-messages-from-chat-log-reply", response);
     });
   });
-  electron.ipcMain.on("regenerate-message-from-chat-log", (event, chatLog, messageContent) => {
-    regenerateMessageFromChatLog(chatLog, messageContent).then((response) => {
+  electron.ipcMain.on("regenerate-message-from-chat-log", (event, chatLog, messageContent, messageID) => {
+    regenerateMessageFromChatLog(chatLog, messageContent, messageID).then((response) => {
       event.reply("regenerate-message-from-chat-log-reply", response);
     });
   });

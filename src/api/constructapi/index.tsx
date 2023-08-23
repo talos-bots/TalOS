@@ -105,9 +105,9 @@ export const removeMessagesFromChatLog = (chatLog: Chat, messageContent: string)
     });
 }
 
-export const regenerateMessageFromChatLog = (chatLog: any, messageContent: any): Promise<any> => {
+export const regenerateMessageFromChatLog = (chatLog: Chat, messageContent: string, messageID: string): Promise<any> => {
     return new Promise((resolve, reject) => {
-        ipcRenderer.send('regenerate-message-from-chat-log', chatLog, messageContent);
+        ipcRenderer.send('regenerate-message-from-chat-log', chatLog, messageContent, messageID);
         ipcRenderer.once('regenerate-message-from-chat-log-reply', (event, response) => {
             resolve(response);
         });

@@ -4,7 +4,7 @@ import { Chat } from "@/classes/Chat";
 import { Message } from "@/classes/Message";
 import { getChat, saveNewChat, updateChat } from "@/api/dbapi";
 import MessageComponent from "@/components/chat-page/message";
-import { addUserMessage, sendMessage } from "./helpers";
+import { addUserMessage, getLoadingMessage, regenerateMessage, sendMessage } from "./helpers";
 import { getActiveConstructList } from "@/api/constructapi";
 
 const ChatPage: React.FC = () => {
@@ -51,13 +51,24 @@ const ChatPage: React.FC = () => {
 		setMessages(prevMessages => [...prevMessages, newMessage]);
 
 		for (let i = 0; i < chat.constructs.length; i++) {
+			let loadingMessage = await getLoadingMessage(chat.constructs[i]);
+			loadingMessage._id += "-loading";  // append a unique suffix to identify it later
+	
+			setMessages(prevMessages => [...prevMessages, loadingMessage]);
+	
 			let botMessage = await sendMessage(chat, chat.constructs[i]);
 			if (botMessage){
 				chat.addMessage(botMessage);
+	
 				setMessages(prevMessages => {
-					if(botMessage === null) return prevMessages; 
-					const updatedMessages = [...prevMessages];
-					updatedMessages.push(botMessage);
+					// Remove the loadingMessage
+					const updatedMessages = prevMessages.filter(msg => msg._id !== loadingMessage._id);
+	
+					// Add the botMessage
+					if (botMessage !== null) {
+						updatedMessages.push(botMessage);
+					}
+	
 					return updatedMessages;
 				});
 			}
@@ -83,6 +94,36 @@ const ChatPage: React.FC = () => {
 		setMessages(newMessages);
 	}
 
+	const editMessage = (messageID: string, newText: string) => {
+		if(chatLog === null) return;
+		chatLog.editMessageText(messageID, newText);
+		setChatLog(chatLog);
+		updateChat(chatLog);
+		let newMessages = messages.map((message) => {
+			if(message._id === messageID) {
+				message.text = newText;
+			}
+			return message;
+		});
+		setMessages(newMessages);
+	}
+
+	const onRegenerate = async (messageID: string, messageText: string) => {
+		if(chatLog === null) return;
+		await regenerateMessage(chatLog, messageText, messageID).then((newMessage) => {
+			if(newMessage === null) return;
+			chatLog.editMessageText(messageID, newMessage);
+			setChatLog(chatLog);
+			let newMessages = messages.map((message) => {
+				if(message._id === messageID) {
+					message.text = newMessage;
+				}
+				return message;
+			});
+			setMessages(newMessages);
+		});
+	}
+
 	return (
 		<div className="relative w-full h-screen flex flex-col items-center justify-center">
 			<div className="box-border w-3/6 h-[calc(100vh-70px)] flex flex-col gap-6">
@@ -90,7 +131,7 @@ const ChatPage: React.FC = () => {
 					<div className="themed-message-box">
 						{Array.isArray(messages) && messages.map((message) => {
 							return (
-								<MessageComponent key={message._id} message={message} onDelete={deleteMessage} />
+								<MessageComponent key={message._id} message={message} onDelete={deleteMessage} onEdit={editMessage} onRegenerate={onRegenerate}/>
 							);
 						})}
 					</div>

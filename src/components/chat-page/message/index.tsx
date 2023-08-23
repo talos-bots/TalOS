@@ -1,15 +1,17 @@
 import { getConstruct } from "@/api/dbapi";
 import { Attachment } from "@/classes/Attachment";
 import { Message } from "@/classes/Message";
-import { Edit, EditIcon, RefreshCw, TrashIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { EditIcon, RefreshCw, TrashIcon } from "lucide-react";
+import { KeyboardEvent, useEffect, useRef, useState } from "react";
 import { RiQuestionMark } from "react-icons/ri";
+import ReactMarkdown from 'react-markdown';
+import TextareaAutosize from 'react-textarea-autosize';
 
 interface Props {
     message: Message;
     onDelete?: (messageID: string) => void;
     onEdit?: (messageID: string, newText: string) => void;
-    onRegenerate?: (messageID: string) => void;
+    onRegenerate?: (messageID: string, messageText: string) => void;
 }
 
 function getFormattedTime(timestamp: number): string {
@@ -29,6 +31,8 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate }: Props) =>
     const [origin, setOrigin] = useState<string>("");
     const [avatar, setAvatar] = useState<string>("");
     const [attachments, setAttachments] = useState<Attachment[]>([]);
+    const [isEditing, setIsEditing] = useState<boolean>(false);
+    let isTyping = message.text.includes("Loading...");
 
     useEffect(() => {
         if(message === undefined || message === null) return;
@@ -49,10 +53,41 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate }: Props) =>
         init();
     }, [message]);
 
+    const editedMessageRef = useRef<HTMLTextAreaElement>(null);
+
     if(message === undefined || message === null) return null;
 
+    const handleEditMessage = (event: any) => {
+        if(editedMessageRef.current !== null) {
+            editedMessageRef.current.focus();
+        }
+        if(isEditing === true){
+            setIsEditing(false);
+            if(onEdit === undefined) return;
+            onEdit(message._id, text);
+            return;
+        }
+        setIsEditing(true);
+    };
+
+    function handleMessageKeyDown(e: KeyboardEvent<HTMLTextAreaElement>): void {
+        if (e.key === "Enter" && e.shiftKey === false) {
+            e.preventDefault();
+            if(onEdit === undefined) return;
+            onEdit(message._id, text);
+            setIsEditing(false);
+        }
+    }
+
+    const handleTextEdit = (newText: string) => {
+        setText(newText);
+        setIsEditing(false);
+        if(onEdit === undefined) return;
+        onEdit(message._id, newText);
+    };
+
     return (
-        <div className="themed-message">
+        <div className="themed-message pop-in">
             <div className="flex flex-col">
                 <div className="flex flex-row items-center">
                     <div className="flex flex-row items-center w-full gap-2">
@@ -67,15 +102,15 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate }: Props) =>
                                 <button className="message-button" 
                                     onClick={() => {
                                         if(onRegenerate === undefined) return;
-                                        onRegenerate(message._id)
+                                        isTyping = true;
+                                        onRegenerate(message._id, message.text);
                                     }}>
                                     <RefreshCw size={14} />
                                 </button>
                             }
                             <button className="message-button"
                                 onClick={() => {
-                                    if(onEdit === undefined) return;
-                                    onEdit(message._id, text);
+                                    handleEditMessage(null)
                                 }}
                             >
                                 <EditIcon size={14} />
@@ -92,7 +127,37 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate }: Props) =>
                     </div>
                 </div>
                 <div className="flex flex-col">
-                    <div className="themed-message-text">{text}</div>
+                    {isEditing ? (
+                        <TextareaAutosize
+                            className="m-0 bg-transparent text-theme-text h-auto py-1 rounded-lg border-2 border-gray-500 box-border resize-none overflow-y-auto w-[42.5rem] min-w-full"
+                            style={{ textShadow: '2px 2px 2px rgba(0, 0, 0, 0.411)' }}
+                            onBlur={(e) => handleTextEdit(e.target.value)}
+                            onKeyDown={(e) => handleMessageKeyDown(e)}
+                            ref={editedMessageRef}
+                            defaultValue={message.text}
+                            onChange={(e) => setText(e.target.value)}
+                        />
+                    ) : (
+                    <div onDoubleClick={(event) => handleEditMessage(event)}>
+                        {isTyping ? (
+                            <>
+                                <div className="loading">
+                                    <div className="loading__letter">.</div>
+                                    <div className="loading__letter">.</div>
+                                    <div className="loading__letter">.</div>
+                                </div>
+                            </>
+                            ) : (
+                                <ReactMarkdown 
+                                    className='message-text m-0 font-sans text-base h-auto py-1 box-border resize-none overflow-y-auto min-w-full'
+                                    components={{
+                                        em: ({ node, ...props }) => <i style={{ color: "var(--theme-text-italic)" }} {...props} />,
+                                    }}
+                                >
+                                    {message.text}
+                                </ReactMarkdown>
+                        )}
+                    </div>)}
                     <div className="flex flex-row gap-2">
                         {attachments.map((attachment, index) => {
                             return (
