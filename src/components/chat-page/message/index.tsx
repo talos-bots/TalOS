@@ -32,11 +32,13 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate }: Props) =>
     const [avatar, setAvatar] = useState<string>("");
     const [attachments, setAttachments] = useState<Attachment[]>([]);
     const [isEditing, setIsEditing] = useState<boolean>(false);
-    let isTyping = message.text.includes("Loading...");
+    const [isTyping, setIsTyping] = useState<boolean>(false);
 
     useEffect(() => {
         if(message === undefined || message === null) return;
         const init = async () => {
+            let isLoading = message.text.includes("Loading...");
+            setIsTyping(isLoading);
             setText(message.text);
             setUser(message.user);
             setUserID(message.userID);
@@ -52,6 +54,12 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate }: Props) =>
         };
         init();
     }, [message]);
+
+    useEffect(() => {
+        if(message === undefined || message === null) return;
+        if(isTyping === false) return;
+        setIsTyping(false);
+    }, [message.text]);
 
     const editedMessageRef = useRef<HTMLTextAreaElement>(null);
 
@@ -98,31 +106,35 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate }: Props) =>
                     </div>
                     <div className="flex flex-row items-center">
                         <div className="flex flex-row text-xs top-3 absolute right-2 italic gap-1">
-                            {isHuman ? null : 
-                                <button className="message-button" 
+                            {isTyping === false && (
+                                <>
+                                {isHuman ? null : 
+                                    <button className="message-button" 
+                                        onClick={() => {
+                                            if(onRegenerate === undefined) return;
+                                            setIsTyping(true)
+                                            onRegenerate(message._id, message.text)
+                                        }}>
+                                        <RefreshCw size={14} />
+                                    </button>
+                                }
+                                <button className="message-button"
                                     onClick={() => {
-                                        if(onRegenerate === undefined) return;
-                                        isTyping = true;
-                                        onRegenerate(message._id, message.text);
-                                    }}>
-                                    <RefreshCw size={14} />
+                                        handleEditMessage(null)
+                                    }}
+                                >
+                                    <EditIcon size={14} />
                                 </button>
-                            }
-                            <button className="message-button"
-                                onClick={() => {
-                                    handleEditMessage(null)
-                                }}
-                            >
-                                <EditIcon size={14} />
-                            </button>
-                            <button className="message-button"
-                                onClick={() => {
-                                    if(onDelete === undefined) return;
-                                    onDelete(message._id);
-                                }}
-                            >
-                                <TrashIcon size={14} />
-                            </button>
+                                <button className="message-button"
+                                    onClick={() => {
+                                        if(onDelete === undefined) return;
+                                        onDelete(message._id);
+                                    }}
+                                >
+                                    <TrashIcon size={14} />
+                                </button>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>
