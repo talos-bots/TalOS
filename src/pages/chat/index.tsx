@@ -59,22 +59,24 @@ const ChatPage: React.FC = () => {
 
 		for (let i = 0; i < chat.constructs.length; i++) {
 			let loadingMessage = await getLoadingMessage(chat.constructs[i]);
+			loadingMessage._id += "-loading";  // append a unique suffix to identify it later
 	
 			setMessages(prevMessages => [...prevMessages, loadingMessage]);
 	
 			let botMessage = await sendMessage(chat, chat.constructs[i]);
 			if (botMessage){
-				botMessage._id = loadingMessage._id;
 				chat.addMessage(botMessage);
-				let newMessages = messages.map((message) => {
-					if(message._id === loadingMessage._id) {
-						if(botMessage?.text !== undefined){
-							message.text = botMessage.text;
-						}
+				setMessages(prevMessages => {
+					// Remove the loadingMessage
+					const updatedMessages = prevMessages.filter(msg => msg._id !== loadingMessage._id);
+	
+					// Add the botMessage
+					if (botMessage !== null) {
+						updatedMessages.push(botMessage);
 					}
-					return message;
+	
+					return updatedMessages;
 				});
-				setMessages(newMessages);
 			}
 		}
 		setChatLog(chat);
