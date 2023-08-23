@@ -487,14 +487,15 @@ Assistant:
         temperature: settings.temperature ? settings.temperature : 0.9,
         top_p: settings.top_p ? settings.top_p : 0.9,
         top_k: settings.top_k ? settings.top_k : 0,
-        stopSequences: stops,
+        stopSequences: stops.slice(0, 3),
         maxOutputTokens: settings.max_tokens ? settings.max_tokens : 350
-      }).then((response2) => {
-        return { results: [response2[0].candidates[0].output] };
-      }).catch((err) => {
-        results = false;
       });
-      results = googleReply;
+      if (googleReply[0].candidates[0].output === void 0) {
+        results = false;
+        console.log(googleReply);
+      } else {
+        results = { results: [googleReply[0].candidates[0].output] };
+      }
       break;
     default:
       throw new Error("Invalid endpoint type or endpoint.");
