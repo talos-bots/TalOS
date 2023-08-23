@@ -22,10 +22,6 @@ const ChatPage: React.FC = () => {
 			});
 		}
 		getChatLog();
-		document.body.style.overflow = "hidden";
-		return () => {
-		document.body.style.overflow = "auto"; // i might be royally retarded but uhh yeah this is the only way i could disable scrolling while keeping the vh calc
-		};
 	}, []);
 
 	useEffect(() => {
@@ -133,9 +129,9 @@ const ChatPage: React.FC = () => {
 	}
 
 	return (
-		<div className="relative w-full h-screen flex flex-col items-center justify-center">
+		<div className="flex flex-row w-full h-full items-center justify-center">
 			<div className="box-border w-3/6 h-[calc(100vh-70px)] flex flex-col gap-6">
-				<div className="h-5/6">
+				<div className="h-5/6 mt-4">
 					<div className="themed-message-box">
 						{Array.isArray(messages) && messages.map((message) => {
 							return (
