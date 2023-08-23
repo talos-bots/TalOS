@@ -15,7 +15,7 @@ const ChatPage: React.FC = () => {
 
 	useEffect(() => {
 		const getChatLog = async () => {
-			await getChat("testchat").then((chat) => {
+			await getChat("characterChat").then((chat) => {
 				setChatLog(chat);
 				setMessages(chat.messages);
 			}).catch((err) => {
@@ -45,7 +45,7 @@ const ChatPage: React.FC = () => {
 			chat = chatLog;
 		}
 		if(chat === null) return;
-		chat._id = "testchat";
+		chat._id = "characterChat";
 		if(chat.constructs.length === 0) {
 			let activeConstructs = await getActiveConstructList();
 			for(let i = 0; i < activeConstructs.length; i++) {

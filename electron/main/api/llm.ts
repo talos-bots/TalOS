@@ -391,26 +391,88 @@ export const generateText = async (
             }
         break;
         case 'PaLM':
+            const PaLMFilters = [
+                {
+                    category: "HARM_CATEGORY_UNSPECIFIED",
+                    threshold: "BLOCK_NONE"
+                },
+                {
+                    category: "HARM_CATEGORY_DEROGATORY",
+                    threshold: "BLOCK_NONE"
+                },
+                {
+                    category: "HARM_CATEGORY_TOXICITY",
+                    threshold: "BLOCK_NONE"
+                },
+                {
+                    category: "HARM_CATEGORY_VIOLENCE",
+                    threshold: "BLOCK_NONE"
+                },
+                {
+                    category: "HARM_CATEGORY_SEXUAL",
+                    threshold: "BLOCK_NONE"
+                },
+                {
+                    category: "HARM_CATEGORY_MEDICAL",
+                    threshold: "BLOCK_NONE"
+                },
+                {
+                    category: "HARM_CATEGORY_DANGEROUS",
+                    threshold: "BLOCK_NONE"
+                }
+            ]
             const MODEL_NAME = "models/text-bison-001";
-            const client = new TextServiceClient({
-                authClient: new GoogleAuth().fromAPIKey(endpoint),
-            });
-            const googleReply = await client.generateText({ 
-                model: MODEL_NAME, 
-                prompt: {
+            const googleReply = await axios.post(`https://generativelanguage.googleapis.com/v1beta2/models/text-bison-001:generateText?key=${endpoint}`,
+            { 
+                "model": MODEL_NAME,
+                "prompt": {
                     text: prompt,
                 },
+                "safetySettings": [
+                    {
+                        "category": "HARM_CATEGORY_UNSPECIFIED",
+                        "threshold": "BLOCK_NONE"
+                    },
+                    {
+                        "category": "HARM_CATEGORY_DEROGATORY",
+                        "threshold": "BLOCK_NONE"
+                    },
+                    {
+                        "category": "HARM_CATEGORY_TOXICITY",
+                        "threshold": "BLOCK_NONE"
+                    },
+                    {
+                        "category": "HARM_CATEGORY_VIOLENCE",
+                        "threshold": "BLOCK_NONE"
+                    },
+                    {
+                        "category": "HARM_CATEGORY_SEXUAL",
+                        "threshold": "BLOCK_NONE"
+                    },
+                    {
+                        "category": "HARM_CATEGORY_MEDICAL",
+                        "threshold": "BLOCK_NONE"
+                    },
+                    {
+                        "category": "HARM_CATEGORY_DANGEROUS",
+                        "threshold": "BLOCK_NONE"
+                    }
+                ],
                 temperature: settings.temperature ? settings.temperature : 0.9,
                 top_p: settings.top_p ? settings.top_p : 0.9,
                 top_k: settings.top_k ? settings.top_k : 0,
                 stopSequences: stops.slice(0, 3),
                 maxOutputTokens: settings.max_tokens ? settings.max_tokens : 350,
-            });
-            if(googleReply[0].candidates[0].output === undefined){
+            }, {headers: {'Content-Type': 'application/json'}});
+            console.log(googleReply.data)
+            if(googleReply.data.error !== undefined){
                 results = false;
-                console.log(googleReply)
             }else{
-                results = { results: [googleReply[0].candidates[0].output] };
+                if(googleReply.data?.candidates[0]?.output === undefined){
+                    results = false;
+                }else{
+                    results = { results: [googleReply.data.candidates[0].output] };
+                }
             }
         break;
     default:

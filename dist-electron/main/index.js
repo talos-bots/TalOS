@@ -11,7 +11,6 @@ const LeveldbAdapter = require("pouchdb-adapter-leveldb");
 const fs = require("fs");
 const axios = require("axios");
 const openai = require("openai");
-const googleAuthLibrary = require("google-auth-library");
 const FormData = require("form-data");
 function assembleConstructFromData(data) {
   const construct = {
@@ -123,7 +122,7 @@ async function base642Buffer(base64) {
     return buffer;
   }
 }
-const { TextServiceClient } = require("@google-ai/generativelanguage").v1beta2;
+require("@google-ai/generativelanguage").v1beta2;
 const HORDE_API_URL = "https://aihorde.net/api/";
 const store$5 = new Store({
   name: "llmData"
@@ -261,6 +260,7 @@ async function getStatus(testEndpoint, testEndpointType) {
   }
 }
 const generateText = async (prompt, configuredName = "You", stopList = null) => {
+  var _a, _b;
   let response;
   let char = "Character";
   let results;
@@ -476,25 +476,60 @@ Assistant:
       break;
     case "PaLM":
       const MODEL_NAME = "models/text-bison-001";
-      const client = new TextServiceClient({
-        authClient: new googleAuthLibrary.GoogleAuth().fromAPIKey(endpoint)
-      });
-      const googleReply = await client.generateText({
-        model: MODEL_NAME,
-        prompt: {
-          text: prompt
+      const googleReply = await axios.post(
+        `https://generativelanguage.googleapis.com/v1beta2/models/text-bison-001:generateText?key=${endpoint}`,
+        {
+          "model": MODEL_NAME,
+          "prompt": {
+            text: prompt
+          },
+          "safetySettings": [
+            {
+              "category": "HARM_CATEGORY_UNSPECIFIED",
+              "threshold": "BLOCK_NONE"
+            },
+            {
+              "category": "HARM_CATEGORY_DEROGATORY",
+              "threshold": "BLOCK_NONE"
+            },
+            {
+              "category": "HARM_CATEGORY_TOXICITY",
+              "threshold": "BLOCK_NONE"
+            },
+            {
+              "category": "HARM_CATEGORY_VIOLENCE",
+              "threshold": "BLOCK_NONE"
+            },
+            {
+              "category": "HARM_CATEGORY_SEXUAL",
+              "threshold": "BLOCK_NONE"
+            },
+            {
+              "category": "HARM_CATEGORY_MEDICAL",
+              "threshold": "BLOCK_NONE"
+            },
+            {
+              "category": "HARM_CATEGORY_DANGEROUS",
+              "threshold": "BLOCK_NONE"
+            }
+          ],
+          temperature: settings.temperature ? settings.temperature : 0.9,
+          top_p: settings.top_p ? settings.top_p : 0.9,
+          top_k: settings.top_k ? settings.top_k : 0,
+          stopSequences: stops.slice(0, 3),
+          maxOutputTokens: settings.max_tokens ? settings.max_tokens : 350
         },
-        temperature: settings.temperature ? settings.temperature : 0.9,
-        top_p: settings.top_p ? settings.top_p : 0.9,
-        top_k: settings.top_k ? settings.top_k : 0,
-        stopSequences: stops.slice(0, 3),
-        maxOutputTokens: settings.max_tokens ? settings.max_tokens : 350
-      });
-      if (googleReply[0].candidates[0].output === void 0) {
+        { headers: { "Content-Type": "application/json" } }
+      );
+      console.log(googleReply.data);
+      if (googleReply.data.error !== void 0) {
         results = false;
-        console.log(googleReply);
       } else {
-        results = { results: [googleReply[0].candidates[0].output] };
+        if (((_b = (_a = googleReply.data) == null ? void 0 : _a.candidates[0]) == null ? void 0 : _b.output) === void 0) {
+          results = false;
+        } else {
+          results = { results: [googleReply.data.candidates[0].output] };
+        }
       }
       break;
     default:
