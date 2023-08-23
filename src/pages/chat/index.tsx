@@ -4,14 +4,15 @@ import { Chat } from "@/classes/Chat";
 import { Message } from "@/classes/Message";
 import { getChat, saveNewChat, updateChat } from "@/api/dbapi";
 import MessageComponent from "@/components/chat-page/message";
-import { addUserMessage, getLoadingMessage, regenerateMessage, sendMessage } from "./helpers";
+import { addUserMessage, getLoadingMessage, regenerateMessage, sendMessage, wait } from "./helpers";
 import { getActiveConstructList } from "@/api/constructapi";
 
 const ChatPage: React.FC = () => {
 	const [chatLog, setChatLog] = useState<Chat | null>(null);
 	const [messages, setMessages] = useState<Message[]>([]);
 	const messagesEndRef = useRef<HTMLDivElement | null>(null);
-	
+	const [hasSentMessage, setHasSentMessage] = useState<boolean>(false);
+
 	useEffect(() => {
 		const getChatLog = async () => {
 			await getChat("testchat").then((chat) => {
@@ -32,6 +33,8 @@ const ChatPage: React.FC = () => {
 	}, [messages]);
 
 	const handleMessageSend = async (message: string) => {
+		if(hasSentMessage === true) return;
+		setHasSentMessage(true);
 		let isNewChat = false;
 		let chat;
 		if(chatLog === null) {
@@ -56,13 +59,11 @@ const ChatPage: React.FC = () => {
 		}else{
 			setMessages(prevMessages => [...prevMessages, newMessage]);
 		}
-
+		await wait(750);
 		for (let i = 0; i < chat.constructs.length; i++) {
 			let loadingMessage = await getLoadingMessage(chat.constructs[i]);
-			loadingMessage._id += "-loading";  // append a unique suffix to identify it later
-	
+			loadingMessage._id += "-loading";
 			setMessages(prevMessages => [...prevMessages, loadingMessage]);
-	
 			let botMessage = await sendMessage(chat, chat.constructs[i]);
 			if (botMessage){
 				chat.addMessage(botMessage);
@@ -87,6 +88,7 @@ const ChatPage: React.FC = () => {
 			console.log("updating chat");
 			await updateChat(chat);
 		}
+		setHasSentMessage(false);
 	};	
 
 	const deleteMessage = (messageID: string) => {

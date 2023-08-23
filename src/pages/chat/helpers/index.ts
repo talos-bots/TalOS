@@ -56,3 +56,9 @@ export async function regenerateMessage(chatlog: Chat, messageText: string, mess
     if(!newReply) return null;
     return newReply;
 }
+
+export function wait(milliseconds: number): Promise<void> {
+    return new Promise((resolve) => {
+        setTimeout(resolve, milliseconds);
+    });
+}
