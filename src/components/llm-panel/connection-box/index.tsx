@@ -28,7 +28,7 @@ const ConnectionBox = (props: ConnectionBoxProps) => {
     }, []);
 
     const connect = async () => {
-        await setLLMConnectionInformation(endpoint, endpointType);
+        await setLLMConnectionInformation(endpoint, endpointType, password);
         let status = await getStatus(endpoint, endpointType);
         setStatus(status);
     }
