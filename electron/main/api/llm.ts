@@ -136,10 +136,10 @@ export async function getStatus(testEndpoint?: string, testEndpointType?: string
             if (response.status === 200) {
                 return response.data.result;
             } else {
-                return { error: 'Kobold endpoint is not responding.' };
+                return 'Kobold endpoint is not responding.'
             }
             } catch (error) {
-                return { error: 'Kobold endpoint is not responding.' };
+                return 'Kobold endpoint is not responding.'
             }
             break;
         case 'Ooba':
@@ -148,27 +148,31 @@ export async function getStatus(testEndpoint?: string, testEndpointType?: string
             if (response.status === 200) {
                 return response.data.result;
             } else {
-                return { error: 'Ooba endpoint is not responding.' };
+                return 'Ooba endpoint is not responding.';
             }
             } catch (error) {
-                return { error: 'Ooba endpoint is not responding.' };
+                return 'Ooba endpoint is not responding.';
             }
         case 'OAI':
-            return { error: 'OAI is not yet supported.' };
+            return 'OAI is not yet supported.';
         case 'Horde':
             response = await axios.get(`${HORDE_API_URL}v2/status/heartbeat`);
             if (response.status === 200) {
-                return { result: 'Horde heartbeat is steady.' };
+                return 'Horde heartbeat is steady.';
             } else {
-                return { error: 'Horde heartbeat failed.' };
+                return 'Horde heartbeat failed.';
             }
+        case 'P-OAI':
+            return 'P-OAI status is not yet supported.';
+        case 'P-Claude':
+            return 'P-Claude statusis not yet supported.';
         case 'PaLM':
-            return { error: 'PaLM is not yet supported.' };
+            return 'PaLM status is not yet supported.';
         default:
-            return { error: 'Invalid endpoint type.' };
+            return 'Invalid endpoint type.';
         }
     } catch (error) {
-        return { error: 'Invalid endpoint type.' };
+        return 'Invalid endpoint type.';
     }
 }
 
@@ -348,16 +352,16 @@ export const generateText = async (
                     max_tokens: settings.max_tokens ? settings.max_tokens : 350,
                     stop: [`${configuredName}:`],
                 }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${password}`
-                },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${password}`
+                    },
                 });
-                if(response.data.choices[0].message.content === undefined){
-                results = false;
-                console.log(response.data)
+                if(response.data?.choices[0]?.message?.content === undefined){
+                    results = false;
+                    console.log(response.data)
                 }else{
-                results = { results: [response.data.choices[0].message.content]};
+                    results = { results: [response.data.choices[0].message.content]};
                 }
             } catch (error) {
                 console.log(error);
