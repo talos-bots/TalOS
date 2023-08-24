@@ -389,27 +389,38 @@ export async function continueChatLog(interaction: CommandInteraction) {
 export async function handleRengenerateMessage(message: Message){
     let registeredChannels = getRegisteredChannels();
     let registered = false;
-    if(message.channel === null) return;
+    if(message.channel === null){
+        console.log('Channel is null');
+        return;
+    }
     for(let i = 0; i < registeredChannels.length; i++){
         if(registeredChannels[i]._id === message.channel.id){
             registered = true;
             break;
         }
     }
-    if(!registered) return;
+    if(!registered){
+        console.log('Channel is not registered');
+        return;
+    }
     let chatLogData = await getChat(message.channel.id);
     let chatLog;
     if (chatLogData) {
         chatLog = assembleChatFromData(chatLogData);
     }
     if(chatLog === undefined){
+        console.log('Chat log is undefined');
         return;
     }
-    if(chatLog.messages.length < 1){
+    if(chatLog.messages.length <= 1){
+        console.log('Chat log has no messages');
         return;
     }
     let edittedMessage = await regenerateMessageFromChatLog(chatLog, message.content);
-    if(edittedMessage === undefined) return;
+    if(edittedMessage === undefined){
+        console.log('Editted message is undefined');
+        return;
+    }
     await editMessage(message, edittedMessage);
 }
 

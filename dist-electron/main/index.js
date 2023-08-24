@@ -1343,14 +1343,16 @@ async function regenerateMessageFromChatLog(chatLog, messageContent, messageID) 
         foundMessage = messages[i];
         break;
       }
-    }
-    if (messages[i].text === messageContent) {
-      messageIndex = i;
-      foundMessage = messages[i];
-      break;
+    } else {
+      if (messages[i].text.trim().includes(messageContent.trim())) {
+        messageIndex = i;
+        foundMessage = messages[i];
+        break;
+      }
     }
   }
   if (foundMessage === void 0) {
+    console.log("Could not find message to regenerate");
     return;
   }
   if (messageIndex !== -1) {
@@ -1361,11 +1363,13 @@ async function regenerateMessageFromChatLog(chatLog, messageContent, messageID) 
   chatLog.messages = messages;
   let constructData = await getConstruct(foundMessage.userID);
   if (constructData === null) {
+    console.log("Could not find construct to regenerate message");
     return;
   }
   let construct = assembleConstructFromData(constructData);
   let newReply = await generateContinueChatLog(construct, chatLog, foundMessage.participants[0]);
   if (newReply === null) {
+    console.log("Could not generate new reply");
     return;
   }
   let newMessage = {
@@ -1790,30 +1794,38 @@ async function continueChatLog(interaction) {
 async function handleRengenerateMessage(message) {
   let registeredChannels = getRegisteredChannels();
   let registered = false;
-  if (message.channel === null)
+  if (message.channel === null) {
+    console.log("Channel is null");
     return;
+  }
   for (let i = 0; i < registeredChannels.length; i++) {
     if (registeredChannels[i]._id === message.channel.id) {
       registered = true;
       break;
     }
   }
-  if (!registered)
+  if (!registered) {
+    console.log("Channel is not registered");
     return;
+  }
   let chatLogData = await getChat(message.channel.id);
   let chatLog;
   if (chatLogData) {
     chatLog = assembleChatFromData(chatLogData);
   }
   if (chatLog === void 0) {
+    console.log("Chat log is undefined");
     return;
   }
-  if (chatLog.messages.length < 1) {
+  if (chatLog.messages.length <= 1) {
+    console.log("Chat log has no messages");
     return;
   }
   let edittedMessage = await regenerateMessageFromChatLog(chatLog, message.content);
-  if (edittedMessage === void 0)
+  if (edittedMessage === void 0) {
+    console.log("Editted message is undefined");
     return;
+  }
   await editMessage(message, edittedMessage);
 }
 async function handleRemoveMessage(message) {
@@ -2055,7 +2067,7 @@ const ContinueChatCommand = {
   name: "cont",
   description: "Continues the chat log for the current channel.",
   execute: async (interaction) => {
-    await interaction.deferReply();
+    await interaction.deferReply({ ephemeral: true });
     if (interaction.channelId === null) {
       await interaction.editReply({
         content: "This command can only be used in a server channel."
@@ -2245,6 +2257,86 @@ const ClearAllWebhooksCommand = {
     });
   }
 };
+const DoCharacterGreetingsCommand = {
+  name: "greeting",
+  description: "Adds the character greeting to the chat.",
+  execute: async (interaction) => {
+    await interaction.deferReply();
+    if (interaction.channelId === null) {
+      await interaction.editReply({
+        content: "This command can only be used in a server."
+      });
+      return;
+    }
+    if (interaction.guildId === null) {
+      await interaction.editReply({
+        content: "This command can only be used in a server."
+      });
+      return;
+    }
+    const constructs = retrieveConstructs();
+    let constructDoc = await getConstruct(constructs[0]);
+    let construct = assembleConstructFromData(constructDoc);
+    let greeting = construct.greetings[0];
+    let greetingMessage = {
+      _id: Date.now().toString(),
+      user: construct.name,
+      text: greeting,
+      userID: construct._id,
+      timestamp: Date.now(),
+      origin: interaction.channelId,
+      isHuman: false,
+      attachments: [],
+      isCommand: false,
+      isPrivate: false,
+      participants: [construct._id]
+    };
+    let registeredChannels = getRegisteredChannels();
+    let registered = false;
+    for (let i = 0; i < registeredChannels.length; i++) {
+      if (registeredChannels[i]._id === interaction.channelId) {
+        registered = true;
+        break;
+      }
+    }
+    if (!registered)
+      return;
+    let chatLogData = await getChat(interaction.channelId);
+    let chatLog;
+    if (chatLogData) {
+      chatLog = assembleChatFromData(chatLogData);
+      chatLog.messages.push(greetingMessage);
+      chatLog.lastMessage = greetingMessage;
+      chatLog.lastMessageDate = greetingMessage.timestamp;
+      if (!chatLog.constructs.includes(greetingMessage.userID)) {
+        chatLog.constructs.push(greetingMessage.userID);
+      }
+      if (!chatLog.humans.includes(interaction.user.id)) {
+        chatLog.humans.push(interaction.user.id);
+      }
+    } else {
+      chatLog = {
+        _id: interaction.channelId,
+        name: interaction.channelId + " Chat " + construct.name,
+        type: "Discord",
+        messages: [greetingMessage],
+        lastMessage: greetingMessage,
+        lastMessageDate: greetingMessage.timestamp,
+        firstMessageDate: greetingMessage.timestamp,
+        constructs,
+        humans: [interaction.user.id]
+      };
+      if (chatLog.messages.length > 0) {
+        await addChat(chatLog);
+      } else {
+        return;
+      }
+    }
+    await interaction.editReply({
+      content: greeting
+    });
+  }
+};
 const PingCommand = {
   name: "ping",
   description: "Ping!",
@@ -2267,7 +2359,8 @@ const DefaultCommands = [
   SetMaxMessagesCommand,
   SetDoAutoReply,
   SetAliasCommand,
-  ClearAllWebhooksCommand
+  ClearAllWebhooksCommand,
+  DoCharacterGreetingsCommand
 ];
 const intents = {
   intents: [
@@ -2278,7 +2371,8 @@ const intents = {
     discord_js.GatewayIntentBits.DirectMessages,
     discord_js.GatewayIntentBits.DirectMessageReactions,
     discord_js.GatewayIntentBits.GuildMessageTyping,
-    discord_js.GatewayIntentBits.GuildModeration
+    discord_js.GatewayIntentBits.GuildModeration,
+    discord_js.GatewayIntentBits.GuildMessageReactions
   ],
   partials: [discord_js.Partials.Channel, discord_js.Partials.GuildMember, discord_js.Partials.User, discord_js.Partials.Reaction, discord_js.Partials.Message]
 };
@@ -2628,25 +2722,32 @@ function DiscordJSRoutes() {
       return;
     (_c = exports.win) == null ? void 0 : _c.webContents.send("discord-message-delete", message);
   });
-  disClient.on(discord_js.Events.MessageReactionAdd, async (reaction, user) => {
-    var _a, _b;
+  disClient.on("messageReactionAdd", async (reaction, user) => {
+    var _a, _b, _c;
     if (user.id === ((_a = disClient.user) == null ? void 0 : _a.id))
       return;
+    console.log("Reaction added...");
     try {
       if (reaction.partial) {
         await reaction.fetch();
+        console.log("Fetching reaction...");
       }
       if (reaction.message.partial) {
         await reaction.message.fetch();
+        console.log("Fetching message...");
       }
       const message = reaction.message;
+      console.log("Message fetched...");
       if (reaction.emoji.name === "♻️") {
+        console.log("Regenerating message...");
         await handleRengenerateMessage(message);
+        (_b = message.reactions.cache.get("♻️")) == null ? void 0 : _b.remove();
       }
       if (reaction.emoji.name === "🗑️") {
+        console.log("Removing message...");
         await handleRemoveMessage(message);
       }
-      (_b = exports.win) == null ? void 0 : _b.webContents.send("discord-message-reaction-add", reaction, user);
+      (_c = exports.win) == null ? void 0 : _c.webContents.send("discord-message-reaction-add", reaction, user);
     } catch (error) {
       console.error("Something went wrong when fetching the message:", error);
     }

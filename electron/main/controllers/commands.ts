@@ -1,8 +1,8 @@
 import { CommandInteraction, EmbedBuilder } from "discord.js";
-import { SlashCommand } from "../types/types";
+import { MessageInterface, SlashCommand } from "../types/types";
 import { addRegisteredChannel, continueChatLog, getRegisteredChannels, removeRegisteredChannel, setDoAutoReply, setMaxMessages } from "./DiscordController";
-import { getConstruct, removeChat } from "../api/pouchdb";
-import { assembleConstructFromData } from "../helpers/helpers";
+import { addChat, getChat, getConstruct, removeChat } from "../api/pouchdb";
+import { assembleChatFromData, assembleConstructFromData } from "../helpers/helpers";
 import { retrieveConstructs, setDoMultiLine } from "./ConstructController";
 import { clearWebhooksFromChannel, doGlobalNicknameChange } from "../api/discord";
 import { getStatus } from "../api/llm";
@@ -194,7 +194,7 @@ export const ContinueChatCommand: SlashCommand = {
     name: 'cont',
     description: 'Continues the chat log for the current channel.',
     execute: async (interaction: CommandInteraction) => {
-        await interaction.deferReply();
+        await interaction.deferReply({ephemeral: true});
         if (interaction.channelId === null) {
             await interaction.editReply({
             content: "This command can only be used in a server channel.",
@@ -386,6 +386,86 @@ export const ClearAllWebhooksCommand: SlashCommand = {
     }
 }
 
+export const DoCharacterGreetingsCommand: SlashCommand = {
+    name: 'greeting',
+    description: 'Adds the character greeting to the chat.',
+    execute: async (interaction: CommandInteraction) => {
+        await interaction.deferReply();
+        if (interaction.channelId === null) {
+            await interaction.editReply({
+            content: "This command can only be used in a server.",
+            });
+            return;
+        }
+        if(interaction.guildId === null){
+            await interaction.editReply({
+            content: "This command can only be used in a server.",
+            });
+            return;
+        }
+        const constructs = retrieveConstructs();
+        let constructDoc = await getConstruct(constructs[0]);
+        let construct = assembleConstructFromData(constructDoc);
+        let greeting = construct.greetings[0]
+        let greetingMessage: MessageInterface = {
+            _id: Date.now().toString(),
+            user: construct.name,
+            text: greeting,
+            userID: construct._id,
+            timestamp: Date.now(),
+            origin: interaction.channelId,
+            isHuman: false,
+            attachments: [],
+            isCommand: false,
+            isPrivate: false,
+            participants: [construct._id],
+        }
+        let registeredChannels = getRegisteredChannels();
+        let registered = false;
+        for(let i = 0; i < registeredChannels.length; i++){
+            if(registeredChannels[i]._id === interaction.channelId){
+                registered = true;
+                break;
+            }
+        }
+        if(!registered) return;
+        let chatLogData = await getChat(interaction.channelId);
+        let chatLog;
+        if (chatLogData) {
+            chatLog = assembleChatFromData(chatLogData);
+            chatLog.messages.push(greetingMessage);
+            chatLog.lastMessage = greetingMessage;
+            chatLog.lastMessageDate = greetingMessage.timestamp;
+            if(!chatLog.constructs.includes(greetingMessage.userID)){
+                chatLog.constructs.push(greetingMessage.userID);
+            }
+            if(!chatLog.humans.includes(interaction.user.id)){
+                chatLog.humans.push(interaction.user.id);
+            }
+        }else{
+            chatLog = {
+                _id: interaction.channelId,
+                name: interaction.channelId + ' Chat ' +construct.name,
+                type: 'Discord',
+                messages: [greetingMessage],
+                lastMessage: greetingMessage,
+                lastMessageDate: greetingMessage.timestamp,
+                firstMessageDate: greetingMessage.timestamp,
+                constructs: constructs,
+                humans: [interaction.user.id],
+            }
+            if(chatLog.messages.length > 0){
+                await addChat(chatLog);
+            }else{
+                return;
+            }
+        }
+        await interaction.editReply({
+            content: greeting,
+        });
+    }
+}
+
 export const PingCommand: SlashCommand = {
     name: 'ping',
     description: 'Ping!',
@@ -409,4 +489,5 @@ export const DefaultCommands = [
     SetDoAutoReply,
     SetAliasCommand,
     ClearAllWebhooksCommand,
+    DoCharacterGreetingsCommand,
 ];

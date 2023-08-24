@@ -197,14 +197,16 @@ export async function regenerateMessageFromChatLog(chatLog: ChatInterface, messa
                 foundMessage = messages[i];
                 break;
             }
-        }
-        if(messages[i].text === messageContent){
-            messageIndex = i;
-            foundMessage = messages[i];
-            break;
+        }else{
+            if(messages[i].text.trim().includes(messageContent.trim())){
+                messageIndex = i;
+                foundMessage = messages[i];
+                break;
+            }
         }
     }
     if(foundMessage === undefined){
+        console.log('Could not find message to regenerate');
         return;
     }
     if (messageIndex !== -1) {
@@ -217,11 +219,13 @@ export async function regenerateMessageFromChatLog(chatLog: ChatInterface, messa
     chatLog.messages = messages;
     let constructData = await getConstruct(foundMessage.userID);
     if(constructData === null){
+        console.log('Could not find construct to regenerate message');
         return;
     }
     let construct = assembleConstructFromData(constructData);
     let newReply = await generateContinueChatLog(construct, chatLog, foundMessage.participants[0]);
     if(newReply === null){
+        console.log('Could not generate new reply');
         return;
     }
     let newMessage = {

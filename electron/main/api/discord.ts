@@ -13,7 +13,7 @@ const intents = {
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, 
     GatewayIntentBits.MessageContent, GatewayIntentBits.GuildEmojisAndStickers, 
     GatewayIntentBits.DirectMessages, GatewayIntentBits.DirectMessageReactions,
-    GatewayIntentBits.GuildMessageTyping, GatewayIntentBits.GuildModeration], 
+    GatewayIntentBits.GuildMessageTyping, GatewayIntentBits.GuildModeration, GatewayIntentBits.GuildMessageReactions], 
     partials: [Partials.Channel, Partials.GuildMember, Partials.User, Partials.Reaction, Partials.Message] 
 };
 type ValidStatus = 'online' | 'dnd' | 'idle' | 'invisible';
@@ -453,28 +453,34 @@ export function DiscordJSRoutes(){
         win?.webContents.send('discord-message-delete', message);
     });
 
-    disClient.on(Events.MessageReactionAdd, async (reaction, user) => {
+    disClient.on("messageReactionAdd", async (reaction, user) => {
         if (user.id === disClient.user?.id) return;
-    
+        console.log("Reaction added...");
         try {
             // Ensure the reaction itself is fully fetched
             if (reaction.partial) {
                 await reaction.fetch();
+                console.log("Fetching reaction...");
             }
     
             // Ensure the associated message of the reaction is fully fetched
             if (reaction.message.partial) {
                 await reaction.message.fetch();
+                console.log("Fetching message...");
             }
     
             // Now, reaction.message should be the fully fetched message
             const message = reaction.message;
-    
+            console.log("Message fetched...");
+
             if(reaction.emoji.name === '♻️'){
+                console.log("Regenerating message...");
                 await handleRengenerateMessage(message as Message);
+                message.reactions.cache.get('♻️')?.remove();
             }
     
             if(reaction.emoji.name === '🗑️'){
+                console.log("Removing message...");
                 await handleRemoveMessage(message as Message);
             }
     
