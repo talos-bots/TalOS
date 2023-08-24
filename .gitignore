@@ -127,3 +127,4 @@ dist
 .pnp.*
 dist-electron/
 backend/venv
+release/
