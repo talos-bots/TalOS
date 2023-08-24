@@ -103,8 +103,25 @@ export function assembleInstructPrompt(construct: any, chatLog: any, currentUser
     return prompt.replaceAll('{{user}}', `${currentUser}`);
 }
 
-export async function generateContinueChatLog(construct: any, chatLog: any, currentUser?: string, messagesToInclude?: any, stopList?: string[]){
+export async function generateContinueChatLog(construct: any, chatLog: any, currentUser?: string, messagesToInclude?: any, stopList?: string[], authorsNote?: string, authorsNoteDepth?: number){
     let prompt = assemblePrompt(construct, chatLog, currentUser, messagesToInclude);
+    if(authorsNote !== undefined){
+        let splitPrompt = prompt.split('\n');
+        let newPrompt = '';
+        let depth = 5;
+        if(authorsNoteDepth !== undefined){
+            depth = authorsNoteDepth;
+        }
+        // insert the authors note at the specified depth
+        for(let i = 0; i < splitPrompt.length; i++){
+            let insertHere = splitPrompt.length - depth;
+            if(i === insertHere){
+                newPrompt += authorsNote + '\n';
+            }
+            newPrompt += splitPrompt[i] + '\n';
+        }
+        prompt = newPrompt;
+    }
     const response = await generateText(prompt, currentUser, stopList);
     console.log(response);
     let reply = ''
@@ -184,7 +201,7 @@ export async function removeMessagesFromChatLog(chatLog: ChatInterface, messageC
     return newChatLog;
 }
 
-export async function regenerateMessageFromChatLog(chatLog: ChatInterface, messageContent: string, messageID?: string){
+export async function regenerateMessageFromChatLog(chatLog: ChatInterface, messageContent: string, messageID?: string, authorsNote?: string, authorsNoteDepth?: number){
     let messages = chatLog.messages;
     let beforeMessages: MessageInterface[] = [];
     let afterMessages: MessageInterface[] = [];
@@ -223,7 +240,7 @@ export async function regenerateMessageFromChatLog(chatLog: ChatInterface, messa
         return;
     }
     let construct = assembleConstructFromData(constructData);
-    let newReply = await generateContinueChatLog(construct, chatLog, foundMessage.participants[0]);
+    let newReply = await generateContinueChatLog(construct, chatLog, foundMessage.participants[0], undefined, undefined, authorsNote, authorsNoteDepth);
     if(newReply === null){
         console.log('Could not generate new reply');
         return;
@@ -308,8 +325,8 @@ function constructController() {
         event.reply('assemble-instruct-prompt-reply', prompt);
     });
 
-    ipcMain.on('generate-continue-chat-log', (event, construct, chatLog, currentUser, messagesToInclude, stopList) => {
-        generateContinueChatLog(construct, chatLog, currentUser, messagesToInclude, stopList).then((response) => {
+    ipcMain.on('generate-continue-chat-log', (event, construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth) => {
+        generateContinueChatLog(construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth).then((response) => {
             event.reply('generate-continue-chat-log-reply', response);
         });
     });
@@ -320,8 +337,8 @@ function constructController() {
         });
     });
 
-    ipcMain.on('regenerate-message-from-chat-log', (event, chatLog, messageContent, messageID) => {
-        regenerateMessageFromChatLog(chatLog, messageContent, messageID).then((response) => {
+    ipcMain.on('regenerate-message-from-chat-log', (event, chatLog, messageContent, messageID, authorsNote, authorsNoteDepth) => {
+        regenerateMessageFromChatLog(chatLog, messageContent, messageID, authorsNote, authorsNoteDepth).then((response) => {
             event.reply('regenerate-message-from-chat-log-reply', response);
         });
     });

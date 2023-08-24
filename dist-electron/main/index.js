@@ -122,7 +122,6 @@ async function base642Buffer(base64) {
     return buffer;
   }
 }
-require("@google-ai/generativelanguage").v1beta2;
 const HORDE_API_URL = "https://aihorde.net/api/";
 const store$5 = new Store({
   name: "llmData"
@@ -1265,8 +1264,24 @@ function assembleInstructPrompt(construct, chatLog, currentUser = "you", message
   let prompt = "";
   return prompt.replaceAll("{{user}}", `${currentUser}`);
 }
-async function generateContinueChatLog(construct, chatLog, currentUser, messagesToInclude, stopList) {
+async function generateContinueChatLog(construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth) {
   let prompt = assemblePrompt(construct, chatLog, currentUser, messagesToInclude);
+  if (authorsNote !== void 0) {
+    let splitPrompt = prompt.split("\n");
+    let newPrompt = "";
+    let depth = 5;
+    if (authorsNoteDepth !== void 0) {
+      depth = authorsNoteDepth;
+    }
+    for (let i = 0; i < splitPrompt.length; i++) {
+      let insertHere = splitPrompt.length - depth;
+      if (i === insertHere) {
+        newPrompt += authorsNote + "\n";
+      }
+      newPrompt += splitPrompt[i] + "\n";
+    }
+    prompt = newPrompt;
+  }
   const response = await generateText(prompt, currentUser, stopList);
   console.log(response);
   let reply = "";
@@ -1334,7 +1349,7 @@ async function removeMessagesFromChatLog(chatLog, messageContent) {
   await updateChat(newChatLog);
   return newChatLog;
 }
-async function regenerateMessageFromChatLog(chatLog, messageContent, messageID) {
+async function regenerateMessageFromChatLog(chatLog, messageContent, messageID, authorsNote, authorsNoteDepth) {
   let messages = chatLog.messages;
   let beforeMessages = [];
   let afterMessages = [];
@@ -1371,7 +1386,7 @@ async function regenerateMessageFromChatLog(chatLog, messageContent, messageID) 
     return;
   }
   let construct = assembleConstructFromData(constructData);
-  let newReply = await generateContinueChatLog(construct, chatLog, foundMessage.participants[0]);
+  let newReply = await generateContinueChatLog(construct, chatLog, foundMessage.participants[0], void 0, void 0, authorsNote, authorsNoteDepth);
   if (newReply === null) {
     console.log("Could not generate new reply");
     return;
@@ -1443,8 +1458,8 @@ function constructController() {
     let prompt = assembleInstructPrompt(construct, chatLog, currentUser);
     event.reply("assemble-instruct-prompt-reply", prompt);
   });
-  electron.ipcMain.on("generate-continue-chat-log", (event, construct, chatLog, currentUser, messagesToInclude, stopList) => {
-    generateContinueChatLog(construct, chatLog, currentUser, messagesToInclude, stopList).then((response) => {
+  electron.ipcMain.on("generate-continue-chat-log", (event, construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth) => {
+    generateContinueChatLog(construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth).then((response) => {
       event.reply("generate-continue-chat-log-reply", response);
     });
   });
@@ -1453,8 +1468,8 @@ function constructController() {
       event.reply("remove-messages-from-chat-log-reply", response);
     });
   });
-  electron.ipcMain.on("regenerate-message-from-chat-log", (event, chatLog, messageContent, messageID) => {
-    regenerateMessageFromChatLog(chatLog, messageContent, messageID).then((response) => {
+  electron.ipcMain.on("regenerate-message-from-chat-log", (event, chatLog, messageContent, messageID, authorsNote, authorsNoteDepth) => {
+    regenerateMessageFromChatLog(chatLog, messageContent, messageID, authorsNote, authorsNoteDepth).then((response) => {
       event.reply("regenerate-message-from-chat-log-reply", response);
     });
   });
@@ -1912,7 +1927,9 @@ const RegisterCommand = {
       _id: interaction.channelId,
       guildId: interaction.guildId,
       constructs: [],
-      aliases: []
+      aliases: [],
+      authorsNotes: [],
+      authorsNoteDepth: 0
     });
     await interaction.editReply({
       content: "Channel registered."
@@ -2231,7 +2248,9 @@ const SetAliasCommand = {
         _id: user ? user : interaction.user.id,
         name: alias,
         location: "Discord"
-      }]
+      }],
+      authorsNotes: [],
+      authorsNoteDepth: 0
     });
     await interaction.editReply({
       content: `Alias ${alias} set for <@${user ? user : interaction.user.id}>.`

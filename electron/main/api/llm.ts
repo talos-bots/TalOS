@@ -2,8 +2,6 @@ import { ipcMain } from 'electron';
 import axios from 'axios';
 import { Configuration, OpenAIApi } from 'openai';
 import Store from 'electron-store';
-const { TextServiceClient } = require("@google-ai/generativelanguage").v1beta2;
-import { GoogleAuth } from "google-auth-library";
 
 const HORDE_API_URL = 'https://aihorde.net/api/';
 const store = new Store({

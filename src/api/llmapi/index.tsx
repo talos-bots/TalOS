@@ -5,10 +5,12 @@ import { ipcRenderer } from 'electron';
 export const generateText = (
     prompt: string,
     configuredName?: string,
-    stopList?: string[]
+    stopList?: string[],
+    authorsNote?: string,
+    authorsNoteDepth?: number,
 ): Promise<any> => {
     return new Promise((resolve, reject) => {
-        ipcRenderer.send('generate-text', prompt, configuredName, stopList);
+        ipcRenderer.send('generate-text', prompt, configuredName, stopList, authorsNote, authorsNoteDepth);
         ipcRenderer.once('generate-text-reply', (event, results) => {
             resolve(results);
         });

@@ -49,11 +49,18 @@ export type Alias = {
     name: string;
     location: string;
 }
+export type AuthorsNote = {
+    _id: string;
+    note: string;
+    location: string;
+}
 export type ChannelConfigInterface = {
     _id: string;
     guildId: string;
     constructs: string[];
     aliases: Alias[];
+    authorsNotes: AuthorsNote[];
+    authorsNoteDepth: number;
 }
 interface SlashCommandOption {
     name: string;

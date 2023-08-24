@@ -29,6 +29,8 @@ export const RegisterCommand: SlashCommand = {
             guildId: interaction.guildId,
             constructs: [],
             aliases: [],
+            authorsNotes: [],
+            authorsNoteDepth: 0,
         });
         await interaction.editReply({
             content: "Channel registered.",
@@ -355,6 +357,8 @@ export const SetAliasCommand: SlashCommand = {
                 name: alias,
                 location: 'Discord',
             }],
+            authorsNotes: [],
+            authorsNoteDepth: 0,
         });
         await interaction.editReply({
             content: `Alias ${alias} set for <@${user ? user : interaction.user.id}>.`,
