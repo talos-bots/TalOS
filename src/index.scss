@@ -126,6 +126,10 @@ ul {
   @apply theme-border-style shadow-md bg-theme-button text-theme-text border-theme-border border-theme-border-width p-1 backdrop-blur-theme-blur rounded-theme-border-radius;
 }
 
+.themed-root-no-padding {
+  @apply theme-border-style shadow-md bg-theme-root border-theme-border border-theme-border-width rounded-theme-border-radius backdrop-blur-theme-blur;
+}
+
 .themed-chat-button {
   @apply bg-theme-bright-color
 }
