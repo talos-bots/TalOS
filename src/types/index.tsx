@@ -174,3 +174,5 @@ export interface LLMConnectionInformation {
     hordeModel: string,
     stopBrackets: boolean,
 }
+
+export type CompletionType = 'code' | 'novel' | 'song' | 'script' | 'other';

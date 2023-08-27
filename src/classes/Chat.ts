@@ -7,8 +7,8 @@ export class Chat{
         public type: string = '',
         public messages: Message[] = [],
         public lastMessage: Message = new Message(),
-        public lastMessageDate: Date = new Date(),
-        public firstMessageDate: Date = new Date(),
+        public lastMessageDate: number = new Date().getTime(),
+        public firstMessageDate: number = new Date().getTime(),
         public constructs: string[] = [],
         public humans: string[] = [],
     ) {}
@@ -54,7 +54,7 @@ export class Chat{
     addMessage(message: Message){
         this.messages.push(message);
         this.lastMessage = message;
-        this.lastMessageDate = new Date();
+        this.lastMessageDate = new Date().getTime();
     }
 
     getLastMessage(){
@@ -69,7 +69,7 @@ export class Chat{
         return this.firstMessageDate;
     }
 
-    setFirstMessageDate(date: Date){
+    setFirstMessageDate(date: number){
         this.firstMessageDate = date;
     }
 
@@ -115,10 +115,10 @@ export class Chat{
         // If the removed message was the last message, then update the lastMessage property.
         if (isLastMessage && this.messages.length) {
             this.lastMessage = this.messages[this.messages.length - 1];
-            this.lastMessageDate = new Date(this.lastMessage.timestamp);  // Assuming your Message object has a 'date' property.
+            this.lastMessageDate = new Date(this.lastMessage.timestamp).getTime();  // Assuming your Message object has a 'date' property.
         } else if (!this.messages.length) {
             this.lastMessage = new Message();
-            this.lastMessageDate = new Date();
+            this.lastMessageDate = new Date().getTime();
         }
     }
 

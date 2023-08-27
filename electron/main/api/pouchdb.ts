@@ -2,13 +2,14 @@ import { ipcMain } from 'electron';
 import PouchDB from 'pouchdb';
 import { dataPath, isDarwin } from '../';
 import LeveldbAdapter from 'pouchdb-adapter-leveldb';
-import { addAttachmentFromEDB, addChatFromEDB, addCommandFromEDB, addConstructFromEDB, addInstructFromEDB, getAttachmentFromEDB, getAttachmentsFromEDB, getChatFromEDB, getChatsByConstructFromEDB, getChatsFromEDB, getCommandFromEDB, getCommandsFromEDB, getConstructFromEDB, getConstructsFromEDB, getInstructFromEDB, getInstructsFromEDB, removeAttachmentFromEDB, removeChatFromEDB, removeCommandFromEDB, removeConstructFromEDB, removeInstructFromEDB } from './electrondb';
+import { addAttachmentFromEDB, addChatFromEDB, addCommandFromEDB, addCompletionFromEDB, addConstructFromEDB, addInstructFromEDB, getAttachmentFromEDB, getAttachmentsFromEDB, getChatFromEDB, getChatsByConstructFromEDB, getChatsFromEDB, getCommandFromEDB, getCommandsFromEDB, getCompletionFromEDB, getCompletionsFromEDB, getConstructFromEDB, getConstructsFromEDB, getInstructFromEDB, getInstructsFromEDB, removeAttachmentFromEDB, removeChatFromEDB, removeCommandFromEDB, removeCompletionFromEDB, removeConstructFromEDB, removeInstructFromEDB } from './electrondb';
 
 let constructDB: PouchDB.Database<any>;
 let chatsDB: PouchDB.Database<any>;
 let commandDB: PouchDB.Database<any>;
 let attachmentDB: PouchDB.Database<any>;
 let instructDB: PouchDB.Database<any>;
+let completionDB: PouchDB.Database<any>;
 
 PouchDB.plugin(LeveldbAdapter);
 
@@ -355,12 +356,78 @@ export async function updateInstruct(instruct: any) {
     });
 }
 
+export async function getAllCompletions() {
+    if(isDarwin){
+        return getCompletionsFromEDB();
+    }
+    return completionDB.allDocs({include_docs: true}).then((result) => {
+        return result.rows;
+    }).catch((err) => {
+        console.log(err);
+    });
+}
+
+export async function getCompletion(id: string) {
+    if(isDarwin){
+        return getCompletionFromEDB(id);
+    }
+    return completionDB.get(id).then((result) => {
+        return result;
+    }).catch((err) => {
+        console.log(err);
+    });
+}
+
+export async function addCompletion(completion: any) {
+    if(isDarwin){
+        addCompletionFromEDB(completion._id, completion);
+        return;
+    }
+    return completionDB.put(completion).then((result) => {
+        return result;
+    }).catch((err) => {
+        console.log(err);
+    });
+}
+
+export async function removeCompletion(id: string) {
+    if(isDarwin){
+        removeCompletionFromEDB(id);
+        return;
+    }
+    return completionDB.get(id).then((doc) => {
+        return completionDB.remove(doc);
+    }).catch((err) => {
+        console.log(err);
+    });
+}
+
+export async function updateCompletion(completion: any) {
+    if(isDarwin){
+        addCompletionFromEDB(completion._id, completion);
+        return;
+    }
+    return completionDB.get(completion._id).then((doc) => {
+        // Merge existing fields with updated fields and retain _rev
+        let updatedDoc = {...doc, ...completion};
+
+        completionDB.put(updatedDoc).then((result) => {
+            return result;
+        }).catch((err) => {
+            console.error('Error while updating document: ', err);
+        });
+    }).catch((err) => {
+        console.error('Error while getting document: ', err);
+    });
+}
+
 export function PouchDBRoutes(){
     constructDB = new PouchDB('constructs', {prefix: dataPath, adapter : 'leveldb'});
     chatsDB = new PouchDB('chats', {prefix: dataPath, adapter : 'leveldb'});
     commandDB = new PouchDB('commands', {prefix: dataPath, adapter : 'leveldb'});
     attachmentDB = new PouchDB('attachments', {prefix: dataPath, adapter : 'leveldb'});
     instructDB = new PouchDB('instructs', {prefix: dataPath, adapter : 'leveldb'});
+    completionDB = new PouchDB('completion', {prefix: dataPath, adapter : 'leveldb'});
 
     ipcMain.on('get-constructs', (event, replyName) => {
         getAllConstructs().then((result) => {
@@ -520,12 +587,43 @@ export function PouchDBRoutes(){
         });
     });
 
+    ipcMain.on('get-completions', (event, replyName) => {
+        getAllCompletions().then((result) => {
+            event.sender.send(replyName, result);
+        });
+    });
+
+    ipcMain.on('get-completion', (event, arg, replyName) => {
+        getCompletion(arg).then((result) => {
+            event.sender.send(replyName, result);
+        });
+    });
+
+    ipcMain.on('add-completion', (event, arg) => {
+        addCompletion(arg).then((result) => {
+            event.sender.send('add-completion-reply', result);
+        });
+    });
+
+    ipcMain.on('update-completion', (event, arg) => {
+        updateCompletion(arg).then((result) => {
+            event.sender.send('update-completion-reply', result);
+        });
+    });
+
+    ipcMain.on('delete-completion', (event, arg) => {
+        removeCompletion(arg).then((result) => {
+            event.sender.send('delete-completion-reply', result);
+        });
+    });
+
     ipcMain.on('clear-data', (event, arg) => {
         constructDB.destroy();
         chatsDB.destroy();
         commandDB.destroy();
         attachmentDB.destroy();
         instructDB.destroy();
+        completionDB.destroy();
         createDBs();
     });
 
@@ -535,5 +633,6 @@ export function PouchDBRoutes(){
         commandDB = new PouchDB('commands', {prefix: dataPath, adapter : 'leveldb'});
         attachmentDB = new PouchDB('attachments', {prefix: dataPath, adapter : 'leveldb'});
         instructDB = new PouchDB('instructs', {prefix: dataPath, adapter : 'leveldb'});
+        completionDB = new PouchDB('completion', {prefix: dataPath, adapter : 'leveldb'});
     }
 };

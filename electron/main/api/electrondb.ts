@@ -6,6 +6,7 @@ let chatsDB: ElectronStore<any>;
 let commandDB: ElectronStore<any>;
 let attachmentDB: ElectronStore<any>;
 let instructDB: ElectronStore<any>;
+let completionDB: ElectronStore<any>;
 
 export const initEDB = () => {
     constructDB = new Store({
@@ -22,6 +23,9 @@ export const initEDB = () => {
     });
     instructDB = new Store({
         name: 'instructData',
+    });
+    completionDB = new Store({
+        name: 'completionData',
     });
 }
 
@@ -216,6 +220,40 @@ export const removeInstructFromEDB = (id: string): void => {
     instructDB.delete(id);
 }
 
+export const getCompletionFromEDB = (id: string): any => {
+    return completionDB.get(id);
+}
+
+export const getCompletionsFromEDB = (): any[] => {
+    const storeData = completionDB.store;
+
+    const result = [];
+
+    for (let id in storeData) {
+        if (id !== 'ids') {
+            const construct = storeData[id];
+            result.push({
+                doc: construct,
+                id: id,
+                key: id,
+                value: {
+                    rev: 'unknown'
+                }
+            });
+        }
+    }
+
+    return result;
+}
+
+export const addCompletionFromEDB = (id: string, data: any): void => {
+    completionDB.set(id, data);
+}
+
+export const removeCompletionFromEDB = (id: string): void => {
+    completionDB.delete(id);
+}
+
 const clearConstructsFromEDB = (): void => {
     constructDB.clear();
 }
@@ -236,12 +274,17 @@ const clearInstructsFromEDB = (): void => {
     instructDB.clear();
 }
 
+const clearCompletionsFromEDB = (): void => {
+    completionDB.clear();
+}
+
 export const clearEDB = (): void => {
     clearConstructsFromEDB();
     clearChatsFromEDB();
     clearCommandsFromEDB();
     clearAttachmentsFromEDB();
     clearInstructsFromEDB();
+    clearCompletionsFromEDB();
 }
 
 export async function ElectronDBRoutes(){

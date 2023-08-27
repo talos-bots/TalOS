@@ -4,6 +4,7 @@ import { Chat } from "@/classes/Chat";
 import { IpcRendererEvent, ipcRenderer } from "electron";
 import { Instruct } from "@/classes/Instruct";
 import { removeConstructFromActive } from "../constructapi";
+import { CompletionLog } from "@/classes/CompletionLog";
 
 export async function getConstructs(): Promise<Construct[]> {
     return new Promise((resolve, reject) => {
@@ -334,6 +335,66 @@ export async function getStorageValue(key: string): Promise<string> {
             }
         });
     });
+}
+
+export async function getCompletions(): Promise<CompletionLog[]> {
+    return new Promise((resolve, reject) => {
+        const uniqueEventName = "get-completions-reply-" + Date.now() + "-" + Math.random();
+        ipcRenderer.send("get-completions", uniqueEventName);
+
+        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any[]) => {
+            if (data) {
+                const completions = data.map((doc: any) => {
+                    return new CompletionLog(
+                        doc.doc._id,
+                        doc.doc.name,
+                        doc.doc.type,
+                        doc.doc.completions,
+                        doc.doc.lastCompletion,
+                        doc.doc.lastCompletionDate
+                    );
+                });
+                resolve(completions);
+            } else {
+                reject(new Error("No data received from 'completions' event."));
+            }
+        });
+    });
+}
+
+export async function getCompletion(id: string): Promise<CompletionLog> {
+    return new Promise((resolve, reject) => {
+        const uniqueEventName = "get-completion-reply-" + Date.now() + "-" + Math.random();
+        ipcRenderer.send("get-completion", id, uniqueEventName);
+
+        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any) => {
+            if (data) {
+                const completion = new CompletionLog(
+                    data._id,
+                    data.name,
+                    data.type,
+                    data.completions,
+                    data.lastCompletion,
+                    data.lastCompletionDate
+                );
+                resolve(completion);
+            } else {
+                reject(new Error("No data received from 'completion' event."));
+            }
+        });
+    });
+}
+
+export async function saveNewCompletion(completion: CompletionLog) {
+    ipcRenderer.send('add-completion', completion);
+}
+
+export async function updateCompletion(completion: CompletionLog) {
+    ipcRenderer.send('update-completion', completion);
+}
+
+export async function deleteCompletion(id: string) {
+    ipcRenderer.send('delete-completion', id);
 }
 
 export async function setStorageValue(key: string, value: string) {
