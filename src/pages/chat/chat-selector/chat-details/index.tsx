@@ -1,6 +1,7 @@
 import { getConstruct, updateChat } from "@/api/dbapi";
 import { Chat } from "@/classes/Chat";
 import { Construct } from "@/classes/Construct";
+import { getFormattedTime } from "@/components/chat-page/message";
 import { on } from "events";
 import { Edit2Icon, TrashIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -154,7 +155,7 @@ const ChatDetails = (props: ChatDetailsProps) => {
     }, [isEditing]);    
     
     return (
-        <div className="themed-box flex flex-col justify-start items-start">
+        <div className="themed-box flex flex-col justify-start items-start" onDoubleClick={()=> {if(onClick !== undefined) onClick(chat)}}>
             <div className="flex flex-row items-center justify-start">
                 <img src={groupAvatar} alt="Group Avatar" className="rounded-full" />
                 {isEditing ? (
@@ -194,6 +195,10 @@ const ChatDetails = (props: ChatDetailsProps) => {
                 >
                     <TrashIcon size={18} />
                 </button>
+                <div className="w-full flex flex-row items-center justify-end absolute right-4 gap-16">
+                    <i className="text-theme-italic">{chat.lastMessage.user}: {chat.lastMessage.text}</i>
+                    <i className="text-theme-italic">{getFormattedTime(chat.lastMessage.timestamp)}</i>
+                </div>
             </div>
         </div>
     );

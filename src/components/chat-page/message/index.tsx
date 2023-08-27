@@ -14,7 +14,7 @@ interface Props {
     onRegenerate?: (messageID: string, messageText: string) => void;
 }
 
-function getFormattedTime(timestamp: number): string {
+export function getFormattedTime(timestamp: number): string {
     const date = new Date(timestamp);
     const hours = date.getHours();
     const minutes = date.getMinutes();
