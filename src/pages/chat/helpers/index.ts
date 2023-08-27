@@ -1,7 +1,6 @@
 import { generateContinueChatLog, regenerateMessageFromChatLog } from "@/api/constructapi";
 import { getConstruct, updateChat } from "@/api/dbapi";
 import { Chat } from "@/classes/Chat";
-import { Construct } from "@/classes/Construct";
 import { Message } from "@/classes/Message";
 
 export async function sendMessage(chatlog: Chat, constructID: string, userID?: string){
@@ -39,7 +38,7 @@ export async function getLoadingMessage(constructID: string){
 export function addUserMessage(messageText: string, userID?: string){
     let newMessage = new Message();
     newMessage.origin = 'ConstructOS';
-    newMessage.text = messageText;
+    newMessage.text = messageText.replace(/^\s+|\s+$/g, '');
     newMessage.user = 'User';
     newMessage.timestamp = new Date().getTime();
     newMessage.isCommand = false;

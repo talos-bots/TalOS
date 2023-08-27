@@ -180,8 +180,8 @@ const ChatDetails = (props: ChatDetailsProps) => {
                             }
                         }}
                         autoFocus
-                        style={{ width: 'auto', minWidth: '30px' }} // a starting width
-                        className="ml-2 themed-input" // This gives a little spacing between the avatar and the input
+                        style={{ width: 'auto', minWidth: '30px' }}
+                        className="ml-2 themed-input"
                     />
                 ) : (
                     <>

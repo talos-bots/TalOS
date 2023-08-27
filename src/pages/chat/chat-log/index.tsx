@@ -44,12 +44,14 @@ const ChatLog = (props: ChatLogProps) => {
 		let chat;
 		chat = chatLog;
 		if(chat === null) return;
-		let newMessage = addUserMessage(message);
-		chat.addMessage(newMessage);
-		if(messages.includes(newMessage)){
-			console.log("message already exists");
-		}else{
-			setMessages(prevMessages => [...prevMessages, newMessage]);
+		if(message !== "" && message !== null && message !== undefined && message !== " " && message !== "\n"){
+			let newMessage = addUserMessage(message);
+			chat.addMessage(newMessage);
+			if(messages.includes(newMessage)){
+				console.log("message already exists");
+			}else{
+				setMessages(prevMessages => [...prevMessages, newMessage]);
+			}
 		}
 		await wait(750);
 		for (let i = 0; i < chat.constructs.length; i++) {

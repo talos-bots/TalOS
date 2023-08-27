@@ -20,13 +20,13 @@ const InputGroup = (props: InputGroupProps) => {
 				required={true}
 				onChange={(e) => setMessage(e.target.value)}
 				onKeyUp={(e) => {
-					if (e.key === "Enter" && message.trim() !== "") {
+					if (e.key === "Enter") {
 						sendMessage(message);
 						setMessage("");
 					}
 				}}
 			/>
-			<button className={`cursor-pointer border-none p-0 themed-chat-button relative rounded-3xl w-[35px] h-[35px] overflow-hidden shrink-0 transition-all duration-125 hover:opacity-75`} onSubmit={() => { sendMessage(message); setMessage('') }}>
+			<button className={`cursor-pointer border-none p-0 themed-chat-button relative rounded-3xl w-[35px] h-[35px] overflow-hidden shrink-0 transition-all duration-125 hover:opacity-75`} onClick={() => { sendMessage(message); setMessage('') }}>
 				<img className="absolute top-[10px] left-[10px] w-[15px] h-[15px] overflow-hidden" alt="" src="/chat-page-assets/sendhorizonal.svg" />
 			</button>
 		</div>
