@@ -195,7 +195,8 @@ const ChatDetails = (props: ChatDetailsProps) => {
                 >
                     <TrashIcon size={18} />
                 </button>
-                <div className="w-full flex flex-row items-center justify-end absolute right-4 gap-16">
+                <div className="w-full flex flex-row items-center justify-end absolute right-4 gap-4">
+                    <i className="text-theme-italic">({chat.lastMessage.origin})</i>
                     <i className="text-theme-italic">{chat.lastMessage.user}: {chat.lastMessage.text}</i>
                     <i className="text-theme-italic">{getFormattedTime(chat.lastMessage.timestamp)}</i>
                 </div>
