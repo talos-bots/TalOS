@@ -3,6 +3,7 @@ import { Chat } from "@/classes/Chat";
 import { Construct } from "@/classes/Construct";
 import ConstructProfile from "@/components/construct-profile";
 import { useEffect, useState } from "react";
+import ChatDetails from "./chat-details";
 interface ChatSelectorProps {
     onClick?: (chatID: Chat) => void;
 }
@@ -43,6 +44,10 @@ const ChatSelector = (props: ChatSelectorProps) => {
         });
     }
 
+    const handleChatClick = (chat: Chat) => {
+        if(onClick !== undefined) onClick(chat);
+    }
+
     return (
         <div className="grid grid-rows-3 w-11/12 h-[calc(95vh-70px)] gap-4 m-auto mt-4">
             <div className="row-span-1 w-full min-h-fit flex flex-col themed-root shrink-0">
@@ -58,10 +63,10 @@ const ChatSelector = (props: ChatSelectorProps) => {
             </div>
             <div className="row-span-2 w-full h-full flex flex-col themed-root shrink-0 overflow-y-auto">
                 <h3 className="h-1/6">Chats</h3>
-                <div className="flex flex-row w-full h-5/6 gap-4">
+                <div className="flex flex-col w-full h-5/6 gap-4">
                     {Array.isArray(chats) && chats.map((chat) => {
                         return (
-                            <></>
+                            <ChatDetails key={chat._id} chat={chat} onClick={handleChatClick}/>
                         )
                     }
                     )}

@@ -4,6 +4,7 @@ export class Message{
     constructor(
         public _id: string = (new Date().getTime()).toString(),
         public user: string = '',
+        public avatar: string = '',
         public text: string = '',
         public userID: string = '',
         public timestamp: number = new Date().getTime(),

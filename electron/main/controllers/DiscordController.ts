@@ -237,6 +237,7 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
     const replyMessage = {
         _id: Date.now().toString(),
         user: construct.name,
+        avatar: construct.avatar,
         text: reply,
         userID: construct._id,
         timestamp: Date.now(),
@@ -313,6 +314,7 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
         const replyMessage = {
             _id: Date.now().toString(),
             user: constructArray[i].name,
+            avatar: constructArray[i].avatar,
             text: reply,
             userID: constructArray[i]._id,
             timestamp: Date.now(),

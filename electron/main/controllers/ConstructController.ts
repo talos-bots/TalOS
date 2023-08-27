@@ -248,6 +248,7 @@ export async function regenerateMessageFromChatLog(chatLog: ChatInterface, messa
     let newMessage = {
         _id: Date.now().toString(),
         user: construct.name,
+        avatar: construct.avatar,
         text: newReply,
         userID: construct._id,
         timestamp: Date.now(),

@@ -51,6 +51,11 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate }: Props) =>
                 if(construct === null) return;
                 setAvatar(construct.avatar);
             }
+            if(message.isHuman === true) {
+                if(message.avatar === undefined || message.avatar === null) return;
+                if(message.avatar.length === 0) return;
+                setAvatar(message.avatar);
+            }
         };
         init();
     }, [message]);
@@ -100,7 +105,7 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate }: Props) =>
                 <div className="flex flex-row items-center">
                     <div className="flex flex-row items-center w-full gap-2">
                         <div className="themed-message-avatar flex items-center justify-center">
-                            {isHuman ? <RiQuestionMark size={30}/> : (avatar.length > 0 ? <img src={avatar} alt="avatar" className="themed-message-avatar" /> : <RiQuestionMark size={30}/>)}
+                            {(avatar.length > 0 ? <img src={avatar} alt="avatar" className="themed-message-avatar" /> : <RiQuestionMark size={30}/>)}
                         </div>
                         <div className="themed-message-info">{user} {getFormattedTime(time)}</div>
                     </div>

@@ -73,6 +73,7 @@ function convertDiscordMessageToMessage(message, activeConstructs) {
   const convertedMessage = {
     _id: message.id,
     user: username,
+    avatar: message.author.avatarURL() ? message.author.avatarURL() : "",
     text: message.content.trim(),
     userID: message.author.id,
     timestamp: message.createdTimestamp,
@@ -1394,6 +1395,7 @@ async function regenerateMessageFromChatLog(chatLog, messageContent, messageID, 
   let newMessage = {
     _id: Date.now().toString(),
     user: construct.name,
+    avatar: construct.avatar,
     text: newReply,
     userID: construct._id,
     timestamp: Date.now(),
@@ -1665,6 +1667,7 @@ async function doCharacterReply(construct, chatLog, message) {
   const replyMessage = {
     _id: Date.now().toString(),
     user: construct.name,
+    avatar: construct.avatar,
     text: reply,
     userID: construct._id,
     timestamp: Date.now(),
@@ -1735,6 +1738,7 @@ async function doRoundRobin(constructArray, chatLog, message) {
     const replyMessage = {
       _id: Date.now().toString(),
       user: constructArray[i].name,
+      avatar: constructArray[i].avatar,
       text: reply,
       userID: constructArray[i]._id,
       timestamp: Date.now(),
@@ -2304,6 +2308,7 @@ const DoCharacterGreetingsCommand = {
     let greetingMessage = {
       _id: Date.now().toString(),
       user: construct.name,
+      avatar: construct.avatar,
       text: greeting,
       userID: construct._id,
       timestamp: Date.now(),

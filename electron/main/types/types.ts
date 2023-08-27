@@ -13,6 +13,7 @@ export type ChatInterface = {
 export type MessageInterface = {
     _id: string;
     user: string;
+    avatar: string;
     text: string;
     userID: string;
     timestamp: number;

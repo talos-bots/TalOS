@@ -414,6 +414,7 @@ export const DoCharacterGreetingsCommand: SlashCommand = {
         let greetingMessage: MessageInterface = {
             _id: Date.now().toString(),
             user: construct.name,
+            avatar: construct.avatar,
             text: greeting,
             userID: construct._id,
             timestamp: Date.now(),

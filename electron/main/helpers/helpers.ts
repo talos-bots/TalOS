@@ -93,6 +93,7 @@ export function convertDiscordMessageToMessage(message: Message, activeConstruct
     const convertedMessage = {
         _id: message.id,
         user: username,
+        avatar: message.author.avatarURL() ? message.author.avatarURL() : '',
         text: message.content.trim(),
         userID: message.author.id,
         timestamp: message.createdTimestamp,
