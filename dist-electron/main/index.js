@@ -222,7 +222,7 @@ async function getStatus(testEndpoint, testEndpointType) {
         break;
       case "Ooba":
         try {
-          response = await axios.get(`${endpointURLObject.protocol}//${endpointURLObject.hostname}:${endpointURLObject.port}/api/v1/model`);
+          response = await axios.get(`${endpointURLObject.protocol}//${endpointURLObject.hostname}:5000/api/v1/model`);
           if (response.status === 200) {
             return response.data.result;
           } else {
@@ -399,7 +399,7 @@ const generateText = async (prompt, configuredName = "You", stopList = null) => 
     case "P-OAI":
       console.log("P-OAI");
       try {
-        const response2 = await axios.post(`${endpointURLObject.protocol}//${endpointURLObject.hostname}:${endpointURLObject.port}/chat/completions`, {
+        const response2 = await axios.post(`${endpointURLObject.protocol}//${endpointURLObject.hostname}:${endpointURLObject.port}/proxy/openai/chat/completions`, {
           model: "gpt-4",
           messages: [
             { "role": "system", "content": `Write ${char}'s next reply in a fictional chat between ${char} and ${configuredName}. Write 1 reply only in internet RP style, italicize actions, and avoid quotation marks. Use markdown. Be proactive, creative, and drive the plot and conversation forward. Write at least 1 sentence, up to 4. Always stay in character and avoid repetition.` },
@@ -429,7 +429,7 @@ const generateText = async (prompt, configuredName = "You", stopList = null) => 
     case "P-Claude":
       console.log("P-Claude");
       try {
-        const claudeResponse = await axios.post(`${endpointURLObject.protocol}//${endpointURLObject.hostname}:${endpointURLObject.port}/complete`, {
+        const claudeResponse = await axios.post(`${endpointURLObject.protocol}//${endpointURLObject.hostname}:${endpointURLObject.port}/proxy/anthropic/complete`, {
           "prompt": `System:
 Write ${char}'s next reply in a fictional chat between ${char} and ${configuredName}. Write 1 reply only in internet RP style, italicize actions, and avoid quotation marks. Use markdown. Be proactive, creative, and drive the plot and conversation forward. Write at least 1 sentence, up to 4. Always stay in character and avoid repetition.
 ` + prompt + `

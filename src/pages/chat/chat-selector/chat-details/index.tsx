@@ -153,6 +153,10 @@ const ChatDetails = (props: ChatDetailsProps) => {
             inputRef.current.style.width = `${spanRef.current.offsetWidth}px`;
         }
     }, [isEditing]);    
+
+    const truncateText = (text: string, length: number) => {
+        return text.length > length ? text.substring(0, length) + "..." : text;
+    };
     
     return (
         <div className="themed-box flex flex-col justify-start items-start" onDoubleClick={()=> {if(onClick !== undefined) onClick(chat)}}>
@@ -195,9 +199,9 @@ const ChatDetails = (props: ChatDetailsProps) => {
                 >
                     <TrashIcon size={18} />
                 </button>
-                <div className="w-fit flex flex-row items-center justify-end absolute right-4 gap-4">
+                <div className="w-fit flex flex-row items-center justify-end absolute right-4 gap-20">
                     <i className="text-theme-italic">({chat.lastMessage.origin})</i>
-                    <i className="text-theme-italic">{chat.lastMessage.user}: {chat.lastMessage.text}</i>
+                    <p className="text-theme-italic">{chat.lastMessage.user}: {truncateText(chat.lastMessage.text, 35)}</p>
                     <i className="text-theme-italic">{getFormattedTime(chat.lastMessage.timestamp)}</i>
                 </div>
             </div>
