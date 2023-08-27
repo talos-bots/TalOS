@@ -246,6 +246,27 @@ ul {
   }
 }
 
+/* Add this to your stylesheet */
+.tooltip {
+  position: absolute;
+  bottom: 50px; /* Adjust this to position your tooltip */
+  left: 50%;    /* Center the tooltip */
+  transform: translateX(-50%); /* Center the tooltip */
+  background-color: rgba(0,0,0,0.8);
+  color: white;
+  padding: 5px;
+  border-radius: 5px;
+  visibility: hidden; 
+  opacity: 0;
+  transition: opacity 0.3s, visibility 0.3s; /* Add transition */
+  z-index: 10000; /* Setting a very high z-index so it appears above other elements. Adjust as needed */
+}
+
+.themed-root-no-padding:hover .tooltip {
+  visibility: visible; 
+  opacity: 1; 
+}
+
 /* This is the scrollbar itself */
 ::-webkit-scrollbar-thumb {
   background: var(--theme-box); 
