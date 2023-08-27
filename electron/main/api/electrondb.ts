@@ -7,6 +7,7 @@ let commandDB: ElectronStore<any>;
 let attachmentDB: ElectronStore<any>;
 let instructDB: ElectronStore<any>;
 let completionDB: ElectronStore<any>;
+let userDB: ElectronStore<any>;
 
 export const initEDB = () => {
     constructDB = new Store({
@@ -26,6 +27,9 @@ export const initEDB = () => {
     });
     completionDB = new Store({
         name: 'completionData',
+    });
+    userDB = new Store({
+        name: 'userData',
     });
 }
 
@@ -254,6 +258,44 @@ export const removeCompletionFromEDB = (id: string): void => {
     completionDB.delete(id);
 }
 
+export const getUserFromEDB = (id: string): any => {
+    return userDB.get(id);
+}
+
+export const getUsersFromEDB = (): any[] => {
+    const storeData = userDB.store;
+
+    const result = [];
+
+    for (let id in storeData) {
+        if (id !== 'ids') {
+            const construct = storeData[id];
+            result.push({
+                doc: construct,
+                id: id,
+                key: id,
+                value: {
+                    rev: 'unknown'
+                }
+            });
+        }
+    }
+
+    return result;
+}
+
+export const addUserFromEDB = (id: string, data: any): void => {
+    userDB.set(id, data);
+}
+
+export const removeUserFromEDB = (id: string): void => {
+    userDB.delete(id);
+}
+
+const clearUsersFromEDB = (): void => {
+    userDB.clear();
+}
+
 const clearConstructsFromEDB = (): void => {
     constructDB.clear();
 }
@@ -285,6 +327,7 @@ export const clearEDB = (): void => {
     clearAttachmentsFromEDB();
     clearInstructsFromEDB();
     clearCompletionsFromEDB();
+    clearUsersFromEDB();
 }
 
 export async function ElectronDBRoutes(){

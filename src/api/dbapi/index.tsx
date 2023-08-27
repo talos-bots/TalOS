@@ -5,6 +5,7 @@ import { IpcRendererEvent, ipcRenderer } from "electron";
 import { Instruct } from "@/classes/Instruct";
 import { removeConstructFromActive } from "../constructapi";
 import { CompletionLog } from "@/classes/CompletionLog";
+import { User } from "@/classes/User";
 
 export async function getConstructs(): Promise<Construct[]> {
     return new Promise((resolve, reject) => {
@@ -395,6 +396,70 @@ export async function updateCompletion(completion: CompletionLog) {
 
 export async function deleteCompletion(id: string) {
     ipcRenderer.send('delete-completion', id);
+}
+
+export async function getUsers(): Promise<User[]> {
+    return new Promise((resolve, reject) => {
+        const uniqueEventName = "get-users-reply-" + Date.now() + "-" + Math.random();
+        ipcRenderer.send("get-users", uniqueEventName);
+
+        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any[]) => {
+            if (data) {
+                const users = data.map((doc: any) => {
+                    return new User(
+                        doc.doc._id,
+                        doc.doc.name,
+                        doc.doc.nickname,
+                        doc.doc.avatar,
+                        doc.doc.personality,
+                        doc.doc.background,
+                        doc.doc.relationships,
+                        doc.doc.interests
+                    );
+                });
+                resolve(users);
+            } else {
+                reject(new Error("No data received from 'users' event."));
+            }
+        });
+    });
+}
+
+export async function getUser(id: string): Promise<User> {
+    return new Promise((resolve, reject) => {
+        const uniqueEventName = "get-user-reply-" + Date.now() + "-" + Math.random();
+        ipcRenderer.send("get-user", id, uniqueEventName);
+
+        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any) => {
+            if (data) {
+                const user = new User(
+                    data._id,
+                    data.name,
+                    data.nickname,
+                    data.avatar,
+                    data.personality,
+                    data.background,
+                    data.relationships,
+                    data.interests
+                );
+                resolve(user);
+            } else {
+                reject(new Error("No data received from 'user' event."));
+            }
+        });
+    });
+}
+
+export async function saveNewUser(user: User) {
+    ipcRenderer.send('add-user', user);
+}
+
+export async function updateUser(user: User) {
+    ipcRenderer.send('update-user', user);
+}
+
+export async function deleteUser(id: string) {
+    ipcRenderer.send('delete-user', id);
 }
 
 export async function setStorageValue(key: string, value: string) {
