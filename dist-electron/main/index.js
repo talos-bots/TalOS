@@ -11,6 +11,7 @@ const LeveldbAdapter = require("pouchdb-adapter-leveldb");
 const fs = require("fs");
 const axios = require("axios");
 const openai = require("openai");
+require("websocket");
 const FormData = require("form-data");
 function assembleConstructFromData(data) {
   const construct = {
@@ -203,24 +204,13 @@ function LanguageModelAPI() {
 async function getStatus(testEndpoint, testEndpointType) {
   let endpointUrl = testEndpoint ? testEndpoint : endpoint;
   let endpointStatusType = testEndpointType ? testEndpointType : endpointType;
-  if (endpoint.endsWith("/")) {
-    endpoint = endpoint.slice(0, -1);
-  }
-  if (endpoint.endsWith("/api")) {
-    endpoint = endpoint.slice(0, -4);
-  }
-  if (endpoint.endsWith("/api/v1")) {
-    endpoint = endpoint.slice(0, -7);
-  }
-  if (endpoint.endsWith("/api/v1/generate")) {
-    endpoint = endpoint.slice(0, -15);
-  }
+  const endpointURLObject = new URL(endpointUrl);
   try {
     let response;
     switch (endpointStatusType) {
       case "Kobold":
         try {
-          response = await axios.get(`${endpointUrl}/api/v1/model`);
+          response = await axios.get(`${endpointURLObject.protocol}//${endpointURLObject.hostname}:${endpointURLObject.port}/api/v1/model`);
           if (response.status === 200) {
             return response.data.result;
           } else {
@@ -232,7 +222,7 @@ async function getStatus(testEndpoint, testEndpointType) {
         break;
       case "Ooba":
         try {
-          response = await axios.get(`${endpointUrl}/api/v1/model`);
+          response = await axios.get(`${endpointURLObject.protocol}//${endpointURLObject.hostname}:${endpointURLObject.port}/api/v1/model`);
           if (response.status === 200) {
             return response.data.result;
           } else {
@@ -268,24 +258,13 @@ const generateText = async (prompt, configuredName = "You", stopList = null) => 
   let response;
   let char = "Character";
   let results;
-  if (endpoint.endsWith("/")) {
-    endpoint = endpoint.slice(0, -1);
-  }
-  if (endpoint.endsWith("/api")) {
-    endpoint = endpoint.slice(0, -4);
-  }
-  if (endpoint.endsWith("/api/v1")) {
-    endpoint = endpoint.slice(0, -7);
-  }
-  if (endpoint.endsWith("/api/v1/generate")) {
-    endpoint = endpoint.slice(0, -15);
-  }
   if (endpoint.length < 3)
     return { error: "Invalid endpoint." };
   let stops = stopList ? ["You:", "<START>", "<END>", ...stopList] : [`${configuredName}:`, "You:", "<START>", "<END>"];
   if (stopBrackets) {
     stops.push("[", "]");
   }
+  const endpointURLObject = new URL(endpoint);
   switch (endpointType) {
     case "Kobold":
       console.log("Kobold");
@@ -307,7 +286,7 @@ const generateText = async (prompt, configuredName = "You", stopList = null) => 
           sampler_full_determinism: settings.sampler_full_determinism ? settings.sampler_full_determinism : false,
           max_length: settings.max_length ? settings.max_length : 350
         };
-        response = await axios.post(`${endpoint}/api/v1/generate`, koboldPayload);
+        response = await axios.post(`${endpointURLObject.protocol}//${endpointURLObject.hostname}:${endpointURLObject.port}/api/v1/generate`, koboldPayload);
         if (response.status === 200) {
           results = response.data;
           if (Array.isArray(results)) {
@@ -345,7 +324,7 @@ const generateText = async (prompt, configuredName = "You", stopList = null) => 
           "stopping_strings": stops
         };
         console.log(oobaPayload);
-        response = await axios.post(`${endpoint}/api/v1/generate`, oobaPayload);
+        response = await axios.post(`${endpointURLObject.protocol}//${endpointURLObject.hostname}:5000/api/v1/generate`, oobaPayload);
         if (response.status === 200) {
           results = response.data["results"][0]["text"];
           return { results: [results] };
@@ -420,7 +399,7 @@ const generateText = async (prompt, configuredName = "You", stopList = null) => 
     case "P-OAI":
       console.log("P-OAI");
       try {
-        const response2 = await axios.post(endpoint + "/chat/completions", {
+        const response2 = await axios.post(`${endpointURLObject.protocol}//${endpointURLObject.hostname}:${endpointURLObject.port}/chat/completions`, {
           model: "gpt-4",
           messages: [
             { "role": "system", "content": `Write ${char}'s next reply in a fictional chat between ${char} and ${configuredName}. Write 1 reply only in internet RP style, italicize actions, and avoid quotation marks. Use markdown. Be proactive, creative, and drive the plot and conversation forward. Write at least 1 sentence, up to 4. Always stay in character and avoid repetition.` },
@@ -450,7 +429,7 @@ const generateText = async (prompt, configuredName = "You", stopList = null) => 
     case "P-Claude":
       console.log("P-Claude");
       try {
-        const claudeResponse = await axios.post(endpoint + "/complete", {
+        const claudeResponse = await axios.post(`${endpointURLObject.protocol}//${endpointURLObject.hostname}:${endpointURLObject.port}/complete`, {
           "prompt": `System:
 Write ${char}'s next reply in a fictional chat between ${char} and ${configuredName}. Write 1 reply only in internet RP style, italicize actions, and avoid quotation marks. Use markdown. Be proactive, creative, and drive the plot and conversation forward. Write at least 1 sentence, up to 4. Always stay in character and avoid repetition.
 ` + prompt + `

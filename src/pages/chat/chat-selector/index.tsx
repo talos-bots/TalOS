@@ -56,25 +56,23 @@ const ChatSelector = (props: ChatSelectorProps) => {
     return (
         <div className="grid grid-rows-3 w-11/12 h-[calc(95vh-70px)] gap-4 m-auto mt-4">
             <div className="row-span-1 w-full min-h-fit flex flex-col themed-root shrink-0">
-                <h3 className="h-1/6">Constructs</h3>
+                <h3>Constructs</h3>
                 <div className="flex flex-row w-full h-5/6 gap-4">
                     {Array.isArray(constructs) && constructs.map((construct) => {
                         return (
                             <ConstructProfile key={construct._id} character={construct} onClick={handleConstructClick}/>
                         )
-                    }
-                    )}
+                    })}
                 </div>
             </div>
             <div className="row-span-2 w-full h-full flex flex-col themed-root shrink-0 overflow-y-auto">
-                <h3 className="">Chats</h3>
+                <h3>Chats</h3>
                 <div className="flex flex-col w-full gap-4">
                     {Array.isArray(chats) && chats.map((chat) => {
                         return (
                             <ChatDetails key={chat._id} chat={chat} onClick={handleChatClick} onDelete={handleChatDelete}/>
                         )
-                    }
-                    )}
+                    })}
                 </div>
             </div>
         </div>
