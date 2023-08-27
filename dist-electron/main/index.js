@@ -383,10 +383,11 @@ const generateText = async (prompt, configuredName = "You", stopList = null) => 
       console.log("Horde");
       try {
         const hordeKey = endpoint ? endpoint : "0000000000";
-        let doKudos = false;
+        let doKudos = true;
         if (hordeKey !== "0000000000") {
-          doKudos = true;
+          doKudos = false;
         }
+        console.log(doKudos);
         const payload = {
           prompt,
           params: {
