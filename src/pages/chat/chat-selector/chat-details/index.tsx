@@ -181,13 +181,13 @@ const ChatDetails = (props: ChatDetailsProps) => {
                     />
                 ) : (
                     <>
-                        <span ref={spanRef} className="ml-2">{name}</span>
-                        <button onClick={() => setIsEditing(true)} className="ml-2">
+                        <p ref={spanRef} className="ml-2">{name}</p>
+                        <button onClick={() => setIsEditing(true)} className="message-button ml-2 cursor-pointer">
                             <Edit2Icon size={18} />
                         </button>
                     </>
                 )}
-                <button className="message-button ml-2"
+                <button className="message-button ml-2 cursor-pointer"
                     onClick={() => {
                         if(onDelete === undefined) return;
                         onDelete(chat);
@@ -195,7 +195,7 @@ const ChatDetails = (props: ChatDetailsProps) => {
                 >
                     <TrashIcon size={18} />
                 </button>
-                <div className="w-full flex flex-row items-center justify-end absolute right-4 gap-4">
+                <div className="w-fit flex flex-row items-center justify-end absolute right-4 gap-4">
                     <i className="text-theme-italic">({chat.lastMessage.origin})</i>
                     <i className="text-theme-italic">{chat.lastMessage.user}: {chat.lastMessage.text}</i>
                     <i className="text-theme-italic">{getFormattedTime(chat.lastMessage.timestamp)}</i>

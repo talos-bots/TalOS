@@ -546,6 +546,8 @@ let chatsDB$1;
 let commandDB$1;
 let attachmentDB$1;
 let instructDB$1;
+let completionDB$1;
+let userDB$1;
 const initEDB = () => {
   constructDB$1 = new Store({
     name: "constructData"
@@ -561,6 +563,12 @@ const initEDB = () => {
   });
   instructDB$1 = new Store({
     name: "instructData"
+  });
+  completionDB$1 = new Store({
+    name: "completionData"
+  });
+  userDB$1 = new Store({
+    name: "userData"
   });
 };
 const getConstructFromEDB = (id) => {
@@ -717,6 +725,60 @@ const addInstructFromEDB = (id, data) => {
 const removeInstructFromEDB = (id) => {
   instructDB$1.delete(id);
 };
+const getCompletionFromEDB = (id) => {
+  return completionDB$1.get(id);
+};
+const getCompletionsFromEDB = () => {
+  const storeData = completionDB$1.store;
+  const result = [];
+  for (let id in storeData) {
+    if (id !== "ids") {
+      const construct = storeData[id];
+      result.push({
+        doc: construct,
+        id,
+        key: id,
+        value: {
+          rev: "unknown"
+        }
+      });
+    }
+  }
+  return result;
+};
+const addCompletionFromEDB = (id, data) => {
+  completionDB$1.set(id, data);
+};
+const removeCompletionFromEDB = (id) => {
+  completionDB$1.delete(id);
+};
+const getUserFromEDB = (id) => {
+  return userDB$1.get(id);
+};
+const getUsersFromEDB = () => {
+  const storeData = userDB$1.store;
+  const result = [];
+  for (let id in storeData) {
+    if (id !== "ids") {
+      const construct = storeData[id];
+      result.push({
+        doc: construct,
+        id,
+        key: id,
+        value: {
+          rev: "unknown"
+        }
+      });
+    }
+  }
+  return result;
+};
+const addUserFromEDB = (id, data) => {
+  userDB$1.set(id, data);
+};
+const removeUserFromEDB = (id) => {
+  userDB$1.delete(id);
+};
 async function ElectronDBRoutes() {
   initEDB();
 }
@@ -725,6 +787,8 @@ let chatsDB;
 let commandDB;
 let attachmentDB;
 let instructDB;
+let completionDB;
+let userDB;
 PouchDB.plugin(LeveldbAdapter);
 async function getAllConstructs() {
   if (isDarwin) {
@@ -1031,12 +1095,130 @@ async function updateInstruct(instruct) {
     console.error("Error while getting document: ", err);
   });
 }
+async function getAllCompletions() {
+  if (isDarwin) {
+    return getCompletionsFromEDB();
+  }
+  return completionDB.allDocs({ include_docs: true }).then((result) => {
+    return result.rows;
+  }).catch((err) => {
+    console.log(err);
+  });
+}
+async function getCompletion(id) {
+  if (isDarwin) {
+    return getCompletionFromEDB(id);
+  }
+  return completionDB.get(id).then((result) => {
+    return result;
+  }).catch((err) => {
+    console.log(err);
+  });
+}
+async function addCompletion(completion) {
+  if (isDarwin) {
+    addCompletionFromEDB(completion._id, completion);
+    return;
+  }
+  return completionDB.put(completion).then((result) => {
+    return result;
+  }).catch((err) => {
+    console.log(err);
+  });
+}
+async function removeCompletion(id) {
+  if (isDarwin) {
+    removeCompletionFromEDB(id);
+    return;
+  }
+  return completionDB.get(id).then((doc) => {
+    return completionDB.remove(doc);
+  }).catch((err) => {
+    console.log(err);
+  });
+}
+async function updateCompletion(completion) {
+  if (isDarwin) {
+    addCompletionFromEDB(completion._id, completion);
+    return;
+  }
+  return completionDB.get(completion._id).then((doc) => {
+    let updatedDoc = { ...doc, ...completion };
+    completionDB.put(updatedDoc).then((result) => {
+      return result;
+    }).catch((err) => {
+      console.error("Error while updating document: ", err);
+    });
+  }).catch((err) => {
+    console.error("Error while getting document: ", err);
+  });
+}
+async function getUsers() {
+  if (isDarwin) {
+    return getUsersFromEDB();
+  }
+  return userDB.allDocs({ include_docs: true }).then((result) => {
+    return result.rows;
+  }).catch((err) => {
+    console.log(err);
+  });
+}
+async function getUser(id) {
+  if (isDarwin) {
+    return getUserFromEDB(id);
+  }
+  return userDB.get(id).then((result) => {
+    return result;
+  }).catch((err) => {
+    console.log(err);
+  });
+}
+async function addUser(user) {
+  if (isDarwin) {
+    addUserFromEDB(user._id, user);
+    return;
+  }
+  return userDB.put(user).then((result) => {
+    return result;
+  }).catch((err) => {
+    console.log(err);
+  });
+}
+async function removeUser(id) {
+  if (isDarwin) {
+    removeUserFromEDB(id);
+    return;
+  }
+  return userDB.get(id).then((doc) => {
+    return userDB.remove(doc);
+  }).catch((err) => {
+    console.log(err);
+  });
+}
+async function updateUser(user) {
+  if (isDarwin) {
+    addUserFromEDB(user._id, user);
+    return;
+  }
+  return userDB.get(user._id).then((doc) => {
+    let updatedDoc = { ...doc, ...user };
+    userDB.put(updatedDoc).then((result) => {
+      return result;
+    }).catch((err) => {
+      console.error("Error while updating document: ", err);
+    });
+  }).catch((err) => {
+    console.error("Error while getting document: ", err);
+  });
+}
 function PouchDBRoutes() {
   constructDB = new PouchDB("constructs", { prefix: dataPath, adapter: "leveldb" });
   chatsDB = new PouchDB("chats", { prefix: dataPath, adapter: "leveldb" });
   commandDB = new PouchDB("commands", { prefix: dataPath, adapter: "leveldb" });
   attachmentDB = new PouchDB("attachments", { prefix: dataPath, adapter: "leveldb" });
   instructDB = new PouchDB("instructs", { prefix: dataPath, adapter: "leveldb" });
+  completionDB = new PouchDB("completion", { prefix: dataPath, adapter: "leveldb" });
+  userDB = new PouchDB("user", { prefix: dataPath, adapter: "leveldb" });
   electron.ipcMain.on("get-constructs", (event, replyName) => {
     getAllConstructs().then((result) => {
       event.sender.send(replyName, result);
@@ -1169,12 +1351,64 @@ function PouchDBRoutes() {
       event.sender.send("delete-instruct-reply", result);
     });
   });
+  electron.ipcMain.on("get-completions", (event, replyName) => {
+    getAllCompletions().then((result) => {
+      event.sender.send(replyName, result);
+    });
+  });
+  electron.ipcMain.on("get-completion", (event, arg, replyName) => {
+    getCompletion(arg).then((result) => {
+      event.sender.send(replyName, result);
+    });
+  });
+  electron.ipcMain.on("add-completion", (event, arg) => {
+    addCompletion(arg).then((result) => {
+      event.sender.send("add-completion-reply", result);
+    });
+  });
+  electron.ipcMain.on("update-completion", (event, arg) => {
+    updateCompletion(arg).then((result) => {
+      event.sender.send("update-completion-reply", result);
+    });
+  });
+  electron.ipcMain.on("delete-completion", (event, arg) => {
+    removeCompletion(arg).then((result) => {
+      event.sender.send("delete-completion-reply", result);
+    });
+  });
+  electron.ipcMain.on("get-users", (event, replyName) => {
+    getUsers().then((result) => {
+      event.sender.send(replyName, result);
+    });
+  });
+  electron.ipcMain.on("get-user", (event, arg, replyName) => {
+    getUser(arg).then((result) => {
+      event.sender.send(replyName, result);
+    });
+  });
+  electron.ipcMain.on("add-user", (event, arg) => {
+    addUser(arg).then((result) => {
+      event.sender.send("add-user-reply", result);
+    });
+  });
+  electron.ipcMain.on("update-user", (event, arg) => {
+    updateUser(arg).then((result) => {
+      event.sender.send("update-user-reply", result);
+    });
+  });
+  electron.ipcMain.on("delete-user", (event, arg) => {
+    removeUser(arg).then((result) => {
+      event.sender.send("delete-user-reply", result);
+    });
+  });
   electron.ipcMain.on("clear-data", (event, arg) => {
     constructDB.destroy();
     chatsDB.destroy();
     commandDB.destroy();
     attachmentDB.destroy();
     instructDB.destroy();
+    completionDB.destroy();
+    userDB.destroy();
     createDBs();
   });
   function createDBs() {
@@ -1183,6 +1417,8 @@ function PouchDBRoutes() {
     commandDB = new PouchDB("commands", { prefix: dataPath, adapter: "leveldb" });
     attachmentDB = new PouchDB("attachments", { prefix: dataPath, adapter: "leveldb" });
     instructDB = new PouchDB("instructs", { prefix: dataPath, adapter: "leveldb" });
+    completionDB = new PouchDB("completion", { prefix: dataPath, adapter: "leveldb" });
+    userDB = new PouchDB("user", { prefix: dataPath, adapter: "leveldb" });
   }
 }
 const store$4 = new Store({
