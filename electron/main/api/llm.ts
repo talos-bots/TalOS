@@ -4,7 +4,7 @@ import { Configuration, OpenAIApi } from 'openai';
 import Store from 'electron-store';
 import { w3cwebsocket as W3CWebSocket } from 'websocket';
 
-const HORDE_API_URL = 'https://aihorde.net/api/';
+const HORDE_API_URL = 'https://aihorde.net/api';
 const store = new Store({
     name: 'llmData',
 });
@@ -80,6 +80,11 @@ const setLLMSettings = (newSettings: any, newStopBrackts?: boolean) => {
     settings = newSettings;
 };
 
+const setLLMModel = (newHordeModel: string) => {
+    store.set('hordeModel', newHordeModel);
+    hordeModel = newHordeModel;
+};
+
 export function LanguageModelAPI(){
     ipcMain.on('generate-text', async (event, prompt, configuredName, stopList) => {
         const results = await generateText(prompt, configuredName, stopList);
@@ -109,16 +114,26 @@ export function LanguageModelAPI(){
     ipcMain.on('get-llm-settings', (event) => {
         event.reply('get-llm-settings-reply', {settings, stopBrackets});
     });
+
+    ipcMain.on('set-llm-model', (event, newHordeModel) => {
+        setLLMModel(newHordeModel);
+        event.reply('set-llm-model-reply', getLLMConnectionInformation());
+    });
+
+    ipcMain.on('get-llm-model', (event) => {
+        event.reply('get-llm-model-reply', hordeModel);
+    });
 }
 
 export async function getStatus(testEndpoint?: string, testEndpointType?: string){
     let endpointUrl = testEndpoint ? testEndpoint : endpoint;
     let endpointStatusType = testEndpointType ? testEndpointType : endpointType;
-    const endpointURLObject = new URL(endpointUrl);
+    let endpointURLObject;
     try {
         let response;
     switch (endpointStatusType) {
         case 'Kobold':
+            endpointURLObject = new URL(endpointUrl);
             try{
             response = await axios.get(`${endpointURLObject.protocol}//${endpointURLObject.hostname}:${endpointURLObject.port}/api/v1/model`);
             if (response.status === 200) {
@@ -131,6 +146,7 @@ export async function getStatus(testEndpoint?: string, testEndpointType?: string
             }
             break;
         case 'Ooba':
+            endpointURLObject = new URL(endpointUrl);
             try{
                 response = await axios.get(`${endpointURLObject.protocol}//${endpointURLObject.hostname}:5000/api/v1/model`);
             if (response.status === 200) {
@@ -144,7 +160,7 @@ export async function getStatus(testEndpoint?: string, testEndpointType?: string
         case 'OAI':
             return 'OAI is not yet supported.';
         case 'Horde':
-            response = await axios.get(`${HORDE_API_URL}v2/status/heartbeat`);
+            response = await axios.get(`${HORDE_API_URL}/v2/status/heartbeat`);
             if (response.status === 200) {
                 return 'Horde heartbeat is steady.';
             } else {
@@ -173,7 +189,7 @@ export const generateText = async (
     let char = 'Character';
   
     let results: any;
-    if(endpoint.length < 3) return { error: 'Invalid endpoint.' };
+    if(endpoint.length < 3 && endpointType !== 'Horde') return { error: 'Invalid endpoint.' };
     let stops: string[] = stopList 
       ? ['You:', '<START>', '<END>', ...stopList] 
       : [`${configuredName}:`, 'You:', '<START>', '<END>'];
@@ -181,9 +197,10 @@ export const generateText = async (
     if (stopBrackets) {
       stops.push('[', ']');
     }
-    const endpointURLObject = new URL(endpoint);
+    let endpointURLObject;
     switch (endpointType) {
         case 'Kobold':
+            endpointURLObject = new URL(endpoint);
             console.log("Kobold");
             try{
                 const koboldPayload = { 
@@ -218,6 +235,7 @@ export const generateText = async (
         break;
         case 'Ooba':
             console.log("Ooba");
+            endpointURLObject = new URL(endpoint);
             prompt = prompt.toString().replace(/<br>/g, '').replace(/\n\n/g, '').replace(/\\/g, "\\");
             let newPrompt = prompt.toString();
             try{
@@ -286,22 +304,48 @@ export const generateText = async (
             console.log("Horde");
             try{
                 const hordeKey = endpoint ? endpoint : '0000000000';
-                const payload = { prompt, params: settings, models: [hordeModel] };
+                let doKudos = false;
+                if(hordeKey !== '0000000000'){
+                    doKudos = true;
+                }
+                const payload = { prompt, 
+                    params: {
+                        stop_sequence: stops,
+                        frmtrmblln: false,
+                        rep_pen: settings.rep_pen ? settings.rep_pen : 1.0,
+                        rep_pen_range: settings.rep_pen_range ? settings.rep_pen_range : 512,
+                        temperature: settings.temperature ? settings.temperature : 0.9,
+                        sampler_order: settings.sampler_order ? settings.sampler_order : [6,3,2,5,0,1,4],
+                        top_k: settings.top_k ? settings.top_k : 0,
+                        top_p: settings.top_p ? settings.top_p : 0.9,
+                        top_a: settings.top_a ? settings.top_a : 0,
+                        tfs: settings.tfs ? settings.tfs : 0,
+                        typical: settings.typical ? settings.typical : 0.9,
+                        singleline: settings.singleline ? settings.singleline : false,
+                        sampler_full_determinism: settings.sampler_full_determinism ? settings.sampler_full_determinism : false,
+                        max_length: settings.max_length ? settings.max_length : 350,
+                    }, 
+                    models: [hordeModel],
+                    slow_workers: doKudos
+                };
                 response = await axios.post(
-                    `${HORDE_API_URL}v2/generate/text/async`,
+                    `${HORDE_API_URL}/v2/generate/text/async`,
                     payload,
                     { headers: { 'Content-Type': 'application/json', 'apikey': hordeKey } }
-                );
+                ).catch((error) => {
+                    console.log(error);
+                    results = false;
+                });
                 const taskId = response.data.id;
             
                 while (true) {
                     await new Promise(resolve => setTimeout(resolve, 5000));
-                    const statusCheck = await axios.get(`${HORDE_API_URL}v2/generate/text/status/${taskId}`, {
+                    const statusCheck = await axios.get(`${HORDE_API_URL}/v2/generate/text/status/${taskId}`, {
                         headers: { 'Content-Type': 'application/json', 'apikey': hordeKey }
                     });
                     const { done } = statusCheck.data;
                     if (done) {
-                        const getText = await axios.get(`${HORDE_API_URL}v2/generate/text/status/${taskId}`, {
+                        const getText = await axios.get(`${HORDE_API_URL}/v2/generate/text/status/${taskId}`, {
                         headers: { 'Content-Type': 'application/json', 'apikey': hordeKey }
                         });
                         const generatedText = getText.data.generations[0];
@@ -317,6 +361,7 @@ export const generateText = async (
         break;
         case 'P-OAI':
             console.log("P-OAI");
+            endpointURLObject = new URL(endpoint);
             try{
                 const response = await axios.post(`${endpointURLObject.protocol}//${endpointURLObject.hostname}:${endpointURLObject.port}` + '/proxy/openai/chat/completions', {
                     model: "gpt-4",
@@ -346,6 +391,7 @@ export const generateText = async (
         break;
         case 'P-Claude':
             console.log("P-Claude");
+            endpointURLObject = new URL(endpoint);
             try{
                 const claudeResponse = await axios.post(`${endpointURLObject.protocol}//${endpointURLObject.hostname}:${endpointURLObject.port}` + '/proxy/anthropic/complete', {
                 "prompt": `System:\nWrite ${char}'s next reply in a fictional chat between ${char} and ${configuredName}. Write 1 reply only in internet RP style, italicize actions, and avoid quotation marks. Use markdown. Be proactive, creative, and drive the plot and conversation forward. Write at least 1 sentence, up to 4. Always stay in character and avoid repetition.\n` + prompt + `\nAssistant:\n Okay, here is my response as ${char}:\n`,

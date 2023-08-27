@@ -1,6 +1,7 @@
 import { getLLMConnectionInformation, getStatus, setLLMConnectionInformation } from "@/api/llmapi";
 import { EndpointType } from "@/types";
 import { useEffect, useState } from "react";
+import HordePanel from "../horde-panel";
 
 interface ConnectionBoxProps {
 };
@@ -9,7 +10,7 @@ const ConnectionBox = (props: ConnectionBoxProps) => {
     const [endpointType, setEndpointType] = useState<EndpointType>("Ooba");
     const [password, setPassword] = useState<string>("");
     const [status, setStatus] = useState<string>("Disconnected");
-    const endpointTypes = ["Kobold", "Ooba", "OAI", "P-OAI", "P-Claude", "PaLM"]
+    const endpointTypes = ["Kobold", "Ooba", "OAI", "P-OAI", "P-Claude", "PaLM", "Horde"]
 
     useEffect(() => {
         const getConnectionSettings = async () => {
@@ -76,6 +77,9 @@ const ConnectionBox = (props: ConnectionBoxProps) => {
                     readOnly
                 />
             </div>
+            {endpointType === "Horde" && (
+                <HordePanel />
+            )}
         </div>
     );
 };

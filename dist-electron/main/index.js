@@ -124,7 +124,7 @@ async function base642Buffer(base64) {
     return buffer;
   }
 }
-const HORDE_API_URL = "https://aihorde.net/api/";
+const HORDE_API_URL = "https://aihorde.net/api";
 const store$5 = new Store({
   name: "llmData"
 });
@@ -176,6 +176,10 @@ const setLLMSettings = (newSettings, newStopBrackts) => {
   }
   settings = newSettings;
 };
+const setLLMModel = (newHordeModel) => {
+  store$5.set("hordeModel", newHordeModel);
+  hordeModel = newHordeModel;
+};
 function LanguageModelAPI() {
   electron.ipcMain.on("generate-text", async (event, prompt, configuredName, stopList) => {
     const results = await generateText(prompt, configuredName, stopList);
@@ -200,15 +204,23 @@ function LanguageModelAPI() {
   electron.ipcMain.on("get-llm-settings", (event) => {
     event.reply("get-llm-settings-reply", { settings, stopBrackets });
   });
+  electron.ipcMain.on("set-llm-model", (event, newHordeModel) => {
+    setLLMModel(newHordeModel);
+    event.reply("set-llm-model-reply", getLLMConnectionInformation());
+  });
+  electron.ipcMain.on("get-llm-model", (event) => {
+    event.reply("get-llm-model-reply", hordeModel);
+  });
 }
 async function getStatus(testEndpoint, testEndpointType) {
   let endpointUrl = testEndpoint ? testEndpoint : endpoint;
   let endpointStatusType = testEndpointType ? testEndpointType : endpointType;
-  const endpointURLObject = new URL(endpointUrl);
+  let endpointURLObject;
   try {
     let response;
     switch (endpointStatusType) {
       case "Kobold":
+        endpointURLObject = new URL(endpointUrl);
         try {
           response = await axios.get(`${endpointURLObject.protocol}//${endpointURLObject.hostname}:${endpointURLObject.port}/api/v1/model`);
           if (response.status === 200) {
@@ -221,6 +233,7 @@ async function getStatus(testEndpoint, testEndpointType) {
         }
         break;
       case "Ooba":
+        endpointURLObject = new URL(endpointUrl);
         try {
           response = await axios.get(`${endpointURLObject.protocol}//${endpointURLObject.hostname}:5000/api/v1/model`);
           if (response.status === 200) {
@@ -234,7 +247,7 @@ async function getStatus(testEndpoint, testEndpointType) {
       case "OAI":
         return "OAI is not yet supported.";
       case "Horde":
-        response = await axios.get(`${HORDE_API_URL}v2/status/heartbeat`);
+        response = await axios.get(`${HORDE_API_URL}/v2/status/heartbeat`);
         if (response.status === 200) {
           return "Horde heartbeat is steady.";
         } else {
@@ -258,15 +271,16 @@ const generateText = async (prompt, configuredName = "You", stopList = null) => 
   let response;
   let char = "Character";
   let results;
-  if (endpoint.length < 3)
+  if (endpoint.length < 3 && endpointType !== "Horde")
     return { error: "Invalid endpoint." };
   let stops = stopList ? ["You:", "<START>", "<END>", ...stopList] : [`${configuredName}:`, "You:", "<START>", "<END>"];
   if (stopBrackets) {
     stops.push("[", "]");
   }
-  const endpointURLObject = new URL(endpoint);
+  let endpointURLObject;
   switch (endpointType) {
     case "Kobold":
+      endpointURLObject = new URL(endpoint);
       console.log("Kobold");
       try {
         const koboldPayload = {
@@ -301,6 +315,7 @@ const generateText = async (prompt, configuredName = "You", stopList = null) => 
       break;
     case "Ooba":
       console.log("Ooba");
+      endpointURLObject = new URL(endpoint);
       prompt = prompt.toString().replace(/<br>/g, "").replace(/\n\n/g, "").replace(/\\/g, "\\");
       let newPrompt = prompt.toString();
       try {
@@ -368,21 +383,48 @@ const generateText = async (prompt, configuredName = "You", stopList = null) => 
       console.log("Horde");
       try {
         const hordeKey = endpoint ? endpoint : "0000000000";
-        const payload = { prompt, params: settings, models: [hordeModel] };
+        let doKudos = false;
+        if (hordeKey !== "0000000000") {
+          doKudos = true;
+        }
+        const payload = {
+          prompt,
+          params: {
+            stop_sequence: stops,
+            frmtrmblln: false,
+            rep_pen: settings.rep_pen ? settings.rep_pen : 1,
+            rep_pen_range: settings.rep_pen_range ? settings.rep_pen_range : 512,
+            temperature: settings.temperature ? settings.temperature : 0.9,
+            sampler_order: settings.sampler_order ? settings.sampler_order : [6, 3, 2, 5, 0, 1, 4],
+            top_k: settings.top_k ? settings.top_k : 0,
+            top_p: settings.top_p ? settings.top_p : 0.9,
+            top_a: settings.top_a ? settings.top_a : 0,
+            tfs: settings.tfs ? settings.tfs : 0,
+            typical: settings.typical ? settings.typical : 0.9,
+            singleline: settings.singleline ? settings.singleline : false,
+            sampler_full_determinism: settings.sampler_full_determinism ? settings.sampler_full_determinism : false,
+            max_length: settings.max_length ? settings.max_length : 350
+          },
+          models: [hordeModel],
+          slow_workers: doKudos
+        };
         response = await axios.post(
-          `${HORDE_API_URL}v2/generate/text/async`,
+          `${HORDE_API_URL}/v2/generate/text/async`,
           payload,
           { headers: { "Content-Type": "application/json", "apikey": hordeKey } }
-        );
+        ).catch((error) => {
+          console.log(error);
+          results = false;
+        });
         const taskId = response.data.id;
         while (true) {
           await new Promise((resolve) => setTimeout(resolve, 5e3));
-          const statusCheck = await axios.get(`${HORDE_API_URL}v2/generate/text/status/${taskId}`, {
+          const statusCheck = await axios.get(`${HORDE_API_URL}/v2/generate/text/status/${taskId}`, {
             headers: { "Content-Type": "application/json", "apikey": hordeKey }
           });
           const { done } = statusCheck.data;
           if (done) {
-            const getText = await axios.get(`${HORDE_API_URL}v2/generate/text/status/${taskId}`, {
+            const getText = await axios.get(`${HORDE_API_URL}/v2/generate/text/status/${taskId}`, {
               headers: { "Content-Type": "application/json", "apikey": hordeKey }
             });
             const generatedText = getText.data.generations[0];
@@ -398,6 +440,7 @@ const generateText = async (prompt, configuredName = "You", stopList = null) => 
       break;
     case "P-OAI":
       console.log("P-OAI");
+      endpointURLObject = new URL(endpoint);
       try {
         const response2 = await axios.post(`${endpointURLObject.protocol}//${endpointURLObject.hostname}:${endpointURLObject.port}/proxy/openai/chat/completions`, {
           model: "gpt-4",
@@ -428,6 +471,7 @@ const generateText = async (prompt, configuredName = "You", stopList = null) => 
       break;
     case "P-Claude":
       console.log("P-Claude");
+      endpointURLObject = new URL(endpoint);
       try {
         const claudeResponse = await axios.post(`${endpointURLObject.protocol}//${endpointURLObject.hostname}:${endpointURLObject.port}/proxy/anthropic/complete`, {
           "prompt": `System:

@@ -64,3 +64,17 @@ export const getLLMSettings = (): Promise<{settings: Settings, stopBrackets: boo
         });
     });
 }
+
+export const getLLMModel = (): Promise<any> => {
+    return new Promise((resolve, reject) => {
+        ipcRenderer.send('get-llm-model');
+        ipcRenderer.once('get-llm-model-reply', (event, data) => {
+            if(data.error) reject(data.error);
+            resolve(data);
+        });
+    });
+}
+
+export const setLLMModel = (model: string) => {
+    ipcRenderer.send('set-llm-model', model);
+}

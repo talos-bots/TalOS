@@ -1,13 +1,9 @@
-import { useState } from "react";
 import ConnectionBox from "./connection-box";
 import GenerationSettings from "./generation-settings";
 
 interface LLMPanelProps {
 };
 const LLMPanel = (props: LLMPanelProps) => {
-    const [endpoint, setEndpoint] = useState<string>("");
-    const {} = props;
-    
     return(
         <div className="grid grid-cols-2 gap-4">
             <div className="col-span-1">

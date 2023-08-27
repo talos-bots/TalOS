@@ -155,7 +155,7 @@ const ChatDetails = (props: ChatDetailsProps) => {
     }, [isEditing]);    
 
     const truncateText = (text: string, length: number) => {
-        return text.length > length ? text.substring(0, length) + "..." : text;
+        return text?.length > length ? text?.substring(0, length) + "..." : text;
     };
     
     return (
@@ -201,7 +201,7 @@ const ChatDetails = (props: ChatDetailsProps) => {
                 </button>
                 <div className="w-fit flex flex-row items-center justify-end absolute right-4 gap-20">
                     <i className="text-theme-italic">({chat.lastMessage.origin})</i>
-                    <p className="text-theme-italic">{chat.lastMessage.user}: {truncateText(chat.lastMessage.text, 35)}</p>
+                    <p className="text-theme-italic">{chat.lastMessage.user}: {truncateText(chat.lastMessage?.text, 35)}</p>
                     <i className="text-theme-italic">{getFormattedTime(chat.lastMessage.timestamp)}</i>
                 </div>
             </div>
