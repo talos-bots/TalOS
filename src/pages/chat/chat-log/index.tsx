@@ -40,23 +40,9 @@ const ChatLog = (props: ChatLogProps) => {
 	const handleMessageSend = async (message: string) => {
 		if(hasSentMessage === true) return;
 		setHasSentMessage(true);
-		let isNewChat = false;
 		let chat;
-		if(chatLog === null) {
-			isNewChat = true;
-			console.log("new chat");
-			chat = new Chat();
-		} else {
-			chat = chatLog;
-		}
+		chat = chatLog;
 		if(chat === null) return;
-		chat._id = "characterChat";
-		if(chat.constructs.length === 0) {
-			let activeConstructs = await getActiveConstructList();
-			for(let i = 0; i < activeConstructs.length; i++) {
-				chat.addConstruct(activeConstructs[i]);
-			}
-		}
 		let newMessage = addUserMessage(message);
 		chat.addMessage(newMessage);
 		if(messages.includes(newMessage)){
@@ -86,13 +72,7 @@ const ChatLog = (props: ChatLogProps) => {
 			}
 		}
 		setChatLog(chat);
-		if(isNewChat) {
-			console.log("saving new chat");
-			await saveNewChat(chat);
-		} else {
-			console.log("updating chat");
-			await updateChat(chat);
-		}
+		await updateChat(chat);
 		setHasSentMessage(false);
 	};	
 

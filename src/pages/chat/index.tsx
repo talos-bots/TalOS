@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import ChatLog from "./chat-log";
 import { useParams } from "react-router-dom";
 import ChatSelector from "./chat-selector";
+import { Chat } from "@/classes/Chat";
 
 const ChatPage = () => {
     const { id } = useParams<{ id: string }>();
@@ -13,9 +14,13 @@ const ChatPage = () => {
         }
     }, [id !== undefined && id !== null]);
 
+    const handleChatSelect = (chat: Chat) => {
+        setSelectedChat(chat._id);
+    }
+
     return (
         <>
-            {selectedChat !== null ? (<ChatLog chatLogID={selectedChat}/>) : (<ChatSelector/>)}
+            {selectedChat !== null ? (<ChatLog chatLogID={selectedChat}/>) : (<ChatSelector onClick={handleChatSelect}/>)}
         </>
     )
 }
