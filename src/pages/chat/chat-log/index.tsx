@@ -6,6 +6,7 @@ import { getChat, saveNewChat, updateChat } from "@/api/dbapi";
 import MessageComponent from "@/components/chat-page/message";
 import { addUserMessage, getLoadingMessage, regenerateMessage, sendMessage, wait } from "../helpers";
 import { getActiveConstructList } from "@/api/constructapi";
+import ChatInfo from "@/components/chat-page/chat-info";
 interface ChatLogProps {
 	chatLogID?: string;
 }
@@ -117,10 +118,22 @@ const ChatLog = (props: ChatLogProps) => {
 		});
 	}
 
+	const handleDetailsChange = async (newChat: Chat) => {
+		setChatLog(newChat);
+		await updateChat(newChat)
+	}
+
 	return (
-		<div className="flex flex-row w-full h-full items-center justify-center">
-			<div className="box-border w-3/6 h-[calc(100vh-70px)] flex flex-col gap-6">
-				<div className="h-5/6 mt-4">
+		<div className="flex flex-row w-full h-full items-center justify-center overflow-y-hidden">
+			<div className="box-border w-3/6 h-[calc(100vh-70px)] flex flex-col gap-4">
+				<div className="w-full flex flex-row items-center justify-end">
+					{chatLog === null ? (
+						null
+					) : (
+						<ChatInfo chat={chatLog} onEdit={handleDetailsChange}/>
+					)}
+				</div>
+				<div className="h-5/6">
 					<div className="themed-message-box">
 						{Array.isArray(messages) && messages.map((message) => {
 							return (

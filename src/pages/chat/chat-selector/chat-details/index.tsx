@@ -181,7 +181,7 @@ const ChatDetails = (props: ChatDetailsProps) => {
                     />
                 ) : (
                     <>
-                        <p ref={spanRef} className="ml-2">{name}</p>
+                        <p className="ml-2">{name}</p>
                         <button onClick={() => setIsEditing(true)} className="message-button ml-2 cursor-pointer">
                             <Edit2Icon size={18} />
                         </button>
