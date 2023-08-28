@@ -5,6 +5,7 @@ import { getFormattedTime } from "@/components/chat-page/message";
 import { on } from "events";
 import { Edit2Icon, TrashIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { RiQuestionMark } from "react-icons/ri";
 
 interface ChatDetailsProps {
     chat: Chat;
@@ -159,9 +160,11 @@ const ChatDetails = (props: ChatDetailsProps) => {
     };
     
     return (
-        <div className="themed-box flex flex-col justify-start items-start" onDoubleClick={()=> {if(onClick !== undefined) onClick(chat)}}>
+        <div className="themed-box-no-padding p-2 flex flex-col justify-start items-start" onDoubleClick={()=> {if(onClick !== undefined) onClick(chat)}}>
             <div className="flex flex-row items-center justify-start">
-                <img src={groupAvatar} alt="Group Avatar" className="rounded-full" />
+                <div className="themed-message-avatar flex items-center justify-center">
+                    {avatars.length > 0 ? (<img src={groupAvatar}/>) : (<RiQuestionMark size={36}/>)}
+                </div>
                 {isEditing ? (
                     <input 
                         value={name}

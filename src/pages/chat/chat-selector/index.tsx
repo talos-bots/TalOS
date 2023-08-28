@@ -68,7 +68,7 @@ const ChatSelector = (props: ChatSelectorProps) => {
             <div className="row-span-2 w-full h-full flex flex-col themed-root grow-0">
                 <h3>Chats</h3>
                 <div className="flex flex-col w-full gap-4 overflow-y-auto">
-                    {Array.isArray(chats) && chats.map((chat) => {
+                    {Array.isArray(chats) && chats.sort((a, b) => b.lastMessageDate - a.lastMessageDate).map((chat) => {
                         return (
                             <ChatDetails key={chat._id} chat={chat} onClick={handleChatClick} onDelete={handleChatDelete}/>
                         )
