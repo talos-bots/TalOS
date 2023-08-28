@@ -250,6 +250,12 @@ ul {
   }
 }
 
+.truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* Add this to your stylesheet */
 .tooltip {
   position: absolute;

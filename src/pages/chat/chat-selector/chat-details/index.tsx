@@ -21,7 +21,6 @@ const ChatDetails = (props: ChatDetailsProps) => {
     const [avatars, setAvatars] = useState<string[]>([]);
     const [groupAvatar, setGroupAvatar] = useState<string>('');
     const [isEditing, setIsEditing] = useState<boolean>(false);
-    const inputRef = useRef<HTMLInputElement>(null);
     const spanRef = useRef<HTMLSpanElement>(null);
 
     const constructsRef = useRef<Construct[]>([]);  // to keep track of current state within async functions
@@ -160,21 +159,17 @@ const ChatDetails = (props: ChatDetailsProps) => {
     };
     
     return (
-        <div className="themed-box-no-padding p-2 flex flex-col justify-start items-start" onDoubleClick={()=> {if(onClick !== undefined) onClick(chat)}}>
+        <div className="themed-box-no-padding p-2 flex flex-col justify-start items-start relative" onDoubleClick={()=> {if(onClick !== undefined) onClick(chat)}}>
             <div className="flex flex-row items-center justify-start">
                 <div className="themed-message-avatar flex items-center justify-center">
                     {avatars.length > 0 ? (<img src={groupAvatar}/>) : (<RiQuestionMark size={36}/>)}
                 </div>
                 {isEditing ? (
-                    <input 
+                    <textarea 
                         value={name}
-                        ref={inputRef}
                         onChange={(e) => {
                             const newValue = e.target.value;
                             setName(newValue);
-                            if (spanRef.current && inputRef.current) {
-                                inputRef.current.style.width = `${spanRef.current.offsetWidth}px`;
-                            }
                         }}                                                    
                         onBlur={handleSave}
                         onKeyDown={(e) => {
@@ -184,7 +179,7 @@ const ChatDetails = (props: ChatDetailsProps) => {
                         }}
                         autoFocus
                         style={{ width: 'auto', minWidth: '30px' }}
-                        className="ml-2 themed-input"
+                        className="ml-2 themed-input h-6"
                     />
                 ) : (
                     <>
@@ -202,10 +197,16 @@ const ChatDetails = (props: ChatDetailsProps) => {
                 >
                     <TrashIcon size={18} />
                 </button>
-                <div className="w-fit flex flex-row items-center justify-end absolute right-4 gap-20">
-                    <i className="text-theme-italic">({chat.lastMessage.origin})</i>
-                    <p className="text-theme-italic">{chat.lastMessage.user}: {truncateText(chat.lastMessage?.text, 35)}</p>
-                    <i className="text-theme-italic">{getFormattedTime(chat.lastMessage.timestamp)}</i>
+                <div className="grid w-2/3 grid-cols-3 gap-4 absolute right-4" id="info-text">
+                    <div className="col-span-1 flex flex-row align-middle justify-center text-left">
+                        <i className="w-full text-theme-italic">({chat.lastMessage.origin})</i>
+                    </div>
+                    <div className="col-span-1 flex flex-row align-middle justify-center text-left">
+                        <p className="w-full text-theme-italic text-left truncate">{chat.lastMessage.user}: {truncateText(chat.lastMessage?.text, 35)}</p>
+                    </div>
+                    <div className="col-span-1 flex flex-row justify-end text-right">
+                        <i className="w-full text-theme-italic text-right col-span-1">{getFormattedTime(chat.lastMessage.timestamp)}</i>
+                    </div>
                 </div>
             </div>
         </div>
