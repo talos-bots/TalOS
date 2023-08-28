@@ -203,7 +203,6 @@ export async function handleDiscordMessage(message: Message) {
     }
     const mode = getDiscordMode();
     if(mode === 'Character'){
-        sendTyping(message);
         if(isMultiCharacterMode()){
             chatLog = await doRoundRobin(constructArray, chatLog, message);
             if(chatLog !== undefined)
@@ -213,6 +212,7 @@ export async function handleDiscordMessage(message: Message) {
                 }
             }
         }else{
+            sendTyping(message);
             chatLog = await doCharacterReply(constructArray[0], chatLog, message);
         }
     }else if (mode === 'Construct'){
@@ -310,6 +310,7 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
         }
         let tries = 0;
         let result;
+        sendTyping(message);
         do {
             result = await generateContinueChatLog(constructArray[i], chatLog, username, maxMessages);
             tries++;
