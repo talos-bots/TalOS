@@ -19,7 +19,7 @@ const ConstructProfile: React.FC<Props> = ({ character, onClick }) => {
 
     return (
         <div
-            className="themed-root-no-padding w-10vw h-full flex flex-col justify-center items-center cursor-pointer relative"
+            className="themed-root-no-padding w-36 h-full flex flex-col justify-center items-center cursor-pointer relative shrink-0 grow-0"
             onMouseEnter={() => setIsHovered(true)} // Show overlay on hover
             onMouseLeave={() => setIsHovered(false)} // Hide overlay when not hovered
             onClick={() => { if (onClick !== undefined) onClick(character) }}

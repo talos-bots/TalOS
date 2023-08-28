@@ -1549,7 +1549,13 @@ async function generateContinueChatLog(construct, chatLog, currentUser, messages
     for (let i = 0; i < splitPrompt.length; i++) {
       let insertHere = splitPrompt.length - depth;
       if (i === insertHere) {
-        newPrompt += authorsNote + "\n";
+        if (Array.isArray(authorsNote)) {
+          for (let j = 0; j < authorsNote.length; j++) {
+            newPrompt += authorsNote[j] + "\n";
+          }
+        } else {
+          newPrompt += authorsNote + "\n";
+        }
       }
       newPrompt += splitPrompt[i] + "\n";
     }
