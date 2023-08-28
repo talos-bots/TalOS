@@ -14,6 +14,10 @@ const openai = require("openai");
 require("websocket");
 const FormData = require("form-data");
 function assembleConstructFromData(data) {
+  if (data === null)
+    return null;
+  if ((data == null ? void 0 : data._id) === void 0)
+    return null;
   const construct = {
     _id: data._id,
     name: data.name,
@@ -31,6 +35,10 @@ function assembleConstructFromData(data) {
   return construct;
 }
 function assembleChatFromData(data) {
+  if (data === null)
+    return null;
+  if ((data == null ? void 0 : data._id) === void 0)
+    return null;
   const chat = {
     _id: data._id,
     name: data.name,
@@ -1488,6 +1496,10 @@ const setAsPrimary = async (id) => {
   if (isReady) {
     let constructRaw = await getConstruct(id);
     let construct = assembleConstructFromData(constructRaw);
+    if (construct === null) {
+      console.log("Could not assemble construct from data");
+      return;
+    }
     setDiscordBotInfo(construct.name, construct.avatar);
   }
 };
@@ -1650,6 +1662,10 @@ async function regenerateMessageFromChatLog(chatLog, messageContent, messageID, 
     return;
   }
   let construct = assembleConstructFromData(constructData);
+  if (construct === null) {
+    console.log("Could not assemble construct from data");
+    return;
+  }
   let newReply = await generateContinueChatLog(construct, chatLog, foundMessage.participants[0], void 0, void 0, authorsNote, authorsNoteDepth);
   if (newReply === null) {
     console.log("Could not generate new reply");
@@ -1690,9 +1706,9 @@ function constructController() {
     ActiveConstructs = retrieveConstructs();
     event.reply("get-construct-active-list-reply", ActiveConstructs);
   });
-  electron.ipcMain.on("is-construct-active", (event, arg) => {
+  electron.ipcMain.on("is-construct-active", (event, arg, replyName) => {
     const isActive = isConstructActive(arg);
-    event.reply("is-construct-active-reply", isActive);
+    event.reply(replyName, isActive);
   });
   electron.ipcMain.on("remove-all-constructs-active", (event, arg) => {
     clearActiveConstructs();
@@ -1846,12 +1862,16 @@ async function handleDiscordMessage(message) {
   for (let i = 0; i < activeConstructs.length; i++) {
     let constructDoc = await getConstruct(activeConstructs[i]);
     let construct = assembleConstructFromData(constructDoc);
+    if (construct === null)
+      continue;
     constructArray.push(construct);
   }
   let chatLogData = await getChat(message.channel.id);
   let chatLog;
   if (chatLogData) {
     chatLog = assembleChatFromData(chatLogData);
+    if (chatLog === null)
+      return;
     chatLog.messages.push(newMessage);
     chatLog.lastMessage = newMessage;
     chatLog.lastMessageDate = newMessage.timestamp;
@@ -2044,6 +2064,8 @@ async function continueChatLog(interaction) {
   for (let i = 0; i < activeConstructs.length; i++) {
     let constructDoc = await getConstruct(activeConstructs[i]);
     let construct = assembleConstructFromData(constructDoc);
+    if (construct === null)
+      continue;
     constructArray.push(construct);
   }
   let chatLogData = await getChat(interaction.channel.id);
@@ -2051,7 +2073,7 @@ async function continueChatLog(interaction) {
   if (chatLogData) {
     chatLog = assembleChatFromData(chatLogData);
   }
-  if (chatLog === void 0) {
+  if (chatLog === null || chatLog === void 0) {
     return;
   }
   if (chatLog.messages.length < 1) {
@@ -2099,7 +2121,7 @@ async function handleRengenerateMessage(message) {
   if (chatLogData) {
     chatLog = assembleChatFromData(chatLogData);
   }
-  if (chatLog === void 0) {
+  if (chatLog === void 0 || chatLog === null) {
     console.log("Chat log is undefined");
     return;
   }
@@ -2132,7 +2154,7 @@ async function handleRemoveMessage(message) {
   if (chatLogData) {
     chatLog = assembleChatFromData(chatLogData);
   }
-  if (chatLog === void 0) {
+  if (chatLog === void 0 || chatLog === null) {
     return;
   }
   if (chatLog.messages.length < 1) {
@@ -2276,6 +2298,8 @@ const ListCharactersCommand = {
     for (let i = 0; i < constructs.length; i++) {
       let constructDoc = await getConstruct(constructs[i]);
       let construct = assembleConstructFromData(constructDoc);
+      if (construct === null)
+        continue;
       constructArray.push(construct);
     }
     let fields = [];
@@ -2567,6 +2591,8 @@ const DoCharacterGreetingsCommand = {
     const constructs = retrieveConstructs();
     let constructDoc = await getConstruct(constructs[0]);
     let construct = assembleConstructFromData(constructDoc);
+    if (construct === null)
+      return;
     let greeting = construct.greetings[0];
     let greetingMessage = {
       _id: Date.now().toString(),
@@ -2596,6 +2622,8 @@ const DoCharacterGreetingsCommand = {
     let chatLog;
     if (chatLogData) {
       chatLog = assembleChatFromData(chatLogData);
+      if (chatLog === null)
+        return;
       chatLog.messages.push(greetingMessage);
       chatLog.lastMessage = greetingMessage;
       chatLog.lastMessageDate = greetingMessage.timestamp;
@@ -2665,7 +2693,7 @@ const intents = {
     discord_js.GatewayIntentBits.GuildModeration,
     discord_js.GatewayIntentBits.GuildMessageReactions
   ],
-  partials: [discord_js.Partials.Channel, discord_js.Partials.GuildMember, discord_js.Partials.User, discord_js.Partials.Reaction, discord_js.Partials.Message]
+  partials: [discord_js.Partials.Channel, discord_js.Partials.GuildMember, discord_js.Partials.User, discord_js.Partials.Reaction, discord_js.Partials.Message, discord_js.Partials.ThreadMember, discord_js.Partials.GuildScheduledEvent]
 };
 const store$2 = new Store({
   name: "discordData"
@@ -2812,6 +2840,10 @@ async function editMessage(message, newMessage) {
     return;
   if (!isReady)
     return;
+  if (message.content === newMessage)
+    return;
+  if (newMessage.length < 1)
+    return;
   message.edit(newMessage);
 }
 async function deleteMessage(message) {
@@ -2829,6 +2861,10 @@ async function sendMessage(channelID, message) {
     return;
   }
   const channel = await disClient.channels.fetch(channelID);
+  if (!channel)
+    return;
+  if (message.length < 1)
+    return;
   if (channel instanceof discord_js.TextChannel || channel instanceof discord_js.DMChannel || channel instanceof discord_js.NewsChannel) {
     return channel.send(message);
   }
@@ -2854,6 +2890,8 @@ async function sendMessageAsCharacter(char, channelID, message) {
     console.error("Failed to create webhook.");
     return;
   }
+  if (message.length < 1)
+    return;
   await webhook.send(message);
 }
 async function clearWebhooksFromChannel(channelID) {
@@ -3190,6 +3228,8 @@ function DiscordJSRoutes() {
     let constructs = retrieveConstructs();
     let constructRaw = await getConstruct(constructs[0]);
     let construct = assembleConstructFromData(constructRaw);
+    if (!construct)
+      return;
     setDiscordBotInfo(construct.name, construct.avatar);
   });
   electron.ipcMain.handle("discord-login", async (event, rawToken, appId) => {
