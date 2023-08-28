@@ -112,6 +112,7 @@ export const ListCharactersCommand: SlashCommand = {
         for (let i = 0; i < constructs.length; i++) {
             let constructDoc = await getConstruct(constructs[i]);
             let construct = assembleConstructFromData(constructDoc);
+            if(construct === null) continue;
             constructArray.push(construct);
         }
         let fields = [];
@@ -410,6 +411,7 @@ export const DoCharacterGreetingsCommand: SlashCommand = {
         const constructs = retrieveConstructs();
         let constructDoc = await getConstruct(constructs[0]);
         let construct = assembleConstructFromData(constructDoc);
+        if(construct === null) return;
         let greeting = construct.greetings[0]
         let greetingMessage: MessageInterface = {
             _id: Date.now().toString(),
@@ -438,6 +440,7 @@ export const DoCharacterGreetingsCommand: SlashCommand = {
         let chatLog;
         if (chatLogData) {
             chatLog = assembleChatFromData(chatLogData);
+            if(chatLog === null) return;
             chatLog.messages.push(greetingMessage);
             chatLog.lastMessage = greetingMessage;
             chatLog.lastMessageDate = greetingMessage.timestamp;

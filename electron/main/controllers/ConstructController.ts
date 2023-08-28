@@ -61,6 +61,10 @@ const setAsPrimary = async (id: ConstructID): Promise<void> => {
     if(isReady){
         let constructRaw = await getConstruct(id);
         let construct = assembleConstructFromData(constructRaw);
+        if(construct === null){
+            console.log('Could not assemble construct from data');
+            return;
+        }
         setDiscordBotInfo(construct.name, construct.avatar);
     }
 }
@@ -243,6 +247,10 @@ export async function regenerateMessageFromChatLog(chatLog: ChatInterface, messa
         return;
     }
     let construct = assembleConstructFromData(constructData);
+    if(construct === null){
+        console.log('Could not assemble construct from data');
+        return;
+    }
     let newReply = await generateContinueChatLog(construct, chatLog, foundMessage.participants[0], undefined, undefined, authorsNote, authorsNoteDepth);
     if(newReply === null){
         console.log('Could not generate new reply');
@@ -288,9 +296,9 @@ function constructController() {
         event.reply('get-construct-active-list-reply', ActiveConstructs);
     });
 
-    ipcMain.on('is-construct-active', (event, arg) => {
+    ipcMain.on('is-construct-active', (event, arg, replyName) => {
         const isActive = isConstructActive(arg);
-        event.reply('is-construct-active-reply', isActive);
+        event.reply(replyName, isActive);
     });
 
     ipcMain.on('remove-all-constructs-active', (event, arg) => {

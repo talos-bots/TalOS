@@ -4,9 +4,10 @@ import { IpcRendererEvent, ipcRenderer } from "electron";
 
 export async function constructIsActive(id: string): Promise<boolean> {
     return new Promise((resolve, reject) => {
-        ipcRenderer.send("is-construct-active", id);
+        const uniqueEventName = "is-construct-active-reply-" + Date.now() + "-" + Math.random();
+        ipcRenderer.send("is-construct-active", id, uniqueEventName);
 
-        ipcRenderer.once("is-construct-active-reply", (event: IpcRendererEvent, data: boolean) => {
+        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: boolean) => {
             resolve(data);
         });
     });
