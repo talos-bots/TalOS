@@ -224,7 +224,7 @@ const DiscordPage = () => {
                                 <label className="text-theme-text font-semibold">Invite Link</label>
                                 <div className="themed-input flex flex-col items-center w-full">
                                     <i className="text-sm">This is the link you will use to invite the bot to your server. Only uses this after entering your applicationId and following the tutorial.</i>
-                                    <a href={`https://discord.com/oauth2/authorize?client_id=${discordApplicationID}&scope=bot&permissions=1099511627775`} onClick={(e) => handleLinkClick(e, `https://discord.com/oauth2/authorize?client_id=${discordApplicationID}&scope=bot&permissions=1099511627775`)} className="themed-button-pos w-full">Invite Bot</a>
+                                    <a href={`https://discord.com/oauth2/authorize?client_id=${discordApplicationID}&scope=bot&permissions=41389525433936`} onClick={(e) => handleLinkClick(e, `https://discord.com/oauth2/authorize?client_id=${discordApplicationID}&scope=bot&permissions=41389525433936`)} className="themed-button-pos w-full">Invite Bot</a>
                                 </div>
                             </div>
                         </div>
