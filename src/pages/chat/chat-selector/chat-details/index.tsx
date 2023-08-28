@@ -148,12 +148,6 @@ const ChatDetails = (props: ChatDetailsProps) => {
         saveModifiedChat();
     };
 
-    useEffect(() => {
-        if (isEditing && spanRef.current && inputRef.current) {
-            inputRef.current.style.width = `${spanRef.current.offsetWidth}px`;
-        }
-    }, [isEditing]);    
-
     const truncateText = (text: string, length: number) => {
         return text?.length > length ? text?.substring(0, length) + "..." : text;
     };
