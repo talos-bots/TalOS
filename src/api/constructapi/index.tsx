@@ -70,7 +70,7 @@ export const getCharacterPromptFromConstruct = (construct: Construct): Promise<s
     });
 }
 
-export const assemblePrompt = (construct: Construct, chatLog: Chat, currentUser?: any, messagesToInclude?: any): Promise<string> => {
+export const assemblePrompt = (construct: Construct, chatLog: Chat, currentUser?: string, messagesToInclude?: number): Promise<string> => {
     return new Promise((resolve, reject) => {
         ipcRenderer.send('assemble-prompt', construct, chatLog, currentUser, messagesToInclude);
         ipcRenderer.once('assemble-prompt-reply', (event, prompt) => {
@@ -79,7 +79,7 @@ export const assemblePrompt = (construct: Construct, chatLog: Chat, currentUser?
     });
 }
 
-export const assembleInstructPrompt = (construct: Construct, chatLog: Chat, currentUser?: any, messagesToInclude?: any): Promise<string> => {
+export const assembleInstructPrompt = (construct: Construct, chatLog: Chat, currentUser?: string, messagesToInclude?: number): Promise<string> => {
     return new Promise((resolve, reject) => {
         ipcRenderer.send('assemble-instruct-prompt', construct, chatLog, currentUser, messagesToInclude);
         ipcRenderer.once('assemble-instruct-prompt-reply', (event, prompt) => {
@@ -88,9 +88,9 @@ export const assembleInstructPrompt = (construct: Construct, chatLog: Chat, curr
     });
 }
 
-export const generateContinueChatLog = (construct: Construct, chatLog: Chat, currentUser?: any, messagesToInclude?: any, stopList?: any): Promise<string> => {
+export const generateContinueChatLog = (construct: Construct, chatLog: Chat, currentUser?: string, messagesToInclude?: number, stopList?: any, authorsNote?: string | string[], authorsNoteDepth?: number): Promise<string> => {
     return new Promise((resolve, reject) => {
-        ipcRenderer.send('generate-continue-chat-log', construct, chatLog, currentUser, messagesToInclude, stopList);
+        ipcRenderer.send('generate-continue-chat-log', construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth);
         ipcRenderer.once('generate-continue-chat-log-reply', (event, response) => {
             resolve(response);
         });

@@ -107,7 +107,7 @@ export function assembleInstructPrompt(construct: any, chatLog: any, currentUser
     return prompt.replaceAll('{{user}}', `${currentUser}`);
 }
 
-export async function generateContinueChatLog(construct: any, chatLog: any, currentUser?: string, messagesToInclude?: any, stopList?: string[], authorsNote?: string, authorsNoteDepth?: number){
+export async function generateContinueChatLog(construct: any, chatLog: any, currentUser?: string, messagesToInclude?: any, stopList?: string[], authorsNote?: string | string[], authorsNoteDepth?: number){
     let prompt = assemblePrompt(construct, chatLog, currentUser, messagesToInclude);
     if(authorsNote !== undefined){
         let splitPrompt = prompt.split('\n');
@@ -120,7 +120,13 @@ export async function generateContinueChatLog(construct: any, chatLog: any, curr
         for(let i = 0; i < splitPrompt.length; i++){
             let insertHere = splitPrompt.length - depth;
             if(i === insertHere){
-                newPrompt += authorsNote + '\n';
+                if(Array.isArray(authorsNote)){
+                    for(let j = 0; j < authorsNote.length; j++){
+                        newPrompt += authorsNote[j] + '\n';
+                    }
+                }else{
+                    newPrompt += authorsNote + '\n';
+                }
             }
             newPrompt += splitPrompt[i] + '\n';
         }
