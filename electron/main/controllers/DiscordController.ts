@@ -71,12 +71,19 @@ export const addAlias = (newAlias: Alias, channelID: string) => {
             if(channels[i].aliases === undefined){
                 channels[i].aliases = [];
             }
+            
+            let replaced = false;
             for(let j = 0; j < channels[i].aliases.length; j++){
                 if(channels[i].aliases[j]._id === newAlias._id){
-                    channels[i].aliases.splice(j, 1);
+                    channels[i].aliases[j] = newAlias; // Directly replace the alias
+                    replaced = true;
+                    break;  // Exit the loop once replaced
                 }
             }
-            channels[i].aliases.push(newAlias);
+            
+            if (!replaced) {
+                channels[i].aliases.push(newAlias);
+            }
         }
     }
     store.set('channels', channels);

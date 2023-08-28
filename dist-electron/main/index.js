@@ -1813,6 +1813,28 @@ const getUsername = (userID, channelID) => {
   });
   return null;
 };
+const addAlias = (newAlias, channelID) => {
+  const channels = getRegisteredChannels();
+  for (let i = 0; i < channels.length; i++) {
+    if (channels[i]._id === channelID) {
+      if (channels[i].aliases === void 0) {
+        channels[i].aliases = [];
+      }
+      let replaced = false;
+      for (let j = 0; j < channels[i].aliases.length; j++) {
+        if (channels[i].aliases[j]._id === newAlias._id) {
+          channels[i].aliases[j] = newAlias;
+          replaced = true;
+          break;
+        }
+      }
+      if (!replaced) {
+        channels[i].aliases.push(newAlias);
+      }
+    }
+  }
+  store$3.set("channels", channels);
+};
 const setMaxMessages = (max) => {
   store$3.set("maxMessages", max);
 };
@@ -2538,18 +2560,35 @@ const SetAliasCommand = {
     }
     const user = (_a = interaction.options.get("user")) == null ? void 0 : _a.value;
     const alias = (_b = interaction.options.get("alias")) == null ? void 0 : _b.value;
-    addRegisteredChannel({
-      _id: interaction.channelId,
-      guildId: interaction.guildId,
-      constructs: [],
-      aliases: [{
+    const registeredChannels = getRegisteredChannels();
+    let registered = false;
+    for (let i = 0; i < registeredChannels.length; i++) {
+      if (registeredChannels[i]._id === interaction.channelId) {
+        registered = true;
+        break;
+      }
+    }
+    if (!registered) {
+      addRegisteredChannel({
+        _id: interaction.channelId,
+        guildId: interaction.guildId,
+        constructs: [],
+        aliases: [{
+          _id: user ? user : interaction.user.id,
+          name: alias,
+          location: "Discord"
+        }],
+        authorsNotes: [],
+        authorsNoteDepth: 0
+      });
+    } else {
+      let newAlias = {
         _id: user ? user : interaction.user.id,
         name: alias,
         location: "Discord"
-      }],
-      authorsNotes: [],
-      authorsNoteDepth: 0
-    });
+      };
+      addAlias(newAlias, interaction.channelId);
+    }
     await interaction.editReply({
       content: `Alias ${alias} set for <@${user ? user : interaction.user.id}>.`
     });

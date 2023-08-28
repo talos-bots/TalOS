@@ -1,6 +1,6 @@
 import { CommandInteraction, EmbedBuilder } from "discord.js";
-import { MessageInterface, SlashCommand } from "../types/types";
-import { addRegisteredChannel, continueChatLog, getRegisteredChannels, removeRegisteredChannel, setDoAutoReply, setMaxMessages } from "./DiscordController";
+import { Alias, MessageInterface, SlashCommand } from "../types/types";
+import { addAlias, addRegisteredChannel, continueChatLog, getRegisteredChannels, removeRegisteredChannel, setDoAutoReply, setMaxMessages } from "./DiscordController";
 import { addChat, getChat, getConstruct, removeChat } from "../api/pouchdb";
 import { assembleChatFromData, assembleConstructFromData } from "../helpers/helpers";
 import { retrieveConstructs, setDoMultiLine } from "./ConstructController";
@@ -349,18 +349,35 @@ export const SetAliasCommand: SlashCommand = {
         }
         const user = interaction.options.get('user')?.value as string;
         const alias = interaction.options.get('alias')?.value as string;
-        addRegisteredChannel({
-            _id: interaction.channelId,
-            guildId: interaction.guildId,
-            constructs: [],
-            aliases: [{
+        const registeredChannels = getRegisteredChannels();
+        let registered = false;
+        for(let i = 0; i < registeredChannels.length; i++){
+            if(registeredChannels[i]._id === interaction.channelId){
+                registered = true;
+                break;
+            }
+        }
+        if(!registered){
+            addRegisteredChannel({
+                _id: interaction.channelId,
+                guildId: interaction.guildId,
+                constructs: [],
+                aliases: [{
+                    _id: user ? user : interaction.user.id,
+                    name: alias,
+                    location: 'Discord',
+                }],
+                authorsNotes: [],
+                authorsNoteDepth: 0,
+            });
+        }else{
+            let newAlias: Alias = {
                 _id: user ? user : interaction.user.id,
                 name: alias,
                 location: 'Discord',
-            }],
-            authorsNotes: [],
-            authorsNoteDepth: 0,
-        });
+            }
+            addAlias(newAlias, interaction.channelId);
+        }
         await interaction.editReply({
             content: `Alias ${alias} set for <@${user ? user : interaction.user.id}>.`,
         });
