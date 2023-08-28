@@ -7,6 +7,7 @@ import MessageComponent from "@/components/chat-page/message";
 import { addUserMessage, getLoadingMessage, regenerateMessage, sendMessage, wait } from "../helpers";
 import { Alert } from "@material-tailwind/react";
 import ChatInfo from "@/components/chat-page/chat-info";
+import Loading from "@/components/loading";
 interface ChatLogProps {
 	chatLogID?: string;
 }
@@ -17,6 +18,7 @@ const ChatLog = (props: ChatLogProps) => {
 	const messagesEndRef = useRef<HTMLDivElement | null>(null);
 	const [hasSentMessage, setHasSentMessage] = useState<boolean>(false);
 	const [error, setError] = useState<string | null>(null);
+	const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
 	useEffect(() => {
 		if(chatLogID !== undefined) {
@@ -28,7 +30,11 @@ const ChatLog = (props: ChatLogProps) => {
 					console.error(err);
 				});
 			}
-			getChatLog();
+			getChatLog().then(() => {
+				setIsLoaded(true);
+			}).catch((err) => {
+				console.error(err);
+			});
 		}
 	}, [chatLogID !== undefined && chatLogID !== null]);
 
@@ -131,6 +137,8 @@ const ChatLog = (props: ChatLogProps) => {
 		setChatLog(newChat);
 		await updateChat(newChat)
 	}
+
+	if(!isLoaded) return (<Loading/>);
 
 	return (
 		<>

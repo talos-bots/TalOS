@@ -9,10 +9,12 @@ import './construct-page.scss';
 import { importTavernCharacter } from "@/api/extrasapi";
 import { AiOutlineUpload } from "react-icons/ai";
 import { removeAllActiveConstructs } from "@/api/constructapi";
+import Loading from "@/components/loading";
 
 const ConstructsPage = () => {
     const [characters, setCharacters] = useState<Construct[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
+    const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
     const filteredCharacters = characters ? characters.filter((character) => {
         return Object.values(character).some((value) =>
@@ -51,7 +53,11 @@ const ConstructsPage = () => {
                 setCharacters([]);
             }
         }
-        retrieveCharacters();
+        retrieveCharacters().then(() => {
+            setIsLoaded(true);
+        }).catch((err) => {
+            console.error(err);
+        });
     }, []);
 
     const clearActive = async () => {
@@ -59,8 +65,10 @@ const ConstructsPage = () => {
         window.location.reload();
     }
 
+    if(!isLoaded) return (<Loading/>);
+    
     return (
-        <div className="w-full h-[calc(100vh-70px)] grid grid-rows-[auto,1fr] overflow-y-auto overflow-x-hidden themed-root gap-4">
+        <div className="w-full h-[calc(100vh-70px)] grid grid-rows-[auto,1fr] overflow-y-auto overflow-x-hidden themed-root">
             <h2 className="text-2xl font-bold text-theme-text text-shadow-xl">Constructs</h2>
             <div className="flex flex-col gap-8">
                 <div className="grid grid-cols-5 gap-0 w-15vw h-5vh">
