@@ -29,20 +29,6 @@ const DiscordPage = () => {
             const status = await getBotStatus();
             setIsBotActive(status);
         }
-        const getActiveConstructs = async () => {
-            let constructList = await getActiveConstructList();
-            console.log(constructList);
-            let constructArray: Construct[] = [];
-            if (constructList) {
-                for (let i = 0; i < constructList.length; i++) {
-                    let construct = await getConstruct(constructList[i]);
-                    if (construct) {
-                        constructArray.push(construct);
-                    }
-                }
-            }
-            setDiscordActiveConstructs(constructArray);
-        }
         getDiscordConfig();
         getActiveConstructs();
         isBotActive();
@@ -66,13 +52,28 @@ const DiscordPage = () => {
         }
     }
 
+    const getActiveConstructs = async () => {
+        let constructList = await getActiveConstructList();
+        console.log(constructList);
+        let constructArray: Construct[] = [];
+        if (constructList) {
+            for (let i = 0; i < constructList.length; i++) {
+                let construct = await getConstruct(constructList[i]);
+                if (construct) {
+                    constructArray.push(construct);
+                }
+            }
+        }
+        setDiscordActiveConstructs(constructArray);
+    }
+
     const saveDiscordConfig = async () => {
         await saveDiscordData(discordBotToken, discordApplicationID, discordCharacterMode, discordMultiCharacterMode, discordMultiConstructMode);
     }
 
     const removeActive = async (constructID: string) => {
         await removeConstructFromActive(constructID);
-        window.location.reload();
+        getActiveConstructs();
     }
 
     return (
