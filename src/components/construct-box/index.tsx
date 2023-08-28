@@ -57,6 +57,19 @@ const ConstructBox: React.FC<Props> = ({character}) => {
         window.location.reload();
     }
 
+    useEffect(() => {
+        if(localStorage.getItem(characterName+'-expanded')){
+            let state = JSON.parse(localStorage.getItem(characterName+'-expanded')?.toString() || '{}');
+            if(state.isExpanded === true){
+                setIsOpen(true);
+            }
+        }
+    }, [characterName]);
+
+    useEffect(() => {
+        localStorage.setItem(characterName+'-expanded', JSON.stringify({isExpanded: isOpen}));
+    }, [isOpen, characterName]);
+
     return (
         <div className="character-box themed-box h-calc(100vh/6) w-full justify-center">
             <div className="text-2xl font-bold z-10 flex justify-between items-center" onDoubleClick={() => setIsOpen(!isOpen)}>

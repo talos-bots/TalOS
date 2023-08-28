@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AiOutlineDown, AiOutlineUp } from "react-icons/ai";
 interface AccordianProps {
     title: string;
@@ -7,6 +7,20 @@ interface AccordianProps {
 const Accordian = (props: AccordianProps) => {
     const { title, children } = props;
     const [isExpanded, setIsExpanded] = useState(false);
+
+    useEffect(() => {
+        if(localStorage.getItem(title)){
+            let state = JSON.parse(localStorage.getItem(title)?.toString() || '{}');
+            if(state.isExpanded === true){
+                setIsExpanded(true);
+            }
+        }
+    }, [title]);
+
+    useEffect(() => {
+        localStorage.setItem(title, JSON.stringify({isExpanded: isExpanded}));
+    }, [isExpanded, title]);
+    
     return (
         <div className="themed-box w-full h-fit justify-center">
             <div className="text-2xl font-bold z-10 w-full flex justify-between items-center" onDoubleClick={() => setIsExpanded(!isExpanded)}>
