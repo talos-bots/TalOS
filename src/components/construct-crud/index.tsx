@@ -6,6 +6,7 @@ import { RiQuestionMark } from "react-icons/ri";
 import './ConstructCrud.scss'
 import StringArrayEditor from "../string-array-editor";
 import { setConstructAsPrimary, addConstructToActive, constructIsActive, getActiveConstructList, removeConstructFromActive } from "@/api/constructapi";
+import StringArrayEditorCards from "../string-array-editor-cards";
 
 const ConstructManagement = () => {
     const { id } = useParams<{ id: string }>();
@@ -242,7 +243,7 @@ const ConstructManagement = () => {
                         </div>
                         <div className="flex flex-col h-1/2 overflow-y-auto flex-grow-0">
                             <label htmlFor="construct-relationships" className="font-semibold">Relationships</label>
-                            <StringArrayEditor 
+                            <StringArrayEditorCards 
                                 value={constructRelationships}
                                 onChange={(event) => setConstructRelationships(event)}
                             />
@@ -253,14 +254,14 @@ const ConstructManagement = () => {
                     <div className="row-span-1 flex flex-col gap-4 flex-grow-0">
                         <div className="flex flex-col h-1/2 overflow-y-auto flex-grow-0">
                             <label htmlFor="construct-interests" className="font-semibold">Interests</label>
-                            <StringArrayEditor
+                            <StringArrayEditorCards
                                 value={constructInterests}
                                 onChange={(event) => setConstructInterests(event)}
                             />
                         </div>
                         <div className="flex flex-col h-1/2 overflow-y-auto flex-grow-0">
                             <label htmlFor="construct-greetings" className="font-semibold">Greetings</label>
-                            <StringArrayEditor
+                            <StringArrayEditorCards
                                 value={constructGreetings}
                                 onChange={(event) => setConstructGreetings(event)}
                             />
@@ -269,7 +270,7 @@ const ConstructManagement = () => {
                     <div className="row-span-1 flex flex-col gap-4 flex-grow-0">
                         <div className="flex flex-col h-1/2 overflow-y-auto flex-grow-0">
                             <label htmlFor="construct-farewells" className="font-semibold">Farewells</label>
-                            <StringArrayEditor
+                            <StringArrayEditorCards
                                 value={constructFarewells}
                                 onChange={(event) => setConstructFarewells(event)}
                             />

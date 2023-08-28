@@ -8,6 +8,7 @@ import { deleteConstruct, getConstruct } from "@/api/dbapi";
 import StringArrayEditor from "../string-array-editor";
 import RouteButton from "../route-button";
 import { setConstructAsPrimary, addConstructToActive, constructIsActive, getActiveConstructList, removeConstructFromActive } from "@/api/constructapi";
+import StringArrayEditorCards from "../string-array-editor-cards";
 interface Props {
     character: Construct;
 }
@@ -140,29 +141,29 @@ const ConstructBox: React.FC<Props> = ({character}) => {
                     </div>
                     <div className="col-span-1 flex flex-col justify-start">
                         <label className="text-xl font-semibold text-left">Relationships</label>
-                        <div className="w-full h-1/4 overflow-hidden text-left themed-input-root">
-                            <StringArrayEditor
+                        <div className="w-full h-1/4 overflow-hidden text-left">
+                            <StringArrayEditorCards
                                 value={character.relationships}
                                 disabled
                             />
                         </div>
                         <label className="text-xl font-semibold text-left">Interests</label>
-                        <div className="w-full h-1/4 overflow-hidden themed-input-root">
-                            <StringArrayEditor
+                        <div className="w-full h-1/4 overflow-hidden">
+                            <StringArrayEditorCards
                                 value={character.interests}
                                 disabled
                             />
                         </div>
                         <label className="text-xl font-semibold text-left">Greetings</label>
-                        <div className="w-full h-1/4 overflow-hidden themed-input-root">
-                            <StringArrayEditor
+                        <div className="w-full h-1/4 overflow-hidden">
+                            <StringArrayEditorCards
                                 value={character.greetings}
                                 disabled
                             />
                         </div>
                         <label className="text-xl font-semibold text-left">Farewells</label>
-                        <div className="w-full h-1/4 overflow-hidden themed-input-root">
-                            <StringArrayEditor
+                        <div className="w-full h-1/4 overflow-hidden">
+                            <StringArrayEditorCards
                                 value={character.farewells}
                                 disabled
                             />
