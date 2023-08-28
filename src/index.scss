@@ -267,15 +267,28 @@ ul {
   opacity: 1; 
 }
 
+/* This is the container of the scrollbar */
+::-webkit-scrollbar-track {
+  background: transparent; /* or the color of your container */
+  padding-right: 1rem;     /* adjust as needed */
+  padding-left: 1rem;      /* adjust as needed */
+  padding-top: 1rem;       /* adjust as needed */
+}
+
 /* This is the scrollbar itself */
 ::-webkit-scrollbar-thumb {
-  background: var(--theme-box); 
+  background: var(--theme-hover-pos); 
   border-radius: var(--theme-border-radius);
 }
 
 /* This is when you hover over the scrollbar */
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--theme-hover-pos); 
+  background: var(--theme-box); 
+}
+
+/* This sets the width of the scrollbar */
+::-webkit-scrollbar {
+  width: 12px;             /* adjust width as needed */
 }
 
 [data-tooltip] {
