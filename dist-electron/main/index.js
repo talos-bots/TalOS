@@ -1544,10 +1544,13 @@ async function generateContinueChatLog(construct, chatLog, currentUser, messages
     prompt = newPrompt;
   }
   const response = await generateText(prompt, currentUser, stopList);
-  console.log(response);
   let reply = "";
   if (response) {
-    reply = response.results[0];
+    reply = response == null ? void 0 : response.results[0];
+    if (reply === void 0) {
+      console.log("No valid response from GenerateText");
+      return null;
+    }
     return breakUpCommands(construct.name, reply, currentUser, stopList);
   } else {
     console.log("No valid response from GenerateText");
