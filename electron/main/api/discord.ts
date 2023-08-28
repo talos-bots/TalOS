@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron';
-import { ActivityType, Client, GatewayIntentBits, Collection, REST, Routes, Partials, TextChannel, DMChannel, NewsChannel, Snowflake, Webhook, Message, CommandInteraction, Events } from 'discord.js';
+import { ActivityType, Client, GatewayIntentBits, Collection, REST, Routes, Partials, TextChannel, DMChannel, NewsChannel, Snowflake, Webhook, Message, CommandInteraction, Events, PartialGroupDMChannel } from 'discord.js';
 import Store from 'electron-store';
 import { win } from '..';
 import { getUsername, handleDiscordMessage, handleRemoveMessage, handleRengenerateMessage } from '../controllers/DiscordController';
@@ -14,7 +14,7 @@ const intents = {
     GatewayIntentBits.MessageContent, GatewayIntentBits.GuildEmojisAndStickers, 
     GatewayIntentBits.DirectMessages, GatewayIntentBits.DirectMessageReactions,
     GatewayIntentBits.GuildMessageTyping, GatewayIntentBits.GuildModeration, GatewayIntentBits.GuildMessageReactions], 
-    partials: [Partials.Channel, Partials.GuildMember, Partials.User, Partials.Reaction, Partials.Message] 
+    partials: [Partials.Channel, Partials.GuildMember, Partials.User, Partials.Reaction, Partials.Message, Partials.ThreadMember, Partials.GuildScheduledEvent] 
 };
 type ValidStatus = 'online' | 'dnd' | 'idle' | 'invisible';
 
@@ -636,6 +636,7 @@ export function DiscordJSRoutes(){
         let constructs = retrieveConstructs();
         let constructRaw = await getConstruct(constructs[0]);
         let construct = assembleConstructFromData(constructRaw);
+        if(!construct) return;
         setDiscordBotInfo(construct.name, construct.avatar);
     });
 

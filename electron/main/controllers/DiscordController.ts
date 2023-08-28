@@ -162,12 +162,14 @@ export async function handleDiscordMessage(message: Message) {
     for (let i = 0; i < activeConstructs.length; i++) {
         let constructDoc = await getConstruct(activeConstructs[i]);
         let construct = assembleConstructFromData(constructDoc);
+        if(construct === null) continue;
         constructArray.push(construct);
     }
     let chatLogData = await getChat(message.channel.id);
     let chatLog;
     if (chatLogData) {
         chatLog = assembleChatFromData(chatLogData);
+        if(chatLog === null) return;
         chatLog.messages.push(newMessage);
         chatLog.lastMessage = newMessage;
         chatLog.lastMessageDate = newMessage.timestamp;
@@ -363,6 +365,7 @@ export async function continueChatLog(interaction: CommandInteraction) {
     for (let i = 0; i < activeConstructs.length; i++) {
         let constructDoc = await getConstruct(activeConstructs[i]);
         let construct = assembleConstructFromData(constructDoc);
+        if(construct === null) continue;
         constructArray.push(construct);
     }
     let chatLogData = await getChat(interaction.channel.id);
@@ -370,7 +373,7 @@ export async function continueChatLog(interaction: CommandInteraction) {
     if (chatLogData) {
         chatLog = assembleChatFromData(chatLogData);
     }
-    if(chatLog === undefined){
+    if(chatLog === null || chatLog === undefined){
         return;
     }
     if(chatLog.messages.length < 1){
@@ -418,7 +421,7 @@ export async function handleRengenerateMessage(message: Message){
     if (chatLogData) {
         chatLog = assembleChatFromData(chatLogData);
     }
-    if(chatLog === undefined){
+    if(chatLog === undefined || chatLog === null){
         console.log('Chat log is undefined');
         return;
     }
@@ -450,7 +453,7 @@ export async function handleRemoveMessage(message: Message){
     if (chatLogData) {
         chatLog = assembleChatFromData(chatLogData);
     }
-    if(chatLog === undefined){
+    if(chatLog === undefined || chatLog === null){
         return;
     }
     if(chatLog.messages.length < 1){

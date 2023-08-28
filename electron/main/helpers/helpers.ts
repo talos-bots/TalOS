@@ -5,6 +5,8 @@ import axios from "axios";
 import { getUsername } from "../controllers/DiscordController";
 
 export function assembleConstructFromData(data: any){
+	if(data === null) return null;
+	if(data?._id === undefined) return null;
     const construct = {
         _id: data._id,
         name: data.name,
@@ -23,6 +25,8 @@ export function assembleConstructFromData(data: any){
 }
 
 export function assembleMessageFromData(data: any){
+	if(data === null) return null;
+	if(data?._id === undefined) return null;
     const message = {
         _id: data._id,
         user: data.user,
@@ -38,6 +42,8 @@ export function assembleMessageFromData(data: any){
 }
 
 export function assembleChatFromData(data: any){
+	if(data === null) return null;
+	if(data?._id === undefined) return null;
     const chat = {
         _id: data._id,
         name: data.name,
@@ -53,6 +59,8 @@ export function assembleChatFromData(data: any){
 }
 
 export function assembleAttachmentFromData(data: any){
+  	if(data === null) return null;
+	  if(data?._id === undefined) return null;
     const attachment = {
         _id: data._id,
         type: data.type,
