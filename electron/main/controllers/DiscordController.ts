@@ -68,6 +68,14 @@ export const addAlias = (newAlias: Alias, channelID: string) => {
     const channels = getRegisteredChannels();
     for(let i = 0; i < channels.length; i++){
         if(channels[i]._id === channelID){
+            if(channels[i].aliases === undefined){
+                channels[i].aliases = [];
+            }
+            for(let j = 0; j < channels[i].aliases.length; j++){
+                if(channels[i].aliases[j]._id === newAlias._id){
+                    channels[i].aliases.splice(j, 1);
+                }
+            }
             channels[i].aliases.push(newAlias);
         }
     }
