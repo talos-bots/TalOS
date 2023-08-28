@@ -96,13 +96,13 @@ const ConstructBox: React.FC<Props> = ({character}) => {
                     <div className="col-span-1 flex flex-col justify-start items-start">
                         <label className="text-xl font-semibold text-left">User Actions</label>
                         <div className="w-full h-1/2 overflow-hidden">
-                            <div className="grid grid-rows-2 h-full">
-                                <div className="row-span-1 flex flex-row">
+                            <div className="grid grid-rows-2 h-full gap-1">
+                                <div className="row-span-1 flex flex-row gap-1">
                                     <button className="themed-button-pos w-1/3" onClick={() => makePrimary()}>Set as Primary Construct</button>
                                     <button className="themed-button-pos w-1/3" onClick={() => makeActive()}>Add as Secondary Construct</button>
                                     <button className="themed-button-neg w-1/3" onClick={() => makeInactive()}>Remove Active Construct</button>
                                 </div>
-                                <div className="row-span-1 flex flex-row">
+                                <div className="row-span-1 flex flex-row gap-1">
                                     <RouteButton to={`/constructs/${character._id}`} text="Edit" className="w-1/2"/>
                                     <button className="themed-button-neg w-1/2" onClick={() => deleteConstructFrom()}>Delete</button>
                                 </div>

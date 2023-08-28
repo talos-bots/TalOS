@@ -277,14 +277,14 @@ const ConstructManagement = () => {
                         </div>
                         <div className="flex flex-col h-1/2 flex-grow-0">
                             <label htmlFor="construct-questions" className="font-semibold">User Actions</label>
-                            <div className="grid grid-rows-2 h-full">
-                                <div className="row-span-1 flex flex-row">
+                            <div className="grid grid-rows-2 h-full gap-1">
+                                <div className="row-span-1 flex flex-row gap-1">
                                     <button className="themed-button-pos w-1/4" onClick={() => makePrimary()}>Set as Primary Construct</button>
                                     <button className="themed-button-pos w-1/4" onClick={() => makeActive()}>Add as Secondary Construct</button>
                                     <button className="themed-button-neg w-1/4" onClick={() => makeInactive()}>Remove Active Construct</button>
                                     <button className="themed-button-neg w-1/4" onClick={() => deleteConstructAndReturn()}>{constructState ? 'Delete Construct' : 'Clear Values'}</button>
                                 </div>
-                                <div className="row-span-1 flex flex-row">
+                                <div className="row-span-1 flex flex-row gap-1">
                                     <button type="submit" className="themed-button-neg w-1/2" onClick={returnToMenu}>Return to Menu</button>
                                     <button className="themed-button-pos w-1/2" onClick={() => saveConstruct()}>Save</button>
                                 </div>
