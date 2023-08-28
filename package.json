@@ -24,6 +24,7 @@
   "dependencies": {
     "@dqbd/tiktoken": "^1.0.7",
     "@google-ai/generativelanguage": "^1.0.0",
+    "@material-tailwind/react": "^2.1.1",
     "@reduxjs/toolkit": "^1.9.5",
     "@uiw/react-codemirror": "^4.21.9",
     "@uiw/react-md-editor": "^3.23.5",

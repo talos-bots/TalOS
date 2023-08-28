@@ -5,7 +5,7 @@ import { Message } from "@/classes/Message";
 import { getChat, saveNewChat, updateChat } from "@/api/dbapi";
 import MessageComponent from "@/components/chat-page/message";
 import { addUserMessage, getLoadingMessage, regenerateMessage, sendMessage, wait } from "../helpers";
-import { getActiveConstructList } from "@/api/constructapi";
+import { Alert } from "@material-tailwind/react";
 import ChatInfo from "@/components/chat-page/chat-info";
 interface ChatLogProps {
 	chatLogID?: string;
@@ -16,6 +16,7 @@ const ChatLog = (props: ChatLogProps) => {
 	const [messages, setMessages] = useState<Message[]>([]);
 	const messagesEndRef = useRef<HTMLDivElement | null>(null);
 	const [hasSentMessage, setHasSentMessage] = useState<boolean>(false);
+	const [error, setError] = useState<string | null>(null);
 
 	useEffect(() => {
 		if(chatLogID !== undefined) {
@@ -59,21 +60,27 @@ const ChatLog = (props: ChatLogProps) => {
 			loadingMessage._id += "-loading";
 			setMessages(prevMessages => [...prevMessages, loadingMessage]);
 			let botMessage = await sendMessage(chat, chat.constructs[i]);
-			if (botMessage){
+			if (botMessage !== null){
 				chat.addMessage(botMessage);
 				setMessages(prevMessages => {
 					// Remove the loadingMessage
 					const updatedMessages = prevMessages.filter(msg => msg._id !== loadingMessage._id);
-	
+		
 					// Add the botMessage
 					if (botMessage !== null) {
 						updatedMessages.push(botMessage);
 					}
-	
+		
 					return updatedMessages;
 				});
+			}else{
+				setMessages(prevMessages => {
+					const updatedMessages = prevMessages.filter(msg => msg._id !== loadingMessage._id);
+					return updatedMessages;
+				});
+				setError("Invalid response from LLM endpoint. Check your settings and try again.");
 			}
-		}
+		}		
 		setChatLog(chat);
 		await updateChat(chat);
 		setHasSentMessage(false);
@@ -126,6 +133,22 @@ const ChatLog = (props: ChatLogProps) => {
 	}
 
 	return (
+		<>
+		{error !== null ? (
+			<Alert color="red" 
+				className="absolute top-8 right-8 w-3/12" 
+				style={{zIndex: 1000}} 
+				onClose={() => setError(null)}
+				animate={{
+					mount: { y: 0 },
+					unmount: { y: 100 },
+				}}
+				>
+				{error}
+			</Alert>
+		) : (
+			null
+		)}
 		<div className="flex flex-row w-full h-full items-center justify-center overflow-y-hidden">
 			<div className="box-border w-3/6 h-[calc(100vh-70px)] flex flex-col gap-4">
 				<div className="w-full flex flex-row items-center justify-end">
@@ -150,6 +173,7 @@ const ChatLog = (props: ChatLogProps) => {
 				</div>
 			</div>
 		</div>
+		</>
 	);
 	
 };

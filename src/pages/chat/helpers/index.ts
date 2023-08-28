@@ -7,6 +7,7 @@ export async function sendMessage(chatlog: Chat, constructID: string, userID?: s
     let activeConstruct = await getConstruct(constructID);
     if(chatlog.constructs.length === 0) return null;
     let response = await generateContinueChatLog(activeConstruct, chatlog);
+    if(!response) return null;
     let newMessage = new Message();
     newMessage.origin = 'ConstructOS';
     newMessage.text = response;

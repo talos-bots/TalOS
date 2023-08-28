@@ -1,7 +1,9 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+const withMT = require("@material-tailwind/react/utils/withMT");
+module.exports = withMT({
   mode: 'jit',
-  purge: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
+  purge: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html',   "./node_modules/@material-tailwind/react/components/**/*.{js,ts,jsx,tsx}",
+  "./node_modules/@material-tailwind/react/theme/components/**/*.{js,ts,jsx,tsx}"],
   media: false, // or 'media' or 'class'
   theme: {
     extend: {
@@ -125,4 +127,4 @@ module.exports = {
   plugins: [
     require('tailwindcss-textshadow'),
   ],
-};
+});
