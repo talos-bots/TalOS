@@ -95,7 +95,6 @@ export function getCharacterPromptFromConstruct(construct: any) {
 export function assemblePrompt(construct: any, chatLog: any, currentUser: string = 'you', messagesToInclude?: any){
     let prompt = '';
     prompt += getCharacterPromptFromConstruct(construct);
-    prompt += 'Current Conversation:\n';
     prompt += assemblePromptFromLog(chatLog, messagesToInclude);
     prompt += `${construct.name}:`;
     return prompt.replaceAll('{{user}}', `${currentUser}`);

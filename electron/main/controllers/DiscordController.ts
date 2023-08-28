@@ -2,7 +2,7 @@ import { ipcMain } from 'electron';
 import Store from 'electron-store';
 import { generateContinueChatLog, getDoMultiLine, regenerateMessageFromChatLog, removeMessagesFromChatLog, retrieveConstructs } from './ConstructController';
 import { addChat, getChat, getConstruct, updateChat } from '../api/pouchdb';
-import { assembleChatFromData, assembleConstructFromData, convertDiscordMessageToMessage } from '../helpers/helpers';
+import { addUserFromDiscordMessage, assembleChatFromData, assembleConstructFromData, convertDiscordMessageToMessage } from '../helpers/helpers';
 import { CommandInteraction, Message } from 'discord.js';
 import { deleteMessage, disClient, editMessage, isAutoReplyMode, isMultiCharacterMode, sendMessage, sendMessageAsCharacter, sendTyping } from '../api/discord';
 import { Alias, ChannelConfigInterface, ChatInterface, ConstructInterface } from '../types/types';
@@ -165,6 +165,7 @@ export async function handleDiscordMessage(message: Message) {
     const activeConstructs = retrieveConstructs();
     if(activeConstructs.length < 1) return;
     const newMessage = convertDiscordMessageToMessage(message, activeConstructs);
+    addUserFromDiscordMessage(message);
     let constructArray = [];
     for (let i = 0; i < activeConstructs.length; i++) {
         let constructDoc = await getConstruct(activeConstructs[i]);
@@ -258,7 +259,7 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
         text: reply,
         userID: construct._id,
         timestamp: Date.now(),
-        origin: 'Discord',
+        origin: 'Discord - ' + message.channelId,
         isHuman: false,
         isCommand: false,
         isPrivate: false,
@@ -336,7 +337,7 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
             text: reply,
             userID: constructArray[i]._id,
             timestamp: Date.now(),
-            origin: 'Discord',
+            origin: 'Discord - ' + message.channelId,
             isHuman: false,
             isCommand: false,
             isPrivate: false,

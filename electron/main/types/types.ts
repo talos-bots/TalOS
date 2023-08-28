@@ -70,11 +70,21 @@ interface SlashCommandOption {
     required?: boolean;
     choices?: { name: string; value: string | number }[];
 }
-  
 
 export interface SlashCommand {
     name: string;
     description: string;
     options?: SlashCommandOption[];
     execute: (interaction: CommandInteraction) => void | Promise<void>;
+}
+
+export type UserInterface = {
+    _id: string;
+    name: string;
+    nickname: string;
+    avatar: string;
+    personality: string;
+    background: string;
+    relationships: string[];
+    interests: string[];
 }
