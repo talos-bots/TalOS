@@ -65,7 +65,7 @@ const ChatSelector = (props: ChatSelectorProps) => {
     return (
         <div className="grid grid-rows-3 w-90vw h-[calc(95vh-70px)] gap-4 m-auto mt-4 grow-0">
             <div className="row-span-1 w-full min-h-fit themed-root grow-0 overflow-x-auto">
-                <h3>Constructs</h3>
+                <h3 className="font-semibold">Constructs</h3>
                 <div className="flex flex-row w-full max-w-full h-5/6 gap-4 overflow-x-auto grow-0">
                     {Array.isArray(constructs) && constructs.map((construct) => {
                         return (
@@ -75,7 +75,7 @@ const ChatSelector = (props: ChatSelectorProps) => {
                 </div>
             </div>
             <div className="row-span-2 w-full h-full flex flex-col themed-root grow-0">
-                <h3>Chats</h3>
+                <h3 className="font-semibold">Chats</h3>
                 <div className="flex flex-col w-full gap-4 overflow-y-auto">
                     {Array.isArray(chats) && chats.sort((a, b) => b.lastMessageDate - a.lastMessageDate).map((chat) => {
                         return (
