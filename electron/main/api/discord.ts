@@ -414,6 +414,21 @@ export function saveDiscordData(newToken: string, newAppId: string, discordChara
     store.set('discordMultiConstructMode', discordMultiConstructMode);
 }
 
+let messageQueue: Message[] = [];
+let isProcessing = false;
+
+async function processQueue() {
+    // If the bot is already processing a message, do not start processing this one
+    if (isProcessing) return;
+
+    while (messageQueue.length > 0) {
+        isProcessing = true;
+        const currentMessage = messageQueue.shift();
+            await handleDiscordMessage(currentMessage!);
+        isProcessing = false;
+    }
+}
+
 export function DiscordJSRoutes(){
     ipcMain.on('discord-get-token', async (event) => {
         event.sender.send('discord-get-token-reply', token);
@@ -439,7 +454,10 @@ export function DiscordJSRoutes(){
 
     disClient.on('messageCreate', async (message) => {
         if (message.author.id === disClient.user?.id) return;
-        await handleDiscordMessage(message);
+        if (message.attachments.size > 0) return;
+        if (message.webhookId) return;
+        messageQueue.push(message);
+        await processQueue();
         win?.webContents.send('discord-message', message);
     });
 

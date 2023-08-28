@@ -2976,6 +2976,18 @@ function saveDiscordData(newToken, newAppId, discordCharacterMode, discordMultiC
   store$2.set("discordMultiCharacterMode", discordMultiCharacterMode);
   store$2.set("discordMultiConstructMode", discordMultiConstructMode);
 }
+let messageQueue = [];
+let isProcessing = false;
+async function processQueue() {
+  if (isProcessing)
+    return;
+  while (messageQueue.length > 0) {
+    isProcessing = true;
+    const currentMessage = messageQueue.shift();
+    await handleDiscordMessage(currentMessage);
+    isProcessing = false;
+  }
+}
 function DiscordJSRoutes() {
   electron.ipcMain.on("discord-get-token", async (event) => {
     event.sender.send("discord-get-token-reply", token);
@@ -2998,7 +3010,12 @@ function DiscordJSRoutes() {
     var _a, _b;
     if (message.author.id === ((_a = disClient.user) == null ? void 0 : _a.id))
       return;
-    await handleDiscordMessage(message);
+    if (message.attachments.size > 0)
+      return;
+    if (message.webhookId)
+      return;
+    messageQueue.push(message);
+    await processQueue();
     (_b = exports.win) == null ? void 0 : _b.webContents.send("discord-message", message);
   });
   disClient.on("messageUpdate", async (oldMessage, newMessage) => {
