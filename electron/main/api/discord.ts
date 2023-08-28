@@ -234,7 +234,8 @@ export async function sendMessage(channelID: Snowflake, message: string){
         return;
     }
     const channel = await disClient.channels.fetch(channelID);
-
+    if(!channel) return;
+    if(message.length < 1) return;
     // Check if the channel is one of the types that can send messages
     if (channel instanceof TextChannel || channel instanceof DMChannel || channel instanceof NewsChannel) {
         return channel.send(message);
