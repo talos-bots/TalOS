@@ -265,6 +265,7 @@ export async function sendMessageAsCharacter(char: ConstructInterface, channelID
         console.error("Failed to create webhook.");
         return;
     }
+    if(message.length < 1) return;
     await webhook.send(message);
 }
 
