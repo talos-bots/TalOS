@@ -118,6 +118,14 @@ ul {
   @apply resize-none overflow-y-auto theme-border-style shadow-md bg-theme-accent text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
 }
 
+.themed-input-box {
+  @apply resize-none overflow-y-auto theme-border-style shadow-md bg-theme-box text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
+}
+
+.themed-input-root {
+  @apply resize-none overflow-y-auto theme-border-style shadow-md bg-theme-root text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
+}
+
 .theme-border-style {
   border-style: var(--theme-border-type);
 }

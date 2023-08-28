@@ -108,7 +108,7 @@ const ConstructBox: React.FC<Props> = ({character}) => {
                             </div>
                         </div>
                         <label className="text-xl font-semibold text-left">Commands</label>
-                        <div className="w-full h-1/2 overflow-hidden themed-input">
+                        <div className="w-full h-1/2 overflow-hidden themed-input-root">
                             {character.commands.map((command, index) => {
                                 return (
                                     <div key={index}>
@@ -121,47 +121,47 @@ const ConstructBox: React.FC<Props> = ({character}) => {
                     <div className="col-span-1 flex flex-col justify-start items-start">
                         <label className="text-xl font-semibold text-left">Personality</label>
                         <textarea
-                            className="overflow-hidden w-full h-1/3 themed-input"
+                            className="overflow-hidden w-full h-1/3 themed-input-root"
                             value={character.personality}
                             disabled
                         />
                         <label className="text-xl font-semibold text-left">Background</label>
                         <textarea
-                            className="overflow-hidden w-full h-1/3 themed-input"
+                            className="overflow-hidden w-full h-1/3 themed-input-root"
                             value={character.background}
                             disabled
                         />
                         <label className="text-xl font-semibold text-left">Author's Note</label>
                         <textarea
-                            className="overflow-hidden w-full h-1/3 themed-input"
+                            className="overflow-hidden w-full h-1/3 themed-input-root"
                             value={character.authorsNote}
                             disabled
                         />
                     </div>
                     <div className="col-span-1 flex flex-col justify-start">
                         <label className="text-xl font-semibold text-left">Relationships</label>
-                        <div className="w-full h-1/4 overflow-hidden text-left themed-input">
+                        <div className="w-full h-1/4 overflow-hidden text-left themed-input-root">
                             <StringArrayEditor
                                 value={character.relationships}
                                 disabled
                             />
                         </div>
                         <label className="text-xl font-semibold text-left">Interests</label>
-                        <div className="w-full h-1/4 overflow-hidden themed-input">
+                        <div className="w-full h-1/4 overflow-hidden themed-input-root">
                             <StringArrayEditor
                                 value={character.interests}
                                 disabled
                             />
                         </div>
                         <label className="text-xl font-semibold text-left">Greetings</label>
-                        <div className="w-full h-1/4 overflow-hidden themed-input">
+                        <div className="w-full h-1/4 overflow-hidden themed-input-root">
                             <StringArrayEditor
                                 value={character.greetings}
                                 disabled
                             />
                         </div>
                         <label className="text-xl font-semibold text-left">Farewells</label>
-                        <div className="w-full h-1/4 overflow-hidden themed-input">
+                        <div className="w-full h-1/4 overflow-hidden themed-input-root">
                             <StringArrayEditor
                                 value={character.farewells}
                                 disabled
