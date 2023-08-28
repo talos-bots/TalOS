@@ -12,9 +12,10 @@ export class Construct{
         public interests: string[] = [],
         public greetings: string[] = [],
         public farewells: string[] = [],
+        public authorsNote: string = '',
     ) {}
 
-    setConstruct(name: string, nickname: string, avatar: string, commands: string[], visualDescription: string, personality: string, background: string, relationships: string[], interests: string[], greetings: string[], farewells: string[]){
+    setConstruct(name: string, nickname: string, avatar: string, commands: string[], visualDescription: string, personality: string, background: string, relationships: string[], interests: string[], greetings: string[], farewells: string[], authorsNote: string){
         this.name = name;
         this.nickname = nickname;
         this.avatar = avatar;
@@ -26,6 +27,7 @@ export class Construct{
         this.interests = interests;
         this.greetings = greetings;
         this.farewells = farewells;
+        this.authorsNote = authorsNote;
     }
 
     getConstruct(){
@@ -41,6 +43,7 @@ export class Construct{
             interests: this.interests,
             greetings: this.greetings,
             farewells: this.farewells,
+            authorsNote: this.authorsNote,
         }
     }
 
@@ -186,5 +189,13 @@ export class Construct{
 
     removeFarewell(farewell: string){
         this.farewells = this.farewells.filter((f) => f !== farewell);
+    }
+
+    getAuthorsNote(){
+        return this.authorsNote;
+    }
+
+    setAuthorsNote(authorsNote: string){
+        this.authorsNote = authorsNote;
     }
 }

@@ -62,3 +62,6 @@ export function wait(milliseconds: number): Promise<void> {
         setTimeout(resolve, milliseconds);
     });
 }
+export const truncateText = (text: string, length: number) => {
+    return text?.length > length ? text?.substring(0, length) + "..." : text;
+};

@@ -22,6 +22,7 @@ const ConstructManagement = () => {
     const [constructInterests, setConstructInterests] = useState<string[]>([]);
     const [constructGreetings, setConstructGreetings] = useState<string[]>([]);
     const [constructFarewells, setConstructFarewells] = useState<string[]>([]);
+    const [constructAuthorsNote, setConstructAuthorsNote] = useState<string>('');
     const [isActive, setIsActive] = useState<boolean>(false);
     const [isPrimary, setIsPrimary] = useState<boolean>(false);
 
@@ -59,7 +60,7 @@ const ConstructManagement = () => {
                 setConstructInterests(character.interests);
                 setConstructGreetings(character.greetings);
                 setConstructFarewells(character.farewells);
-
+                setConstructAuthorsNote(character.authorsNote);
                 const getActiveStatus = async () => {
                     let status = await constructIsActive(character._id);
                     setIsActive(status);
@@ -97,6 +98,7 @@ const ConstructManagement = () => {
             constructState.interests = constructInterests;
             constructState.greetings = constructGreetings;
             constructState.farewells = constructFarewells;
+            constructState.authorsNote = constructAuthorsNote;
             await updateConstruct(constructState);
         } else {
             if(construct !== null) {
@@ -112,6 +114,7 @@ const ConstructManagement = () => {
                 newConstruct.interests = constructInterests;
                 newConstruct.greetings = constructGreetings;
                 newConstruct.farewells = constructFarewells;
+                newConstruct.authorsNote = constructAuthorsNote;
                 await saveNewConstruct(newConstruct);
                 returnToMenu();
             }
@@ -146,6 +149,7 @@ const ConstructManagement = () => {
             setConstructInterests([]);
             setConstructGreetings([]);
             setConstructFarewells([]);
+            setConstructAuthorsNote('');
         }
     }
 
@@ -183,15 +187,25 @@ const ConstructManagement = () => {
                             <label htmlFor="construct-role" className="font-semibold">Nickname</label>
                             <input
                                 type="text"
-                                required={true}
+                                required={false}
                                 id="construct-role"
                                 className="themed-input"
                                 value={constructNickname}
                                 onChange={(event) => setConstructNick(event.target.value)}
                             />
-                            <div className="text-left">
-                                <b>Construct Status:</b> {isActive ? <span className="text-theme-flavor-text font-bold">Active</span> : <span className="text-theme-hover-neg font-bold">Inactive</span>}{isActive && <span className="text-theme-flavor-text font-bold"> + {isPrimary ? 'Primary': 'Secondary'}</span>}
-                            </div>
+                        </div>
+                        <div className="flex flex-col flex-grow-0">
+                            <label htmlFor="construct-note" className="font-semibold">Author's Note</label>
+                            <textarea
+                                required={false}
+                                id="construct-note"
+                                className="themed-input"
+                                value={constructAuthorsNote}
+                                onChange={(event) => setConstructAuthorsNote(event.target.value)}
+                            />
+                        </div>
+                        <div className="text-left">
+                            <b>Construct Status:</b> {isActive ? <span className="text-theme-flavor-text font-bold">Active</span> : <span className="text-theme-hover-neg font-bold">Inactive</span>}{isActive && <span className="text-theme-flavor-text font-bold"> + {isPrimary ? 'Primary': 'Secondary'}</span>}
                         </div>
                     </div>
                 </div>

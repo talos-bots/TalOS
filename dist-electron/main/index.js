@@ -910,7 +910,8 @@ function assembleConstructFromData(data) {
     relationships: data.relationships,
     interests: data.interests,
     greetings: data.greetings,
-    farewells: data.farewells
+    farewells: data.farewells,
+    authorsNote: data.authorsNote
   };
   return construct;
 }
@@ -1598,7 +1599,16 @@ function assembleInstructPrompt(construct, chatLog, currentUser = "you", message
 }
 async function generateContinueChatLog(construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth) {
   let prompt = assemblePrompt(construct, chatLog, currentUser, messagesToInclude);
-  if (authorsNote !== void 0) {
+  if (construct.authorsNote !== void 0 && construct.authorsNote !== "" && construct.authorsNote !== null || authorsNote !== void 0 && authorsNote !== "" && authorsNote !== null) {
+    if (authorsNote === void 0 || authorsNote === "" || authorsNote === null) {
+      authorsNote = construct.authorsNote;
+    } else {
+      if (Array.isArray(authorsNote)) {
+        authorsNote.push(construct.authorsNote);
+      } else {
+        authorsNote = [authorsNote, construct.authorsNote];
+      }
+    }
     let splitPrompt = prompt.split("\n");
     let newPrompt = "";
     let depth = 5;
@@ -2950,14 +2960,22 @@ async function editMessage(message, newMessage) {
     return;
   if (newMessage.length < 1)
     return;
-  message.edit(newMessage);
+  try {
+    message.edit(newMessage);
+  } catch (error) {
+    console.error(error);
+  }
 }
 async function deleteMessage(message) {
   if (!disClient.user)
     return;
   if (!isReady)
     return;
-  message.delete();
+  try {
+    message.delete();
+  } catch (error) {
+    console.error(error);
+  }
 }
 async function sendMessage(channelID, message) {
   if (!isReady)

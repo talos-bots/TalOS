@@ -108,7 +108,16 @@ export function assembleInstructPrompt(construct: any, chatLog: any, currentUser
 
 export async function generateContinueChatLog(construct: any, chatLog: any, currentUser?: string, messagesToInclude?: any, stopList?: string[], authorsNote?: string | string[], authorsNoteDepth?: number){
     let prompt = assemblePrompt(construct, chatLog, currentUser, messagesToInclude);
-    if(authorsNote !== undefined){
+    if((construct.authorsNote !== undefined && construct.authorsNote !== '' && construct.authorsNote !== null) || (authorsNote !== undefined && authorsNote !== '' && authorsNote !== null)){
+        if(authorsNote === undefined || authorsNote === '' || authorsNote === null){
+            authorsNote = construct.authorsNote;
+        }else{
+            if(Array.isArray(authorsNote)){
+                authorsNote.push(construct.authorsNote);
+            }else{
+                authorsNote = [authorsNote, construct.authorsNote];
+            }
+        }
         let splitPrompt = prompt.split('\n');
         let newPrompt = '';
         let depth = 5;

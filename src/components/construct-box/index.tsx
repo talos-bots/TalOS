@@ -121,14 +121,20 @@ const ConstructBox: React.FC<Props> = ({character}) => {
                     <div className="col-span-1 flex flex-col justify-start items-start">
                         <label className="text-xl font-semibold text-left">Personality</label>
                         <textarea
-                            className="overflow-hidden w-full h-1/2 themed-input"
+                            className="overflow-hidden w-full h-1/3 themed-input"
                             value={character.personality}
                             disabled
                         />
                         <label className="text-xl font-semibold text-left">Background</label>
                         <textarea
-                            className="overflow-hidden w-full h-1/2 themed-input"
+                            className="overflow-hidden w-full h-1/3 themed-input"
                             value={character.background}
+                            disabled
+                        />
+                        <label className="text-xl font-semibold text-left">Author's Note</label>
+                        <textarea
+                            className="overflow-hidden w-full h-1/3 themed-input"
+                            value={character.authorsNote}
                             disabled
                         />
                     </div>

@@ -21,6 +21,7 @@ export function assembleConstructFromData(data: any){
 		interests: data.interests,
 		greetings: data.greetings,
 		farewells: data.farewells,
+		authorsNote: data.authorsNote,
 	}
 	return construct;
 }

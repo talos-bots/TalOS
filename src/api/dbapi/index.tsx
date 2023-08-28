@@ -27,6 +27,7 @@ export async function getConstructs(): Promise<Construct[]> {
                         doc.doc.interests,
                         doc.doc.greetings,
                         doc.doc.farewells,
+                        doc.doc.authorsNote,
                     );
                 });
                 resolve(constructs);
@@ -56,6 +57,7 @@ export async function getConstruct(id: string): Promise<Construct> {
                     data.interests,
                     data.greetings,
                     data.farewells,
+                    data.authorsNote,
                 );
                 resolve(construct);
             } else {

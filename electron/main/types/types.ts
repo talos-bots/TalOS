@@ -44,6 +44,7 @@ export type ConstructInterface = {
     interests: string[];
     greetings: string[];
     farewells: string[];
+    authorsNote: string;
 }
 export type Alias = {
     _id: string;

@@ -220,13 +220,21 @@ export async function editMessage(message: Message, newMessage: string){
     if(!isReady) return;
     if(message.content === newMessage) return;
     if(newMessage.length < 1) return;
-    message.edit(newMessage);
+    try {
+        message.edit(newMessage);
+    } catch (error) {
+        console.error(error);
+    }
 }
 
 export async function deleteMessage(message: Message){
     if(!disClient.user) return;
     if(!isReady) return;
-    message.delete();
+    try{
+        message.delete();
+    } catch (error) {
+        console.error(error);
+    }
 }
 
 export async function sendMessage(channelID: Snowflake, message: string){

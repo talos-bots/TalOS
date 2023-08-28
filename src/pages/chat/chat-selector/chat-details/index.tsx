@@ -6,7 +6,7 @@ import { on } from "events";
 import { Edit2Icon, TrashIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { RiQuestionMark } from "react-icons/ri";
-
+import { truncateText } from "../../helpers";
 interface ChatDetailsProps {
     chat: Chat;
     onClick?: (chat: Chat) => void;
@@ -147,10 +147,6 @@ const ChatDetails = (props: ChatDetailsProps) => {
         setIsEditing(false);
         saveModifiedChat();
     };
-
-    const truncateText = (text: string, length: number) => {
-        return text?.length > length ? text?.substring(0, length) + "..." : text;
-    };
     
     return (
         <div className="themed-box-no-padding p-2 flex flex-col justify-start items-start relative" onDoubleClick={()=> {if(onClick !== undefined) onClick(chat)}}>
@@ -177,7 +173,7 @@ const ChatDetails = (props: ChatDetailsProps) => {
                     />
                 ) : (
                     <>
-                        <p className="ml-2">{name}</p>
+                        <p className="ml-2">{truncateText(name, 35)}</p>
                         <button onClick={() => setIsEditing(true)} className="message-button ml-2 cursor-pointer">
                             <Edit2Icon size={18} />
                         </button>
