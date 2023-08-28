@@ -218,6 +218,8 @@ export function sendTyping(message: Message | CommandInteraction){
 export async function editMessage(message: Message, newMessage: string){
     if(!disClient.user) return;
     if(!isReady) return;
+    if(message.content === newMessage) return;
+    if(newMessage.length < 1) return;
     message.edit(newMessage);
 }
 
