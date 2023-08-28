@@ -19,6 +19,7 @@ const ChatLog = (props: ChatLogProps) => {
 	const [hasSentMessage, setHasSentMessage] = useState<boolean>(false);
 	const [error, setError] = useState<string | null>(null);
 	const [isLoaded, setIsLoaded] = useState<boolean>(false);
+	const [numToDisplay, setNumToDisplay] = useState<number>(35);
 
 	useEffect(() => {
 		if(chatLogID !== undefined) {
@@ -86,10 +87,11 @@ const ChatLog = (props: ChatLogProps) => {
 				});
 				setError("Invalid response from LLM endpoint. Check your settings and try again.");
 			}
-		}		
+		}
 		setChatLog(chat);
 		await updateChat(chat);
 		setHasSentMessage(false);
+		setNumToDisplay(35);
 	};	
 
 	const deleteMessage = (messageID: string) => {
@@ -157,7 +159,13 @@ const ChatLog = (props: ChatLogProps) => {
 		) : (
 			null
 		)}
-		<div className="flex flex-row w-full h-full items-center justify-center overflow-y-hidden">
+		<div className="flex flex-row w-full h-full items-center justify-center overflow-y-hidden"
+			onScroll={(e) => {
+				if(e.currentTarget.scrollTop === 0){
+					setNumToDisplay(numToDisplay + 35);
+				}
+			}}
+		>
 			<div className="box-border w-3/6 h-[calc(100vh-70px)] flex flex-col gap-4">
 				<div className="w-full flex flex-row items-center justify-end">
 					{chatLog === null ? (
@@ -168,7 +176,7 @@ const ChatLog = (props: ChatLogProps) => {
 				</div>
 				<div className="h-5/6">
 					<div className="themed-message-box">
-						{Array.isArray(messages) && messages.map((message) => {
+						{Array.isArray(messages) && messages.slice(messages.length - numToDisplay, messages.length).map((message) => {
 							return (
 								<MessageComponent key={message._id} message={message} onDelete={deleteMessage} onEdit={editMessage} onRegenerate={onRegenerate}/>
 							);
