@@ -15,7 +15,6 @@ const Loading = () => {
                     <span className="is-loading-letter">g</span>
                     <span className="is-loading-letter">.</span>
                     <span className="is-loading-letter">.</span>
-                    <span className="is-loading-letter">.</span>
                 </div>
             </div>
         </div>
