@@ -1,8 +1,6 @@
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import { DiscordListeners } from './listeners/discord-listeners';
-import ActionsPage from './pages/actions';
 import ChatPage from './pages/chat/';
-import DocsPage from './pages/docs';
 import DevPanel from './components/dev-panel';
 import NavBar from './components/shared/NavBar';
 import SettingsPage from './pages/settings';
@@ -47,14 +45,12 @@ function App() {
       <div className='main-content'>
       <Routes>
         <Route path='/*' element={<></>} />
-        <Route path='/actions' element={<ActionsPage/>} />
         <Route path='/constructs' element={<ConstructsPage/>} />
         <Route path='/constructs/:id' element={<ConstructManagement/>} />
         <Route path='/constructs/new' element={<ConstructManagement/>} />
         <Route path='/chat' element={<ChatPage />} />
         <Route path='/chat/:id' element={<ChatPage />} />
         <Route path='/discord' element={<DiscordPage/>} />
-        <Route path='/docs' element={<DocsPage/>} />
         <Route path='/settings' element={<SettingsPage/>} />
         <Route path='/zero' element={<ZeroPage/>} />
       </Routes>
