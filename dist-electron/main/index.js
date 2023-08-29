@@ -955,6 +955,11 @@ function assemblePromptFromLog(data, messagesToInclude = 25) {
   let messages = data.messages;
   messages = messages.slice(-messagesToInclude);
   for (let i = 0; i < messages.length; i++) {
+    if (messages[i].isCommand === true) {
+      prompt += `${messages[i].text.trim()}
+`;
+      continue;
+    }
     prompt += `${messages[i].user}: ${messages[i].text.trim()}
 `;
   }
@@ -2781,6 +2786,102 @@ const PingCommand = {
     await interaction.editReply(`Pong! I'm currently connected to: ${status}`);
   }
 };
+const SysCommand = {
+  name: "sys",
+  description: "Adds a system message to the prompt",
+  options: [
+    {
+      name: "message",
+      description: "The message to add.",
+      type: 3,
+      required: true
+    }
+  ],
+  execute: async (interaction) => {
+    var _a;
+    await interaction.deferReply({ ephemeral: true });
+    if (interaction.channelId === null) {
+      await interaction.editReply({
+        content: "This command can only be used in a server channel."
+      });
+      return;
+    }
+    if (interaction.guildId === null) {
+      await interaction.editReply({
+        content: "This command can only be used in a server channel."
+      });
+      return;
+    }
+    const constructs = retrieveConstructs();
+    let constructDoc = await getConstruct(constructs[0]);
+    let construct = assembleConstructFromData(constructDoc);
+    if (construct === null)
+      return;
+    const message = (_a = interaction.options.get("message")) == null ? void 0 : _a.value;
+    const newMessage = {
+      _id: Date.now().toString(),
+      user: construct.name,
+      avatar: construct.avatar,
+      text: message,
+      userID: construct._id,
+      timestamp: Date.now(),
+      origin: interaction.channelId,
+      isHuman: false,
+      attachments: [],
+      isCommand: true,
+      isPrivate: false,
+      participants: [construct._id]
+    };
+    let registeredChannels = getRegisteredChannels();
+    let registered = false;
+    for (let i = 0; i < registeredChannels.length; i++) {
+      if (registeredChannels[i]._id === interaction.channelId) {
+        registered = true;
+        break;
+      }
+    }
+    if (!registered)
+      return;
+    let chatLogData = await getChat(interaction.channelId);
+    let chatLog;
+    if (chatLogData) {
+      chatLog = assembleChatFromData(chatLogData);
+      if (chatLog === null)
+        return;
+      chatLog.messages.push(newMessage);
+      chatLog.lastMessage = newMessage;
+      chatLog.lastMessageDate = newMessage.timestamp;
+      if (!chatLog.constructs.includes(newMessage.userID)) {
+        chatLog.constructs.push(newMessage.userID);
+      }
+      if (!chatLog.humans.includes(interaction.user.id)) {
+        chatLog.humans.push(interaction.user.id);
+      }
+    } else {
+      chatLog = {
+        _id: interaction.channelId,
+        name: interaction.channelId + " Chat " + construct.name,
+        type: "Discord",
+        messages: [newMessage],
+        lastMessage: newMessage,
+        lastMessageDate: newMessage.timestamp,
+        firstMessageDate: newMessage.timestamp,
+        constructs,
+        humans: [interaction.user.id]
+      };
+      if (chatLog.messages.length > 0) {
+        await addChat(chatLog);
+      } else {
+        return;
+      }
+    }
+    await updateChat(chatLog);
+    await interaction.editReply({
+      content: message
+    });
+    await continueChatLog(interaction);
+  }
+};
 const DefaultCommands = [
   PingCommand,
   RegisterCommand,
@@ -2795,7 +2896,8 @@ const DefaultCommands = [
   SetDoAutoReply,
   SetAliasCommand,
   ClearAllWebhooksCommand,
-  DoCharacterGreetingsCommand
+  DoCharacterGreetingsCommand,
+  SysCommand
 ];
 const intents = {
   intents: [

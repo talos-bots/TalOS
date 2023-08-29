@@ -94,6 +94,10 @@ export function assemblePromptFromLog(data: any, messagesToInclude: number = 25)
 	let messages = data.messages;
 	messages = messages.slice(-messagesToInclude);
 	for(let i = 0; i < messages.length; i++){
+		if(messages[i].isCommand === true){
+			prompt += `${messages[i].text.trim()}` + '\n';
+			continue;
+		}
 		prompt += `${messages[i].user}: ${messages[i].text.trim()}` + '\n';
 	}
 	return prompt;
