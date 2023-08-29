@@ -1631,7 +1631,11 @@ async function generateContinueChatLog(construct, chatLog, currentUser, messages
           newPrompt += authorsNote + "\n";
         }
       }
-      newPrompt += splitPrompt[i] + "\n";
+      if (i !== splitPrompt.length - 1) {
+        newPrompt += splitPrompt[i] + "\n";
+      } else {
+        newPrompt += splitPrompt[i];
+      }
     }
     prompt = newPrompt;
   }
@@ -1784,7 +1788,7 @@ function constructController() {
   });
   electron.ipcMain.on("get-construct-active-list", (event, arg) => {
     ActiveConstructs = retrieveConstructs();
-    event.reply("get-construct-active-list-reply", ActiveConstructs);
+    event.reply(arg, ActiveConstructs);
   });
   electron.ipcMain.on("is-construct-active", (event, arg, replyName) => {
     const isActive = isConstructActive(arg);
@@ -1800,43 +1804,43 @@ function constructController() {
     ActiveConstructs = retrieveConstructs();
     event.reply("set-construct-primary-reply", ActiveConstructs);
   });
-  electron.ipcMain.on("set-do-multi-line", (event, arg) => {
+  electron.ipcMain.on("set-do-multi-line", (event, arg, uniqueEventName) => {
     setDoMultiLine(arg);
-    event.reply("set-do-multi-line-reply", getDoMultiLine());
+    event.reply(uniqueEventName, getDoMultiLine());
   });
-  electron.ipcMain.on("get-do-multi-line", (event, arg) => {
-    event.reply("get-do-multi-line-reply", getDoMultiLine());
+  electron.ipcMain.on("get-do-multi-line", (event, uniqueEventName) => {
+    event.reply(uniqueEventName, getDoMultiLine());
   });
-  electron.ipcMain.on("get-character-prompt-from-construct", (event, arg) => {
+  electron.ipcMain.on("get-character-prompt-from-construct", (event, arg, uniqueEventName) => {
     let prompt = getCharacterPromptFromConstruct(arg);
-    event.reply("get-character-prompt-from-construct-reply", prompt);
+    event.reply(uniqueEventName, prompt);
   });
-  electron.ipcMain.on("assemble-prompt", (event, construct, chatLog, currentUser, messagesToInclude) => {
+  electron.ipcMain.on("assemble-prompt", (event, construct, chatLog, currentUser, messagesToInclude, uniqueEventName) => {
     let prompt = assemblePrompt(construct, chatLog, currentUser, messagesToInclude);
-    event.reply("assemble-prompt-reply", prompt);
+    event.reply(uniqueEventName, prompt);
   });
-  electron.ipcMain.on("assemble-instruct-prompt", (event, construct, chatLog, currentUser, messagesToInclude) => {
+  electron.ipcMain.on("assemble-instruct-prompt", (event, construct, chatLog, currentUser, messagesToInclude, uniqueEventName) => {
     let prompt = assembleInstructPrompt(construct, chatLog, currentUser);
-    event.reply("assemble-instruct-prompt-reply", prompt);
+    event.reply(uniqueEventName, prompt);
   });
-  electron.ipcMain.on("generate-continue-chat-log", (event, construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth) => {
+  electron.ipcMain.on("generate-continue-chat-log", (event, construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth, uniqueEventName) => {
     generateContinueChatLog(construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth).then((response) => {
-      event.reply("generate-continue-chat-log-reply", response);
+      event.reply(uniqueEventName, response);
     });
   });
-  electron.ipcMain.on("remove-messages-from-chat-log", (event, chatLog, messageContent) => {
+  electron.ipcMain.on("remove-messages-from-chat-log", (event, chatLog, messageContent, uniqueEventName) => {
     removeMessagesFromChatLog(chatLog, messageContent).then((response) => {
-      event.reply("remove-messages-from-chat-log-reply", response);
+      event.reply(uniqueEventName, response);
     });
   });
-  electron.ipcMain.on("regenerate-message-from-chat-log", (event, chatLog, messageContent, messageID, authorsNote, authorsNoteDepth) => {
+  electron.ipcMain.on("regenerate-message-from-chat-log", (event, chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, uniqueEventName) => {
     regenerateMessageFromChatLog(chatLog, messageContent, messageID, authorsNote, authorsNoteDepth).then((response) => {
-      event.reply("regenerate-message-from-chat-log-reply", response);
+      event.reply(uniqueEventName, response);
     });
   });
-  electron.ipcMain.on("break-up-commands", (event, charName, commandString, user, stopList) => {
+  electron.ipcMain.on("break-up-commands", (event, charName, commandString, user, stopList, uniqueEventName) => {
     let response = breakUpCommands(charName, commandString, user, stopList);
-    event.reply("break-up-commands-reply", response);
+    event.reply(uniqueEventName, response);
   });
 }
 const store$3 = new Store({
@@ -2122,6 +2126,8 @@ async function doRoundRobin(constructArray, chatLog, message) {
       }
     } while (result === null);
     let reply = result;
+    if (reply.trim() === "")
+      continue;
     const replyMessage = {
       _id: Date.now().toString(),
       user: constructArray[i].name,
