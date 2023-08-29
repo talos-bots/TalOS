@@ -5,13 +5,28 @@ import { ipcRenderer } from 'electron';
 export const generateText = (
     prompt: string,
     configuredName?: string,
-    stopList?: string[],
-    authorsNote?: string,
-    authorsNoteDepth?: number,
+    stopList?: string[]
 ): Promise<any> => {
     return new Promise((resolve, reject) => {
-        ipcRenderer.send('generate-text', prompt, configuredName, stopList, authorsNote, authorsNoteDepth);
-        ipcRenderer.once('generate-text-reply', (event, results) => {
+        const uniqueEventName = "generate-text-reply-" + Date.now() + "-" + Math.random();
+        ipcRenderer.send('generate-text', prompt, configuredName, stopList, uniqueEventName);
+        ipcRenderer.once(uniqueEventName, (event, results) => {
+            resolve(results);
+        });
+
+    });
+}
+
+export const doInstructions = (
+    instruction: string,
+    guidance?: string,
+    context?: string,
+    examples?: string | string[],
+): Promise<any> => {
+    return new Promise((resolve, reject) => {
+        const uniqueEventName = "do-instruct-reply-" + Date.now() + "-" + Math.random();
+        ipcRenderer.send('do-instruct', instruction, guidance, context, examples, uniqueEventName);
+        ipcRenderer.once(uniqueEventName, (event, results) => {
             resolve(results);
         });
 
