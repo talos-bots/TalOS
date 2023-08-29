@@ -329,7 +329,7 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
         } while (result === null);
         
         let reply: string = result;
-        
+        if(reply.trim() === '') continue;
         const replyMessage = {
             _id: Date.now().toString(),
             user: constructArray[i].name,
