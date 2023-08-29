@@ -80,7 +80,14 @@ const ConstructBox: React.FC<Props> = ({character}) => {
     return (
         <div className="character-box themed-box h-calc(100vh/6) w-full justify-center">
             <div className="text-2xl font-bold z-10 flex justify-between items-center" onDoubleClick={() => setIsOpen(!isOpen)}>
-                {characterName}
+                <div className="flex flex-row gap-4 justify-center items-center">
+                    {!isOpen ? (
+                    <div className="themed-message-avatar">
+                        {character && (character.avatar === '' ? <RiQuestionMark /> : <img id={character._id} src={character.avatar} alt={characterName} className="themed-message-avatar"/>)}
+                    </div>
+                    ): null}
+                    {characterName}
+                </div>
                 <button onClick={() => setIsOpen(!isOpen)} data-tooltip={isOpen ? `Collapse ${characterName} details.` : `Expand ${characterName} details.`}>
                     {isOpen ? <AiOutlineUp/> : <AiOutlineDown/>}
                 </button>

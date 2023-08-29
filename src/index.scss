@@ -176,7 +176,7 @@ ul {
 }
 
 .themed-message-avatar {
-  @apply w-12 h-12 rounded-full object-cover border-theme-border border-theme-border-width bg-theme-box;
+  @apply w-12 h-12 rounded-full object-cover bg-theme-box;
 }
 
 .message-button {

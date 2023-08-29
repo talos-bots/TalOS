@@ -3,7 +3,7 @@ import InputGroup from "@/pages/chat/chat-input";
 import { Chat } from "@/classes/Chat";
 import { Message } from "@/classes/Message";
 import { getChat, saveNewChat, updateChat } from "@/api/dbapi";
-import MessageComponent from "@/pages/chat/message";
+import MessageComponent from "@/pages/chat/chat-log/message";
 import { addUserMessage, getLoadingMessage, regenerateMessage, sendMessage, wait } from "../helpers";
 import { Alert } from "@material-tailwind/react";
 import ChatInfo from "@/pages/chat/chat-info";
