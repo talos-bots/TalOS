@@ -139,7 +139,7 @@ export async function generateContinueChatLog(construct: any, chatLog: any, curr
             if(i !== splitPrompt.length - 1){
                 newPrompt += splitPrompt[i] + '\n';
             }else{
-                newPrompt += splitPrompt[i] + ' ';
+                newPrompt += splitPrompt[i];
             }
         }
         prompt = newPrompt;
