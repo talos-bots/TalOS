@@ -11,7 +11,6 @@ const LeveldbAdapter = require("pouchdb-adapter-leveldb");
 const fs = require("fs");
 const axios = require("axios");
 const openai = require("openai");
-require("websocket");
 const FormData = require("form-data");
 let constructDB$1;
 let chatsDB$1;
@@ -1078,8 +1077,73 @@ async function addUserFromDiscordMessage(message) {
     return;
   await addUser(user);
 }
+const instructPromptWithGuidance = `
+{{guidance}}
+
+### Instruction:
+{{instruction}}
+
+### Response:
+`;
+const instructPrompt = `
+### Instruction:
+{{instruction}}
+
+### Response:
+`;
+const instructPromptWithGuidanceAndContext = `
+{{guidance}}
+
+### Instruction:
+{{instruction}}
+
+### Context:
+{{context}}
+
+### Response:
+`;
+const instructPromptWithContext = `
+### Instruction:
+{{instruction}}
+
+### Context:
+{{context}}
+
+### Response:
+`;
+const instructPromptWithGuidanceAndContextAndExamples = `
+{{guidance}}
+
+{{examples}}
+
+### Instruction:
+{{instruction}}
+
+### Context:
+{{context}}
+
+### Response:
+`;
+const instructPromptWithExamples = `
+{{examples}}
+
+### Instruction:
+{{instruction}}
+
+### Response:
+`;
+const instructPromptWithGuidanceAndExamples = `
+{{guidance}}
+
+{{examples}}
+
+### Instruction:
+{{instruction}}
+
+### Response:
+`;
 const HORDE_API_URL = "https://aihorde.net/api";
-const store$5 = new Store({
+const store$6 = new Store({
   name: "llmData"
 });
 const defaultSettings = {
@@ -1099,73 +1163,41 @@ const defaultSettings = {
   max_context_length: 2048,
   max_tokens: 350
 };
-let endpoint = store$5.get("endpoint", "");
-let endpointType = store$5.get("endpointType", "");
-let password = store$5.get("password", "");
-let settings = store$5.get("settings", defaultSettings);
-let hordeModel = store$5.get("hordeModel", "");
-let stopBrackets = store$5.get("stopBrackets", true);
+let endpoint = store$6.get("endpoint", "");
+let endpointType = store$6.get("endpointType", "");
+let password = store$6.get("password", "");
+let settings = store$6.get("settings", defaultSettings);
+let hordeModel = store$6.get("hordeModel", "");
+let stopBrackets = store$6.get("stopBrackets", true);
 const getLLMConnectionInformation = () => {
   return { endpoint, endpointType, password, settings, hordeModel, stopBrackets };
 };
 const setLLMConnectionInformation = (newEndpoint, newEndpointType, newPassword, newHordeModel) => {
-  store$5.set("endpoint", newEndpoint);
-  store$5.set("endpointType", newEndpointType);
+  store$6.set("endpoint", newEndpoint);
+  store$6.set("endpointType", newEndpointType);
   if (newPassword) {
-    store$5.set("password", newPassword);
+    store$6.set("password", newPassword);
     password = newPassword;
   }
   if (newHordeModel) {
-    store$5.set("hordeModel", newHordeModel);
+    store$6.set("hordeModel", newHordeModel);
     hordeModel = newHordeModel;
   }
   endpoint = newEndpoint;
   endpointType = newEndpointType;
 };
 const setLLMSettings = (newSettings, newStopBrackts) => {
-  store$5.set("settings", newSettings);
+  store$6.set("settings", newSettings);
   if (newStopBrackts) {
-    store$5.set("stopBrackets", newStopBrackts);
+    store$6.set("stopBrackets", newStopBrackts);
     stopBrackets = newStopBrackts;
   }
   settings = newSettings;
 };
 const setLLMModel = (newHordeModel) => {
-  store$5.set("hordeModel", newHordeModel);
+  store$6.set("hordeModel", newHordeModel);
   hordeModel = newHordeModel;
 };
-function LanguageModelAPI() {
-  electron.ipcMain.on("generate-text", async (event, prompt, configuredName, stopList) => {
-    const results = await generateText(prompt, configuredName, stopList);
-    event.reply("generate-text-reply", results);
-  });
-  electron.ipcMain.on("get-status", async (event, endpoint2, endpointType2) => {
-    const status = await getStatus(endpoint2, endpointType2);
-    event.reply("get-status-reply", status);
-  });
-  electron.ipcMain.on("get-llm-connection-information", (event) => {
-    const connectionInformation = getLLMConnectionInformation();
-    event.reply("get-llm-connection-information-reply", connectionInformation);
-  });
-  electron.ipcMain.on("set-llm-connection-information", (event, newEndpoint, newEndpointType, newPassword, newHordeModel) => {
-    setLLMConnectionInformation(newEndpoint, newEndpointType, newPassword, newHordeModel);
-    event.reply("set-llm-connection-information-reply", getLLMConnectionInformation());
-  });
-  electron.ipcMain.on("set-llm-settings", (event, newSettings, newStopBrackets) => {
-    setLLMSettings(newSettings, newStopBrackets);
-    event.reply("set-llm-settings-reply", getLLMConnectionInformation());
-  });
-  electron.ipcMain.on("get-llm-settings", (event) => {
-    event.reply("get-llm-settings-reply", { settings, stopBrackets });
-  });
-  electron.ipcMain.on("set-llm-model", (event, newHordeModel) => {
-    setLLMModel(newHordeModel);
-    event.reply("set-llm-model-reply", getLLMConnectionInformation());
-  });
-  electron.ipcMain.on("get-llm-model", (event) => {
-    event.reply("get-llm-model-reply", hordeModel);
-  });
-}
 async function getStatus(testEndpoint, testEndpointType) {
   let endpointUrl = testEndpoint ? testEndpoint : endpoint;
   let endpointStatusType = testEndpointType ? testEndpointType : endpointType;
@@ -1519,37 +1551,100 @@ Assistant:
   }
   return results;
 };
-const store$4 = new Store({
+async function doInstruct(instruction, guidance, context, examples) {
+  let prompt = "";
+  if (Array.isArray(examples)) {
+    examples = examples.join("\n");
+  }
+  if (guidance && context && examples) {
+    prompt = instructPromptWithGuidanceAndContextAndExamples;
+  } else if (guidance && context) {
+    prompt = instructPromptWithGuidanceAndContext;
+  } else if (guidance && examples) {
+    prompt = instructPromptWithGuidanceAndExamples;
+  } else if (context && examples) {
+    prompt = instructPromptWithExamples;
+  } else if (context) {
+    prompt = instructPromptWithContext;
+  } else if (guidance) {
+    prompt = instructPromptWithGuidance;
+  } else {
+    prompt = instructPrompt;
+  }
+  prompt = prompt.replace("{{guidance}}", guidance || "").replace("{{instruction}}", instruction || "").replace("{{context}}", context || "").replace("{{examples}}", examples || "");
+  let result = await generateText(prompt);
+  if (!result) {
+    return "No valid response from LLM.";
+  }
+  return result.results[0];
+}
+function LanguageModelAPI() {
+  electron.ipcMain.on("generate-text", async (event, prompt, configuredName, stopList, uniqueEventName) => {
+    const results = await generateText(prompt, configuredName, stopList);
+    event.reply(uniqueEventName, results);
+  });
+  electron.ipcMain.on("do-instruct", async (event, instruction, guidance, context, examples, uniqueEventName) => {
+    const results = await doInstruct(instruction, guidance, context, examples);
+    event.reply(uniqueEventName, results);
+  });
+  electron.ipcMain.on("get-status", async (event, endpoint2, endpointType2) => {
+    const status = await getStatus(endpoint2, endpointType2);
+    event.reply("get-status-reply", status);
+  });
+  electron.ipcMain.on("get-llm-connection-information", (event) => {
+    const connectionInformation = getLLMConnectionInformation();
+    event.reply("get-llm-connection-information-reply", connectionInformation);
+  });
+  electron.ipcMain.on("set-llm-connection-information", (event, newEndpoint, newEndpointType, newPassword, newHordeModel) => {
+    setLLMConnectionInformation(newEndpoint, newEndpointType, newPassword, newHordeModel);
+    event.reply("set-llm-connection-information-reply", getLLMConnectionInformation());
+  });
+  electron.ipcMain.on("set-llm-settings", (event, newSettings, newStopBrackets) => {
+    setLLMSettings(newSettings, newStopBrackets);
+    event.reply("set-llm-settings-reply", getLLMConnectionInformation());
+  });
+  electron.ipcMain.on("get-llm-settings", (event) => {
+    event.reply("get-llm-settings-reply", { settings, stopBrackets });
+  });
+  electron.ipcMain.on("set-llm-model", (event, newHordeModel) => {
+    setLLMModel(newHordeModel);
+    event.reply("set-llm-model-reply", getLLMConnectionInformation());
+  });
+  electron.ipcMain.on("get-llm-model", (event) => {
+    event.reply("get-llm-model-reply", hordeModel);
+  });
+}
+const store$5 = new Store({
   name: "constructData"
 });
 let ActiveConstructs = [];
 const retrieveConstructs = () => {
-  return store$4.get("ids", []);
+  return store$5.get("ids", []);
 };
 const setDoMultiLine = (doMultiLine) => {
-  store$4.set("doMultiLine", doMultiLine);
+  store$5.set("doMultiLine", doMultiLine);
 };
 const getDoMultiLine = () => {
-  return store$4.get("doMultiLine", false);
+  return store$5.get("doMultiLine", false);
 };
 const addConstruct = (newId) => {
   const existingIds = retrieveConstructs();
   if (!existingIds.includes(newId)) {
     existingIds.push(newId);
-    store$4.set("ids", existingIds);
+    store$5.set("ids", existingIds);
   }
 };
 const removeConstruct = (idToRemove) => {
   const existingIds = retrieveConstructs();
   const updatedIds = existingIds.filter((id) => id !== idToRemove);
-  store$4.set("ids", updatedIds);
+  store$5.set("ids", updatedIds);
 };
 const isConstructActive = (id) => {
   const existingIds = retrieveConstructs();
   return existingIds.includes(id);
 };
 const clearActiveConstructs = () => {
-  store$4.set("ids", []);
+  store$5.set("ids", []);
 };
 const setAsPrimary = async (id) => {
   const existingIds = retrieveConstructs();
@@ -1558,7 +1653,7 @@ const setAsPrimary = async (id) => {
     existingIds.splice(index, 1);
   }
   existingIds.unshift(id);
-  store$4.set("ids", existingIds);
+  store$5.set("ids", existingIds);
   if (isReady) {
     let constructRaw = await getConstruct(id);
     let construct = assembleConstructFromData(constructRaw);
@@ -1843,7 +1938,7 @@ function constructController() {
     event.reply(uniqueEventName, response);
   });
 }
-const store$3 = new Store({
+const store$4 = new Store({
   name: "discordData"
 });
 let maxMessages = 25;
@@ -1854,21 +1949,21 @@ function getDiscordSettings() {
   doAutoReply = getDoAutoReply();
 }
 const setDiscordMode = (mode) => {
-  store$3.set("mode", mode);
-  console.log(store$3.get("mode"));
+  store$4.set("mode", mode);
+  console.log(store$4.get("mode"));
 };
 const getDiscordMode = () => {
-  console.log(store$3.get("mode"));
-  return store$3.get("mode");
+  console.log(store$4.get("mode"));
+  return store$4.get("mode");
 };
 const clearDiscordMode = () => {
-  store$3.set("mode", null);
+  store$4.set("mode", null);
 };
 const setDoAutoReply = (doAutoReply2) => {
-  store$3.set("doAutoReply", doAutoReply2);
+  store$4.set("doAutoReply", doAutoReply2);
 };
 const getDoAutoReply = () => {
-  return store$3.get("doAutoReply", false);
+  return store$4.get("doAutoReply", false);
 };
 const getUsername = (userID, channelID) => {
   var _a;
@@ -1911,28 +2006,28 @@ const addAlias = (newAlias, channelID) => {
       }
     }
   }
-  store$3.set("channels", channels);
+  store$4.set("channels", channels);
 };
 const setMaxMessages = (max) => {
-  store$3.set("maxMessages", max);
+  store$4.set("maxMessages", max);
 };
 const getMaxMessages = () => {
-  return store$3.get("maxMessages", 25);
+  return store$4.get("maxMessages", 25);
 };
 const getRegisteredChannels = () => {
-  return store$3.get("channels", []);
+  return store$4.get("channels", []);
 };
 const addRegisteredChannel = (newChannel) => {
   const existingChannels = getRegisteredChannels();
   if (!existingChannels.includes(newChannel)) {
     existingChannels.push(newChannel);
-    store$3.set("channels", existingChannels);
+    store$4.set("channels", existingChannels);
   }
 };
 const removeRegisteredChannel = (channelToRemove) => {
   const existingChannels = getRegisteredChannels();
   const updatedChannels = existingChannels.filter((channel) => channel._id !== channelToRemove);
-  store$3.set("channels", updatedChannels);
+  store$4.set("channels", updatedChannels);
 };
 const isChannelRegistered = (channel) => {
   const existingChannels = getRegisteredChannels();
@@ -2919,7 +3014,7 @@ const intents = {
   ],
   partials: [discord_js.Partials.Channel, discord_js.Partials.GuildMember, discord_js.Partials.User, discord_js.Partials.Reaction, discord_js.Partials.Message, discord_js.Partials.ThreadMember, discord_js.Partials.GuildScheduledEvent]
 };
-const store$2 = new Store({
+const store$3 = new Store({
   name: "discordData"
 });
 getDiscordData();
@@ -3174,35 +3269,35 @@ async function getWebhooksForChannel(channelID) {
 }
 async function getDiscordData() {
   let savedToken;
-  const storedToken = store$2.get("discordToken");
+  const storedToken = store$3.get("discordToken");
   if (storedToken !== void 0 && typeof storedToken === "string") {
     savedToken = storedToken;
   } else {
     savedToken = "";
   }
   let appId;
-  const storedAppId = store$2.get("discordAppId");
+  const storedAppId = store$3.get("discordAppId");
   if (storedAppId !== void 0 && typeof storedAppId === "string") {
     appId = storedAppId;
   } else {
     appId = "";
   }
   let discordCharacterMode;
-  const storedDiscordCharacterMode = store$2.get("discordCharacterMode");
+  const storedDiscordCharacterMode = store$3.get("discordCharacterMode");
   if (storedDiscordCharacterMode !== void 0 && typeof storedDiscordCharacterMode === "boolean") {
     discordCharacterMode = storedDiscordCharacterMode;
   } else {
     discordCharacterMode = false;
   }
   let discordMultiCharacterMode;
-  const storedDiscordMultiCharacterMode = store$2.get("discordMultiCharacterMode");
+  const storedDiscordMultiCharacterMode = store$3.get("discordMultiCharacterMode");
   if (storedDiscordMultiCharacterMode !== void 0 && typeof storedDiscordMultiCharacterMode === "boolean") {
     discordMultiCharacterMode = storedDiscordMultiCharacterMode;
   } else {
     discordMultiCharacterMode = false;
   }
   let discordMultiConstructMode;
-  const storedDiscordMultiConstructMode = store$2.get("discordMultiConstructMode");
+  const storedDiscordMultiConstructMode = store$3.get("discordMultiConstructMode");
   if (storedDiscordMultiConstructMode !== void 0 && typeof storedDiscordMultiConstructMode === "boolean") {
     discordMultiConstructMode = storedDiscordMultiConstructMode;
   } else {
@@ -3215,7 +3310,7 @@ async function getDiscordData() {
 }
 function saveDiscordData(newToken, newAppId, discordCharacterMode, discordMultiCharacterMode, discordMultiConstructMode) {
   if (newToken === "") {
-    const storedToken = store$2.get("discordToken");
+    const storedToken = store$3.get("discordToken");
     if (storedToken !== void 0 && typeof storedToken === "string") {
       token = storedToken;
     } else {
@@ -3223,10 +3318,10 @@ function saveDiscordData(newToken, newAppId, discordCharacterMode, discordMultiC
     }
   } else {
     token = newToken;
-    store$2.set("discordToken", newToken);
+    store$3.set("discordToken", newToken);
   }
   if (newAppId === "") {
-    const storedAppId = store$2.get("discordAppId");
+    const storedAppId = store$3.get("discordAppId");
     if (storedAppId !== void 0 && typeof storedAppId === "string") {
       applicationID = storedAppId;
     } else {
@@ -3234,17 +3329,17 @@ function saveDiscordData(newToken, newAppId, discordCharacterMode, discordMultiC
     }
   } else {
     applicationID = newAppId;
-    store$2.set("discordAppId", newAppId);
+    store$3.set("discordAppId", newAppId);
   }
   multiCharacterMode = discordMultiCharacterMode;
-  store$2.set("discordCharacterMode", discordCharacterMode);
+  store$3.set("discordCharacterMode", discordCharacterMode);
   if (!discordCharacterMode) {
-    store$2.set("mode", "Construct");
+    store$3.set("mode", "Construct");
   } else {
-    store$2.set("mode", "Character");
+    store$3.set("mode", "Character");
   }
-  store$2.set("discordMultiCharacterMode", discordMultiCharacterMode);
-  store$2.set("discordMultiConstructMode", discordMultiConstructMode);
+  store$3.set("discordMultiCharacterMode", discordMultiCharacterMode);
+  store$3.set("discordMultiConstructMode", discordMultiConstructMode);
 }
 let messageQueue = [];
 let isProcessing = false;
@@ -3467,7 +3562,7 @@ function DiscordJSRoutes() {
   electron.ipcMain.handle("discord-login", async (event, rawToken, appId) => {
     try {
       if (rawToken === "") {
-        const storedToken = store$2.get("discordToken");
+        const storedToken = store$3.get("discordToken");
         if (storedToken !== void 0 && typeof storedToken === "string") {
           token = storedToken;
         } else {
@@ -3475,10 +3570,10 @@ function DiscordJSRoutes() {
         }
       } else {
         token = rawToken;
-        store$2.set("discordToken", rawToken);
+        store$3.set("discordToken", rawToken);
       }
       if (appId === "") {
-        const storedAppId = store$2.get("discordAppId");
+        const storedAppId = store$3.get("discordAppId");
         if (storedAppId !== void 0 && typeof storedAppId === "string") {
           applicationID = storedAppId;
         } else {
@@ -3486,7 +3581,7 @@ function DiscordJSRoutes() {
         }
       } else {
         applicationID = appId;
-        store$2.set("discordAppId", appId);
+        store$3.set("discordAppId", appId);
       }
       await disClient.login(token);
       if (!disClient.user) {
@@ -3705,20 +3800,20 @@ function FsAPIRoutes() {
     }
   });
 }
-const store$1 = new Store({
+const store$2 = new Store({
   name: "stableDiffusionData"
 });
 const getSDApiUrl = () => {
-  return store$1.get("apiUrl", "");
+  return store$2.get("apiUrl", "");
 };
 const setSDApiUrl = (apiUrl) => {
-  store$1.set("apiUrl", apiUrl);
+  store$2.set("apiUrl", apiUrl);
 };
 const setDefaultPrompt = (prompt) => {
-  store$1.set("defaultPrompt", prompt);
+  store$2.set("defaultPrompt", prompt);
 };
 const getDefaultPrompt = () => {
-  return store$1.get("defaultPrompt", "");
+  return store$2.get("defaultPrompt", "");
 };
 function SDRoutes() {
   electron.ipcMain.on("setDefaultPrompt", (event, prompt) => {
@@ -3742,6 +3837,9 @@ function SDRoutes() {
   });
 }
 const txt2img = async (data, apiUrl) => {
+  if (apiUrl === "") {
+    apiUrl = getSDApiUrl();
+  }
   try {
     const response = await axios.post(apiUrl + `/sdapi/v1/txt2img`, data);
     return response.data;
@@ -3749,6 +3847,37 @@ const txt2img = async (data, apiUrl) => {
     throw new Error(`Failed to send data: ${error.message}`);
   }
 };
+const store$1 = new Store({
+  name: "langChainData"
+});
+store$1.get("serpKey", "");
+store$1.get("azureKey", "");
+const setSerpKey = (key) => {
+  store$1.set("serpKey", key);
+};
+const getSerpKey = () => {
+  return store$1.get("serpKey");
+};
+const setAzureKey = (key) => {
+  store$1.set("azureKey", key);
+};
+const getAzureKey = () => {
+  return store$1.get("azureKey");
+};
+function LangChainRoutes() {
+  electron.ipcMain.on("set-serp-key", (_, arg) => {
+    setSerpKey(arg);
+  });
+  electron.ipcMain.on("set-azure-key", (_, arg) => {
+    setAzureKey(arg);
+  });
+  electron.ipcMain.on("get-serp-key", (event) => {
+    event.sender.send("get-serp-key-reply", getSerpKey());
+  });
+  electron.ipcMain.on("get-azure-key", (event) => {
+    event.sender.send("get-azure-key-reply", getAzureKey());
+  });
+}
 process.env.DIST_ELECTRON = node_path.join(__dirname, "../");
 process.env.DIST = node_path.join(process.env.DIST_ELECTRON, "../dist");
 process.env.VITE_PUBLIC = process.env.VITE_DEV_SERVER_URL ? node_path.join(process.env.DIST_ELECTRON, "../public") : process.env.DIST;
@@ -3807,6 +3936,7 @@ async function createWindow() {
   ElectronDBRoutes();
   constructController();
   DiscordController();
+  LangChainRoutes();
 }
 electron.app.whenReady().then(createWindow);
 electron.app.on("window-all-closed", () => {

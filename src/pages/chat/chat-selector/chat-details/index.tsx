@@ -1,8 +1,7 @@
 import { getConstruct, updateChat } from "@/api/dbapi";
 import { Chat } from "@/classes/Chat";
 import { Construct } from "@/classes/Construct";
-import { getFormattedTime } from "@/components/chat-page/message";
-import { on } from "events";
+import { getFormattedTime } from "@/pages/chat/message";
 import { Edit2Icon, TrashIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { RiQuestionMark } from "react-icons/ri";

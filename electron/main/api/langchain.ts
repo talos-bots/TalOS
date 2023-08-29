@@ -1,9 +1,11 @@
 import { ipcMain } from 'electron';
 import Store from 'electron-store';
 import { config, getJson } from "serpapi";
+
 const store = new Store({
     name: 'langChainData',
 });
+
 let serpAPIKey = store.get('serpKey', '');
 let azureKey = store.get('azureKey', '');
 

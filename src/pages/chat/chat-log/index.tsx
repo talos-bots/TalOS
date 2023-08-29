@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from "react";
-import InputGroup from "@/components/chat-page/chat-input";
+import InputGroup from "@/pages/chat/chat-input";
 import { Chat } from "@/classes/Chat";
 import { Message } from "@/classes/Message";
 import { getChat, saveNewChat, updateChat } from "@/api/dbapi";
-import MessageComponent from "@/components/chat-page/message";
+import MessageComponent from "@/pages/chat/message";
 import { addUserMessage, getLoadingMessage, regenerateMessage, sendMessage, wait } from "../helpers";
 import { Alert } from "@material-tailwind/react";
-import ChatInfo from "@/components/chat-page/chat-info";
+import ChatInfo from "@/pages/chat/chat-info";
 import Loading from "@/components/loading";
 interface ChatLogProps {
 	chatLogID?: string;
