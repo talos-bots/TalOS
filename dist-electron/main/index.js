@@ -1634,7 +1634,7 @@ async function generateContinueChatLog(construct, chatLog, currentUser, messages
       if (i !== splitPrompt.length - 1) {
         newPrompt += splitPrompt[i] + "\n";
       } else {
-        newPrompt += splitPrompt[i];
+        newPrompt += splitPrompt[i] + " ";
       }
     }
     prompt = newPrompt;
