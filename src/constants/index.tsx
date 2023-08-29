@@ -84,7 +84,7 @@ defaultPurple.themeFont = "'DejaVuSansBold', sans-serif";
 defaultPurple.themeBorderType = 'solid';
 defaultPurple.themeTextHover = 'rgb(255, 230, 255)';
 defaultPurple.themeBackground = "url('./backgrounds/purpledefault.svg')";
-defaultPurple.themeButton = 'rgba(33, 10, 43, 0.658)';
+defaultPurple.themeButton = 'rgba(100, 0, 143, 0.808)';
 defaultPurple.ThemeBrightColor = 'rgba(20, 0, 35)';
 defaultPurple.themeFlavorText = 'rgb(147, 0, 206)';
 
