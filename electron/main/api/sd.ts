@@ -49,7 +49,10 @@ export function SDRoutes(){
     });
 }
 
-const txt2img = async (data: StableDiffusionProcessingTxt2Img, apiUrl: string): Promise<any> => {
+const txt2img = async (data: StableDiffusionProcessingTxt2Img, apiUrl?: string): Promise<any> => {
+    if (apiUrl === '') {
+        apiUrl = getSDApiUrl();
+    }
     try {
         const response = await axios.post(apiUrl + `/sdapi/v1/txt2img`, data);
         return response.data;
