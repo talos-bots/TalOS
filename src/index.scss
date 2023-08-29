@@ -130,6 +130,10 @@ ul {
   border-style: var(--theme-border-type);
 }
 
+.themed-button-no-bg {
+  @apply font-semibold theme-border-style shadow-md text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
+}
+
 .themed-button-small {
   @apply theme-border-style shadow-md bg-theme-button text-theme-text border-theme-border border-theme-border-width p-1 backdrop-blur-theme-blur rounded-theme-border-radius;
 }
