@@ -1,7 +1,7 @@
 import UITheme from "@/classes/UITheme";
 
 const defaultGreen = new UITheme();
-defaultGreen.name = 'Default Green';
+defaultGreen.name = 'Green';
 defaultGreen._id = "DefaultGreen";
 defaultGreen.themeRoot = 'rgba(0, 59, 15, 0.5)';
 defaultGreen.themeItalic = 'rgb(197, 196, 196)';
@@ -23,7 +23,7 @@ defaultGreen.ThemeBrightColor = 'rgba(0, 255, 26, 0.25)'
 defaultGreen.themeFlavorText = 'rgba(0, 255, 13, 0.5)';
 
 const defaultBlue = new UITheme();
-defaultBlue.name = 'Default Blue';
+defaultBlue.name = 'Blue';
 defaultBlue._id = 'DefaultBlue';
 defaultBlue.themeRoot = 'rgba(0, 19, 59, 0.5)';
 defaultBlue.themeItalic = 'rgb(197, 196, 196)';
@@ -45,7 +45,7 @@ defaultBlue.ThemeBrightColor = 'rgba(0, 30, 52)';
 defaultBlue.themeFlavorText = 'rgba(0, 162, 255, 0.5)';
 
 const defaultRed = new UITheme();
-defaultRed.name = 'Default Red';
+defaultRed.name = 'Red';
 defaultRed._id = 'DefaultRed';
 defaultRed.themeRoot = 'rgba(59, 0, 0, 0.5)';
 defaultRed.themeItalic = 'rgb(197, 196, 196)';
@@ -67,7 +67,7 @@ defaultRed.ThemeBrightColor = 'rgba(52, 0, 10)';
 defaultRed.themeFlavorText = 'rgba(255, 0, 30, 0.5)';
 
 const defaultPurple = new UITheme();
-defaultPurple.name = 'Default Purple';
+defaultPurple.name = 'Purple';
 defaultPurple._id = 'DefaultPurple';
 defaultPurple.themeRoot = 'rgba(50, 0, 50, 0.5)';
 defaultPurple.themeItalic = 'rgb(197, 176, 196)';
@@ -90,7 +90,7 @@ defaultPurple.themeFlavorText = 'rgb(147, 0, 206)';
 
 const defaultYellow = new UITheme();
 
-defaultYellow.name = 'Default Mustard';
+defaultYellow.name = 'Mustard';
 defaultYellow._id = 'DefaultMustard';
 defaultYellow.themeRoot = 'rgba(50, 50, 0, 0.5)';
 defaultYellow.themeItalic = 'rgb(197, 196, 100)';
