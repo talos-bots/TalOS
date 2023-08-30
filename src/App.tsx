@@ -11,6 +11,7 @@ import MenuThemeLoader from './components/menu-theme-loader';
 import ConstructsPage from './pages/constructs';
 import DiscordPage from './pages/discord';
 import { ipcRenderer } from 'electron';
+import UserPage from './pages/users';
 
 export const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, url: string) => {
   e.preventDefault();
@@ -53,6 +54,7 @@ function App() {
         <Route path='/discord' element={<DiscordPage/>} />
         <Route path='/settings' element={<SettingsPage/>} />
         <Route path='/zero' element={<ZeroPage/>} />
+        <Route path='/users' element={<UserPage/>} />
       </Routes>
       </div>
       {isDev ? <DevPanel /> : null}

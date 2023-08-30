@@ -205,9 +205,12 @@ export function assembleUserFromDiscordAuthor(message: Message){
 
 export async function addUserFromDiscordMessage(message: Message){
 	const user = assembleUserFromDiscordAuthor(message);
+	console.log('New User:', user);
 	if(user._id === undefined) return;
 	let existingUserData = await getUser(user._id);
+	console.log('Existining Data:', existingUserData);
 	existingUserData = assembleUserFromData(existingUserData);
+	console.log('Existining Data Assembled:', existingUserData);
 	if(existingUserData !== null){
 		if(existingUserData.name === undefined) return;
 		if(existingUserData.name === user.name) return;
@@ -217,7 +220,7 @@ export async function addUserFromDiscordMessage(message: Message){
 		existingUserData.nickname = user.nickname;
 		existingUserData.avatar = user.avatar;
 		await updateUser(existingUserData);
+		return;
 	}
-	if(existingUserData.name === undefined) return;
 	await addUser(user);
 }

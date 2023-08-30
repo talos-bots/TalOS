@@ -1055,10 +1055,13 @@ function assembleUserFromDiscordAuthor(message) {
 }
 async function addUserFromDiscordMessage(message) {
   const user = assembleUserFromDiscordAuthor(message);
+  console.log("New User:", user);
   if (user._id === void 0)
     return;
   let existingUserData = await getUser(user._id);
+  console.log("Existining Data:", existingUserData);
   existingUserData = assembleUserFromData(existingUserData);
+  console.log("Existining Data Assembled:", existingUserData);
   if (existingUserData !== null) {
     if (existingUserData.name === void 0)
       return;
@@ -1072,9 +1075,8 @@ async function addUserFromDiscordMessage(message) {
     existingUserData.nickname = user.nickname;
     existingUserData.avatar = user.avatar;
     await updateUser(existingUserData);
-  }
-  if (existingUserData.name === void 0)
     return;
+  }
   await addUser(user);
 }
 const instructPromptWithGuidance = `

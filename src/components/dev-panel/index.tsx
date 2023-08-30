@@ -40,7 +40,7 @@ const DevPanel = () => {
                 <div className="col-span-1">
                     <RouteButton to="/docs" text="Docs" />
                     <RouteButton to="/chat" text="Chat" />
-                    <RouteButton to="/actions" text="Actions" />
+                    <RouteButton to="/users" text="Users" />
                 </div>
                 <div className="col-span-1">
                     <RouteButton to="/Zero" text="Zero" />

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation, NavLink } from 'react-router-dom';
 import { HashLink } from 'react-router-hash-link';
-import { HomeIcon, MessageCircle, Cog, Sparkles, Users, Bot } from 'lucide-react';
+import { HomeIcon, MessageCircle, Cog, Sparkles, Users, Bot, User } from 'lucide-react';
 
 const NavBar: React.FC = () => {
 
@@ -24,6 +24,9 @@ const NavBar: React.FC = () => {
       </NavLink>
       <NavLink to="/discord" title="Discord Bot" className={`p-1 transition-all duration-125 hover:opacity-50`} >
         <Bot style={location.pathname === "/discord" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }}/>
+      </NavLink>
+      <NavLink to="/users" title="User Profiles" className={`p-1 transition-all duration-125 hover:opacity-50`}>
+        <User style={location.pathname === "/users" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }}/>
       </NavLink>
       <NavLink to="/settings" title="Settings" className={`p-1 transition-all duration-125 hover:opacity-50`}>
         <Cog style={location.pathname === "/settings" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }}/>
