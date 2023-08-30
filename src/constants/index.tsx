@@ -111,4 +111,26 @@ defaultYellow.themeButton = 'rgba(33, 30, 14, 0.658)';
 defaultYellow.ThemeBrightColor = 'rgba(52, 50, 0)';
 defaultYellow.themeFlavorText = 'rgba(255, 162, 0, 0.5)';
 
-export const defaultThemes: UITheme[] = [defaultGreen, defaultBlue, defaultRed, defaultPurple, defaultYellow];
+const lightGray = new UITheme();
+lightGray.name = 'Light Gray';
+lightGray._id = 'LightGray';
+lightGray.themeRoot = 'rgba(200, 200, 200, 0.5)';
+lightGray.themeItalic = 'rgba(10, 10, 10, 1)';
+lightGray.themeText = 'rgba(10, 10, 10, 1)';
+lightGray.themeBox = 'rgba(220, 220, 220, 0.767)';
+lightGray.themeAccent = 'rgba(190, 190, 190, 0.295)';
+lightGray.themeBorder = 'rgba(0, 0, 0, 1)';
+lightGray.themeHoverPos = 'rgba(180, 180, 180, 0.75)';  // Note: var() isn't used here as themeAccent is light gray now.
+lightGray.themeHoverNeg = 'rgba(255, 50, 50, .75)';
+lightGray.themeBlur = '15px';
+lightGray.themeBorderWidth = '2px';
+lightGray.themeBorderRadius = '8px';
+lightGray.themeFont = "'DejaVuSansBold', sans-serif";
+lightGray.themeBorderType = 'solid';
+lightGray.themeTextHover = 'rgb(0, 0, 0)';
+lightGray.themeBackground = "url('./backgrounds/lightgraydefault.svg')";  // You'd need an appropriate gray background SVG.
+lightGray.themeButton = 'rgba(240, 240, 240, 0.658)';
+lightGray.ThemeBrightColor = 'rgba(230, 230, 230)';
+lightGray.themeFlavorText = 'rgba(80, 80, 80, 0.5)';
+
+export const defaultThemes: UITheme[] = [defaultGreen, defaultBlue, defaultRed, defaultPurple, defaultYellow, lightGray];

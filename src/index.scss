@@ -31,7 +31,7 @@
   --theme-font: 'DejaVuSansBold', sans-serif;
   --theme-border-type: solid;
   --theme-text-hover: rgb(255, 255, 255);
-  --theme-flavor-text: rgba(100, 0, 143, 0.808);
+  --theme-flavor-text: rgba(199, 199, 199, 0.5);
 }
 
 .main-content {
@@ -176,7 +176,11 @@ ul {
 }
 
 .themed-message-avatar {
-  @apply w-12 h-12 rounded-full object-cover bg-theme-box;
+  @apply w-12 h-12 rounded-full object-cover bg-theme-box border-theme-border-width border-theme-border;
+}
+
+.themed-chat-avatar {
+  @apply w-16 h-16 rounded-full object-cover bg-theme-box border-theme-border-width border-theme-border;
 }
 
 .message-button {

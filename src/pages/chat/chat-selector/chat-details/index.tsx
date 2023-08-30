@@ -89,7 +89,7 @@ const ChatDetails = (props: ChatDetailsProps) => {
         });
     };    
 
-    const avatarSize = 24;  // The size of each avatar in the grid
+    const avatarSize = 32;  // The size of each avatar in the grid
     const avatarsPerRow = 2;  // The number of avatars in each row
 
     const renderGroupAvatar = async () => {
@@ -150,7 +150,7 @@ const ChatDetails = (props: ChatDetailsProps) => {
     return (
         <div className="themed-box-no-padding p-2 flex flex-col justify-start items-start relative" onDoubleClick={()=> {if(onClick !== undefined) onClick(chat)}}>
             <div className="flex flex-row items-center justify-start">
-                <div className="themed-message-avatar flex items-center justify-center">
+                <div className="themed-chat-avatar flex items-center justify-center">
                     {avatars.length > 0 ? (<img src={groupAvatar}/>) : (<RiQuestionMark size={36}/>)}
                 </div>
                 {isEditing ? (
