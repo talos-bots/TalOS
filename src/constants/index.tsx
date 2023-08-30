@@ -112,7 +112,7 @@ defaultYellow.ThemeBrightColor = 'rgba(52, 50, 0)';
 defaultYellow.themeFlavorText = 'rgba(255, 162, 0, 0.5)';
 
 const lightGray = new UITheme();
-lightGray.name = 'Light Gray';
+lightGray.name = 'Light Mode';
 lightGray._id = 'LightGray';
 lightGray.themeRoot = 'rgba(200, 200, 200, 0.5)';
 lightGray.themeItalic = 'rgba(10, 10, 10, 1)';
@@ -133,4 +133,50 @@ lightGray.themeButton = 'rgba(240, 240, 240, 0.658)';
 lightGray.ThemeBrightColor = 'rgba(230, 230, 230)';
 lightGray.themeFlavorText = 'rgba(80, 80, 80, 0.5)';
 
-export const defaultThemes: UITheme[] = [defaultGreen, defaultBlue, defaultRed, defaultPurple, defaultYellow, lightGray];
+const defaultOrange = new UITheme();
+defaultOrange.name = 'Orange';
+defaultOrange._id = 'DefaultOrange';
+defaultOrange.themeRoot = 'rgba(59, 19, 0, 0.5)';
+defaultOrange.themeItalic = 'rgb(197, 196, 196)';
+defaultOrange.themeText = 'rgba(255, 253, 253, 1)';
+defaultOrange.themeBox = 'rgba(131, 57, 8, 0.767)';
+defaultOrange.themeAccent = 'rgba(150, 78, 12, 0.295)';
+defaultOrange.themeBorder = 'rgba(0, 0, 0, 1)';
+defaultOrange.themeHoverPos = 'var(--theme-accent)';
+defaultOrange.themeHoverNeg = 'rgba(196, 0, 0, .75)';
+defaultOrange.themeBlur = '15px';
+defaultOrange.themeBorderWidth = '2px';
+defaultOrange.themeBorderRadius = '8px';
+defaultOrange.themeFont = "'DejaVuSansBold', sans-serif";
+defaultOrange.themeBorderType = 'solid';
+defaultOrange.themeTextHover = 'rgb(255, 255, 255)';
+defaultOrange.themeBackground = "url('./backgrounds/orangedefault.svg')";
+defaultOrange.themeButton = 'rgba(33, 18, 14, 0.658)';
+defaultOrange.ThemeBrightColor = 'rgba(52, 30, 0)';
+defaultOrange.themeFlavorText = 'rgba(255, 162, 0, 0.5)';
+
+const defaultBlack = new UITheme();
+
+defaultBlack.name = 'Dark Mode';
+defaultBlack._id = 'DefaultBlack';
+defaultBlack.themeRoot = 'rgba(0, 0, 0, 0.5)'; // Semi-transparent black
+defaultBlack.themeItalic = 'rgb(197, 196, 196)'; // Same as your light gray
+defaultBlack.themeText = 'rgba(255, 253, 253, 1)'; // Almost white for contrast
+defaultBlack.themeBox = 'rgba(30, 30, 30, 0.767)'; // Dark gray box
+defaultBlack.themeAccent = 'rgba(60, 60, 60, 0.295)'; // Slightly lighter gray for accent
+defaultBlack.themeBorder = 'rgba(0, 0, 0, 1)'; // Full black border
+defaultBlack.themeHoverPos = 'var(--theme-accent)'; // Uses the same accent for hover
+defaultBlack.themeHoverNeg = 'rgba(196, 0, 0, .75)'; // Preserving the red for negative hover
+defaultBlack.themeBlur = '15px';
+defaultBlack.themeBorderWidth = '2px';
+defaultBlack.themeBorderRadius = '8px';
+defaultBlack.themeFont = "'DejaVuSansBold', sans-serif";
+defaultBlack.themeBorderType = 'solid';
+defaultBlack.themeTextHover = 'rgb(255, 255, 255)'; // White for hover
+defaultBlack.themeBackground = "url('./backgrounds/blackdefault.svg)"; // Assuming you have a black variant of the background
+defaultBlack.themeButton = 'rgba(40, 40, 40, 0.658)'; // Slightly lighter gray for buttons
+defaultBlack.ThemeBrightColor = 'rgba(50, 50, 50)'; // For brighter elements
+defaultBlack.themeFlavorText = 'rgba(180, 180, 180, 0.5)'; // Light gray for flavor text
+
+
+export const defaultThemes: UITheme[] = [defaultGreen, defaultBlue, defaultRed, defaultPurple, defaultYellow, lightGray, defaultOrange, defaultBlack];
