@@ -285,6 +285,34 @@ ul {
   opacity: 1; 
 }
 
+.user-image {
+	width: 20em;
+	height: 20em;
+	word-wrap: break-word;
+	cursor: pointer;
+	aspect-ratio: 1/1.5;
+	border-radius: 10%;
+	overflow: hidden;
+	object-fit: cover;
+	box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.2);
+	@apply rounded-theme-border-radius;
+}
+
+.user-image-default {
+	width: 20em;
+	height: 20em;
+	word-wrap: break-word;
+	cursor: pointer;
+	border-radius: 10%;
+	overflow: hidden;
+	display: flex;
+  	align-items: center;
+  	justify-content: center;
+	color: var(--theme-text);
+	background-color: var(--theme-accent);
+	box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.2);
+}
+
 /* This is the container of the scrollbar */
 ::-webkit-scrollbar-track {
   background: transparent; /* or the color of your container */

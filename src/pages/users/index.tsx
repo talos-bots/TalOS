@@ -4,6 +4,7 @@ import Loading from "@/components/loading";
 import { useEffect, useState } from "react";
 import UserInfo from "./user-info";
 import { RiQuestionMark } from "react-icons/ri";
+import UserCrud from "./user-crud";
 
 const UserPage = () => {
     const [users, setUsers] = useState<User[]>([]);
@@ -38,7 +39,8 @@ const UserPage = () => {
                         );
                     })}
                 </div>
-                <div className="col-span-2 themed-root gap-2 h-full overflow-y-auto flex flex-col">
+                <div className="col-span-2">
+                    <UserCrud user={selectedUser} />
                 </div>
             </div>
         </div>
