@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./InputGroup.scss"; // Import the Sass file
+import { PlusCircle, SendHorizonal } from "lucide-react";
 interface InputGroupProps {
     sendMessage: (event: any) => void;
 }
@@ -7,9 +8,9 @@ const InputGroup = (props: InputGroupProps) => {
   	const { sendMessage } = props;
 	const [message, setMessage] = useState<string>("");
 	return (
-		<div className="flex items-center w-full justify-between rounded-full bg-black bg-opacity-25 backdrop-blur-sm box-border py-1 px-2.5 border-[1px] border-solid themed-chat-input">
-			<button className={`cursor-pointer p-0 themed-chat-button relative rounded-3xl w-[35px] h-[35px] overflow-hidden shrink-0 transition-all duration-125 hover:opacity-75`}>
-				<img className="absolute top-[10px] left-[10px] w-[15px] h-[15px] overflow-hidden" alt="" src="/chat-page-assets/pluscircle.svg" />
+		<div className="flex items-center w-full justify-between rounded-full bg-theme-root backdrop-blur-sm box-border py-1 px-2.5 border-theme-border border-theme-border-width theme-border-style">
+			<button className={`flex cursor-pointer border-theme-border border-theme-border-width theme-border-style justify-center items-center p-0 relative rounded-3xl w-[35px] h-[35px] overflow-hidden shrink-0 transition-all duration-125 hover:opacity-75 bg-theme-box`}>
+				<PlusCircle size={16}/>
 			</button>
 			<textarea
 				autoComplete="off"
@@ -26,8 +27,8 @@ const InputGroup = (props: InputGroupProps) => {
 					}
 				}}
 			/>
-			<button className={`cursor-pointer border-none p-0 themed-chat-button relative rounded-3xl w-[35px] h-[35px] overflow-hidden shrink-0 transition-all duration-125 hover:opacity-75`} onClick={() => { sendMessage(message); setMessage('') }}>
-				<img className="absolute top-[10px] left-[10px] w-[15px] h-[15px] overflow-hidden" alt="" src="/chat-page-assets/sendhorizonal.svg" />
+			<button className={`flex cursor-pointer border-theme-border border-theme-border-width theme-border-style justify-center items-center p-0 relative rounded-3xl w-[35px] h-[35px] overflow-hidden shrink-0 transition-all duration-125 hover:opacity-75 bg-theme-box`} onClick={() => { sendMessage(message); setMessage('') }}>
+				<SendHorizonal size={16}/>
 			</button>
 		</div>
 	);

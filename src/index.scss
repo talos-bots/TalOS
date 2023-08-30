@@ -146,14 +146,6 @@ ul {
   @apply theme-border-style shadow-md bg-theme-box border-theme-border border-theme-border-width rounded-theme-border-radius backdrop-blur-theme-blur;
 }
 
-.themed-chat-button {
-  @apply bg-theme-bright-color
-}
-
-.themed-chat-input {
-  border-color: var(--theme-bright-color)
-}
-
 /* This is the scrollbar track */
 ::-webkit-scrollbar {
   width: 10px;
@@ -164,7 +156,7 @@ ul {
 }
 
 .themed-message {
-  @apply shadow-md bg-theme-root rounded-theme-border-radius backdrop-blur-theme-blur w-full p-2 text-left;
+  @apply shadow-md bg-theme-root rounded-theme-border-radius backdrop-blur-theme-blur w-full p-2 text-left border-theme-border border-theme-border-width theme-border-style;
 }
 
 .themed-message-info {
