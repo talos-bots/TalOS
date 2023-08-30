@@ -16,12 +16,12 @@
 :root {
   --background-image: null;
   --theme-root: rgba(0, 0, 0, 0.5);
-  --theme-box: rgba(8, 57, 131, 0.767);
+  --theme-box: rgba(30, 30, 30, 0.767);
   --theme-italic: rgb(197, 196, 196);
   --theme-text: rgba(255, 253, 253, 1);
-  --theme-button: rgba(2, 182, 26, 0.658);
-  --theme-bright-color: rgba(0, 255, 26, 0.25);
-  --theme-accent: rgba(12, 151, 31, 0.295);
+  --theme-button: rgba(40, 40, 40, 0.658);
+  --theme-bright-color: rgba(50, 50, 50);
+  --theme-accent: rgba(60, 60, 60, 0.295);
   --theme-border: rgba(0, 0, 0, 1);
   --theme-hover-pos: var(--theme-accent);
   --theme-hover-neg: rgba(196, 0, 0, .75);
@@ -31,7 +31,7 @@
   --theme-font: 'DejaVuSansBold', sans-serif;
   --theme-border-type: solid;
   --theme-text-hover: rgb(255, 255, 255);
-  --theme-flavor-text: #156800;
+  --theme-flavor-text: rgba(180, 180, 180, 0.5);
 }
 
 .main-content {
