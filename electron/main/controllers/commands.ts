@@ -520,7 +520,8 @@ export const SysCommand: SlashCommand = {
         }
     ],
     execute: async (interaction: CommandInteraction) => {
-        const isHidden = interaction.options.get('hidden')?.value as boolean;
+        let isHidden = interaction.options.get('hidden')?.value as boolean;
+        if(isHidden === undefined) isHidden = false;
         await interaction.deferReply({ephemeral: isHidden});
         if (interaction.channelId === null) {
             await interaction.editReply({
