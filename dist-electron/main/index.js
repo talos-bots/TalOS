@@ -2723,7 +2723,7 @@ const SetAliasCommand = {
   ],
   execute: async (interaction) => {
     var _a, _b;
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ ephemeral: false });
     if (interaction.channelId === null) {
       await interaction.editReply({
         content: "This command can only be used in a server."
@@ -2899,11 +2899,20 @@ const SysCommand = {
       description: "The message to add.",
       type: 3,
       required: true
+    },
+    {
+      name: "hidden",
+      description: "Whether the message should be hidden.",
+      type: 5,
+      required: false
     }
   ],
   execute: async (interaction) => {
-    var _a;
-    await interaction.deferReply({ ephemeral: true });
+    var _a, _b;
+    let isHidden = (_a = interaction.options.get("hidden")) == null ? void 0 : _a.value;
+    if (isHidden === void 0)
+      isHidden = false;
+    await interaction.deferReply({ ephemeral: isHidden });
     if (interaction.channelId === null) {
       await interaction.editReply({
         content: "This command can only be used in a server channel."
@@ -2921,7 +2930,7 @@ const SysCommand = {
     let construct = assembleConstructFromData(constructDoc);
     if (construct === null)
       return;
-    const message = (_a = interaction.options.get("message")) == null ? void 0 : _a.value;
+    const message = (_b = interaction.options.get("message")) == null ? void 0 : _b.value;
     const newMessage = {
       _id: Date.now().toString(),
       user: construct.name,

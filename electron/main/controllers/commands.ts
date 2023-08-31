@@ -334,7 +334,7 @@ export const SetAliasCommand: SlashCommand = {
         },
     ],
     execute: async (interaction: CommandInteraction) => {
-        await interaction.deferReply({ephemeral: true});
+        await interaction.deferReply({ephemeral: false});
         if (interaction.channelId === null) {
             await interaction.editReply({
             content: "This command can only be used in a server.",
