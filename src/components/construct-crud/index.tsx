@@ -158,20 +158,20 @@ const ConstructManagement = () => {
         <div className="w-full h-[calc(100vh-70px)] grid grid-rows-[auto,1fr] themed-root gap-4">
             <h2 className="text-2xl font-bold text-theme-text text-shadow-xl">Construct Editor</h2>
             <div className="grid grid-cols-5 grid-rows-[calc, 1fr] gap-4 text-left">
-                <div className="col-span-1 items-center gap-4 h-3/4">
-                    <div className="w-full grid grid-rows-1 items-center justify-center gap-4">
-                        <div className="row-span-1 flex flex-col">
+                <div className="col-span-1 items-center gap-4 h-full">
+                    <div className="w-full flex flex-col h-full items-center justify-center gap-4">
+                        <div className="flex flex-col h-1/6 w-full">
                             <label htmlFor="construct-role" className="font-semibold">Name</label>
                             <input
                                 type="text"
                                 required={true}
                                 id="construct-name"
-                                className="themed-input"
+                                className="themed-input w-full h-1/2"
                                 value={constructName}
                                 onChange={(event) => setConstructName(event.target.value)}
                             />
                         </div>
-                        <div className="row-span-1 flex flex-col">
+                        <div className="flex flex-col h-3/6 w-full items-center justify-center">
                             <label htmlFor="image-upload">
                                 {constructImage === '' ? <RiQuestionMark className="construct-image-default"/> : <img src={constructImage} alt={constructName} className="construct-image"/>}
                             </label>
@@ -184,28 +184,28 @@ const ConstructManagement = () => {
                                 onChange={handleImageUpload}
                             />
                         </div>
-                        <div className="row-span-1 flex flex-col flex-grow-0">
+                        <div className="flex flex-col flex-grow-0 h-1/6 w-full">
                             <label htmlFor="construct-role" className="font-semibold">Nickname</label>
                             <input
                                 type="text"
                                 required={false}
                                 id="construct-role"
-                                className="themed-input"
+                                className="themed-input w-full h-1/2"
                                 value={constructNickname}
                                 onChange={(event) => setConstructNick(event.target.value)}
                             />
                         </div>
-                        <div className="flex flex-col flex-grow-0">
+                        <div className="flex flex-col flex-grow-0 h-2/6 w-full">
                             <label htmlFor="construct-note" className="font-semibold">Author's Note</label>
                             <textarea
                                 required={false}
                                 id="construct-note"
-                                className="themed-input"
+                                className="themed-input w-full h-full"
                                 value={constructAuthorsNote}
                                 onChange={(event) => setConstructAuthorsNote(event.target.value)}
                             />
                         </div>
-                        <div className="text-left">
+                        <div className="text-left w-full">
                             <b>Construct Status:</b> {isActive ? <span className="text-theme-flavor-text font-bold">Active</span> : <span className="text-theme-hover-neg font-bold">Inactive</span>}{isActive && <span className="text-theme-flavor-text font-bold"> + {isPrimary ? 'Primary': 'Secondary'}</span>}
                         </div>
                     </div>

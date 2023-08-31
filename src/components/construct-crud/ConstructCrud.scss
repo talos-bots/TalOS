@@ -1,6 +1,6 @@
 .construct-image {
-	width: 15em;
-	height: 20em;
+	width: 20em;
+	height: 25em;
 	word-wrap: break-word;
 	cursor: pointer;
 	aspect-ratio: 1/1.5;
@@ -11,8 +11,8 @@
 	@apply rounded-theme-border-radius;
 }
 .construct-image-default {
-	width: 15em;
-	height: 20em;
+	width: 20em;
+	height: 25em;
 	word-wrap: break-word;
 	cursor: pointer;
 	border-radius: 10%;

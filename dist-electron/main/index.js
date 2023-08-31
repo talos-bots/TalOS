@@ -1734,7 +1734,7 @@ async function generateContinueChatLog(construct, chatLog, currentUser, messages
         newPrompt += splitPrompt[i];
       }
     }
-    prompt = newPrompt;
+    prompt = newPrompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${construct.name}`);
   }
   const response = await generateText(prompt, currentUser, stopList);
   let reply = "";
@@ -2815,6 +2815,7 @@ const DoCharacterGreetingsCommand = {
     const constructs = retrieveConstructs();
     let constructDoc = await getConstruct(constructs[0]);
     let construct = assembleConstructFromData(constructDoc);
+    let user = getUsername(interaction.user.id, interaction.channelId);
     if (construct === null)
       return;
     let greeting = construct.greetings[0];
@@ -2822,7 +2823,7 @@ const DoCharacterGreetingsCommand = {
       _id: Date.now().toString(),
       user: construct.name,
       avatar: construct.avatar,
-      text: greeting,
+      text: greeting.replaceAll("{{user}}", `${user}`).replaceAll("{{char}}", `${construct.name}`),
       userID: construct._id,
       timestamp: Date.now(),
       origin: interaction.channelId,
@@ -2876,7 +2877,7 @@ const DoCharacterGreetingsCommand = {
       }
     }
     await interaction.editReply({
-      content: greeting
+      content: greeting.replaceAll("{{user}}", `${user}`).replaceAll("{{char}}", `${construct.name}`)
     });
   }
 };
