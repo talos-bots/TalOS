@@ -142,7 +142,7 @@ export async function generateContinueChatLog(construct: any, chatLog: any, curr
                 newPrompt += splitPrompt[i];
             }
         }
-        prompt = newPrompt;
+        prompt = newPrompt.replaceAll('{{user}}', `${currentUser}`).replaceAll('{{char}}', `${construct.name}`);
     }
     const response = await generateText(prompt, currentUser, stopList);
     let reply = ''
