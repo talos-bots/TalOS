@@ -512,9 +512,16 @@ export const SysCommand: SlashCommand = {
             type: 3,
             required: true,
         },
+        {
+            name: 'hidden',
+            description: 'Whether the message should be hidden.',
+            type: 5,
+            required: false,
+        }
     ],
     execute: async (interaction: CommandInteraction) => {
-        await interaction.deferReply({ephemeral: true});
+        const isHidden = interaction.options.get('hidden')?.value as boolean;
+        await interaction.deferReply({ephemeral: isHidden});
         if (interaction.channelId === null) {
             await interaction.editReply({
             content: "This command can only be used in a server channel.",
