@@ -1,6 +1,6 @@
 import { CommandInteraction, EmbedBuilder } from "discord.js";
 import { Alias, MessageInterface, SlashCommand } from "../types/types";
-import { addAlias, addRegisteredChannel, continueChatLog, getRegisteredChannels, removeRegisteredChannel, setDoAutoReply, setMaxMessages } from "./DiscordController";
+import { addAlias, addRegisteredChannel, continueChatLog, getRegisteredChannels, getUsername, removeRegisteredChannel, setDoAutoReply, setMaxMessages } from "./DiscordController";
 import { addChat, getChat, getConstruct, removeChat, updateChat } from "../api/pouchdb";
 import { assembleChatFromData, assembleConstructFromData } from "../helpers/helpers";
 import { retrieveConstructs, setDoMultiLine } from "./ConstructController";
@@ -428,13 +428,14 @@ export const DoCharacterGreetingsCommand: SlashCommand = {
         const constructs = retrieveConstructs();
         let constructDoc = await getConstruct(constructs[0]);
         let construct = assembleConstructFromData(constructDoc);
+        let user = getUsername(interaction.user.id, interaction.channelId);
         if(construct === null) return;
         let greeting = construct.greetings[0]
         let greetingMessage: MessageInterface = {
             _id: Date.now().toString(),
             user: construct.name,
             avatar: construct.avatar,
-            text: greeting,
+            text: greeting.replaceAll('{{user}}', `${user}`).replaceAll('{{char}}', `${construct.name}`),
             userID: construct._id,
             timestamp: Date.now(),
             origin: interaction.channelId,
@@ -486,7 +487,7 @@ export const DoCharacterGreetingsCommand: SlashCommand = {
             }
         }
         await interaction.editReply({
-            content: greeting,
+            content: greeting.replaceAll('{{user}}', `${user}`).replaceAll('{{char}}', `${construct.name}`),
         });
     }
 }
