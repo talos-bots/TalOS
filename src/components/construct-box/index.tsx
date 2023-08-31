@@ -94,11 +94,11 @@ const ConstructBox: React.FC<Props> = ({character}) => {
             </div>
             {isOpen && character && (
             <div className="grid grid-cols-5 gap-4">
-                <div className="col-span-1">
+                <div className="col-span-1 items-start">
                     <Link to={`/constructs/${character._id}`}>
                         {character && (character.avatar === '' ? <RiQuestionMark className="construct-image-default"/> : <img id={character._id} src={character.avatar} alt={characterName} className="agent-image-default cursor-pointer object-fit rounded-theme-border-radius"/>)}
                     </Link>
-                    <i className="mt-4 font-semibold">
+                    <i className="mt-4 font-semibold text-left">
                         {character.nickname}
                     </i>
                     <div className="text-left">
