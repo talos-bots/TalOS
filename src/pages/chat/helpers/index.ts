@@ -1,12 +1,18 @@
 import { generateContinueChatLog, regenerateMessageFromChatLog } from "@/api/constructapi";
-import { getConstruct, updateChat } from "@/api/dbapi";
+import { getConstruct, getUser, updateChat } from "@/api/dbapi";
 import { Chat } from "@/classes/Chat";
 import { Message } from "@/classes/Message";
 
-export async function sendMessage(chatlog: Chat, constructID: string, userID?: string){
+export async function sendMessage(chatlog: Chat, constructID: string, userID?: string | null){
+    let user;
+    if(userID !== null && userID !== undefined){
+        let userData = await getUser(userID);
+        console.log(userData);
+        if(userData) user = userData;
+    }
     let activeConstruct = await getConstruct(constructID);
     if(chatlog.constructs.length === 0) return null;
-    let response = await generateContinueChatLog(activeConstruct, chatlog);
+    let response = await generateContinueChatLog(activeConstruct, chatlog, user? (user.nickname ? user.nickname : user.name) : 'DefaultUser');
     if(!response) return null;
     let newMessage = new Message();
     newMessage.origin = 'ConstructOS';
@@ -36,11 +42,18 @@ export async function getLoadingMessage(constructID: string){
     return newMessage;
 }
 
-export function addUserMessage(messageText: string, userID?: string){
+export async function addUserMessage(messageText: string, userID?: string | null){
+    let user;
+    if(userID !== null && userID !== undefined){
+        let userData = await getUser(userID);
+        console.log(userData);
+        if(userData) user = userData;
+    }
     let newMessage = new Message();
     newMessage.origin = 'ConstructOS';
     newMessage.text = messageText.replace(/^\s+|\s+$/g, '');
-    newMessage.user = 'User';
+    newMessage.user = user? (user.nickname ? user.nickname : user.name) : 'DefaultUser';
+    newMessage.avatar = user? user.avatar : '';
     newMessage.timestamp = new Date().getTime();
     newMessage.isCommand = false;
     newMessage.isPrivate = true;

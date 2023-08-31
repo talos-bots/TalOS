@@ -1,4 +1,4 @@
-import { getUsers } from "@/api/dbapi";
+import { deleteUser, getUsers } from "@/api/dbapi";
 import { User } from "@/classes/User";
 import Loading from "@/components/loading";
 import { useEffect, useState } from "react";
@@ -28,6 +28,26 @@ const UserPage = () => {
 
     if(isLoading) return (<Loading />);
 
+    const onDelete = async (user: User) => {
+        const newUsers = users.filter((u) => u._id !== user._id);
+        setUsers(newUsers);
+        await deleteUser(user._id);
+    }
+
+    const onEdit = (user: User) => {
+        setSelectedUser(user);
+        const newUsers = users.filter((u) => u._id !== user._id);
+        newUsers.push(user);
+        setUsers(newUsers);
+    }
+
+    const onSave = (user: User) => {
+        setSelectedUser(user);
+        const newUsers = users;
+        newUsers.push(user);
+        setUsers(newUsers);
+    }
+
     return (
         <div className="w-95vw h-[calc(100vh-70px)] flex flex-col justify-center items-center gap-8 m-auto grow-0 overflow-y-auto overflow-x-hidden">
             <div className="grid grid-cols-3 m-auto w-full h-11/12 gap-2">
@@ -35,12 +55,15 @@ const UserPage = () => {
                     <h3 className="text-xl font-semibold">User Profiles</h3>
                     {Array.isArray(users) && users.map((user: User) => {
                         return (
-                            <UserInfo user={user} onClick={(user: User) => {setSelectedUser(user)}}/>
+                            <UserInfo user={user} onClick={(user: User | null) => {setSelectedUser(user)}} onDelete={onDelete}/>
                         );
                     })}
+                    <button className="themed-button-pos w-full h-10" onClick={() => {setSelectedUser(null)}}>
+                        New User
+                    </button>
                 </div>
                 <div className="col-span-2">
-                    <UserCrud user={selectedUser} />
+                    <UserCrud user={selectedUser} onDelete={onDelete} onEdit={onEdit} onSave={onSave}/>
                 </div>
             </div>
         </div>

@@ -48,12 +48,14 @@ const ChatLog = (props: ChatLogProps) => {
 
 	const handleMessageSend = async (message: string) => {
 		if(hasSentMessage === true) return;
+		let currentUser = JSON.parse(localStorage.getItem("currentUser")?.toString() || "");
+		console.log('Current User: ' + currentUser);
 		setHasSentMessage(true);
 		let chat;
 		chat = chatLog;
 		if(chat === null) return;
 		if(message !== "" && message !== null && message !== undefined && message !== " " && message !== "\n"){
-			let newMessage = addUserMessage(message);
+			let newMessage = await addUserMessage(message, currentUser);
 			chat.addMessage(newMessage);
 			if(messages.includes(newMessage)){
 				console.log("message already exists");
@@ -66,7 +68,7 @@ const ChatLog = (props: ChatLogProps) => {
 			let loadingMessage = await getLoadingMessage(chat.constructs[i]);
 			loadingMessage._id += "-loading";
 			setMessages(prevMessages => [...prevMessages, loadingMessage]);
-			let botMessage = await sendMessage(chat, chat.constructs[i]);
+			let botMessage = await sendMessage(chat, chat.constructs[i], currentUser);
 			if (botMessage !== null){
 				chat.addMessage(botMessage);
 				setMessages(prevMessages => {
