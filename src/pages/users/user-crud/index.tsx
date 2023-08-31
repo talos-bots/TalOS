@@ -21,6 +21,7 @@ const UserCrud = (props: UserCrudProps) => {
     const [userPersonality, setUserPersonality] = useState<string>('');
     const [userInterests, setUserInterests] = useState<string[]>(['']);
     const [userRelationships, setUserRelationships] = useState<string[]>(['']);
+    const [currentUser, setCurrentUser] = useState<User | null>(null);
 
     useEffect(() => {
         if(user) {
@@ -31,6 +32,7 @@ const UserCrud = (props: UserCrudProps) => {
             setUserPersonality(user.personality);
             setUserInterests(user.interests);
             setUserRelationships(user.relationships);
+            setCurrentUser(user)
         }else{
             setUserBackground('');
             setUserImage('');
@@ -76,6 +78,7 @@ const UserCrud = (props: UserCrudProps) => {
             newUser.interests = userInterests;
             newUser.relationships = userRelationships;
             await saveNewUser(newUser);
+            setCurrentUser(newUser);
             if(onSave === undefined) return;
             onSave(newUser);
         }
@@ -85,6 +88,7 @@ const UserCrud = (props: UserCrudProps) => {
         if(user) {
             if(onDelete === undefined) return;
             onDelete(user);
+            setCurrentUser(null);
         }else{
             setUserBackground('');
             setUserImage('');
@@ -96,9 +100,9 @@ const UserCrud = (props: UserCrudProps) => {
         }
     }
 
-    const setCurrentUser = async () => {
-        if(user) {
-            localStorage.setItem('currentUser', JSON.stringify(user._id));
+    const makeCurrentUser = async () => {
+        if(currentUser !== null) {
+            localStorage.setItem('currentUser', JSON.stringify(currentUser._id));
         }
     }
 
@@ -182,8 +186,8 @@ const UserCrud = (props: UserCrudProps) => {
                             <button className="themed-button-pos w-1/2" onClick={handleUserUpdate}>Save</button>
                             <button className="themed-button-neg w-1/2" onClick={handleUserDelete}>{user !== null ? 'Delete' : 'Clear'}</button>
                         </div>
-                        {user !== null ? (
-                            <button className="themed-button-pos w-full h-1/2" onClick={setCurrentUser}>Set as Current User</button>
+                        {currentUser !== null ? (
+                            <button className="themed-button-pos w-full h-1/2" onClick={makeCurrentUser}>Set as Current User</button>
                         ) : null}
                     </div>
                 </div>

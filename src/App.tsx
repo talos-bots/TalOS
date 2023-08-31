@@ -12,6 +12,7 @@ import ConstructsPage from './pages/constructs';
 import DiscordPage from './pages/discord';
 import { ipcRenderer } from 'electron';
 import UserPage from './pages/users';
+import { Steps, Hints } from 'intro.js-react';
 
 export const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, url: string) => {
   e.preventDefault();
