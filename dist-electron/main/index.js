@@ -1411,12 +1411,20 @@ const generateText = async (prompt, configuredName = "You", stopList = null) => 
           const statusCheck = await axios.get(`${HORDE_API_URL}/v2/generate/text/status/${taskId}`, {
             headers: { "Content-Type": "application/json", "apikey": hordeKey }
           });
-          const { done } = statusCheck.data;
+          console.log("Horde Key: ", hordeKey);
+          console.log(statusCheck.data);
+          let done = false;
+          if (statusCheck.data.done === true) {
+            done = true;
+          } else if (statusCheck.data.is_posible === false) {
+            results = false;
+            break;
+          }
           if (done) {
             const getText = await axios.get(`${HORDE_API_URL}/v2/generate/text/status/${taskId}`, {
               headers: { "Content-Type": "application/json", "apikey": hordeKey }
             });
-            const generatedText = getText.data.generations[0];
+            const generatedText = getText.data.generations[0].text;
             results = { results: [generatedText] };
             break;
           }

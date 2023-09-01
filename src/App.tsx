@@ -13,6 +13,7 @@ import DiscordPage from './pages/discord';
 import { ipcRenderer } from 'electron';
 import UserPage from './pages/users';
 import { Steps, Hints } from 'intro.js-react';
+import { getStorageValue, setStorageValue } from './api/dbapi';
 
 export const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, url: string) => {
   e.preventDefault();
@@ -21,12 +22,22 @@ export const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, url: str
 
 function App() {
   const [needsReload, setNeedsReload] = useState(false);
+  const [doneTutorial, setDoneTutorial] = useState(true);
+
   const returnToMenu = () => {
     history.back();
   }
 
   useEffect(() => {
     DiscordListeners();
+    getStorageValue('doneTutorial').then((value) => {
+      if(value === null) {
+        setDoneTutorial(false);
+      }else{
+        let hasTrue = value === 'true';
+        setDoneTutorial(hasTrue);
+      }
+    });
   }, []);
 
   useEffect(() => {
@@ -59,6 +70,18 @@ function App() {
       </Routes>
       </div>
       {isDev ? <DevPanel /> : null}
+      <Steps
+        initialStep={0}
+        enabled={!doneTutorial}
+        steps={[
+          {
+            title: 'Welcome to ConstructOS!',
+            element: '#titleBar',
+            intro: 'This is the main menu. From here you can access all of the features of ConstructOS. You can also access this menu at any time by pressing the Home button in the top right corner of the screen.',
+          }
+        ]}
+        onExit={() => {setDoneTutorial(true); setStorageValue('doneTutorial', 'true');}}
+      />
     </Router>
     </div>
   )
