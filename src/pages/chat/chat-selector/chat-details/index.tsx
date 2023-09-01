@@ -8,12 +8,13 @@ import { RiQuestionMark } from "react-icons/ri";
 import { truncateText } from "../../helpers";
 interface ChatDetailsProps {
     chat: Chat;
+    onDoubleClick?: (chat: Chat) => void;
     onClick?: (chat: Chat) => void;
     onEdit?: (chat: Chat) => void;
     onDelete?: (chat: Chat) => void;
 }
 const ChatDetails = (props: ChatDetailsProps) => {
-    const { chat, onClick, onDelete, onEdit } = props;
+    const { chat, onDoubleClick, onClick, onDelete, onEdit } = props;
     const [name, setName] = useState<string>("");
     const [avatar, setAvatar] = useState<string>("");
     const [constructs, setConstructs] = useState<Construct[]>([]);
@@ -148,7 +149,7 @@ const ChatDetails = (props: ChatDetailsProps) => {
     };
     
     return (
-        <div className="themed-box-no-padding p-2 flex flex-col justify-start items-start relative" onDoubleClick={()=> {if(onClick !== undefined) onClick(chat)}}>
+        <div className="themed-box-no-padding p-2 flex flex-col justify-start items-start relative"  onClick={() => {if(onClick !== undefined) onClick(chat)}} onDoubleClick={()=> {if(onDoubleClick !== undefined) onDoubleClick(chat)}}>
             <div className="flex flex-row items-center justify-start">
                 <div className="themed-chat-avatar flex items-center justify-center">
                     {avatars.length > 0 ? (<img src={groupAvatar}/>) : (<RiQuestionMark size={36}/>)}
@@ -186,15 +187,9 @@ const ChatDetails = (props: ChatDetailsProps) => {
                 >
                     <TrashIcon size={18} />
                 </button>
-                <div className="grid w-2/3 grid-cols-3 gap-4 absolute right-4" id="info-text">
-                    <div className="col-span-1 flex flex-row align-middle justify-center text-left">
-                        <i className="w-full text-theme-italic">({chat.lastMessage.origin})</i>
-                    </div>
-                    <div className="col-span-1 flex flex-row align-middle justify-center text-left">
-                        <p className="w-full text-theme-italic text-left truncate">{chat.lastMessage.user}: {truncateText(chat.lastMessage?.text, 35)}</p>
-                    </div>
-                    <div className="col-span-1 flex flex-row justify-end text-right">
-                        <i className="w-full text-theme-italic text-right col-span-1">{getFormattedTime(chat.lastMessage.timestamp)}</i>
+                <div className="grid w-1/3 gap-4 absolute right-4" id="info-text">
+                    <div className="flex flex-row justify-end text-right">
+                        <i className="w-full text-theme-italic text-right">{getFormattedTime(chat.lastMessage.timestamp)}</i>
                     </div>
                 </div>
             </div>
