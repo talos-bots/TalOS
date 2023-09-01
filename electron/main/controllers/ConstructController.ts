@@ -124,13 +124,12 @@ export async function generateContinueChatLog(construct: any, chatLog: any, curr
 
     let splitPrompt = prompt.split('\n');
     let newPrompt = '';
-    let depth = 5;
+    let depth = 4;
 
     if (authorsNoteDepth !== undefined) {
         depth = authorsNoteDepth;
     }
 
-    // decide where to insert the author's note
     let insertHere = (splitPrompt.length < 4) ? 0 : splitPrompt.length - depth;
 
     for (let i = 0; i < splitPrompt.length; i++) {
