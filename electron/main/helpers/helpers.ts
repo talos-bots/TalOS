@@ -208,18 +208,10 @@ export async function addUserFromDiscordMessage(message: Message){
 	console.log('New User:', user);
 	if(user._id === undefined) return;
 	let existingUserData = await getUser(user._id);
-	console.log('Existining Data:', existingUserData);
+	console.log('Existing Data:', existingUserData);
 	existingUserData = assembleUserFromData(existingUserData);
-	console.log('Existining Data Assembled:', existingUserData);
+	console.log('Existing Data Assembled:', existingUserData);
 	if(existingUserData !== null){
-		if(existingUserData.name === undefined) return;
-		if(existingUserData.name === user.name) return;
-		if(existingUserData.nickname === user.nickname) return;
-		if(existingUserData.avatar === user.avatar) return;
-		existingUserData.name = user.name;
-		existingUserData.nickname = user.nickname;
-		existingUserData.avatar = user.avatar;
-		await updateUser(existingUserData);
 		return;
 	}
 	await addUser(user);
