@@ -106,54 +106,54 @@ export function assembleInstructPrompt(construct: any, chatLog: any, currentUser
     return prompt.replaceAll('{{user}}', `${currentUser}`);
 }
 
-export async function generateContinueChatLog(construct: any, chatLog: any, currentUser?: string, messagesToInclude?: any, stopList?: string[], authorsNote?: string | string[], authorsNoteDepth?: number){
+export async function generateContinueChatLog(construct: any, chatLog: any, currentUser?: string, messagesToInclude?: any, stopList?: string[], authorsNote?: string | string[], authorsNoteDepth?: number) {
     let prompt = assemblePrompt(construct, chatLog, currentUser, messagesToInclude);
-    if((construct.authorsNote !== undefined && construct.authorsNote !== '' && construct.authorsNote !== null) || (authorsNote !== undefined && authorsNote !== '' && authorsNote !== null)){
-        if(authorsNote === undefined || authorsNote === '' || authorsNote === null){
-            authorsNote = construct.authorsNote;
-        }else{
-            if(Array.isArray(authorsNote)){
-                authorsNote.push(construct.authorsNote);
-            }else{
-                authorsNote = [authorsNote, construct.authorsNote];
-            }
+
+    if ((construct.authorsNote !== undefined && construct.authorsNote !== '' && construct.authorsNote !== null) ||
+        (authorsNote !== undefined && authorsNote !== '' && authorsNote !== null)) {
+
+        if (!authorsNote) {
+            authorsNote = [construct.authorsNote]; // Ensuring authorsNote is always an array
+        } else if (!Array.isArray(authorsNote)) {
+            authorsNote = [authorsNote];
         }
+        
+        if (construct.authorsNote) {
+            authorsNote.push(construct.authorsNote);
+        }
+
         let splitPrompt = prompt.split('\n');
         let newPrompt = '';
         let depth = 5;
-        if(authorsNoteDepth !== undefined){
+
+        if (authorsNoteDepth !== undefined) {
             depth = authorsNoteDepth;
         }
-        // insert the authors note at the specified depth
-        for(let i = 0; i < splitPrompt.length; i++){
-            let insertHere = splitPrompt.length - depth;
-            if(i === insertHere){
-                if(Array.isArray(authorsNote)){
-                    for(let j = 0; j < authorsNote.length; j++){
-                        newPrompt += authorsNote[j] + '\n';
-                    }
-                }else{
-                    newPrompt += authorsNote + '\n';
+
+        // decide where to insert the author's note
+        let insertHere = (splitPrompt.length < 4) ? splitPrompt.length - 1 : splitPrompt.length - depth;
+
+        for (let i = 0; i < splitPrompt.length; i++) {
+            if (i === insertHere) {
+                for (let note of authorsNote) {
+                    newPrompt += note + '\n';
                 }
             }
-            if(i !== splitPrompt.length - 1){
+
+            if (i !== splitPrompt.length - 1) {
                 newPrompt += splitPrompt[i] + '\n';
-            }else{
+            } else {
                 newPrompt += splitPrompt[i];
             }
         }
+
         prompt = newPrompt.replaceAll('{{user}}', `${currentUser}`).replaceAll('{{char}}', `${construct.name}`);
     }
+
     const response = await generateText(prompt, currentUser, stopList);
-    let reply = ''
-    if(response){
-        reply = response?.results[0];
-        if(reply === undefined){
-            console.log('No valid response from GenerateText');
-            return null;
-        }
-        return breakUpCommands(construct.name, reply, currentUser, stopList)
-    }else{
+    if (response && response.results && response.results[0]) {
+        return breakUpCommands(construct.name, response.results[0], currentUser, stopList);
+    } else {
         console.log('No valid response from GenerateText');
         return null;
     }
