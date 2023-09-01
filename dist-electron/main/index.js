@@ -1712,7 +1712,7 @@ async function generateContinueChatLog(construct, chatLog, currentUser, messages
     }
     let splitPrompt = prompt.split("\n");
     let newPrompt = "";
-    let depth = 5;
+    let depth = 4;
     if (authorsNoteDepth !== void 0) {
       depth = authorsNoteDepth;
     }
