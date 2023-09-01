@@ -110,44 +110,44 @@ export async function generateContinueChatLog(construct: any, chatLog: any, curr
     let prompt = assemblePrompt(construct, chatLog, currentUser, messagesToInclude);
 
     if ((construct.authorsNote !== undefined && construct.authorsNote !== '' && construct.authorsNote !== null) ||
-        (authorsNote !== undefined && authorsNote !== '' && authorsNote !== null)) {
+    (authorsNote !== undefined && authorsNote !== '' && authorsNote !== null)) {
 
-        if (!authorsNote) {
-            authorsNote = [construct.authorsNote]; // Ensuring authorsNote is always an array
-        } else if (!Array.isArray(authorsNote)) {
-            authorsNote = [authorsNote];
-        }
-        
-        if (construct.authorsNote) {
-            authorsNote.push(construct.authorsNote);
-        }
+    if (!authorsNote) {
+        authorsNote = [construct.authorsNote]; // Ensuring authorsNote is always an array
+    } else if (!Array.isArray(authorsNote)) {
+        authorsNote = [authorsNote];
+    }
+    
+    if (construct.authorsNote && authorsNote.indexOf(construct.authorsNote) === -1) {
+        authorsNote.push(construct.authorsNote);
+    }
 
-        let splitPrompt = prompt.split('\n');
-        let newPrompt = '';
-        let depth = 5;
+    let splitPrompt = prompt.split('\n');
+    let newPrompt = '';
+    let depth = 5;
 
-        if (authorsNoteDepth !== undefined) {
-            depth = authorsNoteDepth;
-        }
+    if (authorsNoteDepth !== undefined) {
+        depth = authorsNoteDepth;
+    }
 
-        // decide where to insert the author's note
-        let insertHere = (splitPrompt.length < 4) ? splitPrompt.length - 1 : splitPrompt.length - depth;
+    // decide where to insert the author's note
+    let insertHere = (splitPrompt.length < 4) ? 0 : splitPrompt.length - depth;
 
-        for (let i = 0; i < splitPrompt.length; i++) {
-            if (i === insertHere) {
-                for (let note of authorsNote) {
-                    newPrompt += note + '\n';
-                }
-            }
-
-            if (i !== splitPrompt.length - 1) {
-                newPrompt += splitPrompt[i] + '\n';
-            } else {
-                newPrompt += splitPrompt[i];
+    for (let i = 0; i < splitPrompt.length; i++) {
+        if (i === insertHere) {
+            for (let note of authorsNote) {
+                newPrompt += note + '\n';
             }
         }
 
-        prompt = newPrompt.replaceAll('{{user}}', `${currentUser}`).replaceAll('{{char}}', `${construct.name}`);
+        if (i !== splitPrompt.length - 1) {
+            newPrompt += splitPrompt[i] + '\n';
+        } else {
+            newPrompt += splitPrompt[i];
+        }
+    }
+
+    prompt = newPrompt.replaceAll('{{user}}', `${currentUser}`).replaceAll('{{char}}', `${construct.name}`);
     }
 
     const response = await generateText(prompt, currentUser, stopList);
