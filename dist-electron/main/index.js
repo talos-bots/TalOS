@@ -1059,22 +1059,10 @@ async function addUserFromDiscordMessage(message) {
   if (user._id === void 0)
     return;
   let existingUserData = await getUser(user._id);
-  console.log("Existining Data:", existingUserData);
+  console.log("Existing Data:", existingUserData);
   existingUserData = assembleUserFromData(existingUserData);
-  console.log("Existining Data Assembled:", existingUserData);
+  console.log("Existing Data Assembled:", existingUserData);
   if (existingUserData !== null) {
-    if (existingUserData.name === void 0)
-      return;
-    if (existingUserData.name === user.name)
-      return;
-    if (existingUserData.nickname === user.nickname)
-      return;
-    if (existingUserData.avatar === user.avatar)
-      return;
-    existingUserData.name = user.name;
-    existingUserData.nickname = user.nickname;
-    existingUserData.avatar = user.avatar;
-    await updateUser(existingUserData);
     return;
   }
   await addUser(user);
@@ -1276,7 +1264,7 @@ const generateText = async (prompt, configuredName = "You", stopList = null) => 
           stop_sequence: stops,
           frmtrmblln: false,
           rep_pen: settings.rep_pen ? settings.rep_pen : 1,
-          rep_pen_range: settings.rep_pen_range ? settings.rep_pen_range : 512,
+          rep_pen_range: settings.rep_pen_range ? settings.rep_pen_range : 0,
           temperature: settings.temperature ? settings.temperature : 0.9,
           sampler_order: settings.sampler_order ? settings.sampler_order : [6, 3, 2, 5, 0, 1, 4],
           top_k: settings.top_k ? settings.top_k : 0,
@@ -1317,7 +1305,7 @@ const generateText = async (prompt, configuredName = "You", stopList = null) => 
           "tfs": settings.tfs ? settings.tfs : 0,
           "top_a": settings.top_a ? settings.top_a : 0,
           "repetition_penalty": settings.rep_pen ? settings.rep_pen : 1,
-          "repetition_penalty_range": settings.rep_pen_range ? settings.rep_pen_range : 512,
+          "repetition_penalty_range": settings.rep_pen_range ? settings.rep_pen_range : 0,
           "top_k": settings.top_k ? settings.top_k : 0,
           "min_length": settings.min_length ? settings.min_length : 0,
           "truncation_length": settings.max_context_length ? settings.max_context_length : 2048,

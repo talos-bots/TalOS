@@ -109,9 +109,23 @@ const ChatSelector = (props: ChatSelectorProps) => {
                 <div className="col-span-2 grid grid-rows-2 gap-4">
                     <div className="row-span-1 themed-root flex flex-col">
                         <h3 className="font-semibold">Chatting Settings</h3>
+                        <div className="grid grid-cols-2 w-full h-full">
+                            <div className="flex flex-col col-span-1 w-full h-full">
+                            </div>
+                            <div className="flex flex-col col-span-1 w-full h-full">
+
+                            </div>
+                        </div>
                     </div>
                     <div className="row-span-1 themed-root flex flex-col">
                         <h3 className="font-semibold">Selected Chat Details</h3>
+                        <div className="grid grid-cols-2 w-full h-full">
+                            <div className="flex flex-col col-span-1 w-full h-full">
+
+                            </div>
+                            <div className="flex flex-col col-span-1 w-full h-full">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
