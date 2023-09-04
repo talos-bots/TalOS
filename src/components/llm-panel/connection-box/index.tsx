@@ -71,6 +71,12 @@ const ConnectionBox = (props: ConnectionBoxProps) => {
             >
                 Connect
             </button>
+            {(endpointType === "OAI" || endpointType === "P-OAI") && (
+                <OpenAIPanel />
+            )}
+            {endpointType === "Horde" && (
+                <HordePanel />
+            )}
             <div className="flex flex-col w-full text-left">
                 <label className="text-theme-text text-shadow-xl font-semibold">Status</label>
                 <input className="themed-input w-full"
@@ -78,14 +84,8 @@ const ConnectionBox = (props: ConnectionBoxProps) => {
                     readOnly
                 />
             </div>
-            {endpointType === "Horde" && (
-                <HordePanel />
-            )}
             {endpointType === "PaLM" && (
                 null
-            )}
-            {(endpointType === "OAI" || endpointType === "P-OAI") && (
-                <OpenAIPanel />
             )}
         </div>
     );
