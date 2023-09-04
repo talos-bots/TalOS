@@ -13,7 +13,7 @@ const store = new Store({
 
 type EndpointType = 'Kobold' | 'Ooba' | 'OAI' | 'Horde' | 'P-OAI' | 'P-Claude' | 'PaLM';
 
-type OAI_Model = 'gpt-3.5-turbo-16k' | 'gpt-4' | 'gpt-3.5-turbo' | 'gpt-3.5-turbo-16k-0613' | 'gpt-3.5-turbo-0613' | 'gpt-3.5-turbo-0301' | 'gpt-4-0314' | 'gpt-4-0613'
+type OAI_Model = 'gpt-3.5-turbo-16k' | 'gpt-4' | 'gpt-3.5-turbo' | 'gpt-3.5-turbo-16k-0613' | 'gpt-3.5-turbo-0613' | 'gpt-3.5-turbo-0301' | 'gpt-4-0314' | 'gpt-4-0613';
 
 const defaultSettings = {
     rep_pen: 1.0,

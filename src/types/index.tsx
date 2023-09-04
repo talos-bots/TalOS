@@ -164,7 +164,7 @@ export interface Settings {
     max_context_length: number;
     max_tokens: number;
 }
-export type EndpointType = 'Kobold' | 'Ooba' | 'OAI' | 'Horde' | 'P-OAI' | 'P-Claude';
+export type EndpointType = 'Kobold' | 'Ooba' | 'OAI' | 'Horde' | 'P-OAI' | 'P-Claude' | 'PaLM';
 
 export interface LLMConnectionInformation {
     endpoint: string, 

@@ -2,6 +2,7 @@ import { getLLMConnectionInformation, getStatus, setLLMConnectionInformation } f
 import { EndpointType } from "@/types";
 import { useEffect, useState } from "react";
 import HordePanel from "../horde-panel";
+import OpenAIPanel from "../openai-panel";
 
 interface ConnectionBoxProps {
 };
@@ -79,6 +80,12 @@ const ConnectionBox = (props: ConnectionBoxProps) => {
             </div>
             {endpointType === "Horde" && (
                 <HordePanel />
+            )}
+            {endpointType === "PaLM" && (
+                null
+            )}
+            {(endpointType === "OAI" || endpointType === "P-OAI") && (
+                <OpenAIPanel />
             )}
         </div>
     );
