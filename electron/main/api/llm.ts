@@ -96,12 +96,12 @@ export async function getStatus(testEndpoint?: string, testEndpointType?: string
         case 'Kobold':
             endpointURLObject = new URL(endpointUrl);
             try{
-            response = await axios.get(`${endpointURLObject.protocol}//${endpointURLObject.hostname}:${endpointURLObject.port}/api/v1/model`);
-            if (response.status === 200) {
-                return response.data.result;
-            } else {
-                return 'Kobold endpoint is not responding.'
-            }
+                response = await axios.get(`${endpointURLObject.protocol}//${endpointURLObject.hostname}:${endpointURLObject.port}/api/v1/model`);
+                if (response.status === 200) {
+                    return response.data.result;
+                } else {
+                    return 'Kobold endpoint is not responding.'
+                }
             } catch (error) {
                 return 'Kobold endpoint is not responding.'
             }
@@ -110,11 +110,11 @@ export async function getStatus(testEndpoint?: string, testEndpointType?: string
             endpointURLObject = new URL(endpointUrl);
             try{
                 response = await axios.get(`${endpointURLObject.protocol}//${endpointURLObject.hostname}:5000/api/v1/model`);
-            if (response.status === 200) {
-                return response.data.result;
-            } else {
-                return 'Ooba endpoint is not responding.';
-            }
+                if (response.status === 200) {
+                    return response.data.result;
+                } else {
+                    return 'Ooba endpoint is not responding.';
+                }
             } catch (error) {
                 return 'Ooba endpoint is not responding.';
             }
@@ -185,13 +185,15 @@ export const generateText = async (
                 if (response.status === 200) {
                     results = response.data;
                     if (Array.isArray(results)) {
-                    results = results.join(' ');
+                        return results = results.join(' ');
+                    }else{
+                        return results;
                     }
                 }
                 console.log(response.data)
             } catch (error) {
                 console.log(error);
-                results = false;
+                return results = { results: [`**Error:** ${error}`] }
             }        
         break;
         case 'Ooba':
@@ -221,17 +223,18 @@ export const generateText = async (
                 }
                 console.log(oobaPayload)
                 response = await axios.post(`${endpointURLObject.protocol}//${endpointURLObject.hostname}:5000/api/v1/generate`, oobaPayload);
+                console.log(response.data)
                 if (response.status === 200) {
                     results = response.data['results'][0]['text'];
                     return { results: [results] };
+                }else{
+                    return results = { results: ['**No valid response from LLM.**']};
                 }
-                console.log(response.data)
             } catch (error) {
                 console.log(error);
-                results = false;
+                return results = { results: [`**Error:** ${error}`] }
             }
         break;
-    
         case 'OAI':
             console.log("OAI");
             const configuration = new Configuration({
@@ -251,14 +254,14 @@ export const generateText = async (
                     stop: [`${configuredName}:`],
                 });
                 if(response.data.choices[0].message.content === undefined){
-                results = false;
-                console.log(response.data)
+                    console.log(response.data)
+                    return results = { results: ['**No valid response from LLM.**']};
                 }else{
-                results = { results: [response.data.choices[0].message.content]};
+                    return results = { results: [response.data.choices[0].message.content]};
                 }
             } catch (error) {
                 console.log(error);
-                results = false;
+                return results = { results: [`**Error:** ${error}`] }
             }
         break;
         case 'Horde':
@@ -296,10 +299,10 @@ export const generateText = async (
                     { headers: { 'Content-Type': 'application/json', 'apikey': hordeKey } }
                 ).catch((error) => {
                     console.log(error);
-                    results = false;
+                    return results = { results: [`**Error:** ${error}`] }
                 });
                 const taskId = response.data.id;
-            
+                console.log(response.data)
                 while (true) {
                     await new Promise(resolve => setTimeout(resolve, 5000));
                     const statusCheck = await axios.get(`${HORDE_API_URL}/v2/generate/text/status/${taskId}`, {
@@ -311,7 +314,7 @@ export const generateText = async (
                     if (statusCheck.data.done === true) {
                         done = true;
                     } else if (statusCheck.data.is_posible === false) {
-                        results = false;
+                        return results = { results: ['**Horde:** Request is not possible, try another model or worker.'] };
                         break;
                     }
                     if (done) {
@@ -319,14 +322,13 @@ export const generateText = async (
                         headers: { 'Content-Type': 'application/json', 'apikey': hordeKey }
                         });
                         const generatedText = getText.data.generations[0].text;
-                        results = { results: [generatedText] };
+                        return results = { results: [generatedText] };
                         break;
                     }
                 }
-                console.log(response.data)
             } catch (error) {
                 console.log(error);
-                results = false;
+                return results = { results: [`**Error:** ${error}`] }
             }
         break;
         case 'P-OAI':
@@ -349,14 +351,14 @@ export const generateText = async (
                     },
                 });
                 if(response.data?.choices[0]?.message?.content === undefined){
-                    results = false;
                     console.log(response.data)
+                    return results = { results: ['**No valid response from LLM.**']}
                 }else{
-                    results = { results: [response.data.choices[0].message.content]};
+                    return results = { results: [response.data.choices[0].message.content]};
                 }
             } catch (error) {
                 console.log(error);
-                results = false;
+                return results = { results: [`**Error:** ${error}`]}
             }
         break;
         case 'P-Claude':
@@ -375,15 +377,15 @@ export const generateText = async (
                     'x-api-key': password
                 },
                 });
-                    if(claudeResponse.data.choices[0].message.content !== undefined){
-                    results = { results: [claudeResponse.data.choices[0].message.content] };
+                if(claudeResponse.data.choices[0].message.content !== undefined){
+                    return results = { results: [claudeResponse.data.choices[0].message.content] };
                 }else{
-                    results = false;
                     console.log(claudeResponse)
+                    return results = { results: ['**No valid response from LLM.**']};
                 }
             } catch (error) {
                 console.log(error);
-                results = false;
+                return results = { results: [`**Error:** ${error}`] }
             }
         break;
         case 'PaLM':
@@ -431,21 +433,23 @@ export const generateText = async (
                 maxOutputTokens: settings.max_tokens ? settings.max_tokens : 350,
             }, {headers: {'Content-Type': 'application/json'}});
             console.log(googleReply.data)
-            if(googleReply.data.error !== undefined){
-                results = false;
+            if(googleReply.data?.error !== undefined){
+                return results = { results: [googleReply.data.error.message]}
             }else{
+                if(googleReply.data?.filters !== undefined){
+                    return results = { results: ['**No valid response from LLM. Filters are blocking the response.**']};
+                }
                 if(googleReply.data?.candidates[0]?.output === undefined){
-                    results = false;
+                    return results = { results: ['**No valid response from LLM.**']}
                 }else{
-                    results = { results: [googleReply.data.candidates[0].output] };
+                    return results = { results: [googleReply.data?.candidates[0]?.output] };
                 }
             }
         break;
     default:
-        throw new Error('Invalid endpoint type or endpoint.');
+        return { results: ['Invalid endpoint.'] };
     }
-  
-    return results;
+    return { results: ['No valid response from LLM.'] };
 };
 
 export async function doInstruct(instruction: string, guidance?: string, context?: string, examples?: string[] | string): Promise<string> {
