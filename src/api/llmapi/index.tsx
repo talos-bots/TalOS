@@ -93,3 +93,17 @@ export const getLLMModel = (): Promise<any> => {
 export const setLLMModel = (model: string) => {
     ipcRenderer.send('set-llm-model', model);
 }
+
+export const getLLMOAIModel = (): Promise<any> => {
+    return new Promise((resolve, reject) => {
+        ipcRenderer.send('get-llm-openai-model');
+        ipcRenderer.once('get-llm-openai-model-reply', (event, data) => {
+            if(data.error) reject(data.error);
+            resolve(data);
+        });
+    });
+}
+
+export const setLLMOAIModel = (model: string) => {
+    ipcRenderer.send('set-llm-openai-model', model);
+}
