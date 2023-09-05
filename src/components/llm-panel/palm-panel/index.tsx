@@ -37,12 +37,10 @@ const PaLMPanel = () => {
     useEffect(() => {
         if (selectedFilter === undefined) return;
         if (selectedFilter === null) return;
-        console.log('Setting PaLM filter:', selectedFilter, selectedFilterValue);
         setFilters({...filters, [selectedFilter]: selectedFilterValue});
     }, [selectedFilter, selectedFilterValue]);
 
     const saveFilters = () => {
-        console.log('Saving PaLM filters:', filters);
         setPaLMFilters(filters);
     }
 
