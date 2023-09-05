@@ -1262,7 +1262,7 @@ async function getStatus(testEndpoint, testEndpointType) {
   }
 }
 const generateText = async (prompt, configuredName = "You", stopList = null) => {
-  var _a, _b, _c, _d, _e;
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i;
   let response;
   let char = "Character";
   let results;
@@ -1481,32 +1481,33 @@ const generateText = async (prompt, configuredName = "You", stopList = null) => 
       console.log("P-Claude");
       endpointURLObject = new URL(endpoint);
       try {
-        const claudeResponse = await axios.post(`${endpointURLObject.protocol}//${endpointURLObject.hostname}:${endpointURLObject.port}/proxy/anthropic/complete`, {
-          "prompt": `System:
+        const promptString = `System:
 Write ${char}'s next reply in a fictional chat between ${char} and ${configuredName}. Write 1 reply only in internet RP style, italicize actions, and avoid quotation marks. Use markdown. Be proactive, creative, and drive the plot and conversation forward. Write at least 1 sentence, up to 4. Always stay in character and avoid repetition.
-` + prompt + `
+${prompt}
 Assistant:
  Okay, here is my response as ${char}:
-`,
-          "model": `claude-1.3-100k`,
+`;
+        const claudeResponse = await axios.post(`${endpointURLObject.protocol}//${endpointURLObject.hostname}:${endpointURLObject.port}/proxy/anthropic/complete`, {
+          "prompt": promptString,
+          "model": "claude-1.3-100k",
           "temperature": settings.temperature ? settings.temperature : 0.9,
           "max_tokens_to_sample": settings.max_tokens ? settings.max_tokens : 350,
-          "stop_sequences": [":[USER]", "Assistant:", "User:", `${configuredName}:`, `System:`]
+          "stop_sequences": [":[USER]", "Assistant:", "User:", `${configuredName}:`, "System:"]
         }, {
           headers: {
             "Content-Type": "application/json",
             "x-api-key": password
           }
         });
-        if (claudeResponse.data.choices[0].message.content !== void 0) {
+        if ((_g = (_f = (_e = (_d = claudeResponse.data) == null ? void 0 : _d.choices) == null ? void 0 : _e[0]) == null ? void 0 : _f.message) == null ? void 0 : _g.content) {
           return results = { results: [claudeResponse.data.choices[0].message.content] };
         } else {
-          console.log(claudeResponse);
+          console.log("Unexpected Response:", claudeResponse);
           return results = { results: ["**No valid response from LLM.**"] };
         }
       } catch (error) {
-        console.log(error);
-        return results = { results: [`**Error:** ${error}`] };
+        console.error("Error during P-Claude case:", error);
+        return results = { results: [`**Error:** ${error.message}`] };
       }
       break;
     case "PaLM":
@@ -1566,10 +1567,10 @@ Assistant:
         if (googleReply.data.filters) {
           throw new Error("No valid response from LLM. Filters are blocking the response.");
         }
-        if (!((_d = googleReply.data.candidates[0]) == null ? void 0 : _d.output)) {
+        if (!((_h = googleReply.data.candidates[0]) == null ? void 0 : _h.output)) {
           throw new Error("No valid response from LLM.");
         }
-        return results = { results: [(_e = googleReply.data.candidates[0]) == null ? void 0 : _e.output] };
+        return results = { results: [(_i = googleReply.data.candidates[0]) == null ? void 0 : _i.output] };
       } catch (error) {
         console.error(error);
         return results = { results: [`**Error:** ${error.message}`] };

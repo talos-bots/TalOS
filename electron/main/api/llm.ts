@@ -402,29 +402,33 @@ export const generateText = async (
         case 'P-Claude':
             console.log("P-Claude");
             endpointURLObject = new URL(endpoint);
-            try{
-                const claudeResponse = await axios.post(`${endpointURLObject.protocol}//${endpointURLObject.hostname}:${endpointURLObject.port}` + '/proxy/anthropic/complete', {
-                "prompt": `System:\nWrite ${char}'s next reply in a fictional chat between ${char} and ${configuredName}. Write 1 reply only in internet RP style, italicize actions, and avoid quotation marks. Use markdown. Be proactive, creative, and drive the plot and conversation forward. Write at least 1 sentence, up to 4. Always stay in character and avoid repetition.\n` + prompt + `\nAssistant:\n Okay, here is my response as ${char}:\n`,
-                "model": `claude-1.3-100k`,
-                "temperature": settings.temperature ? settings.temperature : 0.9,
-                "max_tokens_to_sample": settings.max_tokens ? settings.max_tokens : 350,
-                "stop_sequences": [':[USER]', 'Assistant:', 'User:', `${configuredName}:`, `System:`],
+            try {
+                const promptString = `System:\nWrite ${char}'s next reply in a fictional chat between ${char} and ${configuredName}. Write 1 reply only in internet RP style, italicize actions, and avoid quotation marks. Use markdown. Be proactive, creative, and drive the plot and conversation forward. Write at least 1 sentence, up to 4. Always stay in character and avoid repetition.\n${prompt}\nAssistant:\n Okay, here is my response as ${char}:\n`;
+                
+                const claudeResponse = await axios.post(`${endpointURLObject.protocol}//${endpointURLObject.hostname}:${endpointURLObject.port}/proxy/anthropic/complete`, {
+                    "prompt": promptString,
+                    "model": "claude-1.3-100k",
+                    "temperature": settings.temperature ? settings.temperature : 0.9,
+                    "max_tokens_to_sample": settings.max_tokens ? settings.max_tokens : 350,
+                    "stop_sequences": [':[USER]', 'Assistant:', 'User:', `${configuredName}:`, 'System:'],
                 }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-api-key': password
-                },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': password
+                    },
                 });
-                if(claudeResponse.data.choices[0].message.content !== undefined){
+        
+                if (claudeResponse.data?.choices?.[0]?.message?.content) {
                     return results = { results: [claudeResponse.data.choices[0].message.content] };
-                }else{
-                    console.log(claudeResponse)
-                    return results = { results: ['**No valid response from LLM.**']};
+                } else {
+                    console.log('Unexpected Response:', claudeResponse);
+                    return results = { results: ['**No valid response from LLM.**'] };
                 }
-            } catch (error) {
-                console.log(error);
-                return results = { results: [`**Error:** ${error}`] }
+            } catch (error: any) {
+                console.error('Error during P-Claude case:', error);
+                return results = { results: [`**Error:** ${error.message}`] };
             }
+            break;        
         break;
         case 'PaLM':
             const MODEL_NAME = "models/text-bison-001";

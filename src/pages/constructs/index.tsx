@@ -101,9 +101,15 @@ const ConstructsPage = () => {
                     }
                 </div>
                 <div className="flex flex-col gap-4">
-                    {Array.isArray(filteredCharacters) && filteredCharacters.map((character, index) => (
-                        <ConstructBox key={index} character={character} />
-                    ))}
+                {Array.isArray(filteredCharacters) && filteredCharacters.sort((a, b) => {
+                    if (a.name && b.name) {
+                        return a.name.localeCompare(b.name);
+                    } else {
+                        return 0;
+                    }
+                }).map((character, index) => (
+                    <ConstructBox key={index} character={character} />
+                ))}
                 </div>
             </div>
         </div>
