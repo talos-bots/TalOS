@@ -25,9 +25,9 @@ export class Construct{
             doRandomThought: false,
             haveThoughts: false,
             thinkBeforeChat: false,
-            replyToConstruct: 0.35,
+            replyToConstruct: 0.50,
             replyToConstructMention: 0.75,
-            replyToUser: 0.75,
+            replyToUser: 0.50,
             replyToUserMention: 1,
         }
     ) {}
