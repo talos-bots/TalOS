@@ -1262,7 +1262,7 @@ async function getStatus(testEndpoint, testEndpointType) {
   }
 }
 const generateText = async (prompt, configuredName = "You", stopList = null) => {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _i;
+  var _a, _b, _c, _d, _e;
   let response;
   let char = "Character";
   let results;
@@ -1553,20 +1553,28 @@ Assistant:
         maxOutputTokens: settings.max_tokens ? settings.max_tokens : 350
       };
       console.log("PaLM Payload:", PaLM_Payload);
-      const googleReply = await axios.post(`https://generativelanguage.googleapis.com/v1beta2/models/text-bison-001:generateText?key=${endpoint}`, PaLM_Payload, { headers: { "Content-Type": "application/json" } });
-      console.log(googleReply.data);
-      if (((_d = googleReply.data) == null ? void 0 : _d.error) !== void 0) {
-        return results = { results: [googleReply.data.error.message] };
-      } else {
-        if (((_e = googleReply.data) == null ? void 0 : _e.filters) !== void 0) {
-          return results = { results: ["**No valid response from LLM. Filters are blocking the response.**"] };
+      try {
+        const googleReply = await axios.post(`https://generativelanguage.googleapis.com/v1beta2/models/text-bison-001:generateText?key=${endpoint}`, PaLM_Payload, {
+          headers: { "Content-Type": "application/json" }
+        });
+        if (!googleReply.data) {
+          throw new Error("No valid response from LLM.");
         }
-        if (((_g = (_f = googleReply.data) == null ? void 0 : _f.candidates[0]) == null ? void 0 : _g.output) === void 0) {
-          return results = { results: ["**No valid response from LLM.**"] };
-        } else {
-          return results = { results: [(_i = (_h = googleReply.data) == null ? void 0 : _h.candidates[0]) == null ? void 0 : _i.output] };
+        if (googleReply.data.error) {
+          throw new Error(googleReply.data.error.message);
         }
+        if (googleReply.data.filters) {
+          throw new Error("No valid response from LLM. Filters are blocking the response.");
+        }
+        if (!((_d = googleReply.data.candidates[0]) == null ? void 0 : _d.output)) {
+          throw new Error("No valid response from LLM.");
+        }
+        return results = { results: [(_e = googleReply.data.candidates[0]) == null ? void 0 : _e.output] };
+      } catch (error) {
+        console.error(error);
+        return results = { results: [`**Error:** ${error.message}`] };
       }
+      break;
     default:
       return { results: ["Invalid endpoint."] };
   }

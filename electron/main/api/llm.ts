@@ -470,20 +470,31 @@ export const generateText = async (
                 maxOutputTokens: settings.max_tokens ? settings.max_tokens : 350,
             }
             console.log('PaLM Payload:', PaLM_Payload)
-            const googleReply = await axios.post(`https://generativelanguage.googleapis.com/v1beta2/models/text-bison-001:generateText?key=${endpoint}`, PaLM_Payload, {headers: {'Content-Type': 'application/json'}});
-
-            console.log(googleReply.data)
-            if(googleReply.data?.error !== undefined){
-                return results = { results: [googleReply.data.error.message]}
-            }else{
-                if(googleReply.data?.filters !== undefined){
-                    return results = { results: ['**No valid response from LLM. Filters are blocking the response.**']};
+            try {
+                const googleReply = await axios.post(`https://generativelanguage.googleapis.com/v1beta2/models/text-bison-001:generateText?key=${endpoint}`, PaLM_Payload, {
+                    headers: {'Content-Type': 'application/json'}
+                });
+                
+                if (!googleReply.data) {
+                    throw new Error('No valid response from LLM.');
                 }
-                if(googleReply.data?.candidates[0]?.output === undefined){
-                    return results = { results: ['**No valid response from LLM.**']}
-                }else{
-                    return results = { results: [googleReply.data?.candidates[0]?.output] };
+        
+                if (googleReply.data.error) {
+                    throw new Error(googleReply.data.error.message);
                 }
+        
+                if (googleReply.data.filters) {
+                    throw new Error('No valid response from LLM. Filters are blocking the response.');
+                }
+        
+                if (!googleReply.data.candidates[0]?.output) {
+                    throw new Error('No valid response from LLM.');
+                }
+        
+                return results = { results: [googleReply.data.candidates[0]?.output] };
+            } catch (error: any) {
+                console.error(error);
+                return results = { results: [`**Error:** ${error.message}`] };
             }
         break;
     default:
