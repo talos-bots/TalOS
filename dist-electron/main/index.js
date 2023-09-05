@@ -1514,7 +1514,7 @@ Assistant:
       const PaLM_Payload = {
         "model": MODEL_NAME,
         "prompt": {
-          text: prompt
+          text: `${prompt}`
         },
         "safetySettings": [
           {
