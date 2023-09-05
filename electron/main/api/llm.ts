@@ -437,31 +437,31 @@ export const generateText = async (
                 "safetySettings": [
                     {
                         "category": "HARM_CATEGORY_UNSPECIFIED",
-                        "threshold": palmFilters.HARM_CATEGORY_UNSPECIFIED
+                        "threshold": palmFilters.HARM_CATEGORY_UNSPECIFIED as PaLMFilterType ? palmFilters.HARM_CATEGORY_UNSPECIFIED : "BLOCK_NONE"
                     },
                     {
                         "category": "HARM_CATEGORY_DEROGATORY",
-                        "threshold": palmFilters.HARM_CATEGORY_DEROGATORY
+                        "threshold": palmFilters.HARM_CATEGORY_DEROGATORY as PaLMFilterType ? palmFilters.HARM_CATEGORY_DEROGATORY : "BLOCK_NONE"
                     },
                     {
                         "category": "HARM_CATEGORY_TOXICITY",
-                        "threshold": palmFilters.HARM_CATEGORY_TOXICITY
+                        "threshold": palmFilters.HARM_CATEGORY_TOXICITY as PaLMFilterType ? palmFilters.HARM_CATEGORY_TOXICITY : "BLOCK_NONE"
                     },
                     {
                         "category": "HARM_CATEGORY_VIOLENCE",
-                        "threshold": palmFilters.HARM_CATEGORY_VIOLENCE
+                        "threshold": palmFilters.HARM_CATEGORY_VIOLENCE as PaLMFilterType ? palmFilters.HARM_CATEGORY_VIOLENCE : "BLOCK_NONE"
                     },
                     {
                         "category": "HARM_CATEGORY_SEXUAL",
-                        "threshold": palmFilters.HARM_CATEGORY_SEXUAL
+                        "threshold": palmFilters.HARM_CATEGORY_SEXUAL as PaLMFilterType ? palmFilters.HARM_CATEGORY_SEXUAL : "BLOCK_NONE"
                     },
                     {
                         "category": "HARM_CATEGORY_MEDICAL",
-                        "threshold": palmFilters.HARM_CATEGORY_MEDICAL
+                        "threshold": palmFilters.HARM_CATEGORY_MEDICAL as PaLMFilterType ? palmFilters.HARM_CATEGORY_MEDICAL : "BLOCK_NONE"
                     },
                     {
                         "category": "HARM_CATEGORY_DANGEROUS",
-                        "threshold": palmFilters.HARM_CATEGORY_DANGEROUS
+                        "threshold": palmFilters.HARM_CATEGORY_DANGEROUS as PaLMFilterType ? palmFilters.HARM_CATEGORY_DANGEROUS : "BLOCK_NONE"
                     }
                 ],
                 temperature: settings.temperature ? settings.temperature : 0.9,
