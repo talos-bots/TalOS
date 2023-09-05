@@ -3,6 +3,7 @@ import LorebookInfo from "./lorebook-info";
 import { useEffect, useState } from "react";
 import Loading from "@/components/loading";
 import { deleteLorebook, getLorebooks } from "@/api/dbapi";
+import LorebookCrud from "./lorebook-crud";
 
 const LorebooksPage = () => {
     const [lorebooks, setLorebooks] = useState<Lorebook[]>([]);
@@ -46,7 +47,7 @@ const LorebooksPage = () => {
     }
 
     if(isLoading) return (<Loading />);
-    
+
     return (
     <div className="w-95vw h-[calc(100vh-70px)] flex flex-col justify-center items-center gap-8 m-auto grow-0 overflow-y-auto overflow-x-hidden">
         <div className="grid grid-cols-3 m-auto w-full h-11/12 gap-2">
@@ -59,6 +60,7 @@ const LorebooksPage = () => {
                 })}
             </div>
             <div className="col-span-2 themed-root gap-2 h-full overflow-y-auto flex flex-col">
+                <LorebookCrud book={selectedBook} onDelete={onDelete} onEdit={onEdit} onSave={onSave}/>
             </div>
         </div>
     </div>

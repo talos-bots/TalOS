@@ -123,7 +123,7 @@ const UserCrud = (props: UserCrudProps) => {
                             onChange={handleImageUpload}
                         />
                     </div>
-                    <div className="flex flex-col w-full h-1/6">
+                    <div className="flex flex-col w-full h-1/12">
                         <label htmlFor="user-role" className="font-semibold">Name</label>
                         <input
                             type="text"
@@ -134,7 +134,7 @@ const UserCrud = (props: UserCrudProps) => {
                             onChange={(event) => setUserName(event.target.value)}
                         />
                     </div>
-                    <div className="flex flex-col flex-grow-0 w-full h-1/6">
+                    <div className="flex flex-col flex-grow-0 w-full h-1/12">
                         <label htmlFor="user-role" className="font-semibold">Nickname</label>
                         <input
                             type="text"
