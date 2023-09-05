@@ -1,3 +1,4 @@
+import { PaLMFilters } from '@/components/llm-panel/palm-panel';
 import { EndpointType, LLMConnectionInformation, Settings } from '@/types';
 import { ipcRenderer } from 'electron';
 
@@ -106,4 +107,18 @@ export const getLLMOAIModel = (): Promise<any> => {
 
 export const setLLMOAIModel = (model: string) => {
     ipcRenderer.send('set-llm-openai-model', model);
+}
+
+export const setPaLMFilters = (filters: PaLMFilters) => {
+    ipcRenderer.send('set-palm-filters', filters);
+}
+
+export const getPaLMFilters = (): Promise<PaLMFilters> => {
+    return new Promise((resolve, reject) => {
+        ipcRenderer.send('get-palm-filters');
+        ipcRenderer.once('get-palm-filters-reply', (event, data) => {
+            if(data.error) reject(data.error);
+            resolve(data);
+        });
+    });
 }

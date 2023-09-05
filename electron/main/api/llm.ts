@@ -33,6 +33,27 @@ const defaultSettings = {
     max_tokens: 350,
 };
 
+const defaultPaLMFilters = {
+    HARM_CATEGORY_UNSPECIFIED: "BLOCK_NONE",
+    HARM_CATEGORY_DEROGATORY: "BLOCK_NONE",
+    HARM_CATEGORY_TOXICITY: "BLOCK_NONE",
+    HARM_CATEGORY_VIOLENCE: "BLOCK_NONE",
+    HARM_CATEGORY_SEXUAL: "BLOCK_NONE",
+    HARM_CATEGORY_MEDICAL: "BLOCK_NONE",
+    HARM_CATEGORY_DANGEROUS: "BLOCK_NONE"
+}
+
+type PaLMFilterType = 'BLOCK_NONE' | 'BLOCK_ONLY_HIGH' | 'BLOCK_MEDIUM_AND_ABOVE' | 'BLOCK_LOW_AND_ABOVE' | 'HARM_BLOCK_THRESHOLD_UNSPECIFIED';
+interface PaLMFilters {
+    HARM_CATEGORY_UNSPECIFIED: PaLMFilterType;
+    HARM_CATEGORY_DEROGATORY: PaLMFilterType;
+    HARM_CATEGORY_TOXICITY: PaLMFilterType;
+    HARM_CATEGORY_VIOLENCE: PaLMFilterType;
+    HARM_CATEGORY_SEXUAL: PaLMFilterType;
+    HARM_CATEGORY_MEDICAL: PaLMFilterType;
+    HARM_CATEGORY_DANGEROUS: PaLMFilterType;
+}
+
 interface Settings {
     rep_pen: number;
     rep_pen_range: number;
@@ -58,6 +79,7 @@ let settings: Settings = store.get('settings', defaultSettings) as Settings;
 let hordeModel = store.get('hordeModel', '');
 let stopBrackets = store.get('stopBrackets', true);
 let openaiModel = store.get('openaiModel', 'gpt-3.5-turbo-16k') as OAI_Model;
+let palmFilters = store.get('palmFilters', defaultPaLMFilters) as PaLMFilters;
 
 const getLLMConnectionInformation = () => {
     return { endpoint, endpointType, password, settings, hordeModel, stopBrackets };
@@ -92,13 +114,14 @@ const setLLMOpenAIModel = (newOpenAIModel: OAI_Model) => {
     openaiModel = newOpenAIModel;
 }
 
-const getLLMOpenAIModel = () => {
-    return openaiModel;
-}
-
 const setLLMModel = (newHordeModel: string) => {
     store.set('hordeModel', newHordeModel);
     hordeModel = newHordeModel;
+};
+
+const setPaLMFilters = (newPaLMFilters: PaLMFilters) => {
+    store.set('palmFilters', newPaLMFilters);
+    palmFilters = newPaLMFilters;
 };
 
 export async function getStatus(testEndpoint?: string, testEndpointType?: string){
@@ -414,31 +437,31 @@ export const generateText = async (
                 "safetySettings": [
                     {
                         "category": "HARM_CATEGORY_UNSPECIFIED",
-                        "threshold": "BLOCK_NONE"
+                        "threshold": palmFilters.HARM_CATEGORY_UNSPECIFIED
                     },
                     {
                         "category": "HARM_CATEGORY_DEROGATORY",
-                        "threshold": "BLOCK_NONE"
+                        "threshold": palmFilters.HARM_CATEGORY_DEROGATORY
                     },
                     {
                         "category": "HARM_CATEGORY_TOXICITY",
-                        "threshold": "BLOCK_NONE"
+                        "threshold": palmFilters.HARM_CATEGORY_TOXICITY
                     },
                     {
                         "category": "HARM_CATEGORY_VIOLENCE",
-                        "threshold": "BLOCK_NONE"
+                        "threshold": palmFilters.HARM_CATEGORY_VIOLENCE
                     },
                     {
                         "category": "HARM_CATEGORY_SEXUAL",
-                        "threshold": "BLOCK_NONE"
+                        "threshold": palmFilters.HARM_CATEGORY_SEXUAL
                     },
                     {
                         "category": "HARM_CATEGORY_MEDICAL",
-                        "threshold": "BLOCK_NONE"
+                        "threshold": palmFilters.HARM_CATEGORY_MEDICAL
                     },
                     {
                         "category": "HARM_CATEGORY_DANGEROUS",
-                        "threshold": "BLOCK_NONE"
+                        "threshold": palmFilters.HARM_CATEGORY_DANGEROUS
                     }
                 ],
                 temperature: settings.temperature ? settings.temperature : 0.9,
@@ -553,5 +576,14 @@ export function LanguageModelAPI(){
 
     ipcMain.on('get-llm-openai-model', (event) => {
         event.reply('get-llm-openai-model-reply', openaiModel);
+    });
+
+    ipcMain.on('set-palm-filters', (event, newPaLMFilters) => {
+        setPaLMFilters(newPaLMFilters);
+        event.reply('set-palm-filters-reply', getLLMConnectionInformation());
+    });
+
+    ipcMain.on('get-palm-filters', (event) => {
+        event.reply('get-palm-filters-reply', palmFilters);
     });
 }

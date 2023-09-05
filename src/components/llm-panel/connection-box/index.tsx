@@ -3,6 +3,7 @@ import { EndpointType } from "@/types";
 import { useEffect, useState } from "react";
 import HordePanel from "../horde-panel";
 import OpenAIPanel from "../openai-panel";
+import PaLMPanel from "../palm-panel";
 
 interface ConnectionBoxProps {
 };
@@ -77,6 +78,9 @@ const ConnectionBox = (props: ConnectionBoxProps) => {
             {endpointType === "Horde" && (
                 <HordePanel />
             )}
+            {endpointType === "PaLM" && (
+                <PaLMPanel />
+            )}
             <div className="flex flex-col w-full text-left">
                 <label className="text-theme-text text-shadow-xl font-semibold">Status</label>
                 <input className="themed-input w-full"
@@ -84,9 +88,6 @@ const ConnectionBox = (props: ConnectionBoxProps) => {
                     readOnly
                 />
             </div>
-            {endpointType === "PaLM" && (
-                null
-            )}
         </div>
     );
 };

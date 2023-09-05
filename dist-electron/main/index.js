@@ -1153,6 +1153,15 @@ const defaultSettings = {
   max_context_length: 2048,
   max_tokens: 350
 };
+const defaultPaLMFilters = {
+  HARM_CATEGORY_UNSPECIFIED: "BLOCK_NONE",
+  HARM_CATEGORY_DEROGATORY: "BLOCK_NONE",
+  HARM_CATEGORY_TOXICITY: "BLOCK_NONE",
+  HARM_CATEGORY_VIOLENCE: "BLOCK_NONE",
+  HARM_CATEGORY_SEXUAL: "BLOCK_NONE",
+  HARM_CATEGORY_MEDICAL: "BLOCK_NONE",
+  HARM_CATEGORY_DANGEROUS: "BLOCK_NONE"
+};
 let endpoint = store$6.get("endpoint", "");
 let endpointType = store$6.get("endpointType", "");
 let password = store$6.get("password", "");
@@ -1160,6 +1169,7 @@ let settings = store$6.get("settings", defaultSettings);
 let hordeModel = store$6.get("hordeModel", "");
 let stopBrackets = store$6.get("stopBrackets", true);
 let openaiModel = store$6.get("openaiModel", "gpt-3.5-turbo-16k");
+let palmFilters = store$6.get("palmFilters", defaultPaLMFilters);
 const getLLMConnectionInformation = () => {
   return { endpoint, endpointType, password, settings, hordeModel, stopBrackets };
 };
@@ -1192,6 +1202,10 @@ const setLLMOpenAIModel = (newOpenAIModel) => {
 const setLLMModel = (newHordeModel) => {
   store$6.set("hordeModel", newHordeModel);
   hordeModel = newHordeModel;
+};
+const setPaLMFilters = (newPaLMFilters) => {
+  store$6.set("palmFilters", newPaLMFilters);
+  palmFilters = newPaLMFilters;
 };
 async function getStatus(testEndpoint, testEndpointType) {
   let endpointUrl = testEndpoint ? testEndpoint : endpoint;
@@ -1507,31 +1521,31 @@ Assistant:
           "safetySettings": [
             {
               "category": "HARM_CATEGORY_UNSPECIFIED",
-              "threshold": "BLOCK_NONE"
+              "threshold": palmFilters.HARM_CATEGORY_UNSPECIFIED
             },
             {
               "category": "HARM_CATEGORY_DEROGATORY",
-              "threshold": "BLOCK_NONE"
+              "threshold": palmFilters.HARM_CATEGORY_DEROGATORY
             },
             {
               "category": "HARM_CATEGORY_TOXICITY",
-              "threshold": "BLOCK_NONE"
+              "threshold": palmFilters.HARM_CATEGORY_TOXICITY
             },
             {
               "category": "HARM_CATEGORY_VIOLENCE",
-              "threshold": "BLOCK_NONE"
+              "threshold": palmFilters.HARM_CATEGORY_VIOLENCE
             },
             {
               "category": "HARM_CATEGORY_SEXUAL",
-              "threshold": "BLOCK_NONE"
+              "threshold": palmFilters.HARM_CATEGORY_SEXUAL
             },
             {
               "category": "HARM_CATEGORY_MEDICAL",
-              "threshold": "BLOCK_NONE"
+              "threshold": palmFilters.HARM_CATEGORY_MEDICAL
             },
             {
               "category": "HARM_CATEGORY_DANGEROUS",
-              "threshold": "BLOCK_NONE"
+              "threshold": palmFilters.HARM_CATEGORY_DANGEROUS
             }
           ],
           temperature: settings.temperature ? settings.temperature : 0.9,
@@ -1628,6 +1642,13 @@ function LanguageModelAPI() {
   });
   electron.ipcMain.on("get-llm-openai-model", (event) => {
     event.reply("get-llm-openai-model-reply", openaiModel);
+  });
+  electron.ipcMain.on("set-palm-filters", (event, newPaLMFilters) => {
+    setPaLMFilters(newPaLMFilters);
+    event.reply("set-palm-filters-reply", getLLMConnectionInformation());
+  });
+  electron.ipcMain.on("get-palm-filters", (event) => {
+    event.reply("get-palm-filters-reply", palmFilters);
   });
 }
 const store$5 = new Store({
