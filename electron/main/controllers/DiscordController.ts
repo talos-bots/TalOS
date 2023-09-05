@@ -190,7 +190,7 @@ export async function handleDiscordMessage(message: Message) {
     }else{
         chatLog = {
             _id: message.channel.id,
-            name: message.channel.id + ' Chat ' + constructArray[0].name,
+            name: 'Discord "' + message.channel.name + '" Chat',
             type: 'Discord',
             messages: [newMessage],
             lastMessage: newMessage,

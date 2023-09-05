@@ -425,6 +425,18 @@ export const DoCharacterGreetingsCommand: SlashCommand = {
             });
             return;
         }
+        if (interaction.channel?.isDMBased()) {
+            await interaction.editReply({
+            content: "This command can only be used in a server.",
+            });
+            return;
+        }
+        if (interaction.channel === null) {
+            await interaction.editReply({
+            content: "This command can only be used in a server.",
+            });
+            return;
+        }
         const constructs = retrieveConstructs();
         let constructDoc = await getConstruct(constructs[0]);
         let construct = assembleConstructFromData(constructDoc);
@@ -471,7 +483,7 @@ export const DoCharacterGreetingsCommand: SlashCommand = {
         }else{
             chatLog = {
                 _id: interaction.channelId,
-                name: interaction.channelId + ' Chat ' +construct.name,
+                name: 'Discord "' + interaction.channelId + '" Chat',
                 type: 'Discord',
                 messages: [greetingMessage],
                 lastMessage: greetingMessage,
@@ -580,7 +592,7 @@ export const SysCommand: SlashCommand = {
         }else{
             chatLog = {
                 _id: interaction.channelId,
-                name: interaction.channelId + ' Chat ' +construct.name,
+                name: 'Discord "' + interaction.channelId + '" Chat',
                 type: 'Discord',
                 messages: [newMessage],
                 lastMessage: newMessage,

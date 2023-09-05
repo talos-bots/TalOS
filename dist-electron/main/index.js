@@ -2119,7 +2119,7 @@ async function handleDiscordMessage(message) {
   } else {
     chatLog = {
       _id: message.channel.id,
-      name: message.channel.id + " Chat " + constructArray[0].name,
+      name: 'Discord "' + message.channel.name + '" Chat',
       type: "Discord",
       messages: [newMessage],
       lastMessage: newMessage,
@@ -2830,6 +2830,7 @@ const DoCharacterGreetingsCommand = {
   name: "greeting",
   description: "Adds the character greeting to the chat.",
   execute: async (interaction) => {
+    var _a;
     await interaction.deferReply();
     if (interaction.channelId === null) {
       await interaction.editReply({
@@ -2838,6 +2839,18 @@ const DoCharacterGreetingsCommand = {
       return;
     }
     if (interaction.guildId === null) {
+      await interaction.editReply({
+        content: "This command can only be used in a server."
+      });
+      return;
+    }
+    if ((_a = interaction.channel) == null ? void 0 : _a.isDMBased()) {
+      await interaction.editReply({
+        content: "This command can only be used in a server."
+      });
+      return;
+    }
+    if (interaction.channel === null) {
       await interaction.editReply({
         content: "This command can only be used in a server."
       });
@@ -2892,7 +2905,7 @@ const DoCharacterGreetingsCommand = {
     } else {
       chatLog = {
         _id: interaction.channelId,
-        name: interaction.channelId + " Chat " + construct.name,
+        name: 'Discord "' + interaction.channelId + '" Chat',
         type: "Discord",
         messages: [greetingMessage],
         lastMessage: greetingMessage,
@@ -3004,7 +3017,7 @@ const SysCommand = {
     } else {
       chatLog = {
         _id: interaction.channelId,
-        name: interaction.channelId + " Chat " + construct.name,
+        name: 'Discord "' + interaction.channelId + '" Chat',
         type: "Discord",
         messages: [newMessage],
         lastMessage: newMessage,
