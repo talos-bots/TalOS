@@ -1,6 +1,5 @@
 import { saveNewLorebook, updateLorebook } from "@/api/dbapi";
 import { Lorebook } from "@/classes/Lorebook";
-import StringArrayEditorCards from "@/components/string-array-editor-cards";
 import { useEffect, useState } from "react";
 import { RiQuestionMark } from "react-icons/ri";
 
