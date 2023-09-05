@@ -97,3 +97,22 @@ export type UserInterface = {
     relationships: string[];
     interests: string[];
 }
+
+export type ConstructChatConfig = {
+    _id: string;
+    doInstruct: boolean;
+    doMemories: boolean;
+    doActions: boolean;
+    doSprites: boolean;
+    doVoice: boolean;
+    doLurk: boolean;
+    doRandomGreeting: boolean;
+    doRandomFarewell: boolean;
+    doRandomThought: boolean;
+    haveThoughts: boolean;
+    thinkBeforeChat: boolean;
+    replyToConstruct: number;
+    replyToConstructMention: number;
+    replyToUser: number;
+    replyToUserMention: number;
+}

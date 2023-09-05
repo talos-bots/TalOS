@@ -13,6 +13,23 @@ export class Construct{
         public greetings: string[] = [],
         public farewells: string[] = [],
         public authorsNote: string = '',
+        public defaultConfig: DefaultChatConfig = {
+            doInstruct: false,
+            doMemories: false,
+            doActions: false,
+            doSprites: false,
+            doVoice: false,
+            doLurk: false,
+            doRandomGreeting: false,
+            doRandomFarewell: false,
+            doRandomThought: false,
+            haveThoughts: false,
+            thinkBeforeChat: false,
+            replyToConstruct: 0.35,
+            replyToConstructMention: 0.75,
+            replyToUser: 0.75,
+            replyToUserMention: 1,
+        }
     ) {}
 
     setConstruct(name: string, nickname: string, avatar: string, commands: string[], visualDescription: string, personality: string, background: string, relationships: string[], interests: string[], greetings: string[], farewells: string[], authorsNote: string){
@@ -198,4 +215,41 @@ export class Construct{
     setAuthorsNote(authorsNote: string){
         this.authorsNote = authorsNote;
     }
+}
+
+export type DefaultChatConfig = {
+    doInstruct: boolean;
+    doMemories: boolean;
+    doActions: boolean;
+    doSprites: boolean;
+    doVoice: boolean;
+    doLurk: boolean;
+    doRandomGreeting: boolean;
+    doRandomFarewell: boolean;
+    doRandomThought: boolean;
+    haveThoughts: boolean;
+    thinkBeforeChat: boolean;
+    replyToConstruct: number;
+    replyToConstructMention: number;
+    replyToUser: number;
+    replyToUserMention: number;
+}
+
+export type ConstructChatConfig = {
+    _id: string;
+    doInstruct: boolean;
+    doMemories: boolean;
+    doActions: boolean;
+    doSprites: boolean;
+    doVoice: boolean;
+    doLurk: boolean;
+    doRandomGreeting: boolean;
+    doRandomFarewell: boolean;
+    doRandomThought: boolean;
+    haveThoughts: boolean;
+    thinkBeforeChat: boolean;
+    replyToConstruct: number;
+    replyToConstructMention: number;
+    replyToUser: number;
+    replyToUserMention: number;
 }

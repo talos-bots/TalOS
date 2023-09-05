@@ -1,3 +1,4 @@
+import { ConstructChatConfig } from "./Construct";
 import { Message } from "./Message";
 
 export class Chat{
@@ -11,6 +12,7 @@ export class Chat{
         public firstMessageDate: number = new Date().getTime(),
         public constructs: string[] = [],
         public humans: string[] = [],
+        public chatConfigs: ConstructChatConfig[] = [],
     ) {}
 
     setChat(name: string, type: string, messages: Message[]){
@@ -138,4 +140,30 @@ export class Chat{
             console.error(`No message found with ID: ${messageID}`);
         }
     }
+
+    addChatConfig(config: ConstructChatConfig){
+        this.chatConfigs.push(config);
+    }
+
+    getChatConfigs(){
+        return this.chatConfigs;
+    }
+
+    setChatConfigs(configs: ConstructChatConfig[]){
+        this.chatConfigs = configs;
+    }
+
+    removeChatConfig(configID: string){
+        this.chatConfigs = this.chatConfigs.filter((c) => c._id !== configID);
+    }
+
+    editChatConfig(configID: string, config: ConstructChatConfig){
+        const index = this.chatConfigs.findIndex((c) => c._id === configID);
+        if (index !== -1) {
+            this.chatConfigs[index] = config;
+        } else {
+            console.error(`No chat config found with ID: ${configID}`);
+        }
+    }
+    
 }

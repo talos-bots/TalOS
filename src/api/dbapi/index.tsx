@@ -29,6 +29,7 @@ export async function getConstructs(): Promise<Construct[]> {
                         doc.doc.greetings,
                         doc.doc.farewells,
                         doc.doc.authorsNote,
+                        doc.doc.defaultConfig
                     );
                 });
                 resolve(constructs);
@@ -59,6 +60,7 @@ export async function getConstruct(id: string): Promise<Construct> {
                     data.greetings,
                     data.farewells,
                     data.authorsNote,
+                    data.defaultConfig
                 );
                 resolve(construct);
             } else {
@@ -196,7 +198,8 @@ export async function getChats(): Promise<Chat[]> {
                         doc.doc.lastMessageDate,
                         doc.doc.firstMessageDate,
                         doc.doc.constructs,
-                        doc.doc.humans
+                        doc.doc.humans,
+                        doc.doc.chatConfigs
                     );
                 });
                 resolve(chats);
@@ -223,7 +226,8 @@ export async function getChatsByConstruct(constructId: string): Promise<Chat> {
                     data.doc.lastMessageDate,
                     data.doc.firstMessageDate,
                     data.doc.constructs,
-                    data.doc.humans
+                    data.doc.humans,
+                    data.doc.chatConfigs
                 );
                 resolve(chat);
             } else {
@@ -249,7 +253,8 @@ export async function getChat(id: string): Promise<Chat> {
                     data.lastMessageDate,
                     data.firstMessageDate,
                     data.constructs,
-                    data.humans
+                    data.humans,
+                    data.chatConfigs
                 );
                 resolve(chat);
             } else {
