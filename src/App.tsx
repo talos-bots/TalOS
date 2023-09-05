@@ -14,6 +14,7 @@ import { ipcRenderer } from 'electron';
 import UserPage from './pages/users';
 import { Steps, Hints } from 'intro.js-react';
 import { getStorageValue, setStorageValue } from './api/dbapi';
+import HomePage from './pages/home';
 
 export const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, url: string) => {
   e.preventDefault();
@@ -57,7 +58,7 @@ function App() {
       <NavBar />
       <div className='main-content'>
       <Routes>
-        <Route path='/*' element={<></>} />
+        <Route path='/*' element={<HomePage/>} />
         <Route path='/constructs' element={<ConstructsPage/>} />
         <Route path='/constructs/:id' element={<ConstructManagement/>} />
         <Route path='/constructs/new' element={<ConstructManagement/>} />
