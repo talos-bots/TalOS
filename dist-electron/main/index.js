@@ -1511,51 +1511,49 @@ Assistant:
       break;
     case "PaLM":
       const MODEL_NAME = "models/text-bison-001";
-      const googleReply = await axios.post(
-        `https://generativelanguage.googleapis.com/v1beta2/models/text-bison-001:generateText?key=${endpoint}`,
-        {
-          "model": MODEL_NAME,
-          "prompt": {
-            text: prompt
-          },
-          "safetySettings": [
-            {
-              "category": "HARM_CATEGORY_UNSPECIFIED",
-              "threshold": palmFilters.HARM_CATEGORY_UNSPECIFIED ? palmFilters.HARM_CATEGORY_UNSPECIFIED : "BLOCK_NONE"
-            },
-            {
-              "category": "HARM_CATEGORY_DEROGATORY",
-              "threshold": palmFilters.HARM_CATEGORY_DEROGATORY ? palmFilters.HARM_CATEGORY_DEROGATORY : "BLOCK_NONE"
-            },
-            {
-              "category": "HARM_CATEGORY_TOXICITY",
-              "threshold": palmFilters.HARM_CATEGORY_TOXICITY ? palmFilters.HARM_CATEGORY_TOXICITY : "BLOCK_NONE"
-            },
-            {
-              "category": "HARM_CATEGORY_VIOLENCE",
-              "threshold": palmFilters.HARM_CATEGORY_VIOLENCE ? palmFilters.HARM_CATEGORY_VIOLENCE : "BLOCK_NONE"
-            },
-            {
-              "category": "HARM_CATEGORY_SEXUAL",
-              "threshold": palmFilters.HARM_CATEGORY_SEXUAL ? palmFilters.HARM_CATEGORY_SEXUAL : "BLOCK_NONE"
-            },
-            {
-              "category": "HARM_CATEGORY_MEDICAL",
-              "threshold": palmFilters.HARM_CATEGORY_MEDICAL ? palmFilters.HARM_CATEGORY_MEDICAL : "BLOCK_NONE"
-            },
-            {
-              "category": "HARM_CATEGORY_DANGEROUS",
-              "threshold": palmFilters.HARM_CATEGORY_DANGEROUS ? palmFilters.HARM_CATEGORY_DANGEROUS : "BLOCK_NONE"
-            }
-          ],
-          temperature: settings.temperature ? settings.temperature : 0.9,
-          top_p: settings.top_p ? settings.top_p : 0.9,
-          top_k: settings.top_k ? settings.top_k : 0,
-          stopSequences: stops.slice(0, 3),
-          maxOutputTokens: settings.max_tokens ? settings.max_tokens : 350
+      const PaLM_Payload = {
+        "model": MODEL_NAME,
+        "prompt": {
+          text: prompt
         },
-        { headers: { "Content-Type": "application/json" } }
-      );
+        "safetySettings": [
+          {
+            "category": "HARM_CATEGORY_UNSPECIFIED",
+            "threshold": palmFilters.HARM_CATEGORY_UNSPECIFIED ? palmFilters.HARM_CATEGORY_UNSPECIFIED : "BLOCK_NONE"
+          },
+          {
+            "category": "HARM_CATEGORY_DEROGATORY",
+            "threshold": palmFilters.HARM_CATEGORY_DEROGATORY ? palmFilters.HARM_CATEGORY_DEROGATORY : "BLOCK_NONE"
+          },
+          {
+            "category": "HARM_CATEGORY_TOXICITY",
+            "threshold": palmFilters.HARM_CATEGORY_TOXICITY ? palmFilters.HARM_CATEGORY_TOXICITY : "BLOCK_NONE"
+          },
+          {
+            "category": "HARM_CATEGORY_VIOLENCE",
+            "threshold": palmFilters.HARM_CATEGORY_VIOLENCE ? palmFilters.HARM_CATEGORY_VIOLENCE : "BLOCK_NONE"
+          },
+          {
+            "category": "HARM_CATEGORY_SEXUAL",
+            "threshold": palmFilters.HARM_CATEGORY_SEXUAL ? palmFilters.HARM_CATEGORY_SEXUAL : "BLOCK_NONE"
+          },
+          {
+            "category": "HARM_CATEGORY_MEDICAL",
+            "threshold": palmFilters.HARM_CATEGORY_MEDICAL ? palmFilters.HARM_CATEGORY_MEDICAL : "BLOCK_NONE"
+          },
+          {
+            "category": "HARM_CATEGORY_DANGEROUS",
+            "threshold": palmFilters.HARM_CATEGORY_DANGEROUS ? palmFilters.HARM_CATEGORY_DANGEROUS : "BLOCK_NONE"
+          }
+        ],
+        temperature: settings.temperature ? settings.temperature : 0.9,
+        top_p: settings.top_p ? settings.top_p : 0.9,
+        top_k: settings.top_k ? settings.top_k : 0,
+        stopSequences: stops.slice(0, 3),
+        maxOutputTokens: settings.max_tokens ? settings.max_tokens : 350
+      };
+      console.log("PaLM Payload:", PaLM_Payload);
+      const googleReply = await axios.post(`https://generativelanguage.googleapis.com/v1beta2/models/text-bison-001:generateText?key=${endpoint}`, PaLM_Payload, { headers: { "Content-Type": "application/json" } });
       console.log(googleReply.data);
       if (((_d = googleReply.data) == null ? void 0 : _d.error) !== void 0) {
         return results = { results: [googleReply.data.error.message] };

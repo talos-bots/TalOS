@@ -428,8 +428,7 @@ export const generateText = async (
         break;
         case 'PaLM':
             const MODEL_NAME = "models/text-bison-001";
-            const googleReply = await axios.post(`https://generativelanguage.googleapis.com/v1beta2/models/text-bison-001:generateText?key=${endpoint}`,
-            { 
+            const PaLM_Payload = { 
                 "model": MODEL_NAME,
                 "prompt": {
                     text: prompt,
@@ -469,7 +468,10 @@ export const generateText = async (
                 top_k: settings.top_k ? settings.top_k : 0,
                 stopSequences: stops.slice(0, 3),
                 maxOutputTokens: settings.max_tokens ? settings.max_tokens : 350,
-            }, {headers: {'Content-Type': 'application/json'}});
+            }
+            console.log('PaLM Payload:', PaLM_Payload)
+            const googleReply = await axios.post(`https://generativelanguage.googleapis.com/v1beta2/models/text-bison-001:generateText?key=${endpoint}`, PaLM_Payload, {headers: {'Content-Type': 'application/json'}});
+
             console.log(googleReply.data)
             if(googleReply.data?.error !== undefined){
                 return results = { results: [googleReply.data.error.message]}
