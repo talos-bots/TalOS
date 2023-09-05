@@ -7,6 +7,8 @@ export class Lorebook {
         public scan_depth: number = 0,
         public token_budget: number = 0,
         public recursive_scanning: boolean = false,
+        public global: boolean = false,
+        public constructs: string[] = [],
         public extensions: Record<string, any> = {},
         public entries: LoreEntry[] = [],
     ) {}

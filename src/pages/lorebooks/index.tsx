@@ -58,6 +58,9 @@ const LorebooksPage = () => {
                         <LorebookInfo book={book} onClick={(book: Lorebook | null) => {setSelectedBook(book)}} onDelete={onDelete}/>
                     );
                 })}
+                <button className="themed-button-pos w-full h-10" onClick={() => {setSelectedBook(null)}}>
+                    New Lorebook
+                </button>
             </div>
             <div className="col-span-2 themed-root gap-2 h-full overflow-y-auto flex flex-col">
                 <LorebookCrud book={selectedBook} onDelete={onDelete} onEdit={onEdit} onSave={onSave}/>

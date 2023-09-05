@@ -480,6 +480,8 @@ export async function getLorebooks(): Promise<Lorebook[]> {
                         doc.doc.scan_depth,
                         doc.doc.token_budget,
                         doc.doc.recursive_scanning,
+                        doc.doc.global,
+                        doc.doc.constructs,
                         doc.doc.extensions,
                         doc.doc.entries
                     );
@@ -507,6 +509,8 @@ export async function getLorebook(id: string): Promise<Lorebook> {
                     data.scan_depth,
                     data.token_budget,
                     data.recursive_scanning,
+                    data.global,
+                    data.constructs,
                     data.extensions,
                     data.entries
                 );
