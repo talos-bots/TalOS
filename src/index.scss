@@ -417,3 +417,13 @@ ul {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
   padding: 10px;
 }
+
+select {
+  background-color: var(--theme-box) !important;
+  color: var(--theme-text) !important;
+}
+
+select option {
+  background-color: var(--theme-box) !important;
+  color: var(--theme-text) !important;
+}
