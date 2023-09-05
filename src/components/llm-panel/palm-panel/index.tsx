@@ -50,16 +50,16 @@ const PaLMPanel = () => {
             <select value={selectedFilter} onChange={(e) => setSelectedFilter(e.target.value as keyof PaLMFilters)} className="themed-input w-full">
                 {Object.keys(filters).map((filter: string) => (
                     <option key={filter} value={filter} className='themed-input'>
-                        {filter}
+                        {filter.replaceAll('_', ' ')}
                     </option>
                 ))}
             </select>
             <select value={selectedFilterValue} onChange={(e) => setSelectedFilterValue(e.target.value as PaLMFilterType)} className="themed-input w-full">
-                <option value="BLOCK_NONE" className='themed-input'>BLOCK_NONE</option>
-                <option value="BLOCK_ONLY_HIGH" className='themed-input'>BLOCK_ONLY_HIGH</option>
-                <option value="BLOCK_MEDIUM_AND_ABOVE" className='themed-input'>BLOCK_MEDIUM_AND_ABOVE</option>
-                <option value="BLOCK_LOW_AND_ABOVE" className='themed-input'>BLOCK_LOW_AND_ABOVE</option>
-                <option value="HARM_BLOCK_THRESHOLD_UNSPECIFIED" className='themed-input'>HARM_BLOCK_THRESHOLD_UNSPECIFIED</option>
+                <option value="BLOCK_NONE" className='themed-input'>Block none</option>
+                <option value="BLOCK_ONLY_HIGH" className='themed-input'>Block only high</option>
+                <option value="BLOCK_MEDIUM_AND_ABOVE" className='themed-input'>Block medium and above</option>
+                <option value="BLOCK_LOW_AND_ABOVE" className='themed-input'>Block low and above</option>
+                <option value="HARM_BLOCK_THRESHOLD_UNSPECIFIED" className='themed-input'>Not specified</option>
             </select>
             <div className="flex flex-row gap-1 w-full">
                 <button className="themed-button-neg w-1/2"
