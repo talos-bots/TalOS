@@ -1,4 +1,5 @@
 import { CommandInteraction } from 'discord.js';
+
 export type ChatInterface = {
     _id: string;
     name: string;
@@ -10,6 +11,7 @@ export type ChatInterface = {
     constructs: string[];
     humans: string[];
 }
+
 export type MessageInterface = {
     _id: string;
     user: string;
@@ -24,6 +26,7 @@ export type MessageInterface = {
     participants: string[];
     attachments: AttachmentInferface[];
 }
+
 export type AttachmentInferface = {
     _id: string;
     type: string;
@@ -31,6 +34,7 @@ export type AttachmentInferface = {
     data: string;
     size: number;
 }
+
 export type ConstructInterface = {
     _id: string;
     name: string;
@@ -46,16 +50,19 @@ export type ConstructInterface = {
     farewells: string[];
     authorsNote: string;
 }
+
 export type Alias = {
     _id: string;
     name: string;
     location: string;
 }
+
 export type AuthorsNote = {
     _id: string;
     note: string;
     location: string;
 }
+
 export type ChannelConfigInterface = {
     _id: string;
     guildId: string;
@@ -64,6 +71,7 @@ export type ChannelConfigInterface = {
     authorsNotes: AuthorsNote[];
     authorsNoteDepth: number;
 }
+
 interface SlashCommandOption {
     name: string;
     description: string;
