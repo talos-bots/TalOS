@@ -99,6 +99,16 @@ async function processCharacterData(characterData: any, avatar64: string): Promi
         construct.addGreeting(characterData.first_mes.replaceAll('\r', ''));
     }
 
+    if (characterData.alternate_greetings && characterData.alternate_greetings.length > 0) {
+        characterData.alternate_greetings.forEach((greeting: string) => {
+            construct.addGreeting(greeting.replaceAll('\r', ''));
+        });
+    }
+    
+    if(characterData.system_prompt && characterData.system_prompt.trim().length > 0){
+        construct.authorsNote = characterData.system_prompt.replaceAll('\r', '')
+    }
+
     console.log(construct);
     await saveNewConstruct(construct);
     return construct;

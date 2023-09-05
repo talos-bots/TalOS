@@ -15,6 +15,8 @@ import UserPage from './pages/users';
 import { Steps, Hints } from 'intro.js-react';
 import { getStorageValue, setStorageValue } from './api/dbapi';
 import HomePage from './pages/home';
+import { wait } from './pages/chat/helpers';
+import LorebooksPage from './pages/lorebooks';
 
 export const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, url: string) => {
   e.preventDefault();
@@ -68,6 +70,7 @@ function App() {
         <Route path='/settings' element={<SettingsPage/>} />
         <Route path='/zero' element={<ZeroPage/>} />
         <Route path='/users' element={<UserPage/>} />
+        <Route path='/lorebooks' element={<LorebooksPage/>} />
       </Routes>
       </div>
       {isDev ? <DevPanel /> : null}
