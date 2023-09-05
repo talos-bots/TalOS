@@ -2,6 +2,7 @@ export class Lorebook {
     constructor(
         public _id: string = (new Date().getTime()).toString(),
         public name: string = '',
+        public avatar: string = '',
         public description: string = '',
         public scan_depth: number = 0,
         public token_budget: number = 0,

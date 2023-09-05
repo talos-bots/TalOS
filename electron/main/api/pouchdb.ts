@@ -2,7 +2,7 @@ import { ipcMain } from 'electron';
 import PouchDB from 'pouchdb';
 import { dataPath, isDarwin } from '../';
 import LeveldbAdapter from 'pouchdb-adapter-leveldb';
-import { addAttachmentFromEDB, addChatFromEDB, addCommandFromEDB, addCompletionFromEDB, addConstructFromEDB, addInstructFromEDB, addUserFromEDB, getAttachmentFromEDB, getAttachmentsFromEDB, getChatFromEDB, getChatsByConstructFromEDB, getChatsFromEDB, getCommandFromEDB, getCommandsFromEDB, getCompletionFromEDB, getCompletionsFromEDB, getConstructFromEDB, getConstructsFromEDB, getInstructFromEDB, getInstructsFromEDB, getUserFromEDB, getUsersFromEDB, removeAttachmentFromEDB, removeChatFromEDB, removeCommandFromEDB, removeCompletionFromEDB, removeConstructFromEDB, removeInstructFromEDB, removeUserFromEDB } from './electrondb';
+import { addAttachmentFromEDB, addChatFromEDB, addCommandFromEDB, addCompletionFromEDB, addConstructFromEDB, addInstructFromEDB, addLorebookFromEDB, addUserFromEDB, getAttachmentFromEDB, getAttachmentsFromEDB, getChatFromEDB, getChatsByConstructFromEDB, getChatsFromEDB, getCommandFromEDB, getCommandsFromEDB, getCompletionFromEDB, getCompletionsFromEDB, getConstructFromEDB, getConstructsFromEDB, getInstructFromEDB, getInstructsFromEDB, getLorebookFromEDB, getLorebooksFromEDB, getUserFromEDB, getUsersFromEDB, removeAttachmentFromEDB, removeChatFromEDB, removeCommandFromEDB, removeCompletionFromEDB, removeConstructFromEDB, removeInstructFromEDB, removeLorebookFromEDB, removeUserFromEDB } from './electrondb';
 
 let constructDB: PouchDB.Database<any>;
 let chatsDB: PouchDB.Database<any>;
@@ -11,6 +11,7 @@ let attachmentDB: PouchDB.Database<any>;
 let instructDB: PouchDB.Database<any>;
 let completionDB: PouchDB.Database<any>;
 let userDB: PouchDB.Database<any>;
+let lorebookDB: PouchDB.Database<any>;
 
 PouchDB.plugin(LeveldbAdapter);
 
@@ -487,6 +488,71 @@ export async function updateUser(user: any) {
     });
 }
 
+export async function getLorebooks() {
+    if(isDarwin){
+        return getLorebooksFromEDB();
+    }
+    return lorebookDB.allDocs({include_docs: true}).then((result) => {
+        return result.rows;
+    }).catch((err) => {
+        console.log(err);
+    });
+}
+
+export async function getLorebook(id: string) {
+    if(isDarwin){
+        return getLorebookFromEDB(id);
+    }
+    return lorebookDB.get(id).then((result) => {
+        return result;
+    }).catch((err) => {
+        console.log(err);
+    });
+}
+
+export async function addLorebook(lorebook: any) {
+    if(isDarwin){
+        addLorebookFromEDB(lorebook._id, lorebook);
+        return;
+    }
+    return lorebookDB.put(lorebook).then((result) => {
+        return result;
+    }).catch((err) => {
+        console.log(err);
+    });
+}
+
+export async function removeLorebook(id: string) {
+    if(isDarwin){
+        removeLorebookFromEDB(id);
+        return;
+    }
+    return lorebookDB.get(id).then((doc) => {
+        return lorebookDB.remove(doc);
+    }).catch((err) => {
+        console.log(err);
+    });
+}
+
+export async function updateLorebook(lorebook: any) {
+    if(isDarwin){
+        addLorebookFromEDB(lorebook._id, lorebook);
+        return;
+    }
+    return lorebookDB.get(lorebook._id).then((doc) => {
+        // Merge existing fields with updated fields and retain _rev
+        let updatedDoc = {...doc, ...lorebook};
+
+        lorebookDB.put(updatedDoc).then((result) => {
+            return result;
+        }).catch((err) => {
+            console.error('Error while updating document: ', err);
+        });
+    }).catch((err) => {
+        console.error('Error while getting document: ', err);
+    });
+}
+
 export function PouchDBRoutes(){
     constructDB = new PouchDB('constructs', {prefix: dataPath, adapter : 'leveldb'});
     chatsDB = new PouchDB('chats', {prefix: dataPath, adapter : 'leveldb'});
@@ -495,6 +561,8 @@ export function PouchDBRoutes(){
     instructDB = new PouchDB('instructs', {prefix: dataPath, adapter : 'leveldb'});
     completionDB = new PouchDB('completion', {prefix: dataPath, adapter : 'leveldb'});
     userDB = new PouchDB('user', {prefix: dataPath, adapter : 'leveldb'});
+    lorebookDB = new PouchDB('lorebook', {prefix: dataPath, adapter : 'leveldb'});
+
     ipcMain.on('get-constructs', (event, replyName) => {
         getAllConstructs().then((result) => {
             event.sender.send(replyName, result);
@@ -713,6 +781,36 @@ export function PouchDBRoutes(){
         });
     });
     
+    ipcMain.on('get-lorebooks', (event, replyName) => {
+        getLorebooks().then((result) => {
+            event.sender.send(replyName, result);
+        });
+    });
+
+    ipcMain.on('get-lorebook', (event, arg, replyName) => {
+        getLorebook(arg).then((result) => {
+            event.sender.send(replyName, result);
+        });
+    });
+
+    ipcMain.on('add-lorebook', (event, arg) => {
+        addLorebook(arg).then((result) => {
+            event.sender.send('add-lorebook-reply', result);
+        });
+    });
+
+    ipcMain.on('update-lorebook', (event, arg) => {
+        updateLorebook(arg).then((result) => {
+            event.sender.send('update-lorebook-reply', result);
+        });
+    });
+
+    ipcMain.on('delete-lorebook', (event, arg) => {
+        removeLorebook(arg).then((result) => {
+            event.sender.send('delete-lorebook-reply', result);
+        });
+    });
+
     ipcMain.on('clear-data', (event, arg) => {
         constructDB.destroy();
         chatsDB.destroy();
@@ -721,6 +819,7 @@ export function PouchDBRoutes(){
         instructDB.destroy();
         completionDB.destroy();
         userDB.destroy();
+        lorebookDB.destroy();
         createDBs();
     });
 
@@ -732,5 +831,6 @@ export function PouchDBRoutes(){
         instructDB = new PouchDB('instructs', {prefix: dataPath, adapter : 'leveldb'});
         completionDB = new PouchDB('completion', {prefix: dataPath, adapter : 'leveldb'});
         userDB = new PouchDB('user', {prefix: dataPath, adapter : 'leveldb'});
+        lorebookDB = new PouchDB('lorebook', {prefix: dataPath, adapter : 'leveldb'});
     }
 };

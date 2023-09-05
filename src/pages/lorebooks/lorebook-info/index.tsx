@@ -1,12 +1,11 @@
-import { User } from "@/classes/User";
-import { EditIcon, TrashIcon } from "lucide-react";
-import { RiQuestionMark } from "react-icons/ri";
+import { Lorebook } from "@/classes/Lorebook";
+import { Book, TrashIcon } from "lucide-react";
 
 interface LorebookInfoProps {
-    book: User | null;
-    onClick?: (book: User | null) => void;
-    onEdit?: (book: User) => void;
-    onDelete?: (book: User) => void;
+    book: Lorebook | null;
+    onClick?: (book: Lorebook | null) => void;
+    onEdit?: (book: Lorebook) => void;
+    onDelete?: (book: Lorebook) => void;
 }
 
 const LorebookInfo = (props: LorebookInfoProps) => {
@@ -16,10 +15,9 @@ const LorebookInfo = (props: LorebookInfoProps) => {
         <div className="themed-box-no-padding w-full flex flex-row justify-start p-1 items-center gap-4" onClick={()=> {if(onClick !== undefined) onClick(book ? book : null)}}>
             <div className="grid grid-cols-3 gap-6 w-2/3 justify-start items-center">
                 <div className="themed-chat-avatar flex items-center justify-center">
-                    {book?.avatar ? (<img src={book.avatar} className="themed-chat-avatar"/>) : (<RiQuestionMark size={36}/>)}
+                    {book?.avatar ? (<img src={book.avatar} className="themed-chat-avatar"/>) : (<Book size={36}/>)}
                 </div>
-                <p className="text-left">{book?.name ? book.name : 'New User'}</p>
-                <p className="text-right">{book?.nickname ? `"${book.nickname}"` : null}</p>
+                <p className="text-left">{book?.name ? book.name : 'New Lorebook'}</p>
             </div>
             <div className="flex flex-row gap-4 w-1/3 justify-end items-center">
                 {book !== null ? (

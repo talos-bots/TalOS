@@ -19,6 +19,7 @@ let attachmentDB$1;
 let instructDB$1;
 let completionDB$1;
 let userDB$1;
+let lorebookDB$1;
 const initEDB = () => {
   constructDB$1 = new Store({
     name: "constructData"
@@ -40,6 +41,9 @@ const initEDB = () => {
   });
   userDB$1 = new Store({
     name: "userData"
+  });
+  lorebookDB$1 = new Store({
+    name: "lorebookData"
   });
 };
 const getConstructFromEDB = (id) => {
@@ -250,6 +254,33 @@ const addUserFromEDB = (id, data) => {
 const removeUserFromEDB = (id) => {
   userDB$1.delete(id);
 };
+const getLorebookFromEDB = (id) => {
+  return lorebookDB$1.get(id);
+};
+const getLorebooksFromEDB = () => {
+  const storeData = lorebookDB$1.store;
+  const result = [];
+  for (let id in storeData) {
+    if (id !== "ids") {
+      const construct = storeData[id];
+      result.push({
+        doc: construct,
+        id,
+        key: id,
+        value: {
+          rev: "unknown"
+        }
+      });
+    }
+  }
+  return result;
+};
+const addLorebookFromEDB = (id, data) => {
+  lorebookDB$1.set(id, data);
+};
+const removeLorebookFromEDB = (id) => {
+  lorebookDB$1.delete(id);
+};
 async function ElectronDBRoutes() {
   initEDB();
 }
@@ -260,6 +291,7 @@ let attachmentDB;
 let instructDB;
 let completionDB;
 let userDB;
+let lorebookDB;
 PouchDB.plugin(LeveldbAdapter);
 async function getAllConstructs() {
   if (isDarwin) {
@@ -682,6 +714,64 @@ async function updateUser(user) {
     console.error("Error while getting document: ", err);
   });
 }
+async function getLorebooks() {
+  if (isDarwin) {
+    return getLorebooksFromEDB();
+  }
+  return lorebookDB.allDocs({ include_docs: true }).then((result) => {
+    return result.rows;
+  }).catch((err) => {
+    console.log(err);
+  });
+}
+async function getLorebook(id) {
+  if (isDarwin) {
+    return getLorebookFromEDB(id);
+  }
+  return lorebookDB.get(id).then((result) => {
+    return result;
+  }).catch((err) => {
+    console.log(err);
+  });
+}
+async function addLorebook(lorebook) {
+  if (isDarwin) {
+    addLorebookFromEDB(lorebook._id, lorebook);
+    return;
+  }
+  return lorebookDB.put(lorebook).then((result) => {
+    return result;
+  }).catch((err) => {
+    console.log(err);
+  });
+}
+async function removeLorebook(id) {
+  if (isDarwin) {
+    removeLorebookFromEDB(id);
+    return;
+  }
+  return lorebookDB.get(id).then((doc) => {
+    return lorebookDB.remove(doc);
+  }).catch((err) => {
+    console.log(err);
+  });
+}
+async function updateLorebook(lorebook) {
+  if (isDarwin) {
+    addLorebookFromEDB(lorebook._id, lorebook);
+    return;
+  }
+  return lorebookDB.get(lorebook._id).then((doc) => {
+    let updatedDoc = { ...doc, ...lorebook };
+    lorebookDB.put(updatedDoc).then((result) => {
+      return result;
+    }).catch((err) => {
+      console.error("Error while updating document: ", err);
+    });
+  }).catch((err) => {
+    console.error("Error while getting document: ", err);
+  });
+}
 function PouchDBRoutes() {
   constructDB = new PouchDB("constructs", { prefix: dataPath, adapter: "leveldb" });
   chatsDB = new PouchDB("chats", { prefix: dataPath, adapter: "leveldb" });
@@ -690,6 +780,7 @@ function PouchDBRoutes() {
   instructDB = new PouchDB("instructs", { prefix: dataPath, adapter: "leveldb" });
   completionDB = new PouchDB("completion", { prefix: dataPath, adapter: "leveldb" });
   userDB = new PouchDB("user", { prefix: dataPath, adapter: "leveldb" });
+  lorebookDB = new PouchDB("lorebook", { prefix: dataPath, adapter: "leveldb" });
   electron.ipcMain.on("get-constructs", (event, replyName) => {
     getAllConstructs().then((result) => {
       event.sender.send(replyName, result);
@@ -872,6 +963,31 @@ function PouchDBRoutes() {
       event.sender.send("delete-user-reply", result);
     });
   });
+  electron.ipcMain.on("get-lorebooks", (event, replyName) => {
+    getLorebooks().then((result) => {
+      event.sender.send(replyName, result);
+    });
+  });
+  electron.ipcMain.on("get-lorebook", (event, arg, replyName) => {
+    getLorebook(arg).then((result) => {
+      event.sender.send(replyName, result);
+    });
+  });
+  electron.ipcMain.on("add-lorebook", (event, arg) => {
+    addLorebook(arg).then((result) => {
+      event.sender.send("add-lorebook-reply", result);
+    });
+  });
+  electron.ipcMain.on("update-lorebook", (event, arg) => {
+    updateLorebook(arg).then((result) => {
+      event.sender.send("update-lorebook-reply", result);
+    });
+  });
+  electron.ipcMain.on("delete-lorebook", (event, arg) => {
+    removeLorebook(arg).then((result) => {
+      event.sender.send("delete-lorebook-reply", result);
+    });
+  });
   electron.ipcMain.on("clear-data", (event, arg) => {
     constructDB.destroy();
     chatsDB.destroy();
@@ -880,6 +996,7 @@ function PouchDBRoutes() {
     instructDB.destroy();
     completionDB.destroy();
     userDB.destroy();
+    lorebookDB.destroy();
     createDBs();
   });
   function createDBs() {
@@ -890,6 +1007,7 @@ function PouchDBRoutes() {
     instructDB = new PouchDB("instructs", { prefix: dataPath, adapter: "leveldb" });
     completionDB = new PouchDB("completion", { prefix: dataPath, adapter: "leveldb" });
     userDB = new PouchDB("user", { prefix: dataPath, adapter: "leveldb" });
+    lorebookDB = new PouchDB("lorebook", { prefix: dataPath, adapter: "leveldb" });
   }
 }
 function assembleConstructFromData(data) {

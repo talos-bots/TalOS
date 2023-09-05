@@ -8,6 +8,7 @@ let attachmentDB: ElectronStore<any>;
 let instructDB: ElectronStore<any>;
 let completionDB: ElectronStore<any>;
 let userDB: ElectronStore<any>;
+let lorebookDB: ElectronStore<any>;
 
 export const initEDB = () => {
     constructDB = new Store({
@@ -30,6 +31,9 @@ export const initEDB = () => {
     });
     userDB = new Store({
         name: 'userData',
+    });
+    lorebookDB = new Store({
+        name: 'lorebookData',
     });
 }
 
@@ -292,6 +296,44 @@ export const removeUserFromEDB = (id: string): void => {
     userDB.delete(id);
 }
 
+export const getLorebookFromEDB = (id: string): any => {
+    return lorebookDB.get(id);
+}
+
+export const getLorebooksFromEDB = (): any[] => {
+    const storeData = lorebookDB.store;
+
+    const result = [];
+
+    for (let id in storeData) {
+        if (id !== 'ids') {
+            const construct = storeData[id];
+            result.push({
+                doc: construct,
+                id: id,
+                key: id,
+                value: {
+                    rev: 'unknown'
+                }
+            });
+        }
+    }
+
+    return result;
+}
+
+export const addLorebookFromEDB = (id: string, data: any): void => {
+    lorebookDB.set(id, data);
+}
+
+export const removeLorebookFromEDB = (id: string): void => {
+    lorebookDB.delete(id);
+}
+
+const clearLorebooksFromEDB = (): void => {
+    lorebookDB.clear();
+}
+
 const clearUsersFromEDB = (): void => {
     userDB.clear();
 }
@@ -328,6 +370,7 @@ export const clearEDB = (): void => {
     clearInstructsFromEDB();
     clearCompletionsFromEDB();
     clearUsersFromEDB();
+    clearLorebooksFromEDB();
 }
 
 export async function ElectronDBRoutes(){
