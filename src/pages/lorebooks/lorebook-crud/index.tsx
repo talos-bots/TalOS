@@ -2,6 +2,7 @@ import { saveNewLorebook, updateLorebook } from "@/api/dbapi";
 import { Lorebook } from "@/classes/Lorebook";
 import { useEffect, useState } from "react";
 import { RiQuestionMark } from "react-icons/ri";
+import ReactSwitch from "react-switch";
 
 interface LorebookCrudProps {
     book: Lorebook | null;
@@ -15,16 +16,21 @@ const LorebookCrud = (props: LorebookCrudProps) => {
     const [bookName, setLorebookName] = useState<string>('');
     const [bookImage, setLorebookImage] = useState<string>('');
     const [bookDescription, setLorebookDescription] = useState<string>('');
+    const [bookGlobal, setLorebookGlobal] = useState<boolean>(false);
     const [currentLorebook, setCurrentLorebook] = useState<Lorebook | null>(null);
 
     useEffect(() => {
         if(book) {
             setLorebookName(book.name);
             setLorebookImage(book.avatar);
+            setLorebookDescription(book.description);
+            setLorebookGlobal(book.global);
             setCurrentLorebook(book)
         }else{
             setLorebookImage('');
             setLorebookName('');
+            setLorebookDescription('');
+            setLorebookGlobal(false);
         }
     }, [book]);
 
@@ -66,6 +72,8 @@ const LorebookCrud = (props: LorebookCrudProps) => {
         }else{
             setLorebookImage('');
             setLorebookName('');
+            setLorebookDescription('');
+            setLorebookGlobal(false);
         }
     }
 
@@ -113,6 +121,21 @@ const LorebookCrud = (props: LorebookCrudProps) => {
                             onChange={(event) => setLorebookDescription(event.target.value)}
                         />
                     </div>
+                    <div className="flex flex-col text-left h-1/6">
+                        <label className="text-theme-text font-semibold">Global Lorebook</label>
+                        <div className="themed-input flex flex-col items-center w-full h-15vh overflow-y-auto">
+                            <i className="text-sm">When flipped, this lorebook will be applied to all constructs.</i>
+                            <ReactSwitch
+                                checked={bookGlobal}
+                                onChange={() => setLorebookGlobal(!bookGlobal)}
+                                handleDiameter={30}
+                                width={60}
+                                uncheckedIcon={false}
+                                checkedIcon={true}
+                                id="discordMultiConstructMode"
+                            />
+                        </div>
+                    </div>
                     <div className="flex flex-col flex-grow-0 w-full h-1/6">
                         <div className="flex flex-row gap-1 h-1/2">
                             <button className="themed-button-pos w-1/2" onClick={handleLorebookUpdate}>Save</button>
@@ -123,7 +146,8 @@ const LorebookCrud = (props: LorebookCrudProps) => {
                         ) : null}
                     </div>
                 </div>
-                <div className="col-span-3 flex flex-col gap-4 h-full w-full text-left">
+                <div className="col-span-3 flex flex-col gap-4 h-full w-full">
+                    <h3 className="font-semibold">Entries</h3>
                 </div>
             </div>
         </div>
