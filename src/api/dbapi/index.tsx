@@ -6,6 +6,7 @@ import { Instruct } from "@/classes/Instruct";
 import { removeConstructFromActive } from "../constructapi";
 import { CompletionLog } from "@/classes/CompletionLog";
 import { User } from "@/classes/User";
+import { Lorebook } from "@/classes/Lorebook";
 
 export async function getConstructs(): Promise<Construct[]> {
     return new Promise((resolve, reject) => {
@@ -461,6 +462,72 @@ export async function updateUser(user: User) {
 
 export async function deleteUser(id: string) {
     ipcRenderer.send('delete-user', id);
+}
+
+export async function getLorebooks(): Promise<Lorebook[]> {
+    return new Promise((resolve, reject) => {
+        const uniqueEventName = "get-lorebooks-reply-" + Date.now() + "-" + Math.random();
+        ipcRenderer.send("get-lorebooks", uniqueEventName);
+
+        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any[]) => {
+            if (data) {
+                const lorebooks = data.map((doc: any) => {
+                    return new Lorebook(
+                        doc.doc._id,
+                        doc.doc.name,
+                        doc.doc.avatar,
+                        doc.doc.description,
+                        doc.doc.scan_depth,
+                        doc.doc.token_budget,
+                        doc.doc.recursive_scanning,
+                        doc.doc.extensions,
+                        doc.doc.entries
+                    );
+                });
+                resolve(lorebooks);
+            } else {
+                reject(new Error("No data received from 'lorebooks' event."));
+            }
+        });
+    });
+}
+
+export async function getLorebook(id: string): Promise<Lorebook> {
+    return new Promise((resolve, reject) => {
+        const uniqueEventName = "get-lorebook-reply-" + Date.now() + "-" + Math.random();
+        ipcRenderer.send("get-lorebook", id, uniqueEventName);
+
+        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any) => {
+            if (data) {
+                const lorebook = new Lorebook(
+                    data._id,
+                    data.name,
+                    data.avatar,
+                    data.description,
+                    data.scan_depth,
+                    data.token_budget,
+                    data.recursive_scanning,
+                    data.extensions,
+                    data.entries
+                );
+                resolve(lorebook);
+            } else {
+                reject(new Error("No data received from 'lorebook' event."));
+            }
+        });
+    });
+}
+
+export async function saveNewLorebook(lorebook: Lorebook) {
+    ipcRenderer.send('add-lorebook', lorebook);
+}
+
+export async function updateLorebook(lorebook: Lorebook) {
+    ipcRenderer.send('update-lorebook', lorebook);
+}
+
+export async function deleteLorebook(id: string) {
+    ipcRenderer.send('delete-lorebook', id);
 }
 
 export async function setStorageValue(key: string, value: string) {

@@ -1,19 +1,34 @@
 import { Lorebook } from "@/classes/Lorebook";
 import LorebookInfo from "./lorebook-info";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Loading from "@/components/loading";
+import { deleteLorebook, getLorebooks } from "@/api/dbapi";
 
 const LorebooksPage = () => {
     const [lorebooks, setLorebooks] = useState<Lorebook[]>([]);
     const [selectedBook, setSelectedBook] = useState<Lorebook | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
-    
-    if(isLoading) return (<Loading />);
+
+    useEffect(() => {
+        fetchLorebooks().then(() => {
+            setIsLoading(false);
+        }).catch((err) => {
+            console.log(err);
+        });
+    }, []);
+
+    const fetchLorebooks = async () => {
+        const newLorebooks = await getLorebooks();
+        console.log(newLorebooks);
+        if(Array.isArray(newLorebooks)){
+            setLorebooks(newLorebooks);
+        }
+    }
 
     const onDelete = async (book: Lorebook) => {
         const newUsers = lorebooks.filter((u) => u._id !== book._id);
         setLorebooks(newUsers);
-        await deleteUser(book._id);
+        await deleteLorebook(book._id);
     }
 
     const onEdit = (book: Lorebook) => {
@@ -30,6 +45,8 @@ const LorebooksPage = () => {
         setLorebooks(newUsers);
     }
 
+    if(isLoading) return (<Loading />);
+    
     return (
     <div className="w-95vw h-[calc(100vh-70px)] flex flex-col justify-center items-center gap-8 m-auto grow-0 overflow-y-auto overflow-x-hidden">
         <div className="grid grid-cols-3 m-auto w-full h-11/12 gap-2">
