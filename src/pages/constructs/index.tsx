@@ -72,13 +72,13 @@ const ConstructsPage = () => {
             <h2 className="text-2xl font-bold text-theme-text text-shadow-xl">Constructs</h2>
             <div className="flex flex-col gap-8">
                 <div className="grid grid-cols-5 gap-0 w-15vw h-5vh">
-                    <Link to="/constructs/new" className="themed-button-pos flex items-center justify-center" data-tooltip="Add New Construct">
+                    <Link to="/constructs/new" className="themed-button-pos flex items-center justify-center" data-tooltip="Add New Construct" id="newConstruct">
                         <FiPlus className='absolute'size={50}/>
                     </Link>
                     <button onClick={clearActive} className="themed-button-pos flex items-center justify-center" data-tooltip="Clear Active Constructs">
                         <FiX className='absolute'size={50}/>
                     </button>
-                    <label htmlFor="character-image-input" className="themed-button-pos flex items-center justify-center" data-tooltip="Import Character Card">
+                    <label htmlFor="character-image-input" className="themed-button-pos flex items-center justify-center" data-tooltip="Import Character Card" id="importCard">
                         <AiOutlineUpload className='absolute'size={50}/>
                     </label>
                     <input

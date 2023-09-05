@@ -82,15 +82,27 @@ function App() {
             intro: 'This is the main menu. From here you can access all of the features of ConstructOS. You can also access this menu at any time by pressing the Home button in the top right corner of the screen.',
           },
           {
-            title: 'Adding a Construct',
+            title: 'Viewing Constructs',
             tooltipClass: 'introJs-custom-box',
             element: '#constructsPage',
             intro: 'Click here to view all of your Constructs. You can also add a new Construct from this page.',
-
           },
-
+          {
+            title: 'Add a Construct',
+            tooltipClass: 'introJs-custom-box',
+            element: '#newConstruct',
+            intro: 'Click here to add a new Construct.',
+          },
+          {
+            title: 'Import a Character Card',
+            tooltipClass: 'introJs-custom-box',
+            element: '#importCard',
+            intro: 'You can import a character card in both V1 (Tavern) and V2 formats. This will automatically add the Construct to your list.',
+          }
         ]}
-        onStart={() => {setDoneTutorial(false); setStorageValue('doneTutorial', 'false');}}
+        onAfterChange={(e) => {if(e === 1) {window.location.hash = '/constructs';}}}
+        onChange={(e) => {}}
+        onStart={() => {setDoneTutorial(false); setStorageValue('doneTutorial', 'false'); window.location.hash = '/';}}
         onExit={() => {setDoneTutorial(true); setStorageValue('doneTutorial', 'true');}}
       />
     </Router>
