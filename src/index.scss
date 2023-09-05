@@ -377,3 +377,16 @@ ul {
   opacity: 1;
   z-index: 9999;
 }
+
+/*
+  * IntroJS Custom CSS
+*/
+
+.introJs-custom-box {
+  color: var(--theme-text) !important;
+  background-color: var(--theme-root) !important;
+  border: 1px solid var(--theme-border);
+  border-radius: var(--theme-border-radius);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  padding: 10px;
+}

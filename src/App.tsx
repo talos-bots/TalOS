@@ -77,10 +77,20 @@ function App() {
         steps={[
           {
             title: 'Welcome to ConstructOS!',
-            element: '#titleBar',
+            tooltipClass: 'introJs-custom-box',
+            element: '#titlePage',
             intro: 'This is the main menu. From here you can access all of the features of ConstructOS. You can also access this menu at any time by pressing the Home button in the top right corner of the screen.',
-          }
+          },
+          {
+            title: 'Adding a Construct',
+            tooltipClass: 'introJs-custom-box',
+            element: '#constructsPage',
+            intro: 'Click here to view all of your Constructs. You can also add a new Construct from this page.',
+
+          },
+
         ]}
+        onStart={() => {setDoneTutorial(false); setStorageValue('doneTutorial', 'false');}}
         onExit={() => {setDoneTutorial(true); setStorageValue('doneTutorial', 'true');}}
       />
     </Router>

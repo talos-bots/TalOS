@@ -19,8 +19,8 @@ const NavBar: React.FC = () => {
       <NavLink to="/chat" title="Chat" className={`p-1 transition-all duration-125 hover:opacity-50`} >
         <MessageCircle style={location.pathname === "/chat" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }}/>
       </NavLink>
-      <NavLink to="/constructs" title="Constructs" className={`p-1 transition-all duration-125 hover:opacity-50`} >
-        <Users style={location.pathname === "/constructs" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }}/>
+      <NavLink to="/constructs" title="Constructs" className={`p-1 transition-all duration-125 hover:opacity-50`}>
+        <Users style={location.pathname === "/constructs" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }} id='constructsPage'/>
       </NavLink>
       <NavLink to="/discord" title="Discord Bot" className={`p-1 transition-all duration-125 hover:opacity-50`} >
         <Bot style={location.pathname === "/discord" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }}/>
