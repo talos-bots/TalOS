@@ -10,12 +10,13 @@ export type ChatInterface = {
     firstMessageDate: number;
     constructs: string[];
     humans: string[];
+    chatConfigs: any[];
 }
 
 export type MessageInterface = {
     _id: string;
     user: string;
-    avatar: string;
+    avatar: string | null;
     text: string;
     userID: string;
     timestamp: number;

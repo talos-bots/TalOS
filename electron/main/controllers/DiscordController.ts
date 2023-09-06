@@ -198,6 +198,7 @@ export async function handleDiscordMessage(message: Message) {
             firstMessageDate: newMessage.timestamp,
             constructs: activeConstructs,
             humans: [message.author.id],
+            chatConfigs: [],
         }
         if(chatLog.messages.length > 0){
             await addChat(chatLog);

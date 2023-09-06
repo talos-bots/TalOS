@@ -1,5 +1,5 @@
 import { Message } from "discord.js";
-import { AttachmentInferface, UserInterface } from "../types/types";
+import { AttachmentInferface, ChatInterface, ConstructInterface, LorebookInterface, MessageInterface, UserInterface } from "../types/types";
 import FormData from 'form-data';
 import axios from "axios";
 import { getUsername } from "../controllers/DiscordController";
@@ -8,7 +8,7 @@ import { addUser, getUser, updateUser } from "../api/pouchdb";
 export function assembleConstructFromData(data: any){
 	if(data === null) return null;
 	if(data?._id === undefined) return null;
-	const construct = {
+	const construct: ConstructInterface = {
 		_id: data._id,
 		name: data.name,
 		nickname: data.nickname,
@@ -29,14 +29,17 @@ export function assembleConstructFromData(data: any){
 export function assembleMessageFromData(data: any){
 	if(data === null) return null;
 	if(data?._id === undefined) return null;
-	const message = {
+	const message: MessageInterface = {
 		_id: data._id,
 		user: data.user,
 		text: data.text,
+		userID: data.userID,
+		avatar: data.avatar,
 		timestamp: data.timestamp,
 		origin: data.origin,
 		isCommand: data.isCommand,
 		isPrivate: data.isPrivate,
+		isHuman: data.isHuman,
 		participants: data.participants,
 		attachments: data.attachments,
 	}
@@ -46,7 +49,7 @@ export function assembleMessageFromData(data: any){
 export function assembleChatFromData(data: any){
 	if(data === null) return null;
 	if(data?._id === undefined) return null;
-	const chat = {
+	const chat: ChatInterface = {
 		_id: data._id,
 		name: data.name,
 		type: data.type,
@@ -56,6 +59,7 @@ export function assembleChatFromData(data: any){
 		firstMessageDate: data.firstMessageDate,
 		constructs: data.constructs,
 		humans: data.humans,
+		chatConfigs: data.chatConfigs,
 	}
 	return chat;
 }
@@ -63,7 +67,7 @@ export function assembleChatFromData(data: any){
 export function assembleAttachmentFromData(data: any){
 	if(data === null) return null;
 	if(data?._id === undefined) return null;
-	const attachment = {
+	const attachment: AttachmentInferface = {
 		_id: data._id,
 		type: data.type,
 		filename: data.filename,
@@ -76,7 +80,7 @@ export function assembleAttachmentFromData(data: any){
 export function assembleUserFromData(data: any){
 	if(data === null) return null;
 	if(data?._id === undefined) return null;
-	const user = {
+	const user: UserInterface = {
 		_id: data._id,
 		name: data.name,
 		nickname: data.nickname,
@@ -120,7 +124,7 @@ export function convertDiscordMessageToMessage(message: Message, activeConstruct
 			});
 		});
 	}
-	const convertedMessage = {
+	const convertedMessage: MessageInterface = {
 		_id: message.id,
 		user: username,
 		avatar: message.author.avatarURL() ? message.author.avatarURL() : '',
@@ -220,7 +224,7 @@ export async function addUserFromDiscordMessage(message: Message){
 export function assembleLorebookFromData(data: any) {
     if(data === null) return null;
     if(data?._id === undefined) return null;
-    const lorebook = {
+    const lorebook: LorebookInterface = {
         _id: data._id,
         name: data.name || '',
         avatar: data.avatar || '',

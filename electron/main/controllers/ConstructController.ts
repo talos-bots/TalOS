@@ -1,10 +1,10 @@
 import { ipcMain } from 'electron';
 import Store from 'electron-store';
-import { assembleConstructFromData, assemblePromptFromLog } from '../helpers/helpers';
+import { assembleConstructFromData, assembleLorebookFromData, assemblePromptFromLog } from '../helpers/helpers';
 import { generateText } from '../api/llm';
 import { isReady, setDiscordBotInfo } from '../api/discord';
-import { getConstruct, updateChat } from '../api/pouchdb';
-import { ChatInterface, MessageInterface } from '../types/types';
+import { getConstruct, getLorebooks, updateChat } from '../api/pouchdb';
+import { ChatInterface, ConstructInterface, LoreEntryInterface, MessageInterface } from '../types/types';
 const store = new Store({
     name: 'constructData',
 });
@@ -92,7 +92,7 @@ export function getCharacterPromptFromConstruct(construct: any) {
     return prompt.replaceAll('{{char}}', `${construct.name}`);
 }
 
-export function assemblePrompt(construct: any, chatLog: any, currentUser: string = 'you', messagesToInclude?: any){
+export function assemblePrompt(construct: ConstructInterface, chatLog: ChatInterface, currentUser: string = 'you', messagesToInclude?: any){
     let prompt = '';
     prompt += getCharacterPromptFromConstruct(construct);
     prompt += assemblePromptFromLog(chatLog, messagesToInclude);
@@ -100,55 +100,178 @@ export function assemblePrompt(construct: any, chatLog: any, currentUser: string
     return prompt.replaceAll('{{user}}', `${currentUser}`);
 }
 
-export function assembleInstructPrompt(construct: any, chatLog: any, currentUser: string = 'you', messagesToInclude?: any){
+export async function handleLorebookPrompt(construct: ConstructInterface, prompt: string, chatLog: ChatInterface){
+    const lorebooksData = await getLorebooks();
+    if(lorebooksData === null || lorebooksData === undefined){
+        console.log('Could not get lorebooks');
+        return prompt;
+    }
+    const assembledLorebooks = [];
+    for(let i = 0; i < lorebooksData.length; i++){
+        let lorebook = assembleLorebookFromData(lorebooksData[i]);
+        if(lorebook === null || lorebook === undefined){
+            console.log('Could not assemble lorebook from data');
+            continue;
+        }
+        if(lorebook.constructs.includes(construct._id)){
+            assembledLorebooks.push(lorebook);
+        }else{
+            if(lorebook.global === true){
+                assembledLorebooks.push(lorebook);
+            }else{
+                continue;
+            }
+        }
+    }
+    const availableEntries = [];
+    for(let i = 0; i < assembledLorebooks.length; i++){
+        for(let j = 0; j < assembledLorebooks[i].entries.length; j++){
+            if(assembledLorebooks[i].entries[j].enabled === false){
+                continue;
+            }else{
+                availableEntries.push(assembledLorebooks[i].entries[j]);
+            }
+        }
+    }
+    const lastTwoMessages = chatLog.messages.slice(-2);
+    if(assembledLorebooks.length === 0){
+        return prompt;
+    }
+    const appliedEntries: LoreEntryInterface[] = [];
+    for(let i = 0; i < availableEntries.length; i++){
+        if(availableEntries[i].constant === true){
+            appliedEntries.push(availableEntries[i]);
+        }else{
+            if(availableEntries[i].case_sensitive === true){
+                for(let j = 0; j < lastTwoMessages.length; j++){
+                    for(let k = 0; k < availableEntries[i].keys.length; k++){
+                        if(lastTwoMessages[j].text.includes(availableEntries[i].keys[k].trim())){
+                            if(appliedEntries.includes(availableEntries[i])){
+                                continue;
+                            }else{
+                                if(availableEntries[i].selective === true){
+                                    for(let k = 0; k < availableEntries[i].secondary_keys.length; k++){
+                                        if(lastTwoMessages[j].text.includes(availableEntries[i].secondary_keys[k].trim())){
+                                            if(appliedEntries.includes(availableEntries[i])){
+                                                continue;
+                                            }else{
+                                                appliedEntries.push(availableEntries[i]);
+                                            }
+                                        }else{
+                                            continue;
+                                        }
+                                    }
+                                }
+                            }
+                        }else{
+                            continue;
+                        }
+                    }
+                }
+            }else{
+                for(let j = 0; j < lastTwoMessages.length; j++){
+                    for(let k = 0; k < availableEntries[i].keys.length; k++){
+                        if(lastTwoMessages[j].text.toLowerCase().includes(availableEntries[i].keys[k].trim().toLowerCase())){
+                            if(appliedEntries.includes(availableEntries[i])){
+                                continue;
+                            }else{
+                                if(availableEntries[i].selective === true){
+                                    for(let k = 0; k < availableEntries[i].secondary_keys.length; k++){
+                                        if(lastTwoMessages[j].text.toLowerCase().includes(availableEntries[i].secondary_keys[k].trim().toLowerCase())){
+                                            if(appliedEntries.includes(availableEntries[i])){
+                                                continue;
+                                            }else{
+                                                appliedEntries.push(availableEntries[i]);
+                                            }
+                                        }else{
+                                            continue;
+                                        }
+                                    }
+                                }else{
+                                    appliedEntries.push(availableEntries[i]);
+                                }
+                            }
+                        }else{
+                            continue;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    let splitPrompt = prompt.split('\n');
+    let newPrompt = '';
+    
+    for(let k = 0; k < appliedEntries.length; k++){
+        let depth = appliedEntries[k].priority;
+        let insertHere = (splitPrompt.length < depth) ? 0 : splitPrompt.length - depth;
+        if(appliedEntries[k].position === 'after_char'){
+            splitPrompt.splice(insertHere, 0, appliedEntries[k].content);
+        }else{
+            splitPrompt.splice(0, 0, appliedEntries[k].content);
+        }
+    }
+    for(let i = 0; i < splitPrompt.length; i++){
+        if(i !== splitPrompt.length - 1){
+            newPrompt += splitPrompt[i] + '\n';
+        }else{
+            newPrompt += splitPrompt[i];
+        }
+    }
+    return newPrompt;    
+}
+
+export function assembleInstructPrompt(construct: any, chatLog: ChatInterface, currentUser: string = 'you', messagesToInclude?: any){
     let prompt = '';
     
     return prompt.replaceAll('{{user}}', `${currentUser}`);
 }
 
-export async function generateContinueChatLog(construct: any, chatLog: any, currentUser?: string, messagesToInclude?: any, stopList?: string[], authorsNote?: string | string[], authorsNoteDepth?: number) {
+export async function generateContinueChatLog(construct: any, chatLog: ChatInterface, currentUser?: string, messagesToInclude?: any, stopList?: string[], authorsNote?: string | string[], authorsNoteDepth?: number) {
     let prompt = assemblePrompt(construct, chatLog, currentUser, messagesToInclude);
 
     if ((construct.authorsNote !== undefined && construct.authorsNote !== '' && construct.authorsNote !== null) ||
     (authorsNote !== undefined && authorsNote !== '' && authorsNote !== null)) {
+        if (!authorsNote) {
+            authorsNote = [construct.authorsNote]; // Ensuring authorsNote is always an array
+        } else if (!Array.isArray(authorsNote)) {
+            authorsNote = [authorsNote];
+        }
+        
+        if (construct.authorsNote && authorsNote.indexOf(construct.authorsNote) === -1) {
+            authorsNote.push(construct.authorsNote);
+        }
 
-    if (!authorsNote) {
-        authorsNote = [construct.authorsNote]; // Ensuring authorsNote is always an array
-    } else if (!Array.isArray(authorsNote)) {
-        authorsNote = [authorsNote];
-    }
-    
-    if (construct.authorsNote && authorsNote.indexOf(construct.authorsNote) === -1) {
-        authorsNote.push(construct.authorsNote);
-    }
+        let splitPrompt = prompt.split('\n');
+        let newPrompt = '';
+        let depth = 4;
 
-    let splitPrompt = prompt.split('\n');
-    let newPrompt = '';
-    let depth = 4;
+        if (authorsNoteDepth !== undefined) {
+            depth = authorsNoteDepth;
+        }
 
-    if (authorsNoteDepth !== undefined) {
-        depth = authorsNoteDepth;
-    }
+        let insertHere = (splitPrompt.length < depth) ? 0 : splitPrompt.length - depth;
 
-    let insertHere = (splitPrompt.length < 4) ? 0 : splitPrompt.length - depth;
+        for (let i = 0; i < splitPrompt.length; i++) {
+            if (i === insertHere) {
+                for (let note of authorsNote) {
+                    newPrompt += note + '\n';
+                }
+            }
 
-    for (let i = 0; i < splitPrompt.length; i++) {
-        if (i === insertHere) {
-            for (let note of authorsNote) {
-                newPrompt += note + '\n';
+            if (i !== splitPrompt.length - 1) {
+                newPrompt += splitPrompt[i] + '\n';
+            } else {
+                newPrompt += splitPrompt[i];
             }
         }
 
-        if (i !== splitPrompt.length - 1) {
-            newPrompt += splitPrompt[i] + '\n';
-        } else {
-            newPrompt += splitPrompt[i];
-        }
+        prompt = newPrompt.replaceAll('{{user}}', `${currentUser}`).replaceAll('{{char}}', `${construct.name}`);
     }
-
-    prompt = newPrompt.replaceAll('{{user}}', `${currentUser}`).replaceAll('{{char}}', `${construct.name}`);
+    let promptWithWorldInfo = await handleLorebookPrompt(construct, prompt, chatLog);
+    if(promptWithWorldInfo !== null && promptWithWorldInfo !== undefined){
+        prompt = promptWithWorldInfo;
     }
-
     const response = await generateText(prompt, currentUser, stopList);
     if (response && response.results && response.results[0]) {
         return breakUpCommands(construct.name, response.results[0], currentUser, stopList);
