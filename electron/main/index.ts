@@ -13,6 +13,7 @@ import fs from "fs";
 import DiscordController from "./controllers/DiscordController";
 import { ElectronDBRoutes } from "./api/electrondb";
 import { LangChainRoutes } from "./api/langchain";
+import { update } from "./update";
 
 // The built directory structure
 //
@@ -96,7 +97,7 @@ async function createWindow() {
   constructController();
   DiscordController();
   LangChainRoutes();
-  // update(win)
+  update(win)
 }
 
 app.whenReady().then(createWindow);

@@ -17,6 +17,7 @@ import { getStorageValue, setStorageValue } from './api/dbapi';
 import HomePage from './pages/home';
 import { wait } from './pages/chat/helpers';
 import LorebooksPage from './pages/lorebooks';
+import Update from './components/update';
 
 export const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, url: string) => {
   e.preventDefault();
@@ -109,6 +110,7 @@ function App() {
         onExit={() => {setDoneTutorial(true); setStorageValue('doneTutorial', 'true');}}
       />
     </Router>
+    <Update/>
     </div>
   )
 }

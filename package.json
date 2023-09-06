@@ -4,8 +4,18 @@
   "main": "dist-electron/main/index.js",
   "description": "Electron LLM React",
   "author": "Wayward Wyverns Softworks",
-  "license": "MIT",
   "private": true,
+  "build": {
+    "publish": [
+      {
+        "provider": "github",
+        "repo": "ConstructOS",
+        "owner": "WaywardWyvernsSoftworks",
+        "releaseType": "release",
+        "private": false
+      }
+    ]
+  },
   "debug": {
     "env": {
       "VITE_DEV_SERVER_URL": "http://127.0.0.1:7777/"
@@ -18,6 +28,7 @@
     "build-mac": "tsc && vite build && electron-builder --mac",
     "build-linux": "tsc && vite build && electron-builder --linux",
     "build-all": "tsc && vite build && electron-builder --mac --win --linux",
+    "release": "electron-builder --publish=always",
     "preview": "vite preview",
     "pree2e": "vite build --mode=test",
     "e2e": "playwright test",
