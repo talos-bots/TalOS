@@ -1,5 +1,8 @@
 # ConstructOS
 ## Planned Features:
+### Guided Experience
+- App Tutorial with IntroJS with a REACT Wrapper.
+- Documents Page with Guides on usage.
 ### Create Constructs
 - Export to V2 Cards
 - Create AI Assistants or RP Characters.
