@@ -1,9 +1,10 @@
-import { saveNewLorebook, updateLorebook } from "@/api/dbapi";
+import { getConstructs, saveNewLorebook, updateLorebook } from "@/api/dbapi";
 import { LoreEntry, Lorebook } from "@/classes/Lorebook";
 import { useEffect, useState } from "react";
 import { RiQuestionMark } from "react-icons/ri";
 import ReactSwitch from "react-switch";
 import EntryCrud from "./entry-crud";
+import { Construct } from "@/classes/Construct";
 
 interface LorebookCrudProps {
     book: Lorebook | null;
@@ -18,8 +19,22 @@ const LorebookCrud = (props: LorebookCrudProps) => {
     const [bookImage, setLorebookImage] = useState<string>('');
     const [bookDescription, setLorebookDescription] = useState<string>('');
     const [bookGlobal, setLorebookGlobal] = useState<boolean>(false);
+    const [bookConstructs, setLorebookConstructs] = useState<string[]>([]);
     const [bookEntries, setLorebookEntries] = useState<LoreEntry[]>([]);
     const [currentLorebook, setCurrentLorebook] = useState<Lorebook | null>(null);
+    const [availableConstructs, setAvailableConstructs] = useState<Construct[]>([]);
+
+    useEffect(() => {
+        fetchConstructs();
+    }, []);
+
+    const fetchConstructs = async () => {
+        getConstructs().then((constructs) => {
+            setAvailableConstructs(constructs);
+        }).catch((error) => {
+            console.log(error);
+        });
+    }
 
     useEffect(() => {
         if(book) {
@@ -28,6 +43,7 @@ const LorebookCrud = (props: LorebookCrudProps) => {
             setLorebookDescription(book.description);
             setLorebookGlobal(book.global);
             setLorebookEntries(book.entries);
+            setLorebookConstructs(book.constructs);
             setCurrentLorebook(book)
         }else{
             setLorebookImage('');
@@ -35,6 +51,7 @@ const LorebookCrud = (props: LorebookCrudProps) => {
             setLorebookDescription('');
             setLorebookGlobal(false);
             setCurrentLorebook(null);
+            setLorebookConstructs([]);
             setLorebookEntries([])
         }
     }, [book]);
@@ -63,6 +80,7 @@ const LorebookCrud = (props: LorebookCrudProps) => {
             currentLorebook.description = bookDescription;
             currentLorebook.global = bookGlobal;
             currentLorebook.entries = bookEntries;
+            currentLorebook.constructs = bookConstructs;
             await updateLorebook(currentLorebook);
             if(onEdit === undefined) return;
             onEdit(currentLorebook);
@@ -73,6 +91,7 @@ const LorebookCrud = (props: LorebookCrudProps) => {
             newLorebook.description = bookDescription;
             newLorebook.global = bookGlobal;
             newLorebook.entries = bookEntries;
+            newLorebook.constructs = bookConstructs;
             await saveNewLorebook(newLorebook);
             setCurrentLorebook(newLorebook);
             if(onSave === undefined) return;
@@ -90,6 +109,8 @@ const LorebookCrud = (props: LorebookCrudProps) => {
             setLorebookName('');
             setLorebookDescription('');
             setLorebookGlobal(false);
+            setLorebookEntries([])
+            setLorebookConstructs([]);
         }
     }
 
@@ -120,7 +141,7 @@ const LorebookCrud = (props: LorebookCrudProps) => {
     }
 
     return (
-        <div className="gap-2 h-full overflow-y-auto flex flex-col">
+        <div className="gap-2 h-full overflow-y-hidden flex flex-col">
             <div className="w-full h-full grid grid-cols-4 justify-start gap-4">
                 <div className="col-span-1 flex flex-col gap-4 h-full text-left">
                     <div className="flex flex-col items-center justify-center h-1/6 mt-4">
@@ -159,7 +180,7 @@ const LorebookCrud = (props: LorebookCrudProps) => {
                     </div>
                     <div className="flex flex-col text-left h-1/6">
                         <label className="text-theme-text font-semibold">Global Lorebook</label>
-                        <div className="themed-input flex flex-col items-center w-full h-15vh overflow-y-auto">
+                        <div className="themed-input flex flex-col items-center w-full overflow-y-auto">
                             <i className="text-sm">When flipped, this lorebook will be applied to all constructs.</i>
                             <ReactSwitch
                                 checked={bookGlobal}
@@ -172,8 +193,35 @@ const LorebookCrud = (props: LorebookCrudProps) => {
                             />
                         </div>
                     </div>
+                    <div className="flex flex-col text-left h-1/6">
+                        <label className="text-theme-text font-semibold">Selected Constructs</label>
+                        <div className="themed-input flex flex-col items-center w-full h-5/6 overflow-y-auto">
+                            <i className="text-sm">Select which constructs this lorebook will be applied to.</i>
+                            <div className="flex flex-col gap-1 w-full">
+                                {availableConstructs.map((construct, index) => {
+                                    return (
+                                        <div key={index} className="flex flex-row items-center justify-between w-full">
+                                            <label htmlFor={construct._id}>{construct.name}</label>
+                                            <input
+                                                type="checkbox"
+                                                id={construct._id}
+                                                checked={bookConstructs.includes(construct._id)}
+                                                onChange={(event) => {
+                                                    if(event.target.checked) {
+                                                        setLorebookConstructs(prevConstructs => [...prevConstructs, construct._id]);
+                                                    }else{
+                                                        setLorebookConstructs(prevConstructs => prevConstructs.filter(c => c !== construct._id));
+                                                    }
+                                                }}
+                                            />
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
                     <div className="flex flex-col flex-grow-0 w-full h-1/6">
-                        <div className="flex flex-row gap-1 h-1/2">
+                        <div className="flex flex-row gap-1">
                             <button className="themed-button-pos w-1/2" onClick={handleLorebookUpdate}>Save</button>
                             <button className="themed-button-neg w-1/2" onClick={handleLorebookDelete}>{book !== null ? 'Delete' : 'Clear'}</button>
                         </div>
