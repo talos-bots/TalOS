@@ -8,6 +8,7 @@ import StringArrayEditor from "../string-array-editor";
 import { setConstructAsPrimary, addConstructToActive, constructIsActive, getActiveConstructList, removeConstructFromActive } from "@/api/constructapi";
 import StringArrayEditorCards from "../string-array-editor-cards";
 import { saveTavernCardAsImage } from "@/api/extrasapi";
+import { Download } from "lucide-react";
 
 const ConstructManagement = () => {
     const { id } = useParams<{ id: string }>();
@@ -296,9 +297,9 @@ const ConstructManagement = () => {
                                     <button className="themed-button-neg w-1/4" onClick={() => deleteConstructAndReturn()}>{constructState ? 'Delete Construct' : 'Clear Values'}</button>
                                 </div>
                                 <div className="row-span-1 flex flex-row gap-1">
-                                    <button type="submit" className="themed-button-neg w-1/3" onClick={returnToMenu}>Return to Menu</button>
-                                    <button className="themed-button-pos w-1/3" onClick={() => saveConstruct()}>Save</button>
-                                    <button className="themed-button-pos w-1/3" onClick={() => handleConstructExport()}>Export as Card</button>
+                                    <button type="submit" className="themed-button-neg w-1/3" onClick={returnToMenu} title="Return to Menu">Return to Menu</button>
+                                    <button className="themed-button-pos w-1/3" onClick={() => saveConstruct()} title="Save">Save</button>
+                                    <button className="themed-button-pos w-1/3 flex flex-col items-center justify-center" onClick={() => handleConstructExport()} title="Export as V2 Card"><Download size={36}/></button>
                                 </div>
                             </div>
                         </div>

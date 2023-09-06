@@ -5,11 +5,11 @@ import { AiOutlineDown, AiOutlineUp } from "react-icons/ai";
 import { RiQuestionMark } from "react-icons/ri";
 import './ConstructBox.scss';
 import { deleteConstruct, getConstruct } from "@/api/dbapi";
-import StringArrayEditor from "../string-array-editor";
 import RouteButton from "../route-button";
 import { setConstructAsPrimary, addConstructToActive, constructIsActive, getActiveConstructList, removeConstructFromActive } from "@/api/constructapi";
 import StringArrayEditorCards from "../string-array-editor-cards";
 import { saveTavernCardAsImage } from "@/api/extrasapi";
+import { Download } from "lucide-react";
 interface Props {
     character: Construct;
 }
@@ -129,7 +129,7 @@ const ConstructBox: React.FC<Props> = ({character}) => {
                                 <div className="row-span-1 flex flex-row gap-1">
                                     <RouteButton to={`/constructs/${character._id}`} text="Edit" className="w-1/3"/>
                                     <button className="themed-button-neg w-1/3" onClick={() => deleteConstructFrom()}>Delete</button>
-                                    <button className="themed-button-pos w-1/3" onClick={() => handleConstructExport()}>Export as Card</button>
+                                    <button title="Export as V2 Card" className="themed-button-pos w-1/3 flex flex-col items-center justify-center" onClick={() => handleConstructExport()}><Download size={36}/></button>
                                 </div>
                             </div>
                         </div>
