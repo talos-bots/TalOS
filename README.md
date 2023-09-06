@@ -44,11 +44,11 @@
 - Export to V2 Cards
 - Create AI Assistants or RP Characters.
 ### Multi-Construct Discord Bot
-- Have multiple constructs speak through one discord bot.
+- Have multiple Constructs speak through one discord bot.
 - Group ordering
 - Reply percentages, lurking, etc.
 - GIF sending, web browsing, vector memories, and RP.
-### Agent Chat window
+### Construct Chat Window
 - A way to test agent features, personalities, and other features.
 - Lorebooks (World Info)
 ### Command Line Interface
@@ -57,6 +57,6 @@
 ### SMS Bot (with Twilo)
 - Everything the discord bot has, but on your phone's default messaging app.
 ### Stable Diffusion
-- Have your agent make prompts for you, create images for you, or send you selfies.
+- Have your Construct make prompts for you, create images for you, or send you selfies.
 ### Statistics Page
 - See info on Discord usage, Construct Actions, and other usage stats.
