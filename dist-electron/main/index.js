@@ -1047,7 +1047,8 @@ function assembleChatFromData(data) {
     lastMessageDate: data.lastMessageDate,
     firstMessageDate: data.firstMessageDate,
     constructs: data.constructs,
-    humans: data.humans
+    humans: data.humans,
+    chatConfigs: data.chatConfigs
   };
   return chat;
 }
@@ -1185,6 +1186,26 @@ async function addUserFromDiscordMessage(message) {
     return;
   }
   await addUser(user);
+}
+function assembleLorebookFromData(data) {
+  if (data === null)
+    return null;
+  if ((data == null ? void 0 : data._id) === void 0)
+    return null;
+  const lorebook = {
+    _id: data._id,
+    name: data.name || "",
+    avatar: data.avatar || "",
+    description: data.description || "",
+    scan_depth: data.scan_depth || 0,
+    token_budget: data.token_budget || 0,
+    recursive_scanning: data.recursive_scanning || false,
+    global: data.global || false,
+    constructs: data.constructs || [],
+    extensions: data.extensions || {},
+    entries: data.entries || []
+  };
+  return lorebook;
 }
 const instructPromptWithGuidance = `
 {{guidance}}
@@ -1856,6 +1877,125 @@ function assemblePrompt(construct, chatLog, currentUser = "you", messagesToInclu
   prompt += `${construct.name}:`;
   return prompt.replaceAll("{{user}}", `${currentUser}`);
 }
+async function handleLorebookPrompt(construct, prompt, chatLog) {
+  const lorebooksData = await getLorebooks();
+  if (lorebooksData === null || lorebooksData === void 0) {
+    console.log("Could not get lorebooks");
+    return prompt;
+  }
+  const assembledLorebooks = [];
+  for (let i = 0; i < lorebooksData.length; i++) {
+    let lorebook = assembleLorebookFromData(lorebooksData[i]);
+    if (lorebook === null || lorebook === void 0) {
+      console.log("Could not assemble lorebook from data");
+      continue;
+    }
+    if (lorebook.constructs.includes(construct._id)) {
+      assembledLorebooks.push(lorebook);
+    } else {
+      if (lorebook.global === true) {
+        assembledLorebooks.push(lorebook);
+      } else {
+        continue;
+      }
+    }
+  }
+  const availableEntries = [];
+  for (let i = 0; i < assembledLorebooks.length; i++) {
+    for (let j = 0; j < assembledLorebooks[i].entries.length; j++) {
+      if (assembledLorebooks[i].entries[j].enabled === false) {
+        continue;
+      } else {
+        availableEntries.push(assembledLorebooks[i].entries[j]);
+      }
+    }
+  }
+  const lastTwoMessages = chatLog.messages.slice(-2);
+  if (assembledLorebooks.length === 0) {
+    return prompt;
+  }
+  const appliedEntries = [];
+  for (let i = 0; i < availableEntries.length; i++) {
+    if (availableEntries[i].constant === true) {
+      appliedEntries.push(availableEntries[i]);
+    } else {
+      if (availableEntries[i].case_sensitive === true) {
+        for (let j = 0; j < lastTwoMessages.length; j++) {
+          for (let k = 0; k < availableEntries[i].keys.length; k++) {
+            if (lastTwoMessages[j].text.includes(availableEntries[i].keys[k].trim())) {
+              if (appliedEntries.includes(availableEntries[i])) {
+                continue;
+              } else {
+                if (availableEntries[i].selective === true) {
+                  for (let k2 = 0; k2 < availableEntries[i].secondary_keys.length; k2++) {
+                    if (lastTwoMessages[j].text.includes(availableEntries[i].secondary_keys[k2].trim())) {
+                      if (appliedEntries.includes(availableEntries[i])) {
+                        continue;
+                      } else {
+                        appliedEntries.push(availableEntries[i]);
+                      }
+                    } else {
+                      continue;
+                    }
+                  }
+                }
+              }
+            } else {
+              continue;
+            }
+          }
+        }
+      } else {
+        for (let j = 0; j < lastTwoMessages.length; j++) {
+          for (let k = 0; k < availableEntries[i].keys.length; k++) {
+            if (lastTwoMessages[j].text.toLowerCase().includes(availableEntries[i].keys[k].trim().toLowerCase())) {
+              if (appliedEntries.includes(availableEntries[i])) {
+                continue;
+              } else {
+                if (availableEntries[i].selective === true) {
+                  for (let k2 = 0; k2 < availableEntries[i].secondary_keys.length; k2++) {
+                    if (lastTwoMessages[j].text.toLowerCase().includes(availableEntries[i].secondary_keys[k2].trim().toLowerCase())) {
+                      if (appliedEntries.includes(availableEntries[i])) {
+                        continue;
+                      } else {
+                        appliedEntries.push(availableEntries[i]);
+                      }
+                    } else {
+                      continue;
+                    }
+                  }
+                } else {
+                  appliedEntries.push(availableEntries[i]);
+                }
+              }
+            } else {
+              continue;
+            }
+          }
+        }
+      }
+    }
+  }
+  let splitPrompt = prompt.split("\n");
+  let newPrompt = "";
+  for (let k = 0; k < appliedEntries.length; k++) {
+    let depth = appliedEntries[k].priority;
+    let insertHere = splitPrompt.length < depth ? 0 : splitPrompt.length - depth;
+    if (appliedEntries[k].position === "after_char") {
+      splitPrompt.splice(insertHere, 0, appliedEntries[k].content);
+    } else {
+      splitPrompt.splice(0, 0, appliedEntries[k].content);
+    }
+  }
+  for (let i = 0; i < splitPrompt.length; i++) {
+    if (i !== splitPrompt.length - 1) {
+      newPrompt += splitPrompt[i] + "\n";
+    } else {
+      newPrompt += splitPrompt[i];
+    }
+  }
+  return newPrompt;
+}
 function assembleInstructPrompt(construct, chatLog, currentUser = "you", messagesToInclude) {
   let prompt = "";
   return prompt.replaceAll("{{user}}", `${currentUser}`);
@@ -1877,7 +2017,7 @@ async function generateContinueChatLog(construct, chatLog, currentUser, messages
     if (authorsNoteDepth !== void 0) {
       depth = authorsNoteDepth;
     }
-    let insertHere = splitPrompt.length < 4 ? 0 : splitPrompt.length - depth;
+    let insertHere = splitPrompt.length < depth ? 0 : splitPrompt.length - depth;
     for (let i = 0; i < splitPrompt.length; i++) {
       if (i === insertHere) {
         for (let note of authorsNote) {
@@ -1891,6 +2031,10 @@ async function generateContinueChatLog(construct, chatLog, currentUser, messages
       }
     }
     prompt = newPrompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${construct.name}`);
+  }
+  let promptWithWorldInfo = await handleLorebookPrompt(construct, prompt, chatLog);
+  if (promptWithWorldInfo !== null && promptWithWorldInfo !== void 0) {
+    prompt = promptWithWorldInfo;
   }
   const response = await generateText(prompt, currentUser, stopList);
   if (response && response.results && response.results[0]) {
@@ -2245,7 +2389,8 @@ async function handleDiscordMessage(message) {
       lastMessageDate: newMessage.timestamp,
       firstMessageDate: newMessage.timestamp,
       constructs: activeConstructs,
-      humans: [message.author.id]
+      humans: [message.author.id],
+      chatConfigs: []
     };
     if (chatLog.messages.length > 0) {
       await addChat(chatLog);
