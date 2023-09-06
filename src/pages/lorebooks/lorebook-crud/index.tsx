@@ -1,8 +1,9 @@
 import { saveNewLorebook, updateLorebook } from "@/api/dbapi";
-import { Lorebook } from "@/classes/Lorebook";
+import { LoreEntry, Lorebook } from "@/classes/Lorebook";
 import { useEffect, useState } from "react";
 import { RiQuestionMark } from "react-icons/ri";
 import ReactSwitch from "react-switch";
+import EntryCrud from "./entry-crud";
 
 interface LorebookCrudProps {
     book: Lorebook | null;
@@ -17,6 +18,7 @@ const LorebookCrud = (props: LorebookCrudProps) => {
     const [bookImage, setLorebookImage] = useState<string>('');
     const [bookDescription, setLorebookDescription] = useState<string>('');
     const [bookGlobal, setLorebookGlobal] = useState<boolean>(false);
+    const [bookEntries, setLorebookEntries] = useState<LoreEntry[]>([]);
     const [currentLorebook, setCurrentLorebook] = useState<Lorebook | null>(null);
 
     useEffect(() => {
@@ -25,14 +27,22 @@ const LorebookCrud = (props: LorebookCrudProps) => {
             setLorebookImage(book.avatar);
             setLorebookDescription(book.description);
             setLorebookGlobal(book.global);
+            setLorebookEntries(book.entries);
             setCurrentLorebook(book)
         }else{
             setLorebookImage('');
             setLorebookName('');
             setLorebookDescription('');
             setLorebookGlobal(false);
+            setCurrentLorebook(null);
+            setLorebookEntries([])
         }
     }, [book]);
+
+    useEffect(() => {
+        if(bookEntries.length === 0) return;
+        handleLorebookUpdate();
+    }, [bookEntries]);
 
     const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -47,16 +57,22 @@ const LorebookCrud = (props: LorebookCrudProps) => {
     };
     
     const handleLorebookUpdate = async () => {
-        if(book) {
-            book.name = bookName;
-            book.avatar = bookImage;
-            await updateLorebook(book);
+        if(currentLorebook) {
+            currentLorebook.name = bookName;
+            currentLorebook.avatar = bookImage;
+            currentLorebook.description = bookDescription;
+            currentLorebook.global = bookGlobal;
+            currentLorebook.entries = bookEntries;
+            await updateLorebook(currentLorebook);
             if(onEdit === undefined) return;
-            onEdit(book);
+            onEdit(currentLorebook);
         }else{
             const newLorebook = new Lorebook()
             newLorebook.name = bookName;
             newLorebook.avatar = bookImage;
+            newLorebook.description = bookDescription;
+            newLorebook.global = bookGlobal;
+            newLorebook.entries = bookEntries;
             await saveNewLorebook(newLorebook);
             setCurrentLorebook(newLorebook);
             if(onSave === undefined) return;
@@ -65,9 +81,9 @@ const LorebookCrud = (props: LorebookCrudProps) => {
     }
 
     const handleLorebookDelete = async () => {
-        if(book) {
+        if(currentLorebook) {
             if(onDelete === undefined) return;
-            onDelete(book);
+            onDelete(currentLorebook);
             setCurrentLorebook(null);
         }else{
             setLorebookImage('');
@@ -77,10 +93,30 @@ const LorebookCrud = (props: LorebookCrudProps) => {
         }
     }
 
-    const makeCurrentLorebook = async () => {
-        if(currentLorebook !== null) {
-            localStorage.setItem('currentLorebook', JSON.stringify(currentLorebook._id));
-        }
+    const handleEntrySave = async (entry: LoreEntry) => {
+        setLorebookEntries(prevEntries => {
+            const updatedEntries = [...prevEntries];
+            const index = updatedEntries.findIndex(e => e._id === entry._id);
+            if (index !== -1) {
+                updatedEntries[index] = entry;
+            }
+            return updatedEntries;
+        });
+    }
+
+    const handleEntryDelete = async (entry: LoreEntry) => {
+        setLorebookEntries(prevEntries => prevEntries.filter(e => e._id !== entry._id));
+    }
+    
+    const handleEntryEdit = async (entry: LoreEntry) => {
+        setLorebookEntries(prevEntries => {
+            const updatedEntries = [...prevEntries];
+            const index = updatedEntries.findIndex(e => e._id === entry._id);
+            if (index !== -1) {
+                updatedEntries[index] = entry;
+            }
+            return updatedEntries;
+        });
     }
 
     return (
@@ -141,13 +177,16 @@ const LorebookCrud = (props: LorebookCrudProps) => {
                             <button className="themed-button-pos w-1/2" onClick={handleLorebookUpdate}>Save</button>
                             <button className="themed-button-neg w-1/2" onClick={handleLorebookDelete}>{book !== null ? 'Delete' : 'Clear'}</button>
                         </div>
-                        {currentLorebook !== null ? (
-                            <button className="themed-button-pos w-full h-1/2" onClick={makeCurrentLorebook}>Set as Current Lorebook</button>
-                        ) : null}
                     </div>
                 </div>
-                <div className="col-span-3 flex flex-col gap-4 h-full w-full">
+                <div className="col-span-3 flex flex-col gap-4 h-full w-full overflow-y-auto">
                     <h3 className="font-semibold">Entries</h3>
+                    <button className="themed-button-pos w-full" onClick={() => setLorebookEntries([...bookEntries, new LoreEntry()])}>Add Entry</button>
+                    {Array.isArray(bookEntries) && bookEntries.map((entry, index) => {
+                        return (
+                            <EntryCrud key={index} entry={entry} onSave={handleEntrySave} onDelete={handleEntryDelete} onEdit={handleEntryEdit}/>
+                        );
+                    })}
                 </div>
             </div>
         </div>

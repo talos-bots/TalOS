@@ -116,3 +116,35 @@ export type ConstructChatConfig = {
     replyToUser: number;
     replyToUserMention: number;
 }
+
+export interface LorebookInterface {
+    _id: string;
+    name: string;
+    avatar: string;
+    description: string;
+    scan_depth: number;
+    token_budget: number;
+    recursive_scanning: boolean;
+    global: boolean;
+    constructs: string[];
+    extensions: Record<string, any>;
+    entries: LoreEntryInterface[];
+}
+
+export type EntryPosition = 'before_char' | 'after_char';
+
+export interface LoreEntryInterface {
+    _id: string;
+    keys: string[];
+    content: string;
+    extensions: Record<string, any>;
+    enabled: boolean;
+    case_sensitive: boolean;
+    name: string;
+    priority: number;
+    comment: string;
+    selective: boolean;
+    secondary_keys: string[];
+    constant: boolean;
+    position: EntryPosition;
+}

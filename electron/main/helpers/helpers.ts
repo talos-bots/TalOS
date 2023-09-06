@@ -216,3 +216,22 @@ export async function addUserFromDiscordMessage(message: Message){
 	}
 	await addUser(user);
 }
+
+export function assembleLorebookFromData(data: any) {
+    if(data === null) return null;
+    if(data?._id === undefined) return null;
+    const lorebook = {
+        _id: data._id,
+        name: data.name || '',
+        avatar: data.avatar || '',
+        description: data.description || '',
+        scan_depth: data.scan_depth || 0,
+        token_budget: data.token_budget || 0,
+        recursive_scanning: data.recursive_scanning || false,
+        global: data.global || false,
+        constructs: data.constructs || [],
+        extensions: data.extensions || {},
+        entries: data.entries || [],
+    }
+    return lorebook;
+}

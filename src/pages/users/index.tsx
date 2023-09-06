@@ -53,14 +53,14 @@ const UserPage = () => {
             <div className="grid grid-cols-3 m-auto w-full h-11/12 gap-2">
                 <div className="col-span-1 themed-root gap-2 h-full overflow-y-auto flex flex-col">
                     <h3 className="text-xl font-semibold">User Profiles</h3>
+                    <button className="themed-button-pos w-full h-10" onClick={() => {setSelectedUser(null)}}>
+                        New User
+                    </button>
                     {Array.isArray(users) && users.map((user: User) => {
                         return (
                             <UserInfo user={user} onClick={(user: User | null) => {setSelectedUser(user)}} onDelete={onDelete}/>
                         );
                     })}
-                    <button className="themed-button-pos w-full h-10" onClick={() => {setSelectedUser(null)}}>
-                        New User
-                    </button>
                 </div>
                 <div className="col-span-2">
                     <UserCrud user={selectedUser} onDelete={onDelete} onEdit={onEdit} onSave={onSave}/>

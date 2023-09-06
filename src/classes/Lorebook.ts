@@ -116,7 +116,7 @@ export class Lorebook {
         this.setEntryIndex(entry, this.entries.length - 1);
     }
 }
-
+export type EntryPostion = 'before_char' | 'after_char';
 export class LoreEntry {
     constructor(
         public _id: string = (new Date().getTime()).toString(),
@@ -124,7 +124,6 @@ export class LoreEntry {
         public content: string = '',
         public extensions: Record<string, any> = {},
         public enabled: boolean = true,
-        public insertion_order: number = 0,
         public case_sensitive: boolean = false,
         public name: string = '',
         public priority: number = 0,
@@ -132,7 +131,7 @@ export class LoreEntry {
         public selective: boolean = false,
         public secondary_keys: string[] = [],
         public constant: boolean = false,
-        public position: 'before_char' | 'after_char' = 'before_char',
+        public position: EntryPostion = 'before_char',
     ) {}
 
     addKey(key: string) {
@@ -181,14 +180,6 @@ export class LoreEntry {
 
     getEnabled() {
         return this.enabled;
-    }
-
-    setInsertionOrder(insertion_order: number) {
-        this.insertion_order = insertion_order;
-    }
-
-    getInsertionOrder() {
-        return this.insertion_order;
     }
 
     setCaseSensitive(case_sensitive: boolean) {

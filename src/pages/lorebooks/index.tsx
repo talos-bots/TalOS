@@ -53,14 +53,14 @@ const LorebooksPage = () => {
         <div className="grid grid-cols-3 m-auto w-full h-11/12 gap-2">
             <div className="col-span-1 themed-root gap-2 h-full overflow-y-auto flex flex-col">
                 <h3 className="font-semibold">Lorebooks</h3>
+                <button className="themed-button-pos w-full h-10" onClick={() => {setSelectedBook(null)}}>
+                    New Lorebook
+                </button>
                 {Array.isArray(lorebooks) && lorebooks.map((book: Lorebook) => {
                     return (
                         <LorebookInfo book={book} onClick={(book: Lorebook | null) => {setSelectedBook(book)}} onDelete={onDelete}/>
                     );
                 })}
-                <button className="themed-button-pos w-full h-10" onClick={() => {setSelectedBook(null)}}>
-                    New Lorebook
-                </button>
             </div>
             <div className="col-span-2 themed-root gap-2 h-full overflow-y-auto flex flex-col">
                 <LorebookCrud book={selectedBook} onDelete={onDelete} onEdit={onEdit} onSave={onSave}/>
