@@ -7,6 +7,7 @@ import ChatDetails from "./chat-details";
 import Loading from "@/components/loading";
 import { Link } from "react-router-dom";
 import { PlusIcon } from "lucide-react";
+import { AiOutlineUpload } from "react-icons/ai";
 interface ChatSelectorProps {
     onClick?: (chatID: Chat) => void;
 }
@@ -69,6 +70,23 @@ const ChatSelector = (props: ChatSelectorProps) => {
         setChats(prevChats => prevChats.filter((prevChat) => prevChat._id !== chat._id));
     }
 
+    const handleImportChat = async (files: FileList | null) => {
+        if(files === null) return;
+        for(let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                if(e.target === null) return;
+                const result = e.target.result;
+                if(typeof result !== "string") return;
+                const chat = JSON.parse(result);
+                await saveNewChat(chat);
+                setChats(prevChats => [...prevChats, chat]);
+            }
+            reader.readAsText(file);
+        }
+    }
+
     if(!isLoaded) return (<Loading/>);
 
     return (
@@ -96,8 +114,21 @@ const ChatSelector = (props: ChatSelectorProps) => {
                 </div>
             </div>
             <div className="row-span-2 w-full h-full grid grid-cols-4 grow-0 gap-4">
-                <div className="col-span-2 flex flex-col themed-root">
+                <div className="col-span-2 flex flex-col themed-root mb-4">
                     <h3 className="font-semibold">Chats</h3>
+                    <div className="grid grid-cols-5 gap-0 w-15vw h-5vh">
+                        <label htmlFor="character-image-input" className="themed-button-pos flex items-center justify-center" data-tooltip="Import Chat" id="importChat">
+                            <AiOutlineUpload className='absolute'size={50}/>
+                        </label>
+                        <input
+                            type="file"
+                            accept="application/json"
+                            id="character-image-input"
+                            onChange={(e) => handleImportChat(e.target.files)}
+                            style={{ display: 'none' }}
+                            multiple={true}
+                        />
+                    </div>
                     <div className="flex flex-col w-full gap-4 overflow-y-auto">
                         {Array.isArray(chats) && chats.sort((a, b) => b.lastMessageDate - a.lastMessageDate).map((chat) => {
                             return (

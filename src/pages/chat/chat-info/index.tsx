@@ -1,6 +1,6 @@
 import { Chat } from "@/classes/Chat";
 import BackButton from "@/components/back-button";
-import { Edit2Icon, LucideArrowBigLeft } from "lucide-react";
+import { Download, Edit2Icon, LucideArrowBigLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface ChatInfoProps { 
@@ -22,10 +22,24 @@ const ChatInfo = (props: ChatInfoProps) => {
         setIsEditing(false);
     }
 
+    
+	const handleChatDownload = async () => {
+		if(chat === null) return;
+		const element = document.createElement("a");
+		const file = new Blob([JSON.stringify(chat)], {type: 'text/plain'});
+		element.href = URL.createObjectURL(file);
+		element.download = `${chat.name}.json`;
+		document.body.appendChild(element);
+		element.click();
+	}
+
     return (
         <div className="themed-root w-full h-5/6 flex flex-row justify-start align-middle items-center gap-6">
             <button className="message-button" onClick={() => {window.location.reload()}}>
                 <LucideArrowBigLeft size={36} className="text-theme-text"/>
+            </button>
+            <button className="message-button" onClick={() => handleChatDownload()}>
+                <Download size={36} className="text-theme-text"/>
             </button>
             {isEditing ? (
                 <input
