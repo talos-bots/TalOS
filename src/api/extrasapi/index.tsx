@@ -5,6 +5,11 @@ import exifr from 'exifr'
 import extract from 'png-chunks-extract';
 // @ts-ignore
 import PNGtext from 'png-chunk-text';
+// @ts-ignore
+import { encode } from 'png-chunk-text';
+// @ts-ignore
+import encodePng from 'png-chunks-encode';
+import { TavernCardV2 } from "@/types";
 
 export const importTavernCharacter = (file: File): Promise<Construct> => {
     return new Promise((resolve, reject) => {
@@ -163,3 +168,68 @@ const decodeBase64 = (base64String: string) => {
     const text = atob(base64String);
     return decodeURIComponent(escape(text));
 };
+
+export async function createTavernCardV2(construct: Construct): Promise<TavernCardV2> {
+    // You might need to adjust the mapping based on the actual structure of the Construct class
+    const data = {
+      name: construct.name,
+      description: "",
+      personality: construct.personality,
+      scenario: construct.background,
+      first_mes: construct.greetings[0], 
+      mes_example: "",
+      creator_notes: "", 
+      system_prompt: construct.authorsNote || "",
+      post_history_instructions: "", 
+      alternate_greetings: construct.greetings.slice(1), 
+      character_book: undefined, 
+      tags: [], 
+      creator: "", 
+      character_version: "", 
+      extensions: {},
+    };
+  
+    const tavernCardV2: TavernCardV2 = {
+      spec: 'chara_card_v2',
+      spec_version: '2.0',
+      data,
+    };
+  
+    return tavernCardV2;
+}
+
+export async function saveTavernCardAsImage(construct: Construct) {
+    const tavernCardV2 = await createTavernCardV2(construct);
+    const jsonString = JSON.stringify(tavernCardV2);
+    const base64String = btoa(unescape(encodeURIComponent(jsonString)));
+  
+    // Convert data URI to Blob
+    const byteString = atob(construct.avatar.split(',')[1]);
+    const arrayBuffer = new ArrayBuffer(byteString.length);
+    const int8Array = new Uint8Array(arrayBuffer);
+    for (let i = 0; i < byteString.length; i++) {
+      int8Array[i] = byteString.charCodeAt(i);
+    }
+  
+    // Extract existing chunks from the PNG
+    const chunks = extract(int8Array);
+  
+    // Create a new text chunk
+    const textChunk = encode('chara', base64String);
+  
+    // Add the new text chunk to the chunks array
+    chunks.push({
+      name: 'tEXt',
+      data: new Uint8Array(textChunk)
+    });
+  
+    // Recompile the PNG with the new chunks
+    const newData = encodePng(chunks);
+  
+    // Convert the new data to a Blob
+    const newBlob = new Blob([newData], { type: 'image/png' });
+  
+    // Save the Blob to a file
+    const url = URL.createObjectURL(newBlob);
+    return url;
+}

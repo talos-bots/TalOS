@@ -9,6 +9,7 @@ import StringArrayEditor from "../string-array-editor";
 import RouteButton from "../route-button";
 import { setConstructAsPrimary, addConstructToActive, constructIsActive, getActiveConstructList, removeConstructFromActive } from "@/api/constructapi";
 import StringArrayEditorCards from "../string-array-editor-cards";
+import { saveTavernCardAsImage } from "@/api/extrasapi";
 interface Props {
     character: Construct;
 }
@@ -77,6 +78,16 @@ const ConstructBox: React.FC<Props> = ({character}) => {
         localStorage.setItem(characterName+'-expanded', JSON.stringify({isExpanded: isOpen}));
     }, [isOpen, characterName]);
 
+    const handleConstructExport = async () => {
+        if(character === null) return;
+        const url = await saveTavernCardAsImage(character);
+        const element = document.createElement("a");
+        element.href = url;
+        element.download = `${character.name}.ConstructOS.png`;
+        document.body.appendChild(element);
+        element.click();
+    }
+
     return (
         <div className="character-box themed-box h-calc(100vh/6) w-full justify-center">
             <div className="text-2xl font-bold z-10 flex justify-between items-center" onDoubleClick={() => setIsOpen(!isOpen)}>
@@ -116,8 +127,9 @@ const ConstructBox: React.FC<Props> = ({character}) => {
                                     <button className="themed-button-neg w-1/3" onClick={() => makeInactive()}>Remove Active Construct</button>
                                 </div>
                                 <div className="row-span-1 flex flex-row gap-1">
-                                    <RouteButton to={`/constructs/${character._id}`} text="Edit" className="w-1/2"/>
-                                    <button className="themed-button-neg w-1/2" onClick={() => deleteConstructFrom()}>Delete</button>
+                                    <RouteButton to={`/constructs/${character._id}`} text="Edit" className="w-1/3"/>
+                                    <button className="themed-button-neg w-1/3" onClick={() => deleteConstructFrom()}>Delete</button>
+                                    <button className="themed-button-pos w-1/3" onClick={() => handleConstructExport()}>Export as Card</button>
                                 </div>
                             </div>
                         </div>

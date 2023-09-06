@@ -48,6 +48,7 @@
     "lucide-react": "^0.265.0",
     "openai": "^3.3.0",
     "png-chunk-text": "^1.0.0",
+    "png-chunks-encode": "^1.0.0",
     "png-chunks-extract": "^1.0.0",
     "postcss": "^8.4.26",
     "pouchdb": "^8.0.1",

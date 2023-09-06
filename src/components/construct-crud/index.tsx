@@ -7,6 +7,7 @@ import './ConstructCrud.scss'
 import StringArrayEditor from "../string-array-editor";
 import { setConstructAsPrimary, addConstructToActive, constructIsActive, getActiveConstructList, removeConstructFromActive } from "@/api/constructapi";
 import StringArrayEditorCards from "../string-array-editor-cards";
+import { saveTavernCardAsImage } from "@/api/extrasapi";
 
 const ConstructManagement = () => {
     const { id } = useParams<{ id: string }>();
@@ -154,6 +155,16 @@ const ConstructManagement = () => {
         }
     }
 
+    const handleConstructExport = async () => {
+        if(constructState === null) return;
+        const url = await saveTavernCardAsImage(constructState);
+        const element = document.createElement("a");
+        element.href = url;
+        element.download = `${constructState.name}.ConstructOS.png`;
+        document.body.appendChild(element);
+        element.click();
+    }
+
     return (
         <div className="w-full h-[calc(100vh-70px)] grid grid-rows-[auto,1fr] themed-root gap-4">
             <h2 className="text-2xl font-bold text-theme-text text-shadow-xl">Construct Editor</h2>
@@ -285,8 +296,9 @@ const ConstructManagement = () => {
                                     <button className="themed-button-neg w-1/4" onClick={() => deleteConstructAndReturn()}>{constructState ? 'Delete Construct' : 'Clear Values'}</button>
                                 </div>
                                 <div className="row-span-1 flex flex-row gap-1">
-                                    <button type="submit" className="themed-button-neg w-1/2" onClick={returnToMenu}>Return to Menu</button>
-                                    <button className="themed-button-pos w-1/2" onClick={() => saveConstruct()}>Save</button>
+                                    <button type="submit" className="themed-button-neg w-1/3" onClick={returnToMenu}>Return to Menu</button>
+                                    <button className="themed-button-pos w-1/3" onClick={() => saveConstruct()}>Save</button>
+                                    <button className="themed-button-pos w-1/3" onClick={() => handleConstructExport()}>Export as Card</button>
                                 </div>
                             </div>
                         </div>
