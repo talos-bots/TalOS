@@ -43,7 +43,10 @@
 ### Create Constructs
 - Export to V2 Cards
 - Create AI Assistants or RP Characters.
-### Multi-Agent Discord Bot
+### Multi-Construct Discord Bot
+- Have multiple constructs speak through one discord bot.
+- Group ordering
+- Reply percentages, lurking, etc.
 - GIF sending, web browsing, vector memories, and RP.
 ### Agent Chat window
 - A way to test agent features, personalities, and other features.
