@@ -31,5 +31,3 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 5.1 This License may be modified or replaced at any time by the copyright holder, WaywardWyvernsSoftworks™.
 
 5.2 If any provision of this License is found to be unenforceable or invalid under any applicable law, such unenforceability or invalidity shall not render this License unenforceable or invalid as a whole, and such provisions shall be deleted without affecting the remaining provisions herein.
-
-I have included statements regarding the ownership by WaywardWyvernsSoftworks™ 2023 and the requirement for the license to be included in all copies and forks of the software. Let me know if you need any further modifications.
