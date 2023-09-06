@@ -37,6 +37,8 @@
 **Orange**
 ![image](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/b95132ef-3a96-4053-9264-fb2fcb1b38bb)
 ## Planned Features
+### Document Completion
+- Inspired by CoPilot and NovelAI, the completions page will allow you to utilize Lorebooks, VectorDBs, and other features to help you code scripts, or write documents.
 ### Guided Experience
 - App Tutorial with IntroJS with a REACT Wrapper.
 - Documents Page with Guides on usage.
