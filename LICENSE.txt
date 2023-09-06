@@ -2,7 +2,7 @@
 
 ## 1. Definitions
 
-1.1 "Software" refers to the contents of this repository, including code, documentation, assets, and any other materials contained within, which is owned by WaywardWyvernsSoftworks™ 2023.
+1.1 "Software" refers to the contents of this repository, including code, documentation, assets, and any other materials contained within, which is owned by WaywardWyvernsSoftworks™.
 
 1.2 "Commercial Use" refers to any kind of profit-making activity, including but not limited to selling or licensing copies of the Software or using the Software to operate a business or service.
 
