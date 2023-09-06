@@ -12,7 +12,7 @@
 
 ## 2. Grant of Rights
 
-2.1 Users are granted the rights to use, copy, and modify the Software for Personal Use and Private Use under the terms of this License, provided that this License and the copyright notice, including the WaywardWyvernsSoftworks™ 2023 ownership indication, are retained in all copies or substantial portions of the Software.
+2.1 Users are granted the rights to use, copy, and modify the Software for Personal Use and Private Use under the terms of this License, provided that this License and the copyright notice, including the WaywardWyvernsSoftworks™ ownership indication, are retained in all copies or substantial portions of the Software.
 
 ## 3. Restrictions
 
