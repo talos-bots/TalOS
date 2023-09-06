@@ -1,33 +1,57 @@
 # License for ConstructOS
 
-## 1. Definitions
+## Part 1: Original License (MIT License)
 
-1.1 "Software" refers to the contents of this repository, including code, documentation, assets, and any other materials contained within, which is owned by WaywardWyvernsSoftworks™.
+Copyright (c) 2023 草鞋没号
 
-1.2 "Commercial Use" refers to any kind of profit-making activity, including but not limited to selling or licensing copies of the Software or using the Software to operate a business or service.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-1.3 "Personal Use" refers to use of the Software by an individual primarily for personal, non-commercial purposes.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-1.4 "Private Use" refers to use of the Software within an organization for non-commercial purposes and which is not distributed outside of that organization.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
-## 2. Grant of Rights
+## Part 2: Sublicense for Modifications and Additions made by WaywardWyvernsSoftworks™
 
-2.1 Users are granted the rights to use, copy, and modify the Software for Personal Use and Private Use under the terms of this License, provided that this License and the copyright notice, including the WaywardWyvernsSoftworks™ ownership indication, are retained in all copies or substantial portions of the Software.
+1. Definitions
 
-## 3. Restrictions
+1.1 "Modifications" refers to the contents added or changed in this repository by WaywardWyvernsSoftworks™, including code, documentation, assets, and any other materials.
 
-3.1 Users are expressly prohibited from engaging in Commercial Use of the Software, either in its original form or in any modified form.
+1.2 "Commercial Use" refers to any kind of profit-making activity, including but not limited to selling or licensing copies of the Modifications or using the Modifications to operate a business or service.
 
-3.2 Users are expressly prohibited from distributing the Software, either in its original form or in any modified form, for Commercial Use.
+1.3 "Personal Use" refers to use of the Modifications by an individual primarily for personal, non-commercial purposes.
 
-3.3 Any copies or forks of the Software must include a copy of this License, including the WaywardWyvernsSoftworks™ ownership notice.
+1.4 "Private Use" refers to use of the Modifications within an organization for non-commercial purposes and which is not distributed outside of that organization.
 
-## 4. Disclaimer
+2. Grant of Rights
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+2.1 Users are granted the rights to use, copy, and modify the Modifications for Personal Use and Private Use under the terms of this Sublicense, provided that this Sublicense and the copyright notice, including the WaywardWyvernsSoftworks™ ownership indication, are retained in all copies or substantial portions of the Modifications.
 
-## 5. General
+3. Restrictions
 
-5.1 This License may be modified or replaced at any time by the copyright holder, WaywardWyvernsSoftworks™.
+3.1 Users are expressly prohibited from engaging in Commercial Use of the Modifications, either in its original form or in any modified form.
 
-5.2 If any provision of this License is found to be unenforceable or invalid under any applicable law, such unenforceability or invalidity shall not render this License unenforceable or invalid as a whole, and such provisions shall be deleted without affecting the remaining provisions herein.
+3.2 Users are expressly prohibited from distributing the Modifications, either in its original form or in any modified form, for Commercial Use.
+
+3.3 Any copies or forks of the Modifications must include a copy of this Sublicense, including the WaywardWyvernsSoftworks™ ownership notice.
+
+4. Disclaimer
+
+THE MODIFICATIONS ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE MODIFICATIONS OR THE USE OR OTHER DEALINGS IN THE MODIFICATIONS.
+
+5. General
+
+5.1 This Sublicense may be modified or replaced at any time by the copyright holder, WaywardWyvernsSoftworks™.
+
+5.2 If any provision of this Sublicense is found to be unenforceable or invalid under any applicable law, such unenforceability or invalidity shall not render this Sublicense unenforceable or invalid as a whole, and such provisions shall be deleted without affecting the remaining provisions herein.
