@@ -152,7 +152,6 @@ const ChatSelector = (props: ChatSelectorProps) => {
                         <h3 className="font-semibold">Selected Chat Details</h3>
                         <div className="grid grid-cols-2 w-full">
                             <div className="flex flex-col col-span-1 w-full h-full">
-
                             </div>
                             <div className="flex flex-col col-span-1 w-full h-full">
                             </div>
