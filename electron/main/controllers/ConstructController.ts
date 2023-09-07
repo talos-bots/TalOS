@@ -161,6 +161,8 @@ export async function handleLorebookPrompt(construct: ConstructInterface, prompt
                                             continue;
                                         }
                                     }
+                                }else{
+                                    appliedEntries.push(availableEntries[i]);
                                 }
                             }
                         }else{
@@ -255,7 +257,7 @@ export async function generateThoughts(construct: ConstructInterface, chat: Chat
     prompt += `${lastTwoMessages[0].user.trim()}: ${lastTwoMessages[0].text.trim()}\n`;
     prompt += `${lastTwoMessages[1].user.trim()}: ${lastTwoMessages[1].text.trim()}\n\n`;
     prompt += `### Response:\n`;
-
+    prompt = prompt.replaceAll('{{user}}', `${currentUser}`).replaceAll('{{char}}', `${construct.name}`);
     const response = await generateText(prompt, currentUser);
     if (response && response.results && response.results[0]) {
         return breakUpCommands(construct.name, response.results[0], currentUser);
