@@ -173,13 +173,13 @@ export async function handleLorebookPrompt(construct: ConstructInterface, prompt
             }else{
                 for(let j = 0; j < lastTwoMessages.length; j++){
                     for(let k = 0; k < availableEntries[i].keys.length; k++){
-                        if(lastTwoMessages[j].text.toLowerCase().includes(availableEntries[i].keys[k].trim().toLowerCase())){
+                        if(lastTwoMessages[j].text.toLocaleLowerCase().includes(availableEntries[i].keys[k].trim().toLocaleLowerCase())){
                             if(appliedEntries.includes(availableEntries[i])){
                                 continue;
                             }else{
                                 if(availableEntries[i].selective === true){
                                     for(let k = 0; k < availableEntries[i].secondary_keys.length; k++){
-                                        if(lastTwoMessages[j].text.toLowerCase().includes(availableEntries[i].secondary_keys[k].trim().toLowerCase())){
+                                        if(lastTwoMessages[j].text.toLocaleLowerCase().includes(availableEntries[i].secondary_keys[k].trim().toLocaleLowerCase())){
                                             if(appliedEntries.includes(availableEntries[i])){
                                                 continue;
                                             }else{
@@ -335,15 +335,15 @@ export function breakUpCommands(charName: string, commandString: string, user = 
     
     for (let i = 0; i < lines.length; i++) {
         // If the line starts with a colon, it's the start of a new command
-        let lineToTest = lines[i].toLowerCase();
+        let lineToTest = lines[i].toLocaleLowerCase();
         
-        if (lineToTest.startsWith(`${user.toLowerCase()}:`) || lineToTest.startsWith('you:') || lineToTest.startsWith('<start>') || lineToTest.startsWith('<end>') || lineToTest.startsWith('<user>') || lineToTest.toLowerCase().startsWith('user:')) {
+        if (lineToTest.startsWith(`${user.toLocaleLowerCase()}:`) || lineToTest.startsWith('you:') || lineToTest.startsWith('<start>') || lineToTest.startsWith('<end>') || lineToTest.startsWith('<user>') || lineToTest.toLocaleLowerCase().startsWith('user:')) {
           break;
         }
         
         if (stopList !== null) {
             for(let j = 0; j < stopList.length; j++){
-                if(lineToTest.startsWith(`${stopList[j].toLowerCase()}`)){
+                if(lineToTest.startsWith(`${stopList[j].toLocaleLowerCase()}`)){
                     break;
                 }
             }

@@ -1966,13 +1966,13 @@ async function handleLorebookPrompt(construct, prompt, chatLog) {
       } else {
         for (let j = 0; j < lastTwoMessages.length; j++) {
           for (let k = 0; k < availableEntries[i].keys.length; k++) {
-            if (lastTwoMessages[j].text.toLowerCase().includes(availableEntries[i].keys[k].trim().toLowerCase())) {
+            if (lastTwoMessages[j].text.toLocaleLowerCase().includes(availableEntries[i].keys[k].trim().toLocaleLowerCase())) {
               if (appliedEntries.includes(availableEntries[i])) {
                 continue;
               } else {
                 if (availableEntries[i].selective === true) {
                   for (let k2 = 0; k2 < availableEntries[i].secondary_keys.length; k2++) {
-                    if (lastTwoMessages[j].text.toLowerCase().includes(availableEntries[i].secondary_keys[k2].trim().toLowerCase())) {
+                    if (lastTwoMessages[j].text.toLocaleLowerCase().includes(availableEntries[i].secondary_keys[k2].trim().toLocaleLowerCase())) {
                       if (appliedEntries.includes(availableEntries[i])) {
                         continue;
                       } else {
@@ -2121,13 +2121,13 @@ function breakUpCommands(charName, commandString, user = "You", stopList = []) {
     return command;
   }
   for (let i = 0; i < lines.length; i++) {
-    let lineToTest = lines[i].toLowerCase();
-    if (lineToTest.startsWith(`${user.toLowerCase()}:`) || lineToTest.startsWith("you:") || lineToTest.startsWith("<start>") || lineToTest.startsWith("<end>") || lineToTest.startsWith("<user>") || lineToTest.toLowerCase().startsWith("user:")) {
+    let lineToTest = lines[i].toLocaleLowerCase();
+    if (lineToTest.startsWith(`${user.toLocaleLowerCase()}:`) || lineToTest.startsWith("you:") || lineToTest.startsWith("<start>") || lineToTest.startsWith("<end>") || lineToTest.startsWith("<user>") || lineToTest.toLocaleLowerCase().startsWith("user:")) {
       break;
     }
     if (stopList !== null) {
       for (let j = 0; j < stopList.length; j++) {
-        if (lineToTest.startsWith(`${stopList[j].toLowerCase()}`)) {
+        if (lineToTest.startsWith(`${stopList[j].toLocaleLowerCase()}`)) {
           break;
         }
       }
