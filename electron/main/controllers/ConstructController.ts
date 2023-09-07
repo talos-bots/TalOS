@@ -227,9 +227,10 @@ export function assembleInstructPrompt(construct: any, chatLog: ChatInterface, c
     return prompt.replaceAll('{{user}}', `${currentUser}`);
 }
 
-export async function generateThoughts(construct: ConstructInterface, chat: ChatInterface, currentUser: string = 'you', messagesToInclude?: any){
+export async function generateThoughts(construct: ConstructInterface, chat: ChatInterface, currentUser: string = 'you', messagesToInclude: number = 25){
     let lastTwoMessages = chat.messages.slice(-2);
     let messagesExceptLastTwo = chat.messages.slice(0, -2);
+    messagesExceptLastTwo = messagesExceptLastTwo.slice(-messagesToInclude);
     let prompt = '';
     for(let i = 0; i < messagesExceptLastTwo.length; i++){
         if(messagesExceptLastTwo[i].isCommand === true){
@@ -538,5 +539,10 @@ function constructController() {
         event.reply(uniqueEventName, response);
     });
 
+    ipcMain.on('generate-thoughts', (event, construct, chat, currentUser, messagesToInclude, uniqueEventName) => {
+        generateThoughts(construct, chat, currentUser, messagesToInclude).then((response) => {
+            event.reply(uniqueEventName, response);
+        });
+    });
 }
 export default constructController;

@@ -133,3 +133,13 @@ export const breakUpCommands = (charName: string, commandString: string, user: a
         });
     });
 }
+
+export const generateThoughts = (construct: Construct, chatLog: Chat, currentUser?: string, messagesToInclude?: number): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const uniqueEventName = "generate-thoughts-reply-" + Date.now() + "-" + Math.random();
+        ipcRenderer.send('generate-thoughts', construct, chatLog, currentUser, messagesToInclude, uniqueEventName);
+        ipcRenderer.once(uniqueEventName, (event, response) => {
+            resolve(response);
+        });
+    });
+}
