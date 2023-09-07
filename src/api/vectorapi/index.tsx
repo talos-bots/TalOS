@@ -56,3 +56,17 @@ export async function addVectorFromMessage(schemaName: string, message: Message)
         });
     });
 }
+
+export function removeAllMemories(schemaName: string){
+    return new Promise((resolve, reject) => {
+        const uniqueEventName = "delete-index-reply-" + Date.now() + "-" + Math.random();
+        ipcRenderer.send("delete-index", schemaName, uniqueEventName);
+        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any[]) => {
+            if (data) {
+                resolve(data);
+            } else {
+                reject(new Error("No data received from 'delete-index' event."));
+            }
+        });
+    });
+}

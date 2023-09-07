@@ -1,5 +1,6 @@
 import { generateContinueChatLog, regenerateMessageFromChatLog } from "@/api/constructapi";
 import { getConstruct, getUser, updateChat } from "@/api/dbapi";
+import { getRelaventMemories } from "@/api/vectorapi";
 import { Chat } from "@/classes/Chat";
 import { Message } from "@/classes/Message";
 import { User } from "@/classes/User";
@@ -37,6 +38,8 @@ export function addUserMessage(messageText: string, user: User | null) {
 export async function sendMessage(chatlog: Chat, constructID: string, user: User | null) {
     let activeConstruct = await getConstruct(constructID);
     if (!chatlog.constructs || chatlog.constructs.length === 0) return null;
+    const memories = await getRelaventMemories(chatlog._id, chatlog.lastMessage.text);
+    console.log(memories);
     let response = await generateContinueChatLog(activeConstruct, chatlog, user ? (user.nickname || user.name) : 'DefaultUser');
     if (!response) return null;
     let newMessage = new Message();

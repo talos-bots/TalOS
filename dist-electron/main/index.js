@@ -4358,6 +4358,13 @@ async function getVector(text) {
     return embeddings.arraySync()[0];
   });
 }
+async function deleteIndex(schemaName) {
+  const indexPath = path.join(dataPath, schemaName);
+  const index = new vectra.LocalIndex(indexPath);
+  if (await index.isIndexCreated()) {
+    await index.deleteIndex();
+  }
+}
 function VectorDBRoutes() {
   electron.ipcMain.on("get-all-vectors", async (event, schemaName, uniqueReplyName) => {
     getAllVectors(schemaName).then((vectors) => {
@@ -4377,6 +4384,11 @@ function VectorDBRoutes() {
   electron.ipcMain.on("get-vector", async (event, text, uniqueReplyName) => {
     getVector(text).then((vector) => {
       event.reply(uniqueReplyName, vector);
+    });
+  });
+  electron.ipcMain.on("delete-index", async (event, schemaName, uniqueReplyName) => {
+    deleteIndex(schemaName).then(() => {
+      event.reply(uniqueReplyName, true);
     });
   });
 }

@@ -1,3 +1,4 @@
+import { removeAllMemories } from "@/api/vectorapi";
 import { Chat } from "@/classes/Chat";
 import { Download, Edit2Icon, LucideArrowBigLeft, X } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -36,6 +37,13 @@ const ChatInfo = (props: ChatInfoProps) => {
         if(chat === null) return;
         chat.messages = [];
         if (onEdit !== undefined) onEdit(chat);
+        if (chat.doVector) {
+            removeAllMemories(chat._id).then(() => {
+                console.log("Removed all memories");
+            }).catch((err) => {
+                console.error(err);
+            });
+        }
     }
 
     return (

@@ -46,6 +46,14 @@ async function getVector(text: string){
     });
 }
 
+async function deleteIndex(schemaName: string){
+    const indexPath = path.join(dataPath, schemaName);
+    const index = new LocalIndex(indexPath);
+    if (await index.isIndexCreated()) {
+        await index.deleteIndex();
+    }
+}
+
 export function VectorDBRoutes(){
     ipcMain.on('get-all-vectors', async (event, schemaName: string, uniqueReplyName: string) => {
         getAllVectors(schemaName).then((vectors) => {
@@ -68,6 +76,12 @@ export function VectorDBRoutes(){
     ipcMain.on('get-vector', async (event, text: string, uniqueReplyName: string) => {
         getVector(text).then((vector) => {
             event.reply(uniqueReplyName, vector);
+        });
+    });
+
+    ipcMain.on('delete-index', async (event, schemaName: string, uniqueReplyName: string) => {
+        deleteIndex(schemaName).then(() => {
+            event.reply(uniqueReplyName, true);
         });
     });
 }
