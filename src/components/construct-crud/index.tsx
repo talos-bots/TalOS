@@ -67,18 +67,16 @@ const ConstructManagement = () => {
                 const getActiveStatus = async () => {
                     let status = await constructIsActive(character._id);
                     setIsActive(status);
-                    getPrimaryStatus();
                 }
                 const getPrimaryStatus = async () => {
-                    if(isActive){
-                        let activeList = await getActiveConstructList();
-                        if(activeList.length > 0){
-                            if(activeList[0] === character._id){
-                                setIsPrimary(true);
-                            }
+                    let activeList = await getActiveConstructList();
+                    if(activeList.length > 0){
+                        if(activeList[0] === character._id){
+                            setIsPrimary(true);
                         }
                     }
                 }
+                getPrimaryStatus();
                 getActiveStatus();
             }
         }

@@ -30,18 +30,21 @@ const ConstructBox: React.FC<Props> = ({character}) => {
                 }
             }
             setIsActive(status);
-            getPrimaryStatus();
         }
         const getPrimaryStatus = async () => {
-            if(isActive){
-                let activeList = await getActiveConstructList();
-                if(activeList.length > 0){
-                    if(activeList[0] === character._id){
+            getActiveConstructList().then((constructs) => {
+                if(constructs.length > 0){
+                    if(constructs[0] === character._id){
                         setIsPrimary(true);
+                    } else {
+                        setIsPrimary(false);
                     }
                 }
-            }
+            }).catch((err) => {
+                console.error(err);
+            });
         }
+        getPrimaryStatus();
         getActiveStatus();
     }, [character]);
 
@@ -122,8 +125,8 @@ const ConstructBox: React.FC<Props> = ({character}) => {
                         <div className="w-full h-1/2 overflow-hidden">
                             <div className="grid grid-rows-2 h-full gap-1">
                                 <div className="row-span-1 flex flex-row gap-1">
-                                    <button disabled={isPrimary} className={isPrimary ? "w-1/3 themed-button-no-bg bg-theme-hover-pos" : "w-1/3 themed-button-no-bg bg-theme-button hover:bg-theme-hover-pos"} onClick={() => makePrimary()}>Set as Primary Construct</button>
-                                    <button disabled={isActive && !isPrimary} className={isActive && !isPrimary ? "w-1/3 themed-button-no-bg bg-theme-hover-pos hover:bg-theme-root" : "w-1/3 themed-button-no-bg bg-theme-root hover:bg-theme-hover-pos"} onClick={() => makeActive()}>Add as Secondary Construct</button>
+                                    <button disabled={isPrimary} className="w-1/3 themed-button-pos" onClick={() => makePrimary()}>Set as Primary Construct</button>
+                                    <button disabled={isActive && !isPrimary} className="w-1/3 themed-button-pos" onClick={() => makeActive()}>Add as Secondary Construct</button>
                                     <button className="themed-button-neg w-1/3" onClick={() => makeInactive()}>Remove Active Construct</button>
                                 </div>
                                 <div className="row-span-1 flex flex-row gap-1">
