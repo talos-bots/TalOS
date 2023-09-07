@@ -150,10 +150,9 @@ const ChatDetails = (props: ChatDetailsProps) => {
     
     return (
         <div 
-            className="themed-box-no-padding p-2 flex flex-col justify-start items-start relative"  
+            className="themed-box-no-padding p-2 flex flex-col justify-start items-start relative cursor-pointer"  
             onClick={() => {if(onClick !== undefined) onClick(chat)}} 
             onDoubleClick={()=> {if(onDoubleClick !== undefined) onDoubleClick(chat)}}
-            title={chat.lastMessage.text.length > 0 ? `Last Message: ${chat.lastMessage.user}: ${chat.lastMessage.text}` : "No messages sent."}
         >
             <div className="flex flex-row items-center justify-start">
                 <div className="themed-chat-avatar flex items-center justify-center">
