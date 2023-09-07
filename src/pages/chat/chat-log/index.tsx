@@ -9,6 +9,7 @@ import { Alert } from "@material-tailwind/react";
 import ChatInfo from "@/pages/chat/chat-info";
 import Loading from "@/components/loading";
 import { User } from "@/classes/User";
+import { addVectorFromMessage } from "@/api/vectorapi";
 interface ChatLogProps {
 	chatLogID?: string;
 }
@@ -60,8 +61,7 @@ const ChatLog = (props: ChatLogProps) => {
 	const handleMessageSend = async (message: string) => {
 		if(hasSentMessage === true) return;
 		setHasSentMessage(true);
-		let chat;
-		chat = chatLog;
+		let chat: Chat | null = chatLog;
 		if(chat === null) return;
 		if(message !== "" && message !== null && message !== undefined && message !== " " && message !== "\n"){
 			let newMessage = addUserMessage(message, currentUser);
@@ -70,6 +70,9 @@ const ChatLog = (props: ChatLogProps) => {
 				console.log("message already exists");
 			}else{
 				setMessages(prevMessages => [...prevMessages, newMessage]);
+				if(chat?.doVector === true){
+					addVectorFromMessage(chat._id, newMessage);
+				}
 			}
 		}
 		await wait(750);
@@ -87,6 +90,9 @@ const ChatLog = (props: ChatLogProps) => {
 					// Add the botMessage
 					if (botMessage !== null) {
 						updatedMessages.push(botMessage);
+						if(chat?.doVector === true){
+							addVectorFromMessage(chat._id, botMessage);
+						}
 					}
 		
 					return updatedMessages;
@@ -148,6 +154,7 @@ const ChatLog = (props: ChatLogProps) => {
 
 	const handleDetailsChange = async (newChat: Chat) => {
 		setChatLog(newChat);
+		setMessages(newChat.messages);
 		await updateChat(newChat)
 	}
 

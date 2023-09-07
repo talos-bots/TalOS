@@ -13,6 +13,8 @@ export class Chat{
         public constructs: string[] = [],
         public humans: string[] = [],
         public chatConfigs: ConstructChatConfig[] = [],
+        public doVector: boolean = false,
+        public global: boolean = false,
     ) {}
 
     setChat(name: string, type: string, messages: Message[]){

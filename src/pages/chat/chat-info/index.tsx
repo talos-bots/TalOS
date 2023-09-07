@@ -1,6 +1,5 @@
 import { Chat } from "@/classes/Chat";
-import BackButton from "@/components/back-button";
-import { Download, Edit2Icon, LucideArrowBigLeft } from "lucide-react";
+import { Download, Edit2Icon, LucideArrowBigLeft, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface ChatInfoProps { 
@@ -33,13 +32,22 @@ const ChatInfo = (props: ChatInfoProps) => {
 		element.click();
 	}
 
+    const handleRemoveAllMessages = () => {
+        if(chat === null) return;
+        chat.messages = [];
+        if (onEdit !== undefined) onEdit(chat);
+    }
+
     return (
         <div className="themed-root w-full h-5/6 flex flex-row justify-start align-middle items-center gap-6">
-            <button className="message-button" onClick={() => {window.location.reload()}}>
+            <button className="message-button" onClick={() => {window.location.reload()}} title="Return to Select">
                 <LucideArrowBigLeft size={36} className="text-theme-text"/>
             </button>
-            <button className="message-button" onClick={() => handleChatDownload()}>
-                <Download size={36} className="text-theme-text"/>
+            <button className="message-button" onClick={() => handleChatDownload()} title="Download ChatLog">
+                <Download size={34} className="text-theme-text"/>
+            </button>
+            <button className="message-button" onClick={() => handleRemoveAllMessages()} title="Clear Messages">
+                <X size={36} className="text-theme-text"/>
             </button>
             {isEditing ? (
                 <input
@@ -62,9 +70,11 @@ const ChatInfo = (props: ChatInfoProps) => {
             ) : (
                 <div className="flex flex-row gap-2">
                     <p>{name}</p>
-                    <button onClick={() => setIsEditing(true)} className="message-button">
-                        <Edit2Icon size={14} />
-                    </button>
+                    {chat._id !== "activePool" && (
+                        <button onClick={() => setIsEditing(true)} className="message-button" title="Edit Chat name">
+                            <Edit2Icon size={14} />
+                        </button>
+                    )}
                 </div>
             )}
         </div>

@@ -12,16 +12,16 @@ interface ChatDetailsProps {
     onClick?: (chat: Chat) => void;
     onEdit?: (chat: Chat) => void;
     onDelete?: (chat: Chat) => void;
+    disabled?: boolean;
 }
 const ChatDetails = (props: ChatDetailsProps) => {
-    const { chat, onDoubleClick, onClick, onDelete, onEdit } = props;
+    const { chat, onDoubleClick, onClick, onDelete, onEdit, disabled } = props;
     const [name, setName] = useState<string>("");
     const [avatar, setAvatar] = useState<string>("");
     const [constructs, setConstructs] = useState<Construct[]>([]);
     const [avatars, setAvatars] = useState<string[]>([]);
     const [groupAvatar, setGroupAvatar] = useState<string>('');
     const [isEditing, setIsEditing] = useState<boolean>(false);
-    const spanRef = useRef<HTMLSpanElement>(null);
 
     const constructsRef = useRef<Construct[]>([]);  // to keep track of current state within async functions
 
@@ -149,7 +149,12 @@ const ChatDetails = (props: ChatDetailsProps) => {
     };
     
     return (
-        <div className="themed-box-no-padding p-2 flex flex-col justify-start items-start relative"  onClick={() => {if(onClick !== undefined) onClick(chat)}} onDoubleClick={()=> {if(onDoubleClick !== undefined) onDoubleClick(chat)}}>
+        <div 
+            className="themed-box-no-padding p-2 flex flex-col justify-start items-start relative"  
+            onClick={() => {if(onClick !== undefined) onClick(chat)}} 
+            onDoubleClick={()=> {if(onDoubleClick !== undefined) onDoubleClick(chat)}}
+            title={chat.lastMessage.text.length > 0 ? `Last Message: ${chat.lastMessage.user}: ${chat.lastMessage.text}` : "No messages sent."}
+        >
             <div className="flex flex-row items-center justify-start">
                 <div className="themed-chat-avatar flex items-center justify-center">
                     {avatars.length > 0 ? (<img src={groupAvatar}/>) : (<RiQuestionMark size={36}/>)}
@@ -174,19 +179,27 @@ const ChatDetails = (props: ChatDetailsProps) => {
                 ) : (
                     <>
                         <p className="ml-2">{truncateText(name, 35)}</p>
-                        <button onClick={() => setIsEditing(true)} className="message-button ml-2 cursor-pointer">
-                            <Edit2Icon size={18} />
-                        </button>
+                        {!disabled &&
+                        <>
+                            <button onClick={() => setIsEditing(true)} className="message-button ml-2 cursor-pointer" title="Edit Chat name">
+                                <Edit2Icon size={18} />
+                            </button>
+                        </>}
                     </>
                 )}
+                {!disabled && (
+                    <>
                 <button className="message-button ml-2 cursor-pointer"
                     onClick={() => {
                         if(onDelete === undefined) return;
                         onDelete(chat);
                     }}
+                    title="Delete Chat"
                 >
                     <TrashIcon size={18} />
                 </button>
+                    </>
+                )}
                 <div className="grid w-1/3 gap-4 absolute right-4" id="info-text">
                     <div className="flex flex-row justify-end text-right">
                         <i className="w-full text-theme-italic text-right">{getFormattedTime(chat.lastMessage.timestamp)}</i>

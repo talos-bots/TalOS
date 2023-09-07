@@ -11,6 +11,8 @@ export type ChatInterface = {
     constructs: string[];
     humans: string[];
     chatConfigs: any[];
+    doVector: boolean;
+    global: boolean;
 }
 
 export type MessageInterface = {

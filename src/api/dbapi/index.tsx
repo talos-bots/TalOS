@@ -203,7 +203,9 @@ export async function getChats(): Promise<Chat[]> {
                         doc.doc.firstMessageDate,
                         doc.doc.constructs,
                         doc.doc.humans,
-                        doc.doc.chatConfigs
+                        doc.doc.chatConfigs,
+                        doc.doc.doVector,
+                        doc.doc.global
                     );
                 });
                 resolve(chats);
@@ -231,7 +233,9 @@ export async function getChatsByConstruct(constructId: string): Promise<Chat> {
                     data.doc.firstMessageDate,
                     data.doc.constructs,
                     data.doc.humans,
-                    data.doc.chatConfigs
+                    data.doc.chatConfigs,
+                    data.doc.doVector,
+                    data.doc.global
                 );
                 resolve(chat);
             } else {
@@ -258,7 +262,9 @@ export async function getChat(id: string): Promise<Chat> {
                     data.firstMessageDate,
                     data.constructs,
                     data.humans,
-                    data.chatConfigs
+                    data.chatConfigs,
+                    data.doVector,
+                    data.global
                 );
                 resolve(chat);
             } else {

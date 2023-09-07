@@ -14,6 +14,7 @@ import DiscordController from "./controllers/DiscordController";
 import { ElectronDBRoutes } from "./api/electrondb";
 import { LangChainRoutes } from "./api/langchain";
 import { update } from "./update";
+import { VectorDBRoutes } from "./api/vector";
 
 // The built directory structure
 //
@@ -97,6 +98,7 @@ async function createWindow() {
   constructController();
   DiscordController();
   LangChainRoutes();
+  VectorDBRoutes();
   update(win)
 }
 

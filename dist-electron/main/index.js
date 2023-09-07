@@ -13,6 +13,8 @@ const axios = require("axios");
 const openai = require("openai");
 const FormData = require("form-data");
 const electronUpdater = require("electron-updater");
+const vectra = require("vectra");
+const use = require("@tensorflow-models/universal-sentence-encoder");
 let constructDB$1;
 let chatsDB$1;
 let commandDB$1;
@@ -1051,7 +1053,9 @@ function assembleChatFromData(data) {
     firstMessageDate: data.firstMessageDate,
     constructs: data.constructs,
     humans: data.humans,
-    chatConfigs: data.chatConfigs
+    chatConfigs: data.chatConfigs,
+    doVector: data.doVector,
+    global: data.global
   };
   return chat;
 }
@@ -2458,7 +2462,9 @@ async function handleDiscordMessage(message) {
       firstMessageDate: newMessage.timestamp,
       constructs: activeConstructs,
       humans: [message.author.id],
-      chatConfigs: []
+      chatConfigs: [],
+      doVector: false,
+      global: false
     };
     if (chatLog.messages.length > 0) {
       await addChat(chatLog);
@@ -4315,6 +4321,65 @@ function startDownload(callback, complete) {
   electronUpdater.autoUpdater.on("update-downloaded", complete);
   electronUpdater.autoUpdater.downloadUpdate();
 }
+require("@tensorflow/tfjs");
+async function getAllVectors(schemaName) {
+  const indexPath = path.join(dataPath, schemaName);
+  const index = new vectra.LocalIndex(indexPath);
+  if (!await index.isIndexCreated()) {
+    await index.createIndex();
+  }
+  const vectors = await index.listItems();
+  return vectors;
+}
+async function getRelaventMemories(schemaName, text) {
+  const indexPath = path.join(dataPath, schemaName);
+  const index = new vectra.LocalIndex(indexPath);
+  if (!await index.isIndexCreated()) {
+    await index.createIndex();
+  }
+  const vector = await getVector(text);
+  const memories = await index.queryItems(vector, 3);
+  return memories;
+}
+async function addVectorFromMessage(schemaName, message) {
+  const indexPath = path.join(dataPath, schemaName);
+  const index = new vectra.LocalIndex(indexPath);
+  if (!await index.isIndexCreated()) {
+    await index.createIndex();
+  }
+  await index.insertItem({
+    vector: await getVector(message.text),
+    metadata: message
+  });
+}
+async function getVector(text) {
+  return use.load().then(async (model) => {
+    const embeddings = await model.embed([text]);
+    return embeddings.arraySync()[0];
+  });
+}
+function VectorDBRoutes() {
+  electron.ipcMain.on("get-all-vectors", async (event, schemaName, uniqueReplyName) => {
+    getAllVectors(schemaName).then((vectors) => {
+      event.reply(uniqueReplyName, vectors);
+    });
+  });
+  electron.ipcMain.on("get-relavent-memories", async (event, schemaName, text, uniqueReplyName) => {
+    getRelaventMemories(schemaName, text).then((memories) => {
+      event.reply(uniqueReplyName, memories);
+    });
+  });
+  electron.ipcMain.on("add-vector-from-message", async (event, schemaName, message, uniqueReplyName) => {
+    addVectorFromMessage(schemaName, message).then(() => {
+      event.reply(uniqueReplyName, true);
+    });
+  });
+  electron.ipcMain.on("get-vector", async (event, text, uniqueReplyName) => {
+    getVector(text).then((vector) => {
+      event.reply(uniqueReplyName, vector);
+    });
+  });
+}
 process.env.DIST_ELECTRON = node_path.join(__dirname, "../");
 process.env.DIST = node_path.join(process.env.DIST_ELECTRON, "../dist");
 process.env.VITE_PUBLIC = process.env.VITE_DEV_SERVER_URL ? node_path.join(process.env.DIST_ELECTRON, "../public") : process.env.DIST;
@@ -4374,6 +4439,7 @@ async function createWindow() {
   constructController();
   DiscordController();
   LangChainRoutes();
+  VectorDBRoutes();
   update(exports.win);
 }
 electron.app.whenReady().then(createWindow);

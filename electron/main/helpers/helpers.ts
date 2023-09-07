@@ -64,6 +64,8 @@ export function assembleChatFromData(data: any){
 		constructs: data.constructs,
 		humans: data.humans,
 		chatConfigs: data.chatConfigs,
+		doVector: data.doVector,
+		global: data.global,
 	}
 	return chat;
 }

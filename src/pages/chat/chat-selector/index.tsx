@@ -1,4 +1,4 @@
-import { deleteChat, getChats, getConstructs, saveNewChat } from "@/api/dbapi";
+import { deleteChat, getChat, getChats, getConstructs, saveNewChat } from "@/api/dbapi";
 import { Chat } from "@/classes/Chat";
 import { Construct } from "@/classes/Construct";
 import ConstructProfile from "@/components/construct-profile";
@@ -8,6 +8,7 @@ import Loading from "@/components/loading";
 import { Link } from "react-router-dom";
 import { PlusIcon } from "lucide-react";
 import { AiOutlineUpload } from "react-icons/ai";
+import { getActiveConstructList } from "@/api/constructapi";
 interface ChatSelectorProps {
     onClick?: (chatID: Chat) => void;
 }
@@ -17,6 +18,8 @@ const ChatSelector = (props: ChatSelectorProps) => {
     const [constructs, setConstructs] = useState<Construct[]>([]);
     const [isLoaded, setIsLoaded] = useState<boolean>(false);
     const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
+    const [activeChat, setActiveChat] = useState<Chat | null>(null);
+    const [activeConstructs, setActiveConstructs] = useState<string[]>([]);
 
     useEffect(() => {
         fetchInfo().then(() => {
@@ -41,6 +44,17 @@ const ChatSelector = (props: ChatSelectorProps) => {
                 console.error(err);
             });
         }
+        getChat('activePool').then((chat) => {
+            if(chat === null) throw new Error("Chat not found");
+            setActiveChat(chat);
+        }).catch((err) => {
+            console.error(err);
+        });
+        getActiveConstructList().then((constructs) => {
+            setActiveConstructs(constructs);
+        }).catch((err) => {
+            console.error(err);
+        });
         await Promise.all([fetchChats(), fetchConstructs()]);
     }
 
@@ -95,9 +109,11 @@ const ChatSelector = (props: ChatSelectorProps) => {
                 <h3 className="font-semibold">Constructs</h3>
                 <div className="flex flex-row w-full max-w-full h-5/6 gap-4 overflow-x-auto grow-0">
                     {Array.isArray(constructs) && constructs.map((construct) => {
-                        return (
-                            <ConstructProfile key={construct._id} character={construct} onClick={handleConstructClick}/>
-                        )
+                        if(activeConstructs.includes(construct._id)){
+                            return <ConstructProfile key={construct._id} character={construct} onClick={handleConstructClick} active/>
+                        }else{
+                            return <ConstructProfile key={construct._id} character={construct} onClick={handleConstructClick}/>
+                        }
                     })}
                     <Link
                         className="themed-root-no-padding w-36 h-full flex flex-col justify-center items-center cursor-pointer relative shrink-0 grow-0"
@@ -129,8 +145,9 @@ const ChatSelector = (props: ChatSelectorProps) => {
                             multiple={true}
                         />
                     </div>
-                    <div className="flex flex-col w-full gap-4 overflow-y-auto">
-                        {Array.isArray(chats) && chats.sort((a, b) => b.lastMessageDate - a.lastMessageDate).map((chat) => {
+                    <div className="flex flex-col w-full gap-2 overflow-y-auto">
+                        {activeChat !== null && (<ChatDetails key={'activePool'} chat={activeChat} onDoubleClick={handleChatDoubleClick} onClick={handleChatClick} onDelete={handleChatDelete} disabled/>)}
+                        {Array.isArray(chats) && chats.sort((a, b) => b.lastMessageDate - a.lastMessageDate).filter((chat) => {return chat._id !== 'activePool'}).map((chat) => {
                             return (
                                 <ChatDetails key={chat._id} chat={chat} onDoubleClick={handleChatDoubleClick} onClick={handleChatClick} onDelete={handleChatDelete}/>
                             )
