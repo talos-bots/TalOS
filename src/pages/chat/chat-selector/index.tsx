@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import { PlusIcon } from "lucide-react";
 import { AiOutlineUpload } from "react-icons/ai";
 import { getActiveConstructList } from "@/api/constructapi";
+import { removeAllMemories } from "@/api/vectorapi";
 interface ChatSelectorProps {
     onClick?: (chatID: Chat) => void;
 }
@@ -82,6 +83,24 @@ const ChatSelector = (props: ChatSelectorProps) => {
     const handleChatDelete = async (chat: Chat) => {
         await deleteChat(chat._id);
         setChats(prevChats => prevChats.filter((prevChat) => prevChat._id !== chat._id));
+        if(chat.doVector){
+            if(chat.global){
+                for(let i = 0; i < chat.constructs.length; i++){
+                    const construct = chat.constructs[i];
+                    removeAllMemories(construct).then(() => {
+                        console.log("Removed all memories");
+                    }).catch((err) => {
+                        console.error(err);
+                    });
+                }
+            }else{
+                removeAllMemories(chat._id).then(() => {
+                    console.log("Removed all memories");
+                }).catch((err) => {
+                    console.error(err);
+                });
+            }
+        }
     }
 
     const handleImportChat = async (files: FileList | null) => {
