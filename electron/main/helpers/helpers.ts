@@ -22,6 +22,9 @@ export function assembleConstructFromData(data: any){
 		greetings: data.greetings,
 		farewells: data.farewells,
 		authorsNote: data.authorsNote,
+		defaultConfig: data.defaultConfig,
+		thoughtPattern: data.thoughtPattern,
+		sprites: data.sprites,
 	}
 	return construct;
 }

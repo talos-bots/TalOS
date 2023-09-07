@@ -50,6 +50,9 @@ export type ConstructInterface = {
     greetings: string[];
     farewells: string[];
     authorsNote: string;
+    defaultConfig: DefaultChatConfig;
+    thoughtPattern: string;
+    sprites: Sprite[];
 }
 
 export type Alias = {
@@ -148,4 +151,26 @@ export interface LoreEntryInterface {
     secondary_keys: string[];
     constant: boolean;
     position: EntryPosition;
+}
+
+export type DefaultChatConfig = {
+    doInstruct: boolean;
+    doMemories: boolean;
+    doActions: boolean;
+    doSprites: boolean;
+    doVoice: boolean;
+    doLurk: boolean;
+    doRandomGreeting: boolean;
+    doRandomFarewell: boolean;
+    doRandomThought: boolean;
+    haveThoughts: boolean;
+    thinkBeforeChat: boolean;
+    replyToConstruct: number;
+    replyToConstructMention: number;
+    replyToUser: number;
+    replyToUserMention: number;
+}
+export type Sprite = {
+    moood: string;
+    image: string;
 }

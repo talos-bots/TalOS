@@ -29,7 +29,9 @@ export class Construct{
             replyToConstructMention: 0.75,
             replyToUser: 0.50,
             replyToUserMention: 1,
-        }
+        },
+        public thoughtPattern: string = '',
+        public sprites: Sprite[] = [],
     ) {}
 
     setConstruct(name: string, nickname: string, avatar: string, commands: string[], visualDescription: string, personality: string, background: string, relationships: string[], interests: string[], greetings: string[], farewells: string[], authorsNote: string){
@@ -252,4 +254,9 @@ export type ConstructChatConfig = {
     replyToConstructMention: number;
     replyToUser: number;
     replyToUserMention: number;
+}
+
+type Sprite = {
+    moood: string;
+    image: string;
 }

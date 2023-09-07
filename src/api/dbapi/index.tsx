@@ -29,7 +29,9 @@ export async function getConstructs(): Promise<Construct[]> {
                         doc.doc.greetings,
                         doc.doc.farewells,
                         doc.doc.authorsNote,
-                        doc.doc.defaultConfig
+                        doc.doc.defaultConfig,
+                        doc.doc.thoughtPattern,
+                        doc.doc.sprites
                     );
                 });
                 resolve(constructs);
@@ -60,7 +62,9 @@ export async function getConstruct(id: string): Promise<Construct> {
                     data.greetings,
                     data.farewells,
                     data.authorsNote,
-                    data.defaultConfig
+                    data.defaultConfig,
+                    data.thoughtPattern,
+                    data.sprites
                 );
                 resolve(construct);
             } else {
