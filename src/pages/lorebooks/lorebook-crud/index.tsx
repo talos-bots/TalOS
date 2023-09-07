@@ -141,7 +141,7 @@ const LorebookCrud = (props: LorebookCrudProps) => {
     }
 
     return (
-        <div className="gap-2 h-full overflow-y-hidden flex flex-col">
+        <div className="gap-2 h-full overflow-y-auto flex flex-col">
             <div className="w-full h-full grid grid-cols-4 justify-start gap-4">
                 <div className="col-span-1 flex flex-col gap-4 h-full text-left">
                     <div className="flex flex-col items-center justify-center h-1/6 mt-4">
