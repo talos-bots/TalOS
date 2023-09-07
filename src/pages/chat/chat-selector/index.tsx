@@ -108,7 +108,13 @@ const ChatSelector = (props: ChatSelectorProps) => {
             <div className="row-span-1 w-full min-h-fit themed-root grow-0 overflow-x-auto">
                 <h3 className="font-semibold">Constructs</h3>
                 <div className="flex flex-row w-full max-w-full h-5/6 gap-4 overflow-x-auto grow-0">
-                    {Array.isArray(constructs) && constructs.map((construct) => {
+                    {Array.isArray(constructs) && constructs.sort((a, b) => {
+                    if (a.name && b.name) {
+                        return a.name.localeCompare(b.name);
+                    } else {
+                        return 0;
+                    }
+                }).map((construct) => {
                         if(activeConstructs.includes(construct._id)){
                             return <ConstructProfile key={construct._id} character={construct} onClick={handleConstructClick} active/>
                         }else{
