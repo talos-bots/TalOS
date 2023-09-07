@@ -99,25 +99,25 @@ const EntryCrud = (props: EntryCrudProps) => {
                     <div className="col-span-1 h-full gap-2">
                         <div className="flex flex-col h-1/4">
                             <label htmlFor="entry-name" className="font-semibold">Name</label>
-                            <input className="themed-input w-full" id="entry-name" type="text" value={entryName} onChange={e => setEntryName(e.target.value)} />
+                            <input className="themed-input w-full" id="entry-name" type="text" value={entryName} onChange={e => setEntryName(e.target.value.trim())} />
                         </div>
                         <div className="flex flex-col h-3/4">
                             <label htmlFor="entry-content" className="font-semibold">Content</label>
-                            <textarea className="themed-input w-full h-full" id="entry-content" value={entryContent} onChange={e => setEntryContent(e.target.value)} />
+                            <textarea className="themed-input w-full h-full" id="entry-content" value={entryContent} onChange={e => setEntryContent(e.target.value.trim())} />
                         </div>
                     </div>
                     <div className="col-span-1 h-full">
                         <div className="flex flex-col h-1/4">
                             <label htmlFor="entry-keys" className="font-semibold">Keys</label>
-                            <textarea className="themed-input w-full" id="entry-keys" value={entryKeys.join(', ')} onChange={e => setEntryKeys(e.target.value.split(', '))} />
+                            <textarea className="themed-input w-full" id="entry-keys" value={entryKeys.join(',')} onChange={e => setEntryKeys(e.target.value.trim().split(','))} />
                         </div>
                         <div className="flex flex-col h-1/4">
                             <label htmlFor="entry-secondary-keys" className="font-semibold">Secondary Keys</label>
-                            <textarea className="themed-input w-full" id="entry-secondary-keys" value={entrySecondaryKeys.join(', ')} onChange={e => setEntrySecondaryKeys(e.target.value.split(', '))} />
+                            <textarea className="themed-input w-full" id="entry-secondary-keys" value={entrySecondaryKeys.join(',')} onChange={e => setEntrySecondaryKeys(e.target.value.trim().split(','))} />
                         </div>
                         <div className="flex flex-col h-2/4">
                             <label htmlFor="entry-comment" className="font-semibold">Comment</label>
-                            <textarea className="themed-input w-full h-full" id="entry-comment" value={entryComment} onChange={e => setEntryComment(e.target.value)} />
+                            <textarea className="themed-input w-full h-full" id="entry-comment" value={entryComment} onChange={e => setEntryComment(e.target.value.trim())} />
                         </div>
                     </div>
                 </div>
