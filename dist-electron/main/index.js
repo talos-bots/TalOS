@@ -1188,10 +1188,12 @@ async function addUserFromDiscordMessage(message) {
   await addUser(user);
 }
 function assembleLorebookFromData(data) {
-  if (data === null)
+  if (data === null) {
     return null;
-  if ((data == null ? void 0 : data._id) === void 0)
+  }
+  if ((data == null ? void 0 : data._id) === void 0) {
     return null;
+  }
   const lorebook = {
     _id: data._id,
     name: data.name || "",
@@ -1885,7 +1887,7 @@ async function handleLorebookPrompt(construct, prompt, chatLog) {
   }
   const assembledLorebooks = [];
   for (let i = 0; i < lorebooksData.length; i++) {
-    let lorebook = assembleLorebookFromData(lorebooksData[i]);
+    let lorebook = assembleLorebookFromData(lorebooksData[i].doc);
     if (lorebook === null || lorebook === void 0) {
       console.log("Could not assemble lorebook from data");
       continue;

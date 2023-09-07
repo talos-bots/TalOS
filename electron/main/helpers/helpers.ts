@@ -222,8 +222,12 @@ export async function addUserFromDiscordMessage(message: Message){
 }
 
 export function assembleLorebookFromData(data: any) {
-    if(data === null) return null;
-    if(data?._id === undefined) return null;
+    if(data === null){
+		return null;
+	}
+    if(data?._id === undefined){
+		return null;
+	}
     const lorebook: LorebookInterface = {
         _id: data._id,
         name: data.name || '',

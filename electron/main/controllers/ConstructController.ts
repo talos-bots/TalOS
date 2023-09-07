@@ -108,7 +108,7 @@ export async function handleLorebookPrompt(construct: ConstructInterface, prompt
     }
     const assembledLorebooks = [];
     for(let i = 0; i < lorebooksData.length; i++){
-        let lorebook = assembleLorebookFromData(lorebooksData[i]);
+        let lorebook = assembleLorebookFromData(lorebooksData[i].doc);
         if(lorebook === null || lorebook === undefined){
             console.log('Could not assemble lorebook from data');
             continue;
