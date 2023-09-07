@@ -204,13 +204,13 @@ export async function handleLorebookPrompt(construct: ConstructInterface, prompt
     
     for(let k = 0; k < appliedEntries.length; k++){
         let depth = appliedEntries[k].priority;
-        let insertHere = (splitPrompt.length < depth) ? 0 : splitPrompt.length - depth;
+        let insertHere = (depth === 0 || depth > splitPrompt.length) ? splitPrompt.length : splitPrompt.length - depth;
         if(appliedEntries[k].position === 'after_char'){
             splitPrompt.splice(insertHere, 0, appliedEntries[k].content);
         }else{
             splitPrompt.splice(0, 0, appliedEntries[k].content);
         }
-    }
+    }    
     for(let i = 0; i < splitPrompt.length; i++){
         if(i !== splitPrompt.length - 1){
             newPrompt += splitPrompt[i] + '\n';
