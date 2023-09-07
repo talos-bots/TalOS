@@ -2,12 +2,13 @@ import { useState, useEffect, useRef } from "react";
 import InputGroup from "@/pages/chat/chat-input";
 import { Chat } from "@/classes/Chat";
 import { Message } from "@/classes/Message";
-import { getChat, saveNewChat, updateChat } from "@/api/dbapi";
+import { getChat, getUser, saveNewChat, updateChat } from "@/api/dbapi";
 import MessageComponent from "@/pages/chat/chat-log/message";
 import { addUserMessage, getLoadingMessage, regenerateMessage, sendMessage, wait } from "../helpers";
 import { Alert } from "@material-tailwind/react";
 import ChatInfo from "@/pages/chat/chat-info";
 import Loading from "@/components/loading";
+import { User } from "@/classes/User";
 interface ChatLogProps {
 	chatLogID?: string;
 }
@@ -20,6 +21,7 @@ const ChatLog = (props: ChatLogProps) => {
 	const [error, setError] = useState<string | null>(null);
 	const [isLoaded, setIsLoaded] = useState<boolean>(false);
 	const [numToDisplay, setNumToDisplay] = useState<number>(35);
+	const [currentUser, setCurrentUser] = useState<User | null>(null);
 
 	useEffect(() => {
 		if(chatLogID !== undefined) {
@@ -36,6 +38,15 @@ const ChatLog = (props: ChatLogProps) => {
 			}).catch((err) => {
 				console.error(err);
 			});
+			let userID = JSON.parse(localStorage.getItem("currentUser")?.toString() || "");
+			if(userID !== null && userID !== undefined){
+				getUser(userID).then((user) => {
+					if(user === null) throw new Error("User not found");
+					setCurrentUser(user);
+				}).catch((err) => {
+					console.error(err);
+				});
+			}
 		}
 	}, [chatLogID !== undefined && chatLogID !== null]);
 
@@ -48,14 +59,12 @@ const ChatLog = (props: ChatLogProps) => {
 
 	const handleMessageSend = async (message: string) => {
 		if(hasSentMessage === true) return;
-		let currentUser = JSON.parse(localStorage.getItem("currentUser")?.toString() || "");
-		console.log('Current User: ' + currentUser);
 		setHasSentMessage(true);
 		let chat;
 		chat = chatLog;
 		if(chat === null) return;
 		if(message !== "" && message !== null && message !== undefined && message !== " " && message !== "\n"){
-			let newMessage = await addUserMessage(message, currentUser);
+			let newMessage = addUserMessage(message, currentUser);
 			chat.addMessage(newMessage);
 			if(messages.includes(newMessage)){
 				console.log("message already exists");

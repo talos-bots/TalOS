@@ -1029,7 +1029,10 @@ function assembleConstructFromData(data) {
     interests: data.interests,
     greetings: data.greetings,
     farewells: data.farewells,
-    authorsNote: data.authorsNote
+    authorsNote: data.authorsNote,
+    defaultConfig: data.defaultConfig,
+    thoughtPattern: data.thoughtPattern,
+    sprites: data.sprites
   };
   return construct;
 }
@@ -1078,9 +1081,15 @@ function assemblePromptFromLog(data, messagesToInclude = 25) {
       prompt += `${messages[i].text.trim()}
 `;
       continue;
-    }
-    prompt += `${messages[i].user}: ${messages[i].text.trim()}
+    } else {
+      if (messages[i].isThought === true) {
+        prompt += `${messages[i].user}'s Thoughts: ${messages[i].text.trim()}
 `;
+      } else {
+        prompt += `${messages[i].user}: ${messages[i].text.trim()}
+`;
+      }
+    }
   }
   return prompt;
 }
@@ -1113,7 +1122,8 @@ function convertDiscordMessageToMessage(message, activeConstructs) {
     isCommand: false,
     isPrivate: false,
     participants: [message.author.id, ...activeConstructs],
-    attachments
+    attachments,
+    isThought: false
   };
   return convertedMessage;
 }
@@ -1940,6 +1950,8 @@ async function handleLorebookPrompt(construct, prompt, chatLog) {
                       continue;
                     }
                   }
+                } else {
+                  appliedEntries.push(availableEntries[i]);
                 }
               }
             } else {
@@ -1982,7 +1994,7 @@ async function handleLorebookPrompt(construct, prompt, chatLog) {
   let newPrompt = "";
   for (let k = 0; k < appliedEntries.length; k++) {
     let depth = appliedEntries[k].priority;
-    let insertHere = splitPrompt.length < depth ? 0 : splitPrompt.length - depth;
+    let insertHere = depth === 0 || depth > splitPrompt.length ? splitPrompt.length : splitPrompt.length - depth;
     if (appliedEntries[k].position === "after_char") {
       splitPrompt.splice(insertHere, 0, appliedEntries[k].content);
     } else {
@@ -2001,6 +2013,54 @@ async function handleLorebookPrompt(construct, prompt, chatLog) {
 function assembleInstructPrompt(construct, chatLog, currentUser = "you", messagesToInclude) {
   let prompt = "";
   return prompt.replaceAll("{{user}}", `${currentUser}`);
+}
+async function generateThoughts(construct, chat, currentUser = "you", messagesToInclude = 25) {
+  let lastTwoMessages = chat.messages.slice(-2);
+  let messagesExceptLastTwo = chat.messages.slice(0, -2);
+  messagesExceptLastTwo = messagesExceptLastTwo.slice(-messagesToInclude);
+  let prompt = "";
+  for (let i = 0; i < messagesExceptLastTwo.length; i++) {
+    if (messagesExceptLastTwo[i].isCommand === true) {
+      prompt += messagesExceptLastTwo[i].text.trim() + "\n";
+    } else {
+      if (messagesExceptLastTwo[i].isThought === true) {
+        prompt += `${messagesExceptLastTwo[i].user.trim()}'s Thoughts: ${messagesExceptLastTwo[i].text.trim()}
+`;
+      } else {
+        prompt += `${messagesExceptLastTwo[i].user.trim()}: ${messagesExceptLastTwo[i].text.trim()}
+`;
+      }
+    }
+  }
+  let lorebookPrompt = await handleLorebookPrompt(construct, prompt, chat);
+  if (lorebookPrompt !== null && lorebookPrompt !== void 0) {
+    prompt = lorebookPrompt;
+  }
+  prompt += `
+`;
+  prompt += `### Instruction:`;
+  prompt += `Use the Context to decide how you are thinking. You are ${construct.name}.
+`;
+  prompt += `${construct.thoughtPattern.trim()}
+
+`;
+  prompt += `### Context:
+`;
+  prompt += `${lastTwoMessages[0].user.trim()}: ${lastTwoMessages[0].text.trim()}
+`;
+  prompt += `${lastTwoMessages[1].user.trim()}: ${lastTwoMessages[1].text.trim()}
+
+`;
+  prompt += `### Response:
+`;
+  prompt = prompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${construct.name}`);
+  const response = await generateText(prompt, currentUser);
+  if (response && response.results && response.results[0]) {
+    return breakUpCommands(construct.name, response.results[0], currentUser);
+  } else {
+    console.log("No valid response from GenerateText");
+    return null;
+  }
 }
 async function generateContinueChatLog(construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth) {
   let prompt = assemblePrompt(construct, chatLog, currentUser, messagesToInclude);
@@ -2160,7 +2220,8 @@ async function regenerateMessageFromChatLog(chatLog, messageContent, messageID, 
     isCommand: false,
     isPrivate: false,
     participants: foundMessage.participants,
-    attachments: []
+    attachments: [],
+    isThought: false
   };
   messages = beforeMessages.concat(newMessage, afterMessages);
   chatLog.messages = messages;
@@ -2234,6 +2295,11 @@ function constructController() {
   electron.ipcMain.on("break-up-commands", (event, charName, commandString, user, stopList, uniqueEventName) => {
     let response = breakUpCommands(charName, commandString, user, stopList);
     event.reply(uniqueEventName, response);
+  });
+  electron.ipcMain.on("generate-thoughts", (event, construct, chat, currentUser, messagesToInclude, uniqueEventName) => {
+    generateThoughts(construct, chat, currentUser, messagesToInclude).then((response) => {
+      event.reply(uniqueEventName, response);
+    });
   });
 }
 const store$4 = new Store({
@@ -2460,7 +2526,8 @@ async function doCharacterReply(construct, chatLog, message) {
     isCommand: false,
     isPrivate: false,
     participants: [authorID, construct._id],
-    attachments: []
+    attachments: [],
+    isThought: false
   };
   chatLog.messages.push(replyMessage);
   chatLog.lastMessage = replyMessage;
@@ -2534,7 +2601,8 @@ async function doRoundRobin(constructArray, chatLog, message) {
       isCommand: false,
       isPrivate: false,
       participants: [authorID, constructArray[i]._id],
-      attachments: []
+      attachments: [],
+      isThought: false
     };
     chatLog.messages.push(replyMessage);
     chatLog.lastMessage = replyMessage;

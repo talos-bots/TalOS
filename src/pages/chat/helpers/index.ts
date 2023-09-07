@@ -2,6 +2,7 @@ import { generateContinueChatLog, regenerateMessageFromChatLog } from "@/api/con
 import { getConstruct, getUser, updateChat } from "@/api/dbapi";
 import { Chat } from "@/classes/Chat";
 import { Message } from "@/classes/Message";
+import { User } from "@/classes/User";
 
 export async function getLoadingMessage(constructID: string){
     let activeConstruct = await getConstruct(constructID);
@@ -18,14 +19,7 @@ export async function getLoadingMessage(constructID: string){
     return newMessage;
 }
 
-export async function addUserMessage(messageText: string, userID?: string | null) {
-    let user = null;
-    if (userID) {
-        user = await getUser(userID).catch((err) => {
-            console.log(err);
-            return null;
-        });
-    }
+export function addUserMessage(messageText: string, user: User | null) {
     let newMessage = new Message();
     newMessage.origin = 'ConstructOS';
     newMessage.text = messageText.replace(/^\s+|\s+$/g, '');
@@ -35,20 +29,12 @@ export async function addUserMessage(messageText: string, userID?: string | null
     newMessage.isCommand = false;
     newMessage.isPrivate = true;
     newMessage.isHuman = true;
-    newMessage.participants = [userID || 'DefaultUser'];
-    newMessage.userID = userID || 'DefaultUser';
+    newMessage.participants = [user?._id || 'DefaultUser'];
+    newMessage.userID = user?._id || 'DefaultUser';
     return newMessage;
 }
 
-export async function sendMessage(chatlog: Chat, constructID: string, userID?: string | null) {
-    let user;
-    if (userID) {
-        user = await getUser(userID).catch((err) => {
-            console.log(err);
-            return null;
-        });
-        console.log(user);
-    }
+export async function sendMessage(chatlog: Chat, constructID: string, user: User | null) {
     let activeConstruct = await getConstruct(constructID);
     if (!chatlog.constructs || chatlog.constructs.length === 0) return null;
     let response = await generateContinueChatLog(activeConstruct, chatlog, user ? (user.nickname || user.name) : 'DefaultUser');
@@ -61,7 +47,7 @@ export async function sendMessage(chatlog: Chat, constructID: string, userID?: s
     newMessage.isCommand = false;
     newMessage.isPrivate = true;
     newMessage.isHuman = false;
-    newMessage.participants = [userID || 'DefaultUser', constructID];
+    newMessage.participants = [user?._id || 'DefaultUser', constructID];
     newMessage.userID = constructID;
     return newMessage;
 }
@@ -78,6 +64,7 @@ export function wait(milliseconds: number): Promise<void> {
         setTimeout(resolve, milliseconds);
     });
 }
+
 export const truncateText = (text: string, length: number) => {
     return text?.length > length ? text?.substring(0, length) + "..." : text;
 };
