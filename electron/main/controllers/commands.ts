@@ -6,6 +6,7 @@ import { assembleChatFromData, assembleConstructFromData } from "../helpers/help
 import { retrieveConstructs, setDoMultiLine } from "./ConstructController";
 import { clearWebhooksFromChannel, doGlobalNicknameChange } from "../api/discord";
 import { getStatus } from "../api/llm";
+import { deleteIndex } from "../api/vector";
 
 export const RegisterCommand: SlashCommand = {
     name: 'register',
@@ -154,6 +155,7 @@ export const ClearLogCommand: SlashCommand = {
             return;
         }
         await removeChat(interaction.channelId);
+        deleteIndex(interaction.channelId);
         await interaction.editReply({
             content: "Chat log cleared.",
         });
@@ -212,7 +214,7 @@ export const ContinueChatCommand: SlashCommand = {
         }
         await continueChatLog(interaction);
         await interaction.editReply({
-            content: "Continuing...",
+            content: "*Continuing...*",
         });
     }
 }
@@ -456,6 +458,7 @@ export const DoCharacterGreetingsCommand: SlashCommand = {
             isCommand: false,
             isPrivate: false,
             participants: [construct._id],
+            isThought: false,
         }
         let registeredChannels = getRegisteredChannels();
         let registered = false;
@@ -565,6 +568,7 @@ export const SysCommand: SlashCommand = {
             isCommand: true,
             isPrivate: false,
             participants: [construct._id],
+            isThought: false,
         }
         let registeredChannels = getRegisteredChannels();
         let registered = false;
@@ -600,6 +604,9 @@ export const SysCommand: SlashCommand = {
                 firstMessageDate: newMessage.timestamp,
                 constructs: constructs,
                 humans: [interaction.user.id],
+                chatConfigs: [],
+                doVector: false,
+                global: false,
             }
             if(chatLog.messages.length > 0){
                 await addChat(chatLog);
@@ -615,6 +622,76 @@ export const SysCommand: SlashCommand = {
     }
 }
 
+export const toggleVectorCommand: SlashCommand = {
+    name: 'togglememories',
+    description: 'Adds a system message to the prompt',
+    options: [
+        {
+            name: 'on',
+            description: 'Whether the chatlog should be vectorized.',
+            type: 5,
+            required: true,
+        }
+    ],
+    execute: async (interaction: CommandInteraction) => {
+        let isHidden = interaction.options.get('on')?.value as boolean;
+        if(isHidden === undefined) isHidden = false;
+        await interaction.deferReply({ephemeral: isHidden});
+        if (interaction.channelId === null) {
+            await interaction.editReply({
+            content: "This command can only be used in a server channel.",
+            });
+            return;
+        }
+        if(interaction.guildId === null){
+            await interaction.editReply({
+            content: "This command can only be used in a server channel.",
+            });
+            return;
+        }
+        const constructs = retrieveConstructs();
+        let constructDoc = await getConstruct(constructs[0]);
+        let construct = assembleConstructFromData(constructDoc);
+        if(construct === null) return;
+        let registeredChannels = getRegisteredChannels();
+        let registered = false;
+        for(let i = 0; i < registeredChannels.length; i++){
+            if(registeredChannels[i]._id === interaction.channelId){
+                registered = true;
+                break;
+            }
+        }
+        if(!registered) return;
+        let chatLogData = await getChat(interaction.channelId);
+        let chatLog;
+        if (chatLogData) {
+            chatLog = assembleChatFromData(chatLogData);
+            if(chatLog === null) return;
+            chatLog.doVector = isHidden;
+            await updateChat(chatLog);
+        }else{
+            chatLog = {
+                _id: interaction.channelId,
+                name: 'Discord "' + interaction.channelId + '" Chat',
+                type: 'Discord',
+                messages: [],
+                lastMessage: null,
+                lastMessageDate: null,
+                firstMessageDate: null,
+                constructs: constructs,
+                humans: [interaction.user.id],
+                chatConfigs: [],
+                doVector: true,
+                global: false,
+            }
+            await addChat(chatLog);
+
+        }
+        await interaction.editReply({
+            content: `Vectorization set to ${isHidden}`,
+        });
+    }
+};
 export const DefaultCommands = [
     PingCommand,
     RegisterCommand,
@@ -630,5 +707,6 @@ export const DefaultCommands = [
     SetAliasCommand,
     ClearAllWebhooksCommand,
     DoCharacterGreetingsCommand,
-    SysCommand
+    SysCommand,
+    toggleVectorCommand,
 ];

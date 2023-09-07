@@ -6,7 +6,7 @@ import { MessageInterface } from '../types/types';
 require('@tensorflow/tfjs');
 import use from '@tensorflow-models/universal-sentence-encoder';
 
-async function getAllVectors(schemaName: string){
+export async function getAllVectors(schemaName: string){
     const indexPath = path.join(dataPath, schemaName);
     const index = new LocalIndex(indexPath);
     if (!await index.isIndexCreated()) {
@@ -16,18 +16,18 @@ async function getAllVectors(schemaName: string){
     return vectors;
 }
 
-async function getRelaventMemories(schemaName: string, text: string){
+export async function getRelaventMemories(schemaName: string, text: string){
     const indexPath = path.join(dataPath, schemaName);
     const index = new LocalIndex(indexPath);
     if (!await index.isIndexCreated()) {
         await index.createIndex();
     }
     const vector = await getVector(text);
-    const memories = await index.queryItems(vector, 3);
+    const memories = await index.queryItems(vector, 10);
     return memories;
 }
 
-async function addVectorFromMessage(schemaName: string, message: MessageInterface){
+export async function addVectorFromMessage(schemaName: string, message: MessageInterface){
     const indexPath = path.join(dataPath, schemaName);
     const index = new LocalIndex(indexPath);
     if (!await index.isIndexCreated()) {
@@ -39,14 +39,14 @@ async function addVectorFromMessage(schemaName: string, message: MessageInterfac
     });
 }
 
-async function getVector(text: string){
+export async function getVector(text: string){
     return use.load().then(async (model) => {
         const embeddings = await model.embed([text]);
         return embeddings.arraySync()[0];
     });
 }
 
-async function deleteIndex(schemaName: string){
+export async function deleteIndex(schemaName: string){
     const indexPath = path.join(dataPath, schemaName);
     const index = new LocalIndex(indexPath);
     if (await index.isIndexCreated()) {

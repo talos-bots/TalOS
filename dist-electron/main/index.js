@@ -12,9 +12,9 @@ const fs = require("fs");
 const axios = require("axios");
 const openai = require("openai");
 const FormData = require("form-data");
-const electronUpdater = require("electron-updater");
 const vectra = require("vectra");
 const use = require("@tensorflow-models/universal-sentence-encoder");
+const electronUpdater = require("electron-updater");
 let constructDB$1;
 let chatsDB$1;
 let commandDB$1;
@@ -2306,6 +2306,77 @@ function constructController() {
     });
   });
 }
+require("@tensorflow/tfjs");
+async function getAllVectors(schemaName) {
+  const indexPath = path.join(dataPath, schemaName);
+  const index = new vectra.LocalIndex(indexPath);
+  if (!await index.isIndexCreated()) {
+    await index.createIndex();
+  }
+  const vectors = await index.listItems();
+  return vectors;
+}
+async function getRelaventMemories(schemaName, text) {
+  const indexPath = path.join(dataPath, schemaName);
+  const index = new vectra.LocalIndex(indexPath);
+  if (!await index.isIndexCreated()) {
+    await index.createIndex();
+  }
+  const vector = await getVector(text);
+  const memories = await index.queryItems(vector, 10);
+  return memories;
+}
+async function addVectorFromMessage(schemaName, message) {
+  const indexPath = path.join(dataPath, schemaName);
+  const index = new vectra.LocalIndex(indexPath);
+  if (!await index.isIndexCreated()) {
+    await index.createIndex();
+  }
+  await index.insertItem({
+    vector: await getVector(message.text),
+    metadata: message
+  });
+}
+async function getVector(text) {
+  return use.load().then(async (model) => {
+    const embeddings = await model.embed([text]);
+    return embeddings.arraySync()[0];
+  });
+}
+async function deleteIndex(schemaName) {
+  const indexPath = path.join(dataPath, schemaName);
+  const index = new vectra.LocalIndex(indexPath);
+  if (await index.isIndexCreated()) {
+    await index.deleteIndex();
+  }
+}
+function VectorDBRoutes() {
+  electron.ipcMain.on("get-all-vectors", async (event, schemaName, uniqueReplyName) => {
+    getAllVectors(schemaName).then((vectors) => {
+      event.reply(uniqueReplyName, vectors);
+    });
+  });
+  electron.ipcMain.on("get-relavent-memories", async (event, schemaName, text, uniqueReplyName) => {
+    getRelaventMemories(schemaName, text).then((memories) => {
+      event.reply(uniqueReplyName, memories);
+    });
+  });
+  electron.ipcMain.on("add-vector-from-message", async (event, schemaName, message, uniqueReplyName) => {
+    addVectorFromMessage(schemaName, message).then(() => {
+      event.reply(uniqueReplyName, true);
+    });
+  });
+  electron.ipcMain.on("get-vector", async (event, text, uniqueReplyName) => {
+    getVector(text).then((vector) => {
+      event.reply(uniqueReplyName, vector);
+    });
+  });
+  electron.ipcMain.on("delete-index", async (event, schemaName, uniqueReplyName) => {
+    deleteIndex(schemaName).then(() => {
+      event.reply(uniqueReplyName, true);
+    });
+  });
+}
 const store$4 = new Store({
   name: "discordData"
 });
@@ -2476,6 +2547,15 @@ async function handleDiscordMessage(message) {
     await updateChat(chatLog);
     return;
   }
+  if (chatLog.doVector) {
+    if (chatLog.global) {
+      for (let i = 0; i < constructArray.length; i++) {
+        addVectorFromMessage(constructArray[i]._id, newMessage);
+      }
+    } else {
+      addVectorFromMessage(chatLog._id, newMessage);
+    }
+  }
   const mode = getDiscordMode();
   if (mode === "Character") {
     if (isMultiCharacterMode()) {
@@ -2619,6 +2699,15 @@ async function doRoundRobin(constructArray, chatLog, message) {
       await sendMessageAsCharacter(constructArray[i], message.channel.id, reply);
     }
     await updateChat(chatLog);
+    if (chatLog.doVector) {
+      if (chatLog.global) {
+        for (let i2 = 0; i2 < constructArray.length; i2++) {
+          addVectorFromMessage(constructArray[i2]._id, replyMessage);
+        }
+      } else {
+        addVectorFromMessage(chatLog._id, replyMessage);
+      }
+    }
   }
   return chatLog;
 }
@@ -2915,6 +3004,7 @@ const ClearLogCommand = {
       return;
     }
     await removeChat(interaction.channelId);
+    deleteIndex(interaction.channelId);
     await interaction.editReply({
       content: "Chat log cleared."
     });
@@ -2972,7 +3062,7 @@ const ContinueChatCommand = {
     }
     await continueChatLog(interaction);
     await interaction.editReply({
-      content: "Continuing..."
+      content: "*Continuing...*"
     });
   }
 };
@@ -3215,7 +3305,8 @@ const DoCharacterGreetingsCommand = {
       attachments: [],
       isCommand: false,
       isPrivate: false,
-      participants: [construct._id]
+      participants: [construct._id],
+      isThought: false
     };
     let registeredChannels = getRegisteredChannels();
     let registered = false;
@@ -3327,7 +3418,8 @@ const SysCommand = {
       attachments: [],
       isCommand: true,
       isPrivate: false,
-      participants: [construct._id]
+      participants: [construct._id],
+      isThought: false
     };
     let registeredChannels = getRegisteredChannels();
     let registered = false;
@@ -3364,7 +3456,10 @@ const SysCommand = {
         lastMessageDate: newMessage.timestamp,
         firstMessageDate: newMessage.timestamp,
         constructs,
-        humans: [interaction.user.id]
+        humans: [interaction.user.id],
+        chatConfigs: [],
+        doVector: false,
+        global: false
       };
       if (chatLog.messages.length > 0) {
         await addChat(chatLog);
@@ -3377,6 +3472,80 @@ const SysCommand = {
       content: message
     });
     await continueChatLog(interaction);
+  }
+};
+const toggleVectorCommand = {
+  name: "togglememories",
+  description: "Adds a system message to the prompt",
+  options: [
+    {
+      name: "on",
+      description: "Whether the chatlog should be vectorized.",
+      type: 5,
+      required: true
+    }
+  ],
+  execute: async (interaction) => {
+    var _a;
+    let isHidden = (_a = interaction.options.get("on")) == null ? void 0 : _a.value;
+    if (isHidden === void 0)
+      isHidden = false;
+    await interaction.deferReply({ ephemeral: isHidden });
+    if (interaction.channelId === null) {
+      await interaction.editReply({
+        content: "This command can only be used in a server channel."
+      });
+      return;
+    }
+    if (interaction.guildId === null) {
+      await interaction.editReply({
+        content: "This command can only be used in a server channel."
+      });
+      return;
+    }
+    const constructs = retrieveConstructs();
+    let constructDoc = await getConstruct(constructs[0]);
+    let construct = assembleConstructFromData(constructDoc);
+    if (construct === null)
+      return;
+    let registeredChannels = getRegisteredChannels();
+    let registered = false;
+    for (let i = 0; i < registeredChannels.length; i++) {
+      if (registeredChannels[i]._id === interaction.channelId) {
+        registered = true;
+        break;
+      }
+    }
+    if (!registered)
+      return;
+    let chatLogData = await getChat(interaction.channelId);
+    let chatLog;
+    if (chatLogData) {
+      chatLog = assembleChatFromData(chatLogData);
+      if (chatLog === null)
+        return;
+      chatLog.doVector = isHidden;
+      await updateChat(chatLog);
+    } else {
+      chatLog = {
+        _id: interaction.channelId,
+        name: 'Discord "' + interaction.channelId + '" Chat',
+        type: "Discord",
+        messages: [],
+        lastMessage: null,
+        lastMessageDate: null,
+        firstMessageDate: null,
+        constructs,
+        humans: [interaction.user.id],
+        chatConfigs: [],
+        doVector: true,
+        global: false
+      };
+      await addChat(chatLog);
+    }
+    await interaction.editReply({
+      content: `Vectorization set to ${isHidden}`
+    });
   }
 };
 const DefaultCommands = [
@@ -3394,7 +3563,8 @@ const DefaultCommands = [
   SetAliasCommand,
   ClearAllWebhooksCommand,
   DoCharacterGreetingsCommand,
-  SysCommand
+  SysCommand,
+  toggleVectorCommand
 ];
 const intents = {
   intents: [
@@ -4320,77 +4490,6 @@ function startDownload(callback, complete) {
   electronUpdater.autoUpdater.on("error", (error) => callback(error, null));
   electronUpdater.autoUpdater.on("update-downloaded", complete);
   electronUpdater.autoUpdater.downloadUpdate();
-}
-require("@tensorflow/tfjs");
-async function getAllVectors(schemaName) {
-  const indexPath = path.join(dataPath, schemaName);
-  const index = new vectra.LocalIndex(indexPath);
-  if (!await index.isIndexCreated()) {
-    await index.createIndex();
-  }
-  const vectors = await index.listItems();
-  return vectors;
-}
-async function getRelaventMemories(schemaName, text) {
-  const indexPath = path.join(dataPath, schemaName);
-  const index = new vectra.LocalIndex(indexPath);
-  if (!await index.isIndexCreated()) {
-    await index.createIndex();
-  }
-  const vector = await getVector(text);
-  const memories = await index.queryItems(vector, 3);
-  return memories;
-}
-async function addVectorFromMessage(schemaName, message) {
-  const indexPath = path.join(dataPath, schemaName);
-  const index = new vectra.LocalIndex(indexPath);
-  if (!await index.isIndexCreated()) {
-    await index.createIndex();
-  }
-  await index.insertItem({
-    vector: await getVector(message.text),
-    metadata: message
-  });
-}
-async function getVector(text) {
-  return use.load().then(async (model) => {
-    const embeddings = await model.embed([text]);
-    return embeddings.arraySync()[0];
-  });
-}
-async function deleteIndex(schemaName) {
-  const indexPath = path.join(dataPath, schemaName);
-  const index = new vectra.LocalIndex(indexPath);
-  if (await index.isIndexCreated()) {
-    await index.deleteIndex();
-  }
-}
-function VectorDBRoutes() {
-  electron.ipcMain.on("get-all-vectors", async (event, schemaName, uniqueReplyName) => {
-    getAllVectors(schemaName).then((vectors) => {
-      event.reply(uniqueReplyName, vectors);
-    });
-  });
-  electron.ipcMain.on("get-relavent-memories", async (event, schemaName, text, uniqueReplyName) => {
-    getRelaventMemories(schemaName, text).then((memories) => {
-      event.reply(uniqueReplyName, memories);
-    });
-  });
-  electron.ipcMain.on("add-vector-from-message", async (event, schemaName, message, uniqueReplyName) => {
-    addVectorFromMessage(schemaName, message).then(() => {
-      event.reply(uniqueReplyName, true);
-    });
-  });
-  electron.ipcMain.on("get-vector", async (event, text, uniqueReplyName) => {
-    getVector(text).then((vector) => {
-      event.reply(uniqueReplyName, vector);
-    });
-  });
-  electron.ipcMain.on("delete-index", async (event, schemaName, uniqueReplyName) => {
-    deleteIndex(schemaName).then(() => {
-      event.reply(uniqueReplyName, true);
-    });
-  });
 }
 process.env.DIST_ELECTRON = node_path.join(__dirname, "../");
 process.env.DIST = node_path.join(process.env.DIST_ELECTRON, "../dist");

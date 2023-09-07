@@ -6,6 +6,7 @@ import { addUserFromDiscordMessage, assembleChatFromData, assembleConstructFromD
 import { CommandInteraction, Message } from 'discord.js';
 import { deleteMessage, disClient, editMessage, isAutoReplyMode, isMultiCharacterMode, sendMessage, sendMessageAsCharacter, sendTyping } from '../api/discord';
 import { Alias, ChannelConfigInterface, ChatInterface, ConstructInterface } from '../types/types';
+import { addVectorFromMessage } from '../api/vector';
 
 const store = new Store({
     name: 'discordData',
@@ -212,6 +213,15 @@ export async function handleDiscordMessage(message: Message) {
         await updateChat(chatLog);
         return;
     }
+    if(chatLog.doVector){
+        if(chatLog.global){
+            for(let i = 0; i < constructArray.length; i++){
+                addVectorFromMessage(constructArray[i]._id, newMessage);
+            }
+        }else{
+            addVectorFromMessage(chatLog._id, newMessage);
+        }
+    }
     const mode = getDiscordMode();
     if(mode === 'Character'){
         if(isMultiCharacterMode()){
@@ -358,6 +368,15 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
             await sendMessageAsCharacter(constructArray[i], message.channel.id, reply);
         }
         await updateChat(chatLog);
+        if(chatLog.doVector){
+            if(chatLog.global){
+                for(let i = 0; i < constructArray.length; i++){
+                    addVectorFromMessage(constructArray[i]._id, replyMessage);
+                }
+            }else{
+                addVectorFromMessage(chatLog._id, replyMessage);
+            }
+        }
     }
     return chatLog;
 }
