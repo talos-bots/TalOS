@@ -45,6 +45,7 @@ export function assembleMessageFromData(data: any){
 		isHuman: data.isHuman,
 		participants: data.participants,
 		attachments: data.attachments,
+		isThought: false,
 	}
 	return message;
 }
@@ -104,8 +105,13 @@ export function assemblePromptFromLog(data: any, messagesToInclude: number = 25)
 		if(messages[i].isCommand === true){
 			prompt += `${messages[i].text.trim()}` + '\n';
 			continue;
+		}else{
+			if(messages[i].isThought === true){
+                prompt += `${messages[i].user}'s Thoughts: ${messages[i].text.trim()}\n`;
+            }else{
+                prompt += `${messages[i].user}: ${messages[i].text.trim()}\n`;
+            }
 		}
-		prompt += `${messages[i].user}: ${messages[i].text.trim()}` + '\n';
 	}
 	return prompt;
 }
@@ -140,6 +146,7 @@ export function convertDiscordMessageToMessage(message: Message, activeConstruct
 		isPrivate: false,
 		participants: [message.author.id, ...activeConstructs],
 		attachments: attachments,
+		isThought: false,
 	}
 	return convertedMessage;
 }

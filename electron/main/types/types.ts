@@ -26,6 +26,7 @@ export type MessageInterface = {
     isPrivate: boolean;
     participants: string[];
     attachments: AttachmentInferface[];
+    isThought: boolean;
 }
 
 export type AttachmentInferface = {

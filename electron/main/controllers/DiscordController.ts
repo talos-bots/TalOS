@@ -266,6 +266,7 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
         isPrivate: false,
         participants: [authorID, construct._id],
         attachments: [],
+        isThought: false,
     }
     chatLog.messages.push(replyMessage);
     chatLog.lastMessage = replyMessage;
@@ -344,6 +345,7 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
             isPrivate: false,
             participants: [authorID, constructArray[i]._id],
             attachments: [],
+            isThought: false,
         }
         chatLog.messages.push(replyMessage);
         chatLog.lastMessage = replyMessage;

@@ -227,6 +227,43 @@ export function assembleInstructPrompt(construct: any, chatLog: ChatInterface, c
     return prompt.replaceAll('{{user}}', `${currentUser}`);
 }
 
+export async function generateThoughts(construct: ConstructInterface, chat: ChatInterface, currentUser: string = 'you', messagesToInclude?: any){
+    let lastTwoMessages = chat.messages.slice(-2);
+    let messagesExceptLastTwo = chat.messages.slice(0, -2);
+    let prompt = '';
+    for(let i = 0; i < messagesExceptLastTwo.length; i++){
+        if(messagesExceptLastTwo[i].isCommand === true){
+            prompt += messagesExceptLastTwo[i].text.trim() + '\n';
+        }else{
+            if(messagesExceptLastTwo[i].isThought === true){
+                prompt += `${messagesExceptLastTwo[i].user.trim()}'s Thoughts: ${messagesExceptLastTwo[i].text.trim()}\n`;
+            }else{
+                prompt += `${messagesExceptLastTwo[i].user.trim()}: ${messagesExceptLastTwo[i].text.trim()}\n`;
+            }
+        }
+    }
+    let lorebookPrompt = await handleLorebookPrompt(construct, prompt, chat);
+    if(lorebookPrompt !== null && lorebookPrompt !== undefined){
+        prompt = lorebookPrompt;
+    }
+    prompt += `\n`;
+    prompt += `### Instruction:`;
+    prompt += `Use the Context to decide how you are thinking. You are ${construct.name}.\n`;
+    prompt += `${construct.thoughtPattern.trim()}\n\n`;
+    prompt += `### Context:\n`;
+    prompt += `${lastTwoMessages[0].user.trim()}: ${lastTwoMessages[0].text.trim()}\n`;
+    prompt += `${lastTwoMessages[1].user.trim()}: ${lastTwoMessages[1].text.trim()}\n\n`;
+    prompt += `### Response:\n`;
+
+    const response = await generateText(prompt, currentUser);
+    if (response && response.results && response.results[0]) {
+        return breakUpCommands(construct.name, response.results[0], currentUser);
+    } else {
+        console.log('No valid response from GenerateText');
+        return null;
+    }
+}
+
 export async function generateContinueChatLog(construct: any, chatLog: ChatInterface, currentUser?: string, messagesToInclude?: any, stopList?: string[], authorsNote?: string | string[], authorsNoteDepth?: number) {
     let prompt = assemblePrompt(construct, chatLog, currentUser, messagesToInclude);
 
@@ -409,6 +446,7 @@ export async function regenerateMessageFromChatLog(chatLog: ChatInterface, messa
         isPrivate: false,
         participants: foundMessage.participants,
         attachments: [],
+        isThought: false,
     }
     messages = beforeMessages.concat(newMessage, afterMessages);    
     chatLog.messages = messages;

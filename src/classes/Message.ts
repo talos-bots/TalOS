@@ -14,6 +14,7 @@ export class Message{
         public isPrivate: boolean = false,
         public participants: string[] = [],
         public attachments: Attachment[] = [],
+        public isThought: boolean = false,
     ) {}
 
     setMessage(user: string, userID: string, text: string, timestamp: number, origin: string, isHuman: boolean, isCommand: boolean, isPrivate: boolean, participants: string[], attachments: Attachment[]){
