@@ -863,11 +863,32 @@ const instructCommand: SlashCommand = {
             type: 3,  // String type
             required: true,
         },
+        {
+            name: 'guidance',
+            description: 'The guidance to give.',
+            type: 3,  // String type
+            required: false,
+        },
+        {
+            name: 'context',
+            description: 'The context to give.',
+            type: 3,  // String type
+            required: false,
+        },
+        {
+            name: 'examples',
+            description: 'The examples to give.',
+            type: 3,  // String type
+            required: false,
+        }
     ],
     execute: async (interaction: CommandInteraction) => {
         await interaction.deferReply({ephemeral: false});
         const instruction = interaction.options.get('instruction')?.value as string;
-        const reply = await doInstruct(instruction);
+        const guidance = interaction.options.get('guidance')?.value as string;
+        const context = interaction.options.get('context')?.value as string;
+        const examples = interaction.options.get('examples')?.value as string;
+        const reply = await doInstruct(instruction, guidance, context, examples);
         await interaction.editReply({
             content: `Instruct: ${instruction}\n\nResponse:\n${reply}`,
         });

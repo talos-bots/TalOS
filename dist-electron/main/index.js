@@ -6627,13 +6627,37 @@ const instructCommand = {
       type: 3,
       // String type
       required: true
+    },
+    {
+      name: "guidance",
+      description: "The guidance to give.",
+      type: 3,
+      // String type
+      required: false
+    },
+    {
+      name: "context",
+      description: "The context to give.",
+      type: 3,
+      // String type
+      required: false
+    },
+    {
+      name: "examples",
+      description: "The examples to give.",
+      type: 3,
+      // String type
+      required: false
     }
   ],
   execute: async (interaction) => {
-    var _a;
+    var _a, _b, _c, _d;
     await interaction.deferReply({ ephemeral: false });
     const instruction = (_a = interaction.options.get("instruction")) == null ? void 0 : _a.value;
-    const reply = await doInstruct(instruction);
+    const guidance = (_b = interaction.options.get("guidance")) == null ? void 0 : _b.value;
+    const context = (_c = interaction.options.get("context")) == null ? void 0 : _c.value;
+    const examples = (_d = interaction.options.get("examples")) == null ? void 0 : _d.value;
+    const reply = await doInstruct(instruction, guidance, context, examples);
     await interaction.editReply({
       content: `Instruct: ${instruction}
 
