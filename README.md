@@ -11,6 +11,9 @@
 ### Create Constructs
 - Export to V2 Cards **(Done)**
 - Create AI Assistants or RP Characters. **(Done)**
+### Thoughts **(In Progress)**
+- Have your Construct or RP Character think inside of Discord, or the chat window.
+- Adds depth to Characters, and will likely increase quality of RP and chat output.
 ### Multi-Construct Discord Bot
 - Have multiple Constructs speak through one discord bot. **(Done)**
 - Group ordering
