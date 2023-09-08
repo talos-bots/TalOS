@@ -55,6 +55,9 @@ const preload = join(__dirname, "../preload/index.js");
 const url = process.env.VITE_DEV_SERVER_URL;
 const indexHtml = join(process.env.DIST, "index.html");
 export const dataPath = path.join(app.getPath("userData"), "data/");
+export const imagesPath = path.join(dataPath, "images/");
+fs.mkdirSync(dataPath, { recursive: true });
+fs.mkdirSync(imagesPath, { recursive: true });
 export const store = new Store();
 async function createWindow() {
   win = new BrowserWindow({

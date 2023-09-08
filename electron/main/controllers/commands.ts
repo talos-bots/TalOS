@@ -1,4 +1,4 @@
-import { CommandInteraction, EmbedBuilder } from "discord.js";
+import { AttachmentBuilder, CommandInteraction, EmbedBuilder } from "discord.js";
 import { Alias, MessageInterface, SlashCommand } from "../types/types";
 import { addAlias, addRegisteredChannel, continueChatLog, getRegisteredChannels, getUsername, removeRegisteredChannel, setDoAutoReply, setMaxMessages } from "./DiscordController";
 import { addChat, getChat, getConstruct, removeChat, updateChat } from "../api/pouchdb";
@@ -7,6 +7,7 @@ import { retrieveConstructs, setDoMultiLine } from "./ConstructController";
 import { clearWebhooksFromChannel, doGlobalNicknameChange } from "../api/discord";
 import { getStatus } from "../api/llm";
 import { deleteIndex } from "../api/vector";
+import { txt2img } from "../api/sd";
 
 export const RegisterCommand: SlashCommand = {
     name: 'register',
@@ -629,11 +630,11 @@ export const SysCommand: SlashCommand = {
 }
 
 export const toggleVectorCommand: SlashCommand = {
-    name: 'togglememories',
+    name: 'vector',
     description: 'Adds a system message to the prompt',
     options: [
         {
-            name: 'on',
+            name: 'toggle',
             description: 'Whether the chatlog should be vectorized.',
             type: 5,
             required: true,
@@ -698,6 +699,114 @@ export const toggleVectorCommand: SlashCommand = {
         });
     }
 };
+
+export const constructImagine: SlashCommand = {
+    name: 'cosimagine',
+    description: 'Makes an image from text.',
+    options: [
+        {
+            name: 'prompt',
+            description: 'Primary prompt',
+            type: 3,  // String type
+            required: true,
+        },
+        {
+            name: 'negativeprompt',
+            description: 'Negative prompt',
+            type: 3,  // String type
+            required: false,
+        },
+        {
+            name: 'steps',
+            description: 'Steps',
+            type: 4,  // Integer type
+            required: false,
+        },
+        {
+            name: 'cfg',
+            description: 'Configuration value',
+            type: 4,  // Integer type
+            required: false,
+        },
+        {
+            name: 'width',
+            description: 'Width',
+            type: 4,  // Integer type
+            required: false,
+        },
+        {
+            name: 'height',
+            description: 'Height',
+            type: 4,  // Integer type
+            required: false,
+        },
+        {
+            name: 'highressteps',
+            description: 'High resolution steps',
+            type: 4,  // Integer type
+            required: false,
+        }
+    ],
+    execute: async (interaction: CommandInteraction) => {
+        await interaction.deferReply({ephemeral: false});
+        const prompt = interaction.options.get('prompt')?.value as string;
+        const negativePrompt = interaction.options.get('negativePrompt')?.value as string;
+        const steps = interaction.options.get('steps')?.value as number;
+        const cfg = interaction.options.get('cfg')?.value as number;
+        const width = interaction.options.get('width')?.value as number;
+        const height = interaction.options.get('height')?.value as number;
+        const highresSteps = interaction.options.get('highresSteps')?.value as number;
+        const imageData = await txt2img(prompt, negativePrompt, steps, cfg, width, height, highresSteps);
+        const buffer = Buffer.from(imageData.base64, 'base64');
+        let attachment = new AttachmentBuilder(buffer, {name: `${imageData.name}`});
+        const embed = new EmbedBuilder()
+        .setTitle('Imagine')
+        .setFields([
+            {
+                name: 'Prompt',
+                value: prompt,
+                inline: false,
+            },
+            {
+                name: 'Negative Prompt',
+                value: negativePrompt? negativePrompt : 'bad face, ugly, bad quality, low res, low quality, bad lighting, bad angle, bad composition, bad colors, bad contrast, bad saturation, bad exposure, bad focus, bad framing, bad crop, bad resolution, bad texture, bad rendering, bad shading, bad shadow, ((nude, loli, child))',
+                inline: false,
+            },
+            {
+                name: 'Steps',
+                value: steps? steps.toString() : '25',
+                inline: true,
+            },
+            {
+                name: 'CFG',
+                value: cfg? cfg.toString() : '7',
+                inline: true,
+            },
+            {
+                name: 'Width',
+                value: width? width.toString() : '512',
+                inline: true,
+            },
+            {
+                name: 'Height',
+                value: height? height.toString() : '512',
+                inline: true,
+            },
+            {
+                name: 'Highres Steps',
+                value: highresSteps? highresSteps.toString() : '10',
+                inline: true,
+            }
+        ])
+        .setImage(`attachment://${imageData.name}`)
+        .setFooter({text: 'Powered by Stable Diffusion'});
+        await interaction.editReply({
+            embeds: [embed],
+            files: [attachment],
+        });
+    }
+};
+
 export const DefaultCommands = [
     PingCommand,
     RegisterCommand,
@@ -715,4 +824,5 @@ export const DefaultCommands = [
     DoCharacterGreetingsCommand,
     SysCommand,
     toggleVectorCommand,
+    constructImagine
 ];
