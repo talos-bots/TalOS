@@ -5,6 +5,7 @@ import Store from 'electron-store';
 import path from 'path';
 import fs from 'fs-extra';
 import { imagesPath } from '..';
+import { get } from 'http';
 const store = new Store({
     name: 'stableDiffusionData',
 });
@@ -41,8 +42,56 @@ const getDefaultUpscaler = (): string => {
     return store.get('defaultUpscaler', '') as string;
 }
 
+const setDefaultSteps = (steps: number): void => {
+    store.set('defaultSteps', steps);
+}
+
+const getDefaultSteps = (): number => {
+    return store.get('defaultSteps', 25) as number;
+}
+
+const setDefaultCfg = (cfg: number): void => {
+    store.set('defaultCfg', cfg);
+}
+
+const getDefaultCfg = (): number => {
+    return store.get('defaultCfg', 7) as number;
+}
+
+const setDefaultWidth = (width: number): void => {
+    store.set('defaultWidth', width);
+}
+
+const getDefaultWidth = (): number => {
+    return store.get('defaultWidth', 512) as number;
+}
+
+const setDefaultHeight = (height: number): void => {
+    store.set('defaultHeight', height);
+}
+
+const getDefaultHeight = (): number => {
+    return store.get('defaultHeight', 512) as number;
+}
+
+const setDefaultHighresSteps = (highresSteps: number): void => {
+    store.set('defaultHighresSteps', highresSteps);
+}
+
+const getDefaultHighresSteps = (): number => {
+    return store.get('defaultHighresSteps', 10) as number;
+}
+
+const setDefaultDenoisingStrength = (denoisingStrength: number): void => {
+    store.set('defaultDenoisingStrength', denoisingStrength);
+}
+
+const getDefaultDenoisingStrength = (): number => {
+    return store.get('defaultDenoisingStrength', .25) as number;
+}
+
 export function SDRoutes(){
-    ipcMain.on('setDefaultPrompt', (event, prompt) => {
+    ipcMain.on('setdefaultPrompt', (event, prompt) => {
         setDefaultPrompt(prompt);
     });
 
@@ -122,6 +171,54 @@ export function SDRoutes(){
             console.log(err);
         });
     });
+
+    ipcMain.on('set-default-steps', (event, steps) => {
+        setDefaultSteps(steps);
+    });
+
+    ipcMain.on('get-default-steps', (event) => {
+        event.sender.send('get-default-steps-reply', getDefaultSteps());
+    });
+
+    ipcMain.on('set-default-cfg', (event, cfg) => {
+        setDefaultCfg(cfg);
+    });
+
+    ipcMain.on('get-default-cfg', (event) => {
+        event.sender.send('get-default-cfg-reply', getDefaultCfg());
+    });
+
+    ipcMain.on('set-default-width', (event, width) => {
+        setDefaultWidth(width);
+    });
+
+    ipcMain.on('get-default-width', (event) => {
+        event.sender.send('get-default-width-reply', getDefaultWidth());
+    });
+
+    ipcMain.on('set-default-height', (event, height) => {
+        setDefaultHeight(height);
+    });
+
+    ipcMain.on('get-default-height', (event) => {
+        event.sender.send('get-default-height-reply', getDefaultHeight());
+    });
+
+    ipcMain.on('set-default-highres-steps', (event, highresSteps) => {
+        setDefaultHighresSteps(highresSteps);
+    });
+
+    ipcMain.on('get-default-highres-steps', (event) => {
+        event.sender.send('get-default-highres-steps-reply', getDefaultHighresSteps());
+    });
+
+    ipcMain.on('set-default-denoising-strength', (event, denoisingStrength) => {
+        setDefaultDenoisingStrength(denoisingStrength);
+    });
+
+    ipcMain.on('get-default-denoising-strength', (event) => {
+        event.sender.send('get-default-denoising-strength-reply', getDefaultDenoisingStrength());
+    });
 }
 
 export const txt2img = async (prompt: string, negativePrompt?: string, steps?: number, cfg?: number, width?: number, height?: number, highresSteps?: number): Promise<any> => {
@@ -135,14 +232,14 @@ export const txt2img = async (prompt: string, negativePrompt?: string, steps?: n
 
 export async function makePromptData(
     prompt: string, 
-    negativePrompt: string = 'lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry', 
-    steps: number = 25, 
-    cfg: number = 7, 
-    width: number = 512, 
-    height: number = 512, 
-    highresSteps: number = 10){
+    negativePrompt: string = getDefaultNegativePrompt(), 
+    steps: number = getDefaultSteps(), 
+    cfg: number = getDefaultCfg(), 
+    width: number = getDefaultWidth(), 
+    height: number = getDefaultHeight(), 
+    highresSteps: number = getDefaultHighresSteps()){
     let data = {
-        "denoising_strength": .25,
+        "denoising_strength": getDefaultDenoisingStrength(),
         "firstphase_width": 512,
         "firstphase_height": 512,
         "hr_scale": 1.5,

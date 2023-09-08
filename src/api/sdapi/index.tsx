@@ -92,3 +92,87 @@ export const getUpscalers = (): Promise<any> => {
         });
     });
 }
+
+export const getDefaultSteps = (): Promise<number> => {
+    return new Promise((resolve, reject) => {
+        ipcRenderer.send('get-default-steps');
+
+        ipcRenderer.once('get-default-steps-reply', (event, result) => {
+            resolve(result);
+        });
+    });
+};
+
+export const setDefaultSteps = (steps: number): void => {
+    ipcRenderer.send('set-default-steps', steps);
+};
+
+export const getDefaultCfg = (): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        ipcRenderer.send('get-default-cfg');
+
+        ipcRenderer.once('get-default-cfg-reply', (event, result) => {
+            resolve(result);
+        });
+    });
+};
+
+export const setDefaultCfg = (cfg: string): void => {
+    ipcRenderer.send('set-default-cfg', cfg);
+};
+
+export const getDefaultWidth = (): Promise<number> => {
+    return new Promise((resolve, reject) => {
+        ipcRenderer.send('get-default-width');
+
+        ipcRenderer.once('get-default-width-reply', (event, result) => {
+            resolve(result);
+        });
+    });
+};
+
+export const setDefaultWidth = (width: number): void => {
+    ipcRenderer.send('set-default-width', width);
+};
+
+export const getDefaultHeight = (): Promise<number> => {
+    return new Promise((resolve, reject) => {
+        ipcRenderer.send('get-default-height');
+
+        ipcRenderer.once('get-default-height-reply', (event, result) => {
+            resolve(result);
+        });
+    });
+};
+
+export const setDefaultHeight = (height: number): void => {
+    ipcRenderer.send('set-default-height', height);
+};
+
+export const getDefaultHighresSteps = (): Promise<number> => {
+    return new Promise((resolve, reject) => {
+        ipcRenderer.send('get-default-highres-steps');
+
+        ipcRenderer.once('get-default-highres-steps-reply', (event, result) => {
+            resolve(result);
+        });
+    });
+};
+
+export const setDefaultHighresSteps = (highresSteps: number): void => {
+    ipcRenderer.send('set-default-highres-steps', highresSteps);
+};
+
+export const getDefaultDenoisingStrength = (): Promise<number> => {
+    return new Promise((resolve, reject) => {
+        ipcRenderer.send('get-default-denoising-strength');
+
+        ipcRenderer.once('get-default-denoising-strength-reply', (event, result) => {
+            resolve(result);
+        });
+    });
+};
+
+export const setDefaultDenoisingStrength = (denoisingStrength: number): void => {
+    ipcRenderer.send('set-default-denoising-strength', denoisingStrength);
+};

@@ -5460,8 +5460,44 @@ const setDefaultUpscaler = (upscaler) => {
 const getDefaultUpscaler = () => {
   return store$3.get("defaultUpscaler", "");
 };
+const setDefaultSteps = (steps) => {
+  store$3.set("defaultSteps", steps);
+};
+const getDefaultSteps = () => {
+  return store$3.get("defaultSteps", 25);
+};
+const setDefaultCfg = (cfg) => {
+  store$3.set("defaultCfg", cfg);
+};
+const getDefaultCfg = () => {
+  return store$3.get("defaultCfg", 7);
+};
+const setDefaultWidth = (width) => {
+  store$3.set("defaultWidth", width);
+};
+const getDefaultWidth = () => {
+  return store$3.get("defaultWidth", 512);
+};
+const setDefaultHeight = (height) => {
+  store$3.set("defaultHeight", height);
+};
+const getDefaultHeight = () => {
+  return store$3.get("defaultHeight", 512);
+};
+const setDefaultHighresSteps = (highresSteps) => {
+  store$3.set("defaultHighresSteps", highresSteps);
+};
+const getDefaultHighresSteps = () => {
+  return store$3.get("defaultHighresSteps", 10);
+};
+const setDefaultDenoisingStrength = (denoisingStrength) => {
+  store$3.set("defaultDenoisingStrength", denoisingStrength);
+};
+const getDefaultDenoisingStrength = () => {
+  return store$3.get("defaultDenoisingStrength", 0.25);
+};
 function SDRoutes() {
-  electron.ipcMain.on("setDefaultPrompt", (event, prompt) => {
+  electron.ipcMain.on("setdefaultPrompt", (event, prompt) => {
     setDefaultPrompt(prompt);
   });
   electron.ipcMain.on("getDefaultPrompt", (event) => {
@@ -5528,6 +5564,42 @@ function SDRoutes() {
       console.log(err);
     });
   });
+  electron.ipcMain.on("set-default-steps", (event, steps) => {
+    setDefaultSteps(steps);
+  });
+  electron.ipcMain.on("get-default-steps", (event) => {
+    event.sender.send("get-default-steps-reply", getDefaultSteps());
+  });
+  electron.ipcMain.on("set-default-cfg", (event, cfg) => {
+    setDefaultCfg(cfg);
+  });
+  electron.ipcMain.on("get-default-cfg", (event) => {
+    event.sender.send("get-default-cfg-reply", getDefaultCfg());
+  });
+  electron.ipcMain.on("set-default-width", (event, width) => {
+    setDefaultWidth(width);
+  });
+  electron.ipcMain.on("get-default-width", (event) => {
+    event.sender.send("get-default-width-reply", getDefaultWidth());
+  });
+  electron.ipcMain.on("set-default-height", (event, height) => {
+    setDefaultHeight(height);
+  });
+  electron.ipcMain.on("get-default-height", (event) => {
+    event.sender.send("get-default-height-reply", getDefaultHeight());
+  });
+  electron.ipcMain.on("set-default-highres-steps", (event, highresSteps) => {
+    setDefaultHighresSteps(highresSteps);
+  });
+  electron.ipcMain.on("get-default-highres-steps", (event) => {
+    event.sender.send("get-default-highres-steps-reply", getDefaultHighresSteps());
+  });
+  electron.ipcMain.on("set-default-denoising-strength", (event, denoisingStrength) => {
+    setDefaultDenoisingStrength(denoisingStrength);
+  });
+  electron.ipcMain.on("get-default-denoising-strength", (event) => {
+    event.sender.send("get-default-denoising-strength-reply", getDefaultDenoisingStrength());
+  });
 }
 const txt2img = async (prompt, negativePrompt, steps, cfg, width, height, highresSteps) => {
   try {
@@ -5537,9 +5609,9 @@ const txt2img = async (prompt, negativePrompt, steps, cfg, width, height, highre
     throw new Error(`Failed to send data: ${error.message}`);
   }
 };
-async function makePromptData(prompt, negativePrompt = "lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry", steps = 25, cfg = 7, width = 512, height = 512, highresSteps = 10) {
+async function makePromptData(prompt, negativePrompt = getDefaultNegativePrompt(), steps = getDefaultSteps(), cfg = getDefaultCfg(), width = getDefaultWidth(), height = getDefaultHeight(), highresSteps = getDefaultHighresSteps()) {
   let data = {
-    "denoising_strength": 0.25,
+    "denoising_strength": getDefaultDenoisingStrength(),
     "firstphase_width": 512,
     "firstphase_height": 512,
     "hr_scale": 1.5,
