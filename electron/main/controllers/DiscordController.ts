@@ -57,7 +57,7 @@ export const getUsername = async (userID: string, channelID: string) => {
             }
         }
     }
-    let name = await disClient.users.fetch(userID).then(user => {
+    let name = disClient.users.fetch(userID).then(user => {
         if(user.displayName !== undefined){
             return user.displayName;
         }

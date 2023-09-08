@@ -150,6 +150,16 @@ export async function getModels(){
     return res.data;
 }
 
+export async function getVaeModels(){
+    let url = new URL(getSDApiUrl());
+    url.pathname = '/sdapi/v1/sd-vae';
+    const res = await axios({
+        method: 'get',
+        url: url.toString(),
+    });
+    return res.data;
+}
+
 function getTimestamp() {
     const now = new Date();
 

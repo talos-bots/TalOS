@@ -2424,7 +2424,7 @@ const getUsername = async (userID, channelID) => {
       }
     }
   }
-  let name = await disClient.users.fetch(userID).then((user) => {
+  let name = disClient.users.fetch(userID).then((user) => {
     if (user.displayName !== void 0) {
       return user.displayName;
     }
