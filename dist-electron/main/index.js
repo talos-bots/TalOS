@@ -5496,6 +5496,12 @@ const setDefaultDenoisingStrength = (denoisingStrength) => {
 const getDefaultDenoisingStrength = () => {
   return store$3.get("defaultDenoisingStrength", 0.25);
 };
+const setDefaultUpscale = (upscale) => {
+  store$3.set("defaultUpscale", upscale);
+};
+const getDefaultUpscale = () => {
+  return store$3.get("defaultUpscale", 1.5);
+};
 function SDRoutes() {
   electron.ipcMain.on("setdefaultPrompt", (event, prompt) => {
     setDefaultPrompt(prompt);
@@ -5517,10 +5523,10 @@ function SDRoutes() {
       console.log(err);
     });
   });
-  electron.ipcMain.on("set-negative-prompt", (event, prompt) => {
+  electron.ipcMain.on("set-default-negative-prompt", (event, prompt) => {
     setDefaultNegativePrompt(prompt);
   });
-  electron.ipcMain.on("get-negative-prompt", (event) => {
+  electron.ipcMain.on("get-default-negative-prompt", (event) => {
     event.sender.send("get-negative-prompt-reply", getDefaultNegativePrompt());
   });
   electron.ipcMain.on("set-default-upscaler", (event, upscaler) => {
@@ -5600,6 +5606,12 @@ function SDRoutes() {
   electron.ipcMain.on("get-default-denoising-strength", (event) => {
     event.sender.send("get-default-denoising-strength-reply", getDefaultDenoisingStrength());
   });
+  electron.ipcMain.on("set-default-upscale", (event, upscale) => {
+    setDefaultUpscale(upscale);
+  });
+  electron.ipcMain.on("get-default-upscale", (event) => {
+    event.sender.send("get-default-upscale-reply", getDefaultUpscale());
+  });
 }
 const txt2img = async (prompt, negativePrompt, steps, cfg, width, height, highresSteps) => {
   try {
@@ -5614,7 +5626,7 @@ async function makePromptData(prompt, negativePrompt = getDefaultNegativePrompt(
     "denoising_strength": getDefaultDenoisingStrength(),
     "firstphase_width": 512,
     "firstphase_height": 512,
-    "hr_scale": 1.5,
+    "hr_scale": getDefaultUpscale(),
     "hr_second_pass_steps": highresSteps,
     "hr_sampler_name": "Euler a",
     "prompt": prompt,

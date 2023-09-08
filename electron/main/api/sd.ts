@@ -90,6 +90,14 @@ const getDefaultDenoisingStrength = (): number => {
     return store.get('defaultDenoisingStrength', .25) as number;
 }
 
+const setDefaultUpscale = (upscale: number): void => {
+    store.set('defaultUpscale', upscale);
+}
+
+const getDefaultUpscale = (): number => {
+    return store.get('defaultUpscale', 1.5) as number;
+}
+
 export function SDRoutes(){
     ipcMain.on('setdefaultPrompt', (event, prompt) => {
         setDefaultPrompt(prompt);
@@ -116,11 +124,11 @@ export function SDRoutes(){
         });
     });
 
-    ipcMain.on('set-negative-prompt', (event, prompt) => {
+    ipcMain.on('set-default-negative-prompt', (event, prompt) => {
         setDefaultNegativePrompt(prompt);
     });
 
-    ipcMain.on('get-negative-prompt', (event) => {
+    ipcMain.on('get-default-negative-prompt', (event) => {
         event.sender.send('get-negative-prompt-reply', getDefaultNegativePrompt());
     });
 
@@ -219,6 +227,14 @@ export function SDRoutes(){
     ipcMain.on('get-default-denoising-strength', (event) => {
         event.sender.send('get-default-denoising-strength-reply', getDefaultDenoisingStrength());
     });
+
+    ipcMain.on('set-default-upscale', (event, upscale) => {
+        setDefaultUpscale(upscale);
+    });
+
+    ipcMain.on('get-default-upscale', (event) => {
+        event.sender.send('get-default-upscale-reply', getDefaultUpscale());
+    });
 }
 
 export const txt2img = async (prompt: string, negativePrompt?: string, steps?: number, cfg?: number, width?: number, height?: number, highresSteps?: number): Promise<any> => {
@@ -242,7 +258,7 @@ export async function makePromptData(
         "denoising_strength": getDefaultDenoisingStrength(),
         "firstphase_width": 512,
         "firstphase_height": 512,
-        "hr_scale": 1.5,
+        "hr_scale": getDefaultUpscale(),
         "hr_second_pass_steps": highresSteps,
         "hr_sampler_name": "Euler a",
         "prompt": prompt,

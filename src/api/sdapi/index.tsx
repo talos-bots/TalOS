@@ -176,3 +176,31 @@ export const getDefaultDenoisingStrength = (): Promise<number> => {
 export const setDefaultDenoisingStrength = (denoisingStrength: number): void => {
     ipcRenderer.send('set-default-denoising-strength', denoisingStrength);
 };
+
+export const getDefaultUpscale = (): Promise<number> => {
+    return new Promise((resolve, reject) => {
+        ipcRenderer.send('get-default-upscale');
+
+        ipcRenderer.once('get-default-upscale-reply', (event, result) => {
+            resolve(result);
+        });
+    });
+};
+
+export const setDefaultUpscale = (denoisingStrength: number): void => {
+    ipcRenderer.send('set-default-upscale', denoisingStrength);
+};
+
+export const setDefaultNegativePrompt = (negativePrompt: string): void => {
+    ipcRenderer.send('set-default-negative-prompt', negativePrompt);
+}
+
+export const getDefaultNegativePrompt = (): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        ipcRenderer.send('get-default-negative-prompt');
+
+        ipcRenderer.once('get-default-negative-prompt-reply', (event, result) => {
+            resolve(result);
+        });
+    });
+};
