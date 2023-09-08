@@ -41,11 +41,11 @@ export const setDoAutoReply = (doAutoReply: boolean): void => {
     store.set('doAutoReply', doAutoReply);
 }
 
-export const getDoAutoReply = (): boolean => {
+export const getDoAutoReply =  (): boolean => {
     return store.get('doAutoReply', false) as boolean;
 }
 
-export const getUsername = (userID: string, channelID: string) => {
+export const getUsername = async (userID: string, channelID: string) => {
     const channels = getRegisteredChannels();
     for(let i = 0; i < channels.length; i++){
         if(channels[i]._id === channelID){
@@ -57,12 +57,12 @@ export const getUsername = (userID: string, channelID: string) => {
             }
         }
     }
-    disClient.users.fetch(userID).then(user => {
+    let name = await disClient.users.fetch(userID).then(user => {
         if(user.displayName !== undefined){
             return user.displayName;
         }
     });
-    return null;
+    return name;
 }
 
 export const addAlias = (newAlias: Alias, channelID: string) => {
@@ -253,8 +253,8 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
         username = message.user.displayName;
         authorID = message.user.id;
     }
-    let alias = getUsername(authorID, chatLog._id);
-    if(alias !== null){
+    let alias = await getUsername(authorID, chatLog._id);
+    if(alias !== null && alias !== undefined){
         username = alias;
     }
     if(message.channel === null) return;
@@ -300,8 +300,8 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
         username = message.user.displayName;
         authorID = message.user.id;
     }
-    let alias = getUsername(authorID, chatLog._id);
-    if(alias !== null){
+    let alias = await getUsername(authorID, chatLog._id);
+    if(alias !== null && alias !== undefined){
         username = alias;
     }
     if(message.channel === null) return;
