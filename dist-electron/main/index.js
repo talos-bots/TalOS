@@ -2383,491 +2383,6 @@ function VectorDBRoutes() {
     });
   });
 }
-const store$4 = new Store({
-  name: "discordData"
-});
-let maxMessages = 25;
-let doAutoReply = false;
-function getDiscordSettings() {
-  maxMessages = getMaxMessages();
-  getDoMultiLine();
-  doAutoReply = getDoAutoReply();
-}
-const setDiscordMode = (mode) => {
-  store$4.set("mode", mode);
-  console.log(store$4.get("mode"));
-};
-const getDiscordMode = () => {
-  console.log(store$4.get("mode"));
-  return store$4.get("mode");
-};
-const clearDiscordMode = () => {
-  store$4.set("mode", null);
-};
-const setDoAutoReply = (doAutoReply2) => {
-  store$4.set("doAutoReply", doAutoReply2);
-};
-const getDoAutoReply = () => {
-  return store$4.get("doAutoReply", false);
-};
-const getUsername = async (userID, channelID) => {
-  var _a;
-  const channels = getRegisteredChannels();
-  for (let i = 0; i < channels.length; i++) {
-    if (channels[i]._id === channelID) {
-      if (((_a = channels[i]) == null ? void 0 : _a.aliases) === void 0)
-        continue;
-      for (let j = 0; j < channels[i].aliases.length; j++) {
-        if (channels[i].aliases[j]._id === userID) {
-          return channels[i].aliases[j].name;
-        }
-      }
-    }
-  }
-  let name = disClient.users.fetch(userID).then((user) => {
-    if (user.displayName !== void 0) {
-      return user.displayName;
-    }
-  });
-  return name;
-};
-const addAlias = (newAlias, channelID) => {
-  const channels = getRegisteredChannels();
-  for (let i = 0; i < channels.length; i++) {
-    if (channels[i]._id === channelID) {
-      if (channels[i].aliases === void 0) {
-        channels[i].aliases = [];
-      }
-      let replaced = false;
-      for (let j = 0; j < channels[i].aliases.length; j++) {
-        if (channels[i].aliases[j]._id === newAlias._id) {
-          channels[i].aliases[j] = newAlias;
-          replaced = true;
-          break;
-        }
-      }
-      if (!replaced) {
-        channels[i].aliases.push(newAlias);
-      }
-    }
-  }
-  store$4.set("channels", channels);
-};
-const setMaxMessages = (max) => {
-  store$4.set("maxMessages", max);
-};
-const getMaxMessages = () => {
-  return store$4.get("maxMessages", 25);
-};
-const getRegisteredChannels = () => {
-  return store$4.get("channels", []);
-};
-const addRegisteredChannel = (newChannel) => {
-  const existingChannels = getRegisteredChannels();
-  if (!existingChannels.includes(newChannel)) {
-    existingChannels.push(newChannel);
-    store$4.set("channels", existingChannels);
-  }
-};
-const removeRegisteredChannel = (channelToRemove) => {
-  const existingChannels = getRegisteredChannels();
-  const updatedChannels = existingChannels.filter((channel) => channel._id !== channelToRemove);
-  store$4.set("channels", updatedChannels);
-};
-const isChannelRegistered = (channel) => {
-  const existingChannels = getRegisteredChannels();
-  for (let i = 0; i < existingChannels.length; i++) {
-    if (existingChannels[i]._id === channel) {
-      return true;
-    }
-  }
-  return false;
-};
-async function handleDiscordMessage(message) {
-  if (message.author.bot)
-    return;
-  if (message.channel.isDMBased())
-    return;
-  if (message.content.startsWith("."))
-    return;
-  let registeredChannels = getRegisteredChannels();
-  let registered = false;
-  for (let i = 0; i < registeredChannels.length; i++) {
-    if (registeredChannels[i]._id === message.channel.id) {
-      registered = true;
-      break;
-    }
-  }
-  if (!registered)
-    return;
-  const activeConstructs = retrieveConstructs();
-  if (activeConstructs.length < 1)
-    return;
-  const newMessage = convertDiscordMessageToMessage(message, activeConstructs);
-  addUserFromDiscordMessage(message);
-  let constructArray = [];
-  for (let i = 0; i < activeConstructs.length; i++) {
-    let constructDoc = await getConstruct(activeConstructs[i]);
-    let construct = assembleConstructFromData(constructDoc);
-    if (construct === null)
-      continue;
-    constructArray.push(construct);
-  }
-  let chatLogData = await getChat(message.channel.id);
-  let chatLog;
-  if (chatLogData) {
-    chatLog = assembleChatFromData(chatLogData);
-    if (chatLog === null)
-      return;
-    chatLog.messages.push(newMessage);
-    chatLog.lastMessage = newMessage;
-    chatLog.lastMessageDate = newMessage.timestamp;
-    if (!chatLog.constructs.includes(newMessage.userID)) {
-      chatLog.constructs.push(newMessage.userID);
-    }
-    if (!chatLog.humans.includes(message.author.id)) {
-      chatLog.humans.push(message.author.id);
-    }
-  } else {
-    chatLog = {
-      _id: message.channel.id,
-      name: 'Discord "' + message.channel.name + '" Chat',
-      type: "Discord",
-      messages: [newMessage],
-      lastMessage: newMessage,
-      lastMessageDate: newMessage.timestamp,
-      firstMessageDate: newMessage.timestamp,
-      constructs: activeConstructs,
-      humans: [message.author.id],
-      chatConfigs: [],
-      doVector: false,
-      global: false
-    };
-    if (chatLog.messages.length > 0) {
-      await addChat(chatLog);
-    } else {
-      return;
-    }
-  }
-  if (message.content.startsWith("-")) {
-    await updateChat(chatLog);
-    return;
-  }
-  if (chatLog.doVector) {
-    if (chatLog.global) {
-      for (let i = 0; i < constructArray.length; i++) {
-        addVectorFromMessage(constructArray[i]._id, newMessage);
-      }
-    } else {
-      addVectorFromMessage(chatLog._id, newMessage);
-    }
-  }
-  const mode = getDiscordMode();
-  if (mode === "Character") {
-    if (isMultiCharacterMode()) {
-      chatLog = await doRoundRobin(constructArray, chatLog, message);
-      if (chatLog !== void 0) {
-        if (doAutoReply) {
-          if (0.25 > Math.random()) {
-            chatLog = await doRoundRobin(constructArray, chatLog, message);
-          }
-        }
-      }
-    } else {
-      sendTyping(message);
-      chatLog = await doCharacterReply(constructArray[0], chatLog, message);
-    }
-  } else if (mode === "Construct") {
-    await sendMessage(message.channel.id, "Construct Mode is not yet implemented.");
-  }
-  await updateChat(chatLog);
-}
-async function doCharacterReply(construct, chatLog, message) {
-  let username = "You";
-  let authorID = "You";
-  if (message instanceof discord_js.Message) {
-    username = message.author.displayName;
-    authorID = message.author.id;
-  }
-  if (message instanceof discord_js.CommandInteraction) {
-    username = message.user.displayName;
-    authorID = message.user.id;
-  }
-  let alias = await getUsername(authorID, chatLog._id);
-  if (alias !== null && alias !== void 0) {
-    username = alias;
-  }
-  if (message.channel === null)
-    return;
-  const result = await generateContinueChatLog(construct, chatLog, username, maxMessages);
-  let reply;
-  if (result !== null) {
-    reply = result;
-  } else {
-    return;
-  }
-  const replyMessage = {
-    _id: Date.now().toString(),
-    user: construct.name,
-    avatar: construct.avatar,
-    text: reply,
-    userID: construct._id,
-    timestamp: Date.now(),
-    origin: "Discord - " + message.channelId,
-    isHuman: false,
-    isCommand: false,
-    isPrivate: false,
-    participants: [authorID, construct._id],
-    attachments: [],
-    isThought: false
-  };
-  chatLog.messages.push(replyMessage);
-  chatLog.lastMessage = replyMessage;
-  chatLog.lastMessageDate = replyMessage.timestamp;
-  await sendMessage(message.channel.id, reply);
-  await updateChat(chatLog);
-  return chatLog;
-}
-async function doRoundRobin(constructArray, chatLog, message) {
-  let primaryConstruct = retrieveConstructs()[0];
-  let username = "You";
-  let authorID = "You";
-  if (message instanceof discord_js.Message) {
-    username = message.author.displayName;
-    authorID = message.author.id;
-  }
-  if (message instanceof discord_js.CommandInteraction) {
-    username = message.user.displayName;
-    authorID = message.user.id;
-  }
-  let alias = await getUsername(authorID, chatLog._id);
-  if (alias !== null && alias !== void 0) {
-    username = alias;
-  }
-  if (message.channel === null)
-    return;
-  let lastMessageContent = chatLog.lastMessage.text;
-  let mentionedConstruct = containsName(lastMessageContent, constructArray);
-  if (mentionedConstruct) {
-    let mentionedIndex = -1;
-    for (let i = 0; i < constructArray.length; i++) {
-      if (constructArray[i].name === mentionedConstruct) {
-        mentionedIndex = i;
-        break;
-      }
-    }
-    if (mentionedIndex !== -1) {
-      const [mentioned] = constructArray.splice(mentionedIndex, 1);
-      constructArray.unshift(mentioned);
-    }
-  }
-  for (let i = 0; i < constructArray.length; i++) {
-    if (i !== 0) {
-      if (0.1 > Math.random()) {
-        continue;
-      }
-    }
-    let tries = 0;
-    let result;
-    sendTyping(message);
-    do {
-      result = await generateContinueChatLog(constructArray[i], chatLog, username, maxMessages);
-      tries++;
-      if (tries > 10) {
-        result = "**No response from LLM within 10 tries. Check your endpoint and try again.**";
-        break;
-      }
-    } while (result === null);
-    let reply = result;
-    if (reply.trim() === "")
-      continue;
-    const replyMessage = {
-      _id: Date.now().toString(),
-      user: constructArray[i].name,
-      avatar: constructArray[i].avatar,
-      text: reply,
-      userID: constructArray[i]._id,
-      timestamp: Date.now(),
-      origin: "Discord - " + message.channelId,
-      isHuman: false,
-      isCommand: false,
-      isPrivate: false,
-      participants: [authorID, constructArray[i]._id],
-      attachments: [],
-      isThought: false
-    };
-    chatLog.messages.push(replyMessage);
-    chatLog.lastMessage = replyMessage;
-    chatLog.lastMessageDate = replyMessage.timestamp;
-    if (primaryConstruct === constructArray[i]._id) {
-      await sendMessage(message.channel.id, reply);
-    } else {
-      await sendMessageAsCharacter(constructArray[i], message.channel.id, reply);
-    }
-    await updateChat(chatLog);
-    if (chatLog.doVector) {
-      if (chatLog.global) {
-        for (let i2 = 0; i2 < constructArray.length; i2++) {
-          addVectorFromMessage(constructArray[i2]._id, replyMessage);
-        }
-      } else {
-        addVectorFromMessage(chatLog._id, replyMessage);
-      }
-    }
-  }
-  return chatLog;
-}
-async function continueChatLog(interaction) {
-  let registeredChannels = getRegisteredChannels();
-  let registered = false;
-  if (interaction.channel === null)
-    return;
-  for (let i = 0; i < registeredChannels.length; i++) {
-    if (registeredChannels[i]._id === interaction.channel.id) {
-      registered = true;
-      break;
-    }
-  }
-  if (!registered)
-    return;
-  const activeConstructs = retrieveConstructs();
-  if (activeConstructs.length < 1)
-    return;
-  let constructArray = [];
-  for (let i = 0; i < activeConstructs.length; i++) {
-    let constructDoc = await getConstruct(activeConstructs[i]);
-    let construct = assembleConstructFromData(constructDoc);
-    if (construct === null)
-      continue;
-    constructArray.push(construct);
-  }
-  let chatLogData = await getChat(interaction.channel.id);
-  let chatLog;
-  if (chatLogData) {
-    chatLog = assembleChatFromData(chatLogData);
-  }
-  if (chatLog === null || chatLog === void 0) {
-    return;
-  }
-  if (chatLog.messages.length < 1) {
-    return;
-  }
-  const mode = getDiscordMode();
-  if (mode === "Character") {
-    sendTyping(interaction);
-    if (isMultiCharacterMode()) {
-      chatLog = await doRoundRobin(constructArray, chatLog, interaction);
-      if (chatLog !== void 0) {
-        if (doAutoReply) {
-          if (0.25 > Math.random()) {
-            chatLog = await doRoundRobin(constructArray, chatLog, interaction);
-          }
-        }
-      }
-    } else {
-      chatLog = await doCharacterReply(constructArray[0], chatLog, interaction);
-    }
-  } else if (mode === "Construct") {
-    await sendMessage(interaction.channel.id, "Construct Mode is not yet implemented.");
-  }
-  await updateChat(chatLog);
-}
-async function handleRengenerateMessage(message) {
-  let registeredChannels = getRegisteredChannels();
-  let registered = false;
-  if (message.channel === null) {
-    console.log("Channel is null");
-    return;
-  }
-  for (let i = 0; i < registeredChannels.length; i++) {
-    if (registeredChannels[i]._id === message.channel.id) {
-      registered = true;
-      break;
-    }
-  }
-  if (!registered) {
-    console.log("Channel is not registered");
-    return;
-  }
-  let chatLogData = await getChat(message.channel.id);
-  let chatLog;
-  if (chatLogData) {
-    chatLog = assembleChatFromData(chatLogData);
-  }
-  if (chatLog === void 0 || chatLog === null) {
-    console.log("Chat log is undefined");
-    return;
-  }
-  if (chatLog.messages.length <= 1) {
-    console.log("Chat log has no messages");
-    return;
-  }
-  let edittedMessage = await regenerateMessageFromChatLog(chatLog, message.content);
-  if (edittedMessage === void 0) {
-    console.log("Editted message is undefined");
-    return;
-  }
-  await editMessage(message, edittedMessage);
-}
-async function handleRemoveMessage(message) {
-  let registeredChannels = getRegisteredChannels();
-  let registered = false;
-  if (message.channel === null)
-    return;
-  for (let i = 0; i < registeredChannels.length; i++) {
-    if (registeredChannels[i]._id === message.channel.id) {
-      registered = true;
-      break;
-    }
-  }
-  if (!registered)
-    return;
-  let chatLogData = await getChat(message.channel.id);
-  let chatLog;
-  if (chatLogData) {
-    chatLog = assembleChatFromData(chatLogData);
-  }
-  if (chatLog === void 0 || chatLog === null) {
-    return;
-  }
-  if (chatLog.messages.length < 1) {
-    return;
-  }
-  await removeMessagesFromChatLog(chatLog, message.content);
-  await deleteMessage(message);
-}
-function containsName(message, chars) {
-  for (let i = 0; i < chars.length; i++) {
-    if (message.toLowerCase().trim().includes(chars[i].name.toLowerCase().trim())) {
-      return chars[i].name;
-    }
-  }
-  return false;
-}
-function DiscordController() {
-  getDiscordSettings();
-  electron.ipcMain.on("discordMode", (event, arg) => {
-    setDiscordMode(arg);
-  });
-  electron.ipcMain.handle("getDiscordMode", () => {
-    return getDiscordMode();
-  });
-  electron.ipcMain.on("clearDiscordMode", () => {
-    clearDiscordMode();
-  });
-  electron.ipcMain.handle("getRegisteredChannels", () => {
-    return getRegisteredChannels();
-  });
-  electron.ipcMain.handle("addRegisteredChannel", (event, arg) => {
-    addRegisteredChannel(arg);
-  });
-  electron.ipcMain.handle("removeRegisteredChannel", (event, arg) => {
-    removeRegisteredChannel(arg);
-  });
-  electron.ipcMain.handle("isChannelRegistered", (event, arg) => {
-    return isChannelRegistered(arg);
-  });
-}
 var commonjsGlobal = typeof globalThis !== "undefined" ? globalThis : typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : {};
 function getDefaultExportFromCjs(x) {
   return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x["default"] : x;
@@ -5433,74 +4948,74 @@ var output = {
 })(lib);
 var libExports = lib.exports;
 const fs = /* @__PURE__ */ getDefaultExportFromCjs(libExports);
-const store$3 = new Store({
+const store$4 = new Store({
   name: "stableDiffusionData"
 });
 const getSDApiUrl = () => {
-  return store$3.get("apiUrl", "");
+  return store$4.get("apiUrl", "");
 };
 const setSDApiUrl = (apiUrl) => {
-  store$3.set("apiUrl", apiUrl);
+  store$4.set("apiUrl", apiUrl);
 };
 const setDefaultPrompt = (prompt) => {
-  store$3.set("defaultPrompt", prompt);
+  store$4.set("defaultPrompt", prompt);
 };
 const getDefaultPrompt = () => {
-  return store$3.get("defaultPrompt", "");
+  return store$4.get("defaultPrompt", "");
 };
 const setDefaultNegativePrompt = (prompt) => {
-  store$3.set("defaultNegativePrompt", prompt);
+  store$4.set("defaultNegativePrompt", prompt);
 };
 const getDefaultNegativePrompt = () => {
-  return store$3.get("defaultNegativePrompt", "lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry");
+  return store$4.get("defaultNegativePrompt", "lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry");
 };
 const setDefaultUpscaler = (upscaler) => {
-  store$3.set("defaultUpscaler", upscaler);
+  store$4.set("defaultUpscaler", upscaler);
 };
 const getDefaultUpscaler = () => {
-  return store$3.get("defaultUpscaler", "");
+  return store$4.get("defaultUpscaler", "");
 };
 const setDefaultSteps = (steps) => {
-  store$3.set("defaultSteps", steps);
+  store$4.set("defaultSteps", steps);
 };
 const getDefaultSteps = () => {
-  return store$3.get("defaultSteps", 25);
+  return store$4.get("defaultSteps", 25);
 };
 const setDefaultCfg = (cfg) => {
-  store$3.set("defaultCfg", cfg);
+  store$4.set("defaultCfg", cfg);
 };
 const getDefaultCfg = () => {
-  return store$3.get("defaultCfg", 7);
+  return store$4.get("defaultCfg", 7);
 };
 const setDefaultWidth = (width) => {
-  store$3.set("defaultWidth", width);
+  store$4.set("defaultWidth", width);
 };
 const getDefaultWidth = () => {
-  return store$3.get("defaultWidth", 512);
+  return store$4.get("defaultWidth", 512);
 };
 const setDefaultHeight = (height) => {
-  store$3.set("defaultHeight", height);
+  store$4.set("defaultHeight", height);
 };
 const getDefaultHeight = () => {
-  return store$3.get("defaultHeight", 512);
+  return store$4.get("defaultHeight", 512);
 };
 const setDefaultHighresSteps = (highresSteps) => {
-  store$3.set("defaultHighresSteps", highresSteps);
+  store$4.set("defaultHighresSteps", highresSteps);
 };
 const getDefaultHighresSteps = () => {
-  return store$3.get("defaultHighresSteps", 10);
+  return store$4.get("defaultHighresSteps", 10);
 };
 const setDefaultDenoisingStrength = (denoisingStrength) => {
-  store$3.set("defaultDenoisingStrength", denoisingStrength);
+  store$4.set("defaultDenoisingStrength", denoisingStrength);
 };
 const getDefaultDenoisingStrength = () => {
-  return store$3.get("defaultDenoisingStrength", 0.25);
+  return store$4.get("defaultDenoisingStrength", 0.25);
 };
 const setDefaultUpscale = (upscale) => {
-  store$3.set("defaultUpscale", upscale);
+  store$4.set("defaultUpscale", upscale);
 };
 const getDefaultUpscale = () => {
-  return store$3.get("defaultUpscale", 1.5);
+  return store$4.get("defaultUpscale", 1.5);
 };
 function SDRoutes() {
   electron.ipcMain.on("setdefaultPrompt", (event, prompt) => {
@@ -5527,7 +5042,7 @@ function SDRoutes() {
     setDefaultNegativePrompt(prompt);
   });
   electron.ipcMain.on("get-default-negative-prompt", (event) => {
-    event.sender.send("get-negative-prompt-reply", getDefaultNegativePrompt());
+    event.sender.send("get-default-negative-prompt-reply", getDefaultNegativePrompt());
   });
   electron.ipcMain.on("set-default-upscaler", (event, upscaler) => {
     setDefaultUpscaler(upscaler);
@@ -5613,17 +5128,17 @@ function SDRoutes() {
     event.sender.send("get-default-upscale-reply", getDefaultUpscale());
   });
 }
-const txt2img = async (prompt, negativePrompt, steps, cfg, width, height, highresSteps) => {
+const txt2img = async (prompt, negativePrompt, steps, cfg, width, height, highresSteps, denoisingStrength) => {
   try {
-    const response = await makeImage(prompt, negativePrompt, steps, cfg, width, height, highresSteps);
+    const response = await makeImage(prompt, negativePrompt, steps, cfg, width, height, highresSteps, denoisingStrength);
     return response;
   } catch (error) {
     throw new Error(`Failed to send data: ${error.message}`);
   }
 };
-async function makePromptData(prompt, negativePrompt = getDefaultNegativePrompt(), steps = getDefaultSteps(), cfg = getDefaultCfg(), width = getDefaultWidth(), height = getDefaultHeight(), highresSteps = getDefaultHighresSteps()) {
+async function makePromptData(prompt, negativePrompt = getDefaultNegativePrompt(), steps = getDefaultSteps(), cfg = getDefaultCfg(), width = getDefaultWidth(), height = getDefaultHeight(), highresSteps = getDefaultHighresSteps(), denoisingStrength = getDefaultDenoisingStrength()) {
   let data = {
-    "denoising_strength": getDefaultDenoisingStrength(),
+    "denoising_strength": denoisingStrength,
     "firstphase_width": width,
     "firstphase_height": height,
     "hr_scale": getDefaultUpscale(),
@@ -5650,10 +5165,10 @@ async function makePromptData(prompt, negativePrompt = getDefaultNegativePrompt(
   }
   return JSON.stringify(data);
 }
-async function makeImage(prompt, negativePrompt, steps, cfg, width, height, highresSteps) {
+async function makeImage(prompt, negativePrompt, steps, cfg, width, height, highresSteps, denoisingStrength) {
   let url2 = new URL(getSDApiUrl());
   url2.pathname = "/sdapi/v1/txt2img";
-  let data = await makePromptData(prompt, negativePrompt, steps, cfg, width, height, highresSteps);
+  let data = await makePromptData(prompt, negativePrompt, steps, cfg, width, height, highresSteps, denoisingStrength);
   const res = await axios({
     method: "post",
     url: url2.toString(),
@@ -5726,6 +5241,527 @@ function getTimestamp() {
   const minutes = String(now.getMinutes()).padStart(2, "0");
   const seconds = String(now.getSeconds()).padStart(2, "0");
   return `${year}${month}${day}_${hours}${minutes}${seconds}`;
+}
+const store$3 = new Store({
+  name: "discordData"
+});
+let maxMessages = 25;
+let doAutoReply = false;
+function getDiscordSettings() {
+  maxMessages = getMaxMessages();
+  getDoMultiLine();
+  doAutoReply = getDoAutoReply();
+}
+const setDiscordMode = (mode) => {
+  store$3.set("mode", mode);
+  console.log(store$3.get("mode"));
+};
+const getDiscordMode = () => {
+  console.log(store$3.get("mode"));
+  return store$3.get("mode");
+};
+const clearDiscordMode = () => {
+  store$3.set("mode", null);
+};
+const setDoAutoReply = (doAutoReply2) => {
+  store$3.set("doAutoReply", doAutoReply2);
+};
+const getDoAutoReply = () => {
+  return store$3.get("doAutoReply", false);
+};
+const getUsername = async (userID, channelID) => {
+  var _a;
+  const channels = getRegisteredChannels();
+  for (let i = 0; i < channels.length; i++) {
+    if (channels[i]._id === channelID) {
+      if (((_a = channels[i]) == null ? void 0 : _a.aliases) === void 0)
+        continue;
+      for (let j = 0; j < channels[i].aliases.length; j++) {
+        if (channels[i].aliases[j]._id === userID) {
+          return channels[i].aliases[j].name;
+        }
+      }
+    }
+  }
+  let name = disClient.users.fetch(userID).then((user) => {
+    if (user.displayName !== void 0) {
+      return user.displayName;
+    }
+  });
+  return name;
+};
+const addAlias = (newAlias, channelID) => {
+  const channels = getRegisteredChannels();
+  for (let i = 0; i < channels.length; i++) {
+    if (channels[i]._id === channelID) {
+      if (channels[i].aliases === void 0) {
+        channels[i].aliases = [];
+      }
+      let replaced = false;
+      for (let j = 0; j < channels[i].aliases.length; j++) {
+        if (channels[i].aliases[j]._id === newAlias._id) {
+          channels[i].aliases[j] = newAlias;
+          replaced = true;
+          break;
+        }
+      }
+      if (!replaced) {
+        channels[i].aliases.push(newAlias);
+      }
+    }
+  }
+  store$3.set("channels", channels);
+};
+const setMaxMessages = (max) => {
+  store$3.set("maxMessages", max);
+};
+const getMaxMessages = () => {
+  return store$3.get("maxMessages", 25);
+};
+const getRegisteredChannels = () => {
+  return store$3.get("channels", []);
+};
+const addRegisteredChannel = (newChannel) => {
+  const existingChannels = getRegisteredChannels();
+  if (!existingChannels.includes(newChannel)) {
+    existingChannels.push(newChannel);
+    store$3.set("channels", existingChannels);
+  }
+};
+const removeRegisteredChannel = (channelToRemove) => {
+  const existingChannels = getRegisteredChannels();
+  const updatedChannels = existingChannels.filter((channel) => channel._id !== channelToRemove);
+  store$3.set("channels", updatedChannels);
+};
+const isChannelRegistered = (channel) => {
+  const existingChannels = getRegisteredChannels();
+  for (let i = 0; i < existingChannels.length; i++) {
+    if (existingChannels[i]._id === channel) {
+      return true;
+    }
+  }
+  return false;
+};
+async function handleDiscordMessage(message) {
+  if (message.author.bot)
+    return;
+  if (message.channel.isDMBased())
+    return;
+  if (message.content.startsWith("."))
+    return;
+  let registeredChannels = getRegisteredChannels();
+  let registered = false;
+  for (let i = 0; i < registeredChannels.length; i++) {
+    if (registeredChannels[i]._id === message.channel.id) {
+      registered = true;
+      break;
+    }
+  }
+  if (!registered)
+    return;
+  const activeConstructs = retrieveConstructs();
+  if (activeConstructs.length < 1)
+    return;
+  const newMessage = convertDiscordMessageToMessage(message, activeConstructs);
+  addUserFromDiscordMessage(message);
+  let constructArray = [];
+  for (let i = 0; i < activeConstructs.length; i++) {
+    let constructDoc = await getConstruct(activeConstructs[i]);
+    let construct = assembleConstructFromData(constructDoc);
+    if (construct === null)
+      continue;
+    constructArray.push(construct);
+  }
+  let chatLogData = await getChat(message.channel.id);
+  let chatLog;
+  if (chatLogData) {
+    chatLog = assembleChatFromData(chatLogData);
+    if (chatLog === null)
+      return;
+    chatLog.messages.push(newMessage);
+    chatLog.lastMessage = newMessage;
+    chatLog.lastMessageDate = newMessage.timestamp;
+    if (!chatLog.constructs.includes(newMessage.userID)) {
+      chatLog.constructs.push(newMessage.userID);
+    }
+    if (!chatLog.humans.includes(message.author.id)) {
+      chatLog.humans.push(message.author.id);
+    }
+  } else {
+    chatLog = {
+      _id: message.channel.id,
+      name: 'Discord "' + message.channel.name + '" Chat',
+      type: "Discord",
+      messages: [newMessage],
+      lastMessage: newMessage,
+      lastMessageDate: newMessage.timestamp,
+      firstMessageDate: newMessage.timestamp,
+      constructs: activeConstructs,
+      humans: [message.author.id],
+      chatConfigs: [],
+      doVector: false,
+      global: false
+    };
+    if (chatLog.messages.length > 0) {
+      await addChat(chatLog);
+    } else {
+      return;
+    }
+  }
+  if (message.content.startsWith("-")) {
+    await updateChat(chatLog);
+    return;
+  }
+  if (chatLog.doVector) {
+    if (chatLog.global) {
+      for (let i = 0; i < constructArray.length; i++) {
+        addVectorFromMessage(constructArray[i]._id, newMessage);
+      }
+    } else {
+      addVectorFromMessage(chatLog._id, newMessage);
+    }
+  }
+  const mode = getDiscordMode();
+  if (mode === "Character") {
+    if (isMultiCharacterMode()) {
+      chatLog = await doRoundRobin(constructArray, chatLog, message);
+      if (chatLog !== void 0) {
+        if (doAutoReply) {
+          if (0.25 > Math.random()) {
+            chatLog = await doRoundRobin(constructArray, chatLog, message);
+          }
+        }
+      }
+    } else {
+      sendTyping(message);
+      chatLog = await doCharacterReply(constructArray[0], chatLog, message);
+    }
+  } else if (mode === "Construct") {
+    await sendMessage(message.channel.id, "Construct Mode is not yet implemented.");
+  }
+  await updateChat(chatLog);
+}
+async function doCharacterReply(construct, chatLog, message) {
+  let username = "You";
+  let authorID = "You";
+  if (message instanceof discord_js.Message) {
+    username = message.author.displayName;
+    authorID = message.author.id;
+  }
+  if (message instanceof discord_js.CommandInteraction) {
+    username = message.user.displayName;
+    authorID = message.user.id;
+  }
+  let alias = await getUsername(authorID, chatLog._id);
+  if (alias !== null && alias !== void 0) {
+    username = alias;
+  }
+  if (message.channel === null)
+    return;
+  const result = await generateContinueChatLog(construct, chatLog, username, maxMessages);
+  let reply;
+  if (result !== null) {
+    reply = result;
+  } else {
+    return;
+  }
+  const replyMessage = {
+    _id: Date.now().toString(),
+    user: construct.name,
+    avatar: construct.avatar,
+    text: reply,
+    userID: construct._id,
+    timestamp: Date.now(),
+    origin: "Discord - " + message.channelId,
+    isHuman: false,
+    isCommand: false,
+    isPrivate: false,
+    participants: [authorID, construct._id],
+    attachments: [],
+    isThought: false
+  };
+  chatLog.messages.push(replyMessage);
+  chatLog.lastMessage = replyMessage;
+  chatLog.lastMessageDate = replyMessage.timestamp;
+  await sendMessage(message.channel.id, reply);
+  await updateChat(chatLog);
+  return chatLog;
+}
+async function doRoundRobin(constructArray, chatLog, message) {
+  let primaryConstruct = retrieveConstructs()[0];
+  let username = "You";
+  let authorID = "You";
+  if (message instanceof discord_js.Message) {
+    username = message.author.displayName;
+    authorID = message.author.id;
+  }
+  if (message instanceof discord_js.CommandInteraction) {
+    username = message.user.displayName;
+    authorID = message.user.id;
+  }
+  let alias = await getUsername(authorID, chatLog._id);
+  if (alias !== null && alias !== void 0) {
+    username = alias;
+  }
+  if (message.channel === null)
+    return;
+  let lastMessageContent = chatLog.lastMessage.text;
+  let mentionedConstruct = containsName(lastMessageContent, constructArray);
+  if (mentionedConstruct) {
+    let mentionedIndex = -1;
+    for (let i = 0; i < constructArray.length; i++) {
+      if (constructArray[i].name === mentionedConstruct) {
+        mentionedIndex = i;
+        break;
+      }
+    }
+    if (mentionedIndex !== -1) {
+      const [mentioned] = constructArray.splice(mentionedIndex, 1);
+      constructArray.unshift(mentioned);
+    }
+  }
+  for (let i = 0; i < constructArray.length; i++) {
+    if (i !== 0) {
+      if (0.1 > Math.random()) {
+        continue;
+      }
+    }
+    let tries = 0;
+    let result;
+    sendTyping(message);
+    do {
+      result = await generateContinueChatLog(constructArray[i], chatLog, username, maxMessages);
+      tries++;
+      if (tries > 10) {
+        result = "**No response from LLM within 10 tries. Check your endpoint and try again.**";
+        break;
+      }
+    } while (result === null);
+    let reply = result;
+    if (reply.trim() === "")
+      continue;
+    const replyMessage = {
+      _id: Date.now().toString(),
+      user: constructArray[i].name,
+      avatar: constructArray[i].avatar,
+      text: reply,
+      userID: constructArray[i]._id,
+      timestamp: Date.now(),
+      origin: "Discord - " + message.channelId,
+      isHuman: false,
+      isCommand: false,
+      isPrivate: false,
+      participants: [authorID, constructArray[i]._id],
+      attachments: [],
+      isThought: false
+    };
+    chatLog.messages.push(replyMessage);
+    chatLog.lastMessage = replyMessage;
+    chatLog.lastMessageDate = replyMessage.timestamp;
+    if (primaryConstruct === constructArray[i]._id) {
+      await sendMessage(message.channel.id, reply);
+    } else {
+      await sendMessageAsCharacter(constructArray[i], message.channel.id, reply);
+    }
+    await updateChat(chatLog);
+    if (chatLog.doVector) {
+      if (chatLog.global) {
+        for (let i2 = 0; i2 < constructArray.length; i2++) {
+          addVectorFromMessage(constructArray[i2]._id, replyMessage);
+        }
+      } else {
+        addVectorFromMessage(chatLog._id, replyMessage);
+      }
+    }
+  }
+  return chatLog;
+}
+async function continueChatLog(interaction) {
+  let registeredChannels = getRegisteredChannels();
+  let registered = false;
+  if (interaction.channel === null)
+    return;
+  for (let i = 0; i < registeredChannels.length; i++) {
+    if (registeredChannels[i]._id === interaction.channel.id) {
+      registered = true;
+      break;
+    }
+  }
+  if (!registered)
+    return;
+  const activeConstructs = retrieveConstructs();
+  if (activeConstructs.length < 1)
+    return;
+  let constructArray = [];
+  for (let i = 0; i < activeConstructs.length; i++) {
+    let constructDoc = await getConstruct(activeConstructs[i]);
+    let construct = assembleConstructFromData(constructDoc);
+    if (construct === null)
+      continue;
+    constructArray.push(construct);
+  }
+  let chatLogData = await getChat(interaction.channel.id);
+  let chatLog;
+  if (chatLogData) {
+    chatLog = assembleChatFromData(chatLogData);
+  }
+  if (chatLog === null || chatLog === void 0) {
+    return;
+  }
+  if (chatLog.messages.length < 1) {
+    return;
+  }
+  const mode = getDiscordMode();
+  if (mode === "Character") {
+    sendTyping(interaction);
+    if (isMultiCharacterMode()) {
+      chatLog = await doRoundRobin(constructArray, chatLog, interaction);
+      if (chatLog !== void 0) {
+        if (doAutoReply) {
+          if (0.25 > Math.random()) {
+            chatLog = await doRoundRobin(constructArray, chatLog, interaction);
+          }
+        }
+      }
+    } else {
+      chatLog = await doCharacterReply(constructArray[0], chatLog, interaction);
+    }
+  } else if (mode === "Construct") {
+    await sendMessage(interaction.channel.id, "Construct Mode is not yet implemented.");
+  }
+  await updateChat(chatLog);
+}
+async function handleRengenerateMessage(message) {
+  let registeredChannels = getRegisteredChannels();
+  let registered = false;
+  if (message.channel === null) {
+    console.log("Channel is null");
+    return;
+  }
+  for (let i = 0; i < registeredChannels.length; i++) {
+    if (registeredChannels[i]._id === message.channel.id) {
+      registered = true;
+      break;
+    }
+  }
+  if (!registered) {
+    console.log("Channel is not registered");
+    return;
+  }
+  let chatLogData = await getChat(message.channel.id);
+  let chatLog;
+  if (chatLogData) {
+    chatLog = assembleChatFromData(chatLogData);
+  }
+  if (chatLog === void 0 || chatLog === null) {
+    console.log("Chat log is undefined");
+    return;
+  }
+  if (chatLog.messages.length <= 1) {
+    console.log("Chat log has no messages");
+    return;
+  }
+  let edittedMessage = await regenerateMessageFromChatLog(chatLog, message.content);
+  if (edittedMessage === void 0) {
+    console.log("Editted message is undefined");
+    return;
+  }
+  await editMessage(message, edittedMessage);
+}
+async function handleRemoveMessage(message) {
+  let registeredChannels = getRegisteredChannels();
+  let registered = false;
+  if (message.channel === null)
+    return;
+  for (let i = 0; i < registeredChannels.length; i++) {
+    if (registeredChannels[i]._id === message.channel.id) {
+      registered = true;
+      break;
+    }
+  }
+  if (!registered)
+    return;
+  let chatLogData = await getChat(message.channel.id);
+  let chatLog;
+  if (chatLogData) {
+    chatLog = assembleChatFromData(chatLogData);
+  }
+  if (chatLog === void 0 || chatLog === null) {
+    return;
+  }
+  if (chatLog.messages.length < 1) {
+    return;
+  }
+  await removeMessagesFromChatLog(chatLog, message.content);
+  await deleteMessage(message);
+}
+function containsName(message, chars) {
+  for (let i = 0; i < chars.length; i++) {
+    if (message.toLowerCase().trim().includes(chars[i].name.toLowerCase().trim())) {
+      return chars[i].name;
+    }
+  }
+  return false;
+}
+async function doImageReaction(message) {
+  if (message.attachments.size > 0) {
+    message.react("❎");
+    return;
+  }
+  if (message.embeds.length > 0) {
+    message.react("❎");
+    return;
+  }
+  if (message.content.includes("http")) {
+    message.react("❎");
+    return;
+  }
+  if (message.content.includes("www")) {
+    message.react("❎");
+    return;
+  }
+  if (message.content.includes(".com")) {
+    message.react("❎");
+    return;
+  }
+  if (message.content.includes(".net")) {
+    message.react("❎");
+    return;
+  }
+  if (message.cleanContent.length < 1) {
+    message.react("❎");
+    return;
+  }
+  message.react("✅");
+  let prompt = message.cleanContent;
+  let imageData = await makeImage(prompt);
+  const buffer2 = Buffer.from(imageData.base64, "base64");
+  let attachment = new discord_js.AttachmentBuilder(buffer2, { name: `${imageData.name}` });
+  message.reply({ files: [attachment] });
+}
+function DiscordController() {
+  getDiscordSettings();
+  electron.ipcMain.on("discordMode", (event, arg) => {
+    setDiscordMode(arg);
+  });
+  electron.ipcMain.handle("getDiscordMode", () => {
+    return getDiscordMode();
+  });
+  electron.ipcMain.on("clearDiscordMode", () => {
+    clearDiscordMode();
+  });
+  electron.ipcMain.handle("getRegisteredChannels", () => {
+    return getRegisteredChannels();
+  });
+  electron.ipcMain.handle("addRegisteredChannel", (event, arg) => {
+    addRegisteredChannel(arg);
+  });
+  electron.ipcMain.handle("removeRegisteredChannel", (event, arg) => {
+    removeRegisteredChannel(arg);
+  });
+  electron.ipcMain.handle("isChannelRegistered", (event, arg) => {
+    return isChannelRegistered(arg);
+  });
 }
 const RegisterCommand = {
   name: "register",
@@ -6986,6 +7022,10 @@ function DiscordJSRoutes() {
       if (reaction.emoji.name === "🗑️") {
         console.log("Removing message...");
         await handleRemoveMessage(message);
+      }
+      if (reaction.emoji.name === "🖼️") {
+        console.log("Creating image...");
+        await doImageReaction(message);
       }
       (_c = exports.win) == null ? void 0 : _c.webContents.send("discord-message-reaction-add", reaction, user);
     } catch (error) {

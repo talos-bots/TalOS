@@ -3,10 +3,11 @@ import Store from 'electron-store';
 import { generateContinueChatLog, getDoMultiLine, regenerateMessageFromChatLog, removeMessagesFromChatLog, retrieveConstructs } from './ConstructController';
 import { addChat, getChat, getConstruct, updateChat } from '../api/pouchdb';
 import { addUserFromDiscordMessage, assembleChatFromData, assembleConstructFromData, convertDiscordMessageToMessage } from '../helpers/helpers';
-import { CommandInteraction, Message } from 'discord.js';
+import { AttachmentBuilder, CommandInteraction, Message } from 'discord.js';
 import { deleteMessage, disClient, editMessage, isAutoReplyMode, isMultiCharacterMode, sendMessage, sendMessageAsCharacter, sendTyping } from '../api/discord';
 import { Alias, ChannelConfigInterface, ChatInterface, ConstructInterface } from '../types/types';
 import { addVectorFromMessage } from '../api/vector';
+import { makeImage } from '../api/sd';
 
 const store = new Store({
     name: 'discordData',
@@ -503,6 +504,43 @@ function containsName(message: string, chars: ConstructInterface[]){
         }
     }
     return false;
+}
+
+export async function doImageReaction(message: Message){
+    if(message.attachments.size > 0){
+        message.react('❎');
+        return;
+    }
+    if(message.embeds.length > 0){
+        message.react('❎');
+        return;
+    }
+    if(message.content.includes('http')){
+        message.react('❎');
+        return;
+    }
+    if(message.content.includes('www')){
+        message.react('❎');
+        return;
+    }
+    if(message.content.includes('.com')){
+        message.react('❎');
+        return;
+    }
+    if(message.content.includes('.net')){
+        message.react('❎');
+        return;
+    }
+    if(message.cleanContent.length < 1){
+        message.react('❎');
+        return;
+    }
+    message.react('✅');
+    let prompt = message.cleanContent;
+    let imageData = await makeImage(prompt);
+    const buffer = Buffer.from(imageData.base64, 'base64');
+    let attachment = new AttachmentBuilder(buffer, {name: `${imageData.name}`});
+    message.reply({files: [attachment]});
 }
 
 function DiscordController(){

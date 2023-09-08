@@ -129,7 +129,7 @@ export function SDRoutes(){
     });
 
     ipcMain.on('get-default-negative-prompt', (event) => {
-        event.sender.send('get-negative-prompt-reply', getDefaultNegativePrompt());
+        event.sender.send('get-default-negative-prompt-reply', getDefaultNegativePrompt());
     });
 
     ipcMain.on('set-default-upscaler', (event, upscaler) => {
@@ -237,9 +237,9 @@ export function SDRoutes(){
     });
 }
 
-export const txt2img = async (prompt: string, negativePrompt?: string, steps?: number, cfg?: number, width?: number, height?: number, highresSteps?: number): Promise<any> => {
+export const txt2img = async (prompt: string, negativePrompt?: string, steps?: number, cfg?: number, width?: number, height?: number, highresSteps?: number, denoisingStrength?: number): Promise<any> => {
     try {
-        const response = await makeImage(prompt, negativePrompt, steps, cfg, width, height, highresSteps)
+        const response = await makeImage(prompt, negativePrompt, steps, cfg, width, height, highresSteps, denoisingStrength)
         return response;
     } catch (error: any) {
         throw new Error(`Failed to send data: ${error.message}`);
@@ -253,9 +253,10 @@ export async function makePromptData(
     cfg: number = getDefaultCfg(), 
     width: number = getDefaultWidth(), 
     height: number = getDefaultHeight(), 
-    highresSteps: number = getDefaultHighresSteps()){
+    highresSteps: number = getDefaultHighresSteps(),
+    denoisingStrength: number = getDefaultDenoisingStrength()){
     let data = {
-        "denoising_strength": getDefaultDenoisingStrength(),
+        "denoising_strength": denoisingStrength,
         "firstphase_width": width,
         "firstphase_height": height,
         "hr_scale": getDefaultUpscale(),
@@ -285,10 +286,16 @@ export async function makePromptData(
     return JSON.stringify(data);
 }
 
-export async function makeImage(prompt: string, negativePrompt?: string, steps?: number, cfg?: number, width?: number, height?: number, highresSteps?: number){
+export async function img2img(img: string, steps: number = getDefaultSteps(), cfg: number = getDefaultCfg(), width: number = getDefaultWidth(), height: number = getDefaultHeight(), highresSteps: number = getDefaultHighresSteps()){
+    let url = new URL(getSDApiUrl());
+    url.pathname = '/sdapi/v1/img2img';
+
+}
+
+export async function makeImage(prompt: string, negativePrompt?: string, steps?: number, cfg?: number, width?: number, height?: number, highresSteps?: number, denoisingStrength?: number){
     let url = new URL(getSDApiUrl());
     url.pathname = '/sdapi/v1/txt2img';
-    let data = await makePromptData(prompt, negativePrompt, steps, cfg, width, height, highresSteps);
+    let data = await makePromptData(prompt, negativePrompt, steps, cfg, width, height, highresSteps, denoisingStrength);
     const res = await axios({
         method: 'post',
         url: url.toString(),

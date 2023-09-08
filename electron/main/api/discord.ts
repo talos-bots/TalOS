@@ -2,7 +2,7 @@ import { ipcMain } from 'electron';
 import { ActivityType, Client, GatewayIntentBits, Collection, REST, Routes, Partials, TextChannel, DMChannel, NewsChannel, Snowflake, Webhook, Message, CommandInteraction, Events, PartialGroupDMChannel } from 'discord.js';
 import Store from 'electron-store';
 import { win } from '..';
-import { getUsername, handleDiscordMessage, handleRemoveMessage, handleRengenerateMessage } from '../controllers/DiscordController';
+import { doImageReaction, getUsername, handleDiscordMessage, handleRemoveMessage, handleRengenerateMessage } from '../controllers/DiscordController';
 import { ConstructInterface, SlashCommand } from '../types/types';
 import { assembleConstructFromData, base642Buffer } from '../helpers/helpers';
 import { DefaultCommands } from '../controllers/commands';
@@ -513,7 +513,11 @@ export function DiscordJSRoutes(){
                 console.log("Removing message...");
                 await handleRemoveMessage(message as Message);
             }
-    
+
+            if(reaction.emoji.name === '🖼️'){
+                console.log("Creating image...");
+                await doImageReaction(message as Message);
+            }
             win?.webContents.send('discord-message-reaction-add', reaction, user);
         } catch (error) {
             console.error('Something went wrong when fetching the message:', error);
