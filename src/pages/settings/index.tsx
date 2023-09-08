@@ -9,7 +9,7 @@ import {
     getDefaultWidth, setDefaultWidth,
     getDefaultHeight, setDefaultHeight,
     getDefaultHighresSteps, setDefaultHighresSteps,
-    getDefaultDenoisingStrength, setDefaultDenoisingStrength } from "@/api/sdapi";
+    getDefaultDenoisingStrength, setDefaultDenoisingStrength, getDefaultNegativePrompt, setDefaultNegativePrompt, getDefaultUpscale, setDefaultUpscale } from "@/api/sdapi";
 import Accordian from "@/components/accordian";
 import LLMPanel from "@/components/llm-panel";
 import { defaultThemes } from "@/constants";
@@ -29,7 +29,8 @@ const SettingsPage = () => {
     const [defaultHeight, setDefaultHeightState] = useState<number>(0);
     const [defaultHighresSteps, setDefaultHighresStepsState] = useState<number>(0);
     const [defaultDenoisingStrength, setDefaultDenoisingStrengthState] = useState<number>(0);
-
+    const [negativePrompt, setNegativePrompt] = useState<string>("");
+    const [upsaleFactor, setUpscaleFactor] = useState<number>(0);
     const setTheme = async (themeID: string) => {
         await setStorageValue("uiTheme", themeID);
         window.location.reload();
@@ -89,6 +90,8 @@ const SettingsPage = () => {
         getDefaultHeight().then(setDefaultHeightState).catch(console.error);
         getDefaultHighresSteps().then(setDefaultHighresStepsState).catch(console.error);
         getDefaultDenoisingStrength().then(setDefaultDenoisingStrengthState).catch(console.error);
+        getDefaultNegativePrompt().then(setNegativePrompt).catch(console.error);
+        getDefaultUpscale().then(setUpscaleFactor).catch(console.error);
     };
 
     return (
@@ -153,6 +156,18 @@ const SettingsPage = () => {
                                     <label htmlFor="default-denoising-strength" className="text-theme-text font-semibold">Default Denoising Strength</label>
                                     <input type="number" id="default-denoising-strength" value={defaultDenoisingStrength} className="themed-input" onChange={(e) => setDefaultDenoisingStrengthState(Number(e.target.value))}/>
                                     <button className="themed-button-pos" onClick={() => setDefaultDenoisingStrength(defaultDenoisingStrength)}>Save</button>
+                                </div>
+
+                                <div className="col-span-2 flex flex-col text-left gap-1">
+                                    <label htmlFor="default-negative-prompt" className="text-theme-text font-semibold">Default Negative Prompt</label>
+                                    <textarea id="default-negative-prompt" value={negativePrompt} className="themed-input" onChange={(e) => setNegativePrompt(e.target.value)}/>
+                                    <button className="themed-button-pos" onClick={() => setDefaultNegativePrompt(negativePrompt)}>Save</button>
+                                </div>
+
+                                <div className="col-span-1 flex flex-col text-left gap-1">
+                                    <label htmlFor="default-upscaled-factor" className="text-theme-text font-semibold">Default Upscale Factor</label>
+                                    <input type="number" id="default-upscaled-factor" value={upsaleFactor} className="themed-input" onChange={(e) => setUpscaleFactor(Number(e.target.value))}/>
+                                    <button className="themed-button-pos" onClick={() => setDefaultUpscale(upsaleFactor)}>Save</button>
                                 </div>
                             </div>
                         </Accordian>

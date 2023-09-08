@@ -7,7 +7,7 @@ import { retrieveConstructs, setDoMultiLine } from "./ConstructController";
 import { clearWebhooksFromChannel, doGlobalNicknameChange } from "../api/discord";
 import { getStatus } from "../api/llm";
 import { deleteIndex } from "../api/vector";
-import { txt2img } from "../api/sd";
+import { getDefaultCfg, getDefaultHeight, getDefaultHighresSteps, getDefaultNegativePrompt, getDefaultSteps, getDefaultWidth, txt2img } from "../api/sd";
 
 export const RegisterCommand: SlashCommand = {
     name: 'register',
@@ -776,32 +776,32 @@ export const constructImagine: SlashCommand = {
             },
             {
                 name: 'Negative Prompt',
-                value: negativePrompt? negativePrompt : 'lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry',
+                value: negativePrompt? negativePrompt : `${getDefaultNegativePrompt()}`,
                 inline: false,
             },
             {
                 name: 'Steps',
-                value: steps? steps.toString() : '25',
+                value: steps? steps.toString() : getDefaultSteps().toString(),
                 inline: true,
             },
             {
                 name: 'CFG',
-                value: cfg? cfg.toString() : '7',
+                value: cfg? cfg.toString() : getDefaultCfg().toString(),
                 inline: false,
             },
             {
                 name: 'Width',
-                value: width? width.toString() : '512',
+                value: width? width.toString() : getDefaultWidth().toString(),
                 inline: true,
             },
             {
                 name: 'Height',
-                value: height? height.toString() : '512',
+                value: height? height.toString() : getDefaultHeight().toString(),
                 inline: true,
             },
             {
                 name: 'Highres Steps',
-                value: highresSteps? highresSteps.toString() : '10',
+                value: highresSteps? highresSteps.toString() : getDefaultHighresSteps().toString(),
                 inline: false,
             }
         ])

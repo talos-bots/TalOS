@@ -30,15 +30,15 @@ const setDefaultNegativePrompt = (prompt: string): void => {
     store.set('defaultNegativePrompt', prompt);
 }
 
-const getDefaultNegativePrompt = (): string => {
-    return store.get('defaultNegativePrompt', '') as string;
+export const getDefaultNegativePrompt = (): string => {
+    return store.get('defaultNegativePrompt', 'lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry') as string;
 }
 
 const setDefaultUpscaler = (upscaler: string): void => {
     store.set('defaultUpscaler', upscaler);
 }
 
-const getDefaultUpscaler = (): string => {
+export const getDefaultUpscaler = (): string => {
     return store.get('defaultUpscaler', '') as string;
 }
 
@@ -46,7 +46,7 @@ const setDefaultSteps = (steps: number): void => {
     store.set('defaultSteps', steps);
 }
 
-const getDefaultSteps = (): number => {
+export const getDefaultSteps = (): number => {
     return store.get('defaultSteps', 25) as number;
 }
 
@@ -54,7 +54,7 @@ const setDefaultCfg = (cfg: number): void => {
     store.set('defaultCfg', cfg);
 }
 
-const getDefaultCfg = (): number => {
+export const getDefaultCfg = (): number => {
     return store.get('defaultCfg', 7) as number;
 }
 
@@ -62,7 +62,7 @@ const setDefaultWidth = (width: number): void => {
     store.set('defaultWidth', width);
 }
 
-const getDefaultWidth = (): number => {
+export const getDefaultWidth = (): number => {
     return store.get('defaultWidth', 512) as number;
 }
 
@@ -70,7 +70,7 @@ const setDefaultHeight = (height: number): void => {
     store.set('defaultHeight', height);
 }
 
-const getDefaultHeight = (): number => {
+export const getDefaultHeight = (): number => {
     return store.get('defaultHeight', 512) as number;
 }
 
@@ -78,7 +78,7 @@ const setDefaultHighresSteps = (highresSteps: number): void => {
     store.set('defaultHighresSteps', highresSteps);
 }
 
-const getDefaultHighresSteps = (): number => {
+export const getDefaultHighresSteps = (): number => {
     return store.get('defaultHighresSteps', 10) as number;
 }
 
@@ -86,7 +86,7 @@ const setDefaultDenoisingStrength = (denoisingStrength: number): void => {
     store.set('defaultDenoisingStrength', denoisingStrength);
 }
 
-const getDefaultDenoisingStrength = (): number => {
+export const getDefaultDenoisingStrength = (): number => {
     return store.get('defaultDenoisingStrength', .25) as number;
 }
 
@@ -94,7 +94,7 @@ const setDefaultUpscale = (upscale: number): void => {
     store.set('defaultUpscale', upscale);
 }
 
-const getDefaultUpscale = (): number => {
+export const getDefaultUpscale = (): number => {
     return store.get('defaultUpscale', 1.5) as number;
 }
 

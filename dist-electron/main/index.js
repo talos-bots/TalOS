@@ -5452,7 +5452,7 @@ const setDefaultNegativePrompt = (prompt) => {
   store$3.set("defaultNegativePrompt", prompt);
 };
 const getDefaultNegativePrompt = () => {
-  return store$3.get("defaultNegativePrompt", "");
+  return store$3.get("defaultNegativePrompt", "lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry");
 };
 const setDefaultUpscaler = (upscaler) => {
   store$3.set("defaultUpscaler", upscaler);
@@ -6502,32 +6502,32 @@ const constructImagine = {
       },
       {
         name: "Negative Prompt",
-        value: negativePrompt ? negativePrompt : "lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry",
+        value: negativePrompt ? negativePrompt : `${getDefaultNegativePrompt()}`,
         inline: false
       },
       {
         name: "Steps",
-        value: steps ? steps.toString() : "25",
+        value: steps ? steps.toString() : getDefaultSteps().toString(),
         inline: true
       },
       {
         name: "CFG",
-        value: cfg ? cfg.toString() : "7",
+        value: cfg ? cfg.toString() : getDefaultCfg().toString(),
         inline: false
       },
       {
         name: "Width",
-        value: width ? width.toString() : "512",
+        value: width ? width.toString() : getDefaultWidth().toString(),
         inline: true
       },
       {
         name: "Height",
-        value: height ? height.toString() : "512",
+        value: height ? height.toString() : getDefaultHeight().toString(),
         inline: true
       },
       {
         name: "Highres Steps",
-        value: highresSteps ? highresSteps.toString() : "10",
+        value: highresSteps ? highresSteps.toString() : getDefaultHighresSteps().toString(),
         inline: false
       }
     ]).setImage(`attachment://${imageData.name}`).setFooter({ text: "Powered by Stable Diffusion" });
