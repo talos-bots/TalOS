@@ -5,7 +5,6 @@ import axios from "axios";
 import { getUsername } from "../controllers/DiscordController";
 import { addUser, getUser, updateUser } from "../api/pouchdb";
 // @ts-ignore
-import llamaTokenizer from 'llama-tokenizer-js'
 import { encode } from 'gpt-tokenizer'
 
 export function assembleConstructFromData(data: any){
@@ -257,11 +256,6 @@ export function assembleLorebookFromData(data: any) {
         entries: data.entries || [],
     }
     return lorebook;
-}
-
-export function getLlamaTokens(text: string): number{
-	const tokens: number = llamaTokenizer.encode(text).length;
-	return tokens;
 }
 
 export function getGPTTokens(text: string): number{

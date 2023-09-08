@@ -14,6 +14,8 @@ const openai = require("openai");
 const FormData = require("form-data");
 const vectra = require("vectra");
 const use = require("@tensorflow-models/universal-sentence-encoder");
+require("llama-tokenizer-js");
+require("gpt-tokenizer");
 const electronUpdater = require("electron-updater");
 let constructDB$1;
 let chatsDB$1;
