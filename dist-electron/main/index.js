@@ -5624,8 +5624,8 @@ const txt2img = async (prompt, negativePrompt, steps, cfg, width, height, highre
 async function makePromptData(prompt, negativePrompt = getDefaultNegativePrompt(), steps = getDefaultSteps(), cfg = getDefaultCfg(), width = getDefaultWidth(), height = getDefaultHeight(), highresSteps = getDefaultHighresSteps()) {
   let data = {
     "denoising_strength": getDefaultDenoisingStrength(),
-    "firstphase_width": 512,
-    "firstphase_height": 512,
+    "firstphase_width": width,
+    "firstphase_height": height,
     "hr_scale": getDefaultUpscale(),
     "hr_second_pass_steps": highresSteps,
     "hr_sampler_name": "Euler a",
