@@ -1,5 +1,4 @@
 # ConstructOS
-## Current State of UI
 ## Planned Features
 ### LLaMA.cpp
 - Download, Run, and Configure GGUF or GGML inside of the app. No Kobold.cpp, Oobabooga, or LM Studio required. **(In Progress)**
@@ -33,6 +32,7 @@
 - See info on Discord usage, Construct Actions, and other usage stats.
 ## View the Project Board
 https://github.com/orgs/WaywardWyvernsSoftworks/projects/2
+## Current State of UI
 ### Homepage
 ![Screenshot 2023-09-05 213128](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/e294ed91-c976-43ea-8813-bc683719655f)
 ### Chat Page
