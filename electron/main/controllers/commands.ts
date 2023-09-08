@@ -444,12 +444,18 @@ export const DoCharacterGreetingsCommand: SlashCommand = {
         let construct = assembleConstructFromData(constructDoc);
         let user = getUsername(interaction.user.id, interaction.channelId);
         if(construct === null) return;
-        let greeting = construct.greetings[0]
+        let randomGreeting = construct?.greetings[Math.floor(Math.random() * construct.greetings.length)];
+        if(randomGreeting === undefined){
+            await interaction.editReply({
+                content: "*No greeting set.*",
+            });
+            return;
+        }
         let greetingMessage: MessageInterface = {
             _id: Date.now().toString(),
             user: construct.name,
             avatar: construct.avatar,
-            text: greeting.replaceAll('{{user}}', `${user}`).replaceAll('{{char}}', `${construct.name}`),
+            text: randomGreeting.replaceAll('{{user}}', `${user}`).replaceAll('{{char}}', `${construct.name}`),
             userID: construct._id,
             timestamp: Date.now(),
             origin: interaction.channelId,
@@ -502,7 +508,7 @@ export const DoCharacterGreetingsCommand: SlashCommand = {
             }
         }
         await interaction.editReply({
-            content: greeting.replaceAll('{{user}}', `${user}`).replaceAll('{{char}}', `${construct.name}`),
+            content: randomGreeting.replaceAll('{{user}}', `${user}`).replaceAll('{{char}}', `${construct.name}`),
         });
     }
 }
