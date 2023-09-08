@@ -5448,6 +5448,18 @@ const setDefaultPrompt = (prompt) => {
 const getDefaultPrompt = () => {
   return store$3.get("defaultPrompt", "");
 };
+const setDefaultNegativePrompt = (prompt) => {
+  store$3.set("defaultNegativePrompt", prompt);
+};
+const getDefaultNegativePrompt = () => {
+  return store$3.get("defaultNegativePrompt", "");
+};
+const setDefaultUpscaler = (upscaler) => {
+  store$3.set("defaultUpscaler", upscaler);
+};
+const getDefaultUpscaler = () => {
+  return store$3.get("defaultUpscaler", "");
+};
 function SDRoutes() {
   electron.ipcMain.on("setDefaultPrompt", (event, prompt) => {
     setDefaultPrompt(prompt);
@@ -5469,6 +5481,53 @@ function SDRoutes() {
       console.log(err);
     });
   });
+  electron.ipcMain.on("set-negative-prompt", (event, prompt) => {
+    setDefaultNegativePrompt(prompt);
+  });
+  electron.ipcMain.on("get-negative-prompt", (event) => {
+    event.sender.send("get-negative-prompt-reply", getDefaultNegativePrompt());
+  });
+  electron.ipcMain.on("set-default-upscaler", (event, upscaler) => {
+    setDefaultUpscaler(upscaler);
+  });
+  electron.ipcMain.on("get-default-upscaler", (event) => {
+    event.sender.send("get-default-upscaler-reply", getDefaultUpscaler());
+  });
+  electron.ipcMain.on("get-loras", (event) => {
+    getAllLoras().then((result) => {
+      event.sender.send("get-loras-reply", result);
+    }).catch((err) => {
+      console.log(err);
+    });
+  });
+  electron.ipcMain.on("get-embeddings", (event) => {
+    getEmbeddings().then((result) => {
+      event.sender.send("get-embeddings-reply", result);
+    }).catch((err) => {
+      console.log(err);
+    });
+  });
+  electron.ipcMain.on("get-models", (event) => {
+    getModels().then((result) => {
+      event.sender.send("get-models-reply", result);
+    }).catch((err) => {
+      console.log(err);
+    });
+  });
+  electron.ipcMain.on("get-vae-models", (event) => {
+    getVaeModels().then((result) => {
+      event.sender.send("get-vae-models-reply", result);
+    }).catch((err) => {
+      console.log(err);
+    });
+  });
+  electron.ipcMain.on("get-upscalers", (event) => {
+    getUpscalers().then((result) => {
+      event.sender.send("get-upscalers-reply", result);
+    }).catch((err) => {
+      console.log(err);
+    });
+  });
 }
 const txt2img = async (prompt, negativePrompt, steps, cfg, width, height, highresSteps) => {
   try {
@@ -5479,8 +5538,7 @@ const txt2img = async (prompt, negativePrompt, steps, cfg, width, height, highre
   }
 };
 async function makePromptData(prompt, negativePrompt = "lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry", steps = 25, cfg = 7, width = 512, height = 512, highresSteps = 10) {
-  const data = {
-    "enable_hr": true,
+  let data = {
     "denoising_strength": 0.25,
     "firstphase_width": 512,
     "firstphase_height": 512,
@@ -5502,6 +5560,10 @@ async function makePromptData(prompt, negativePrompt = "lowres, bad anatomy, bad
     "send_images": true,
     "save_images": false
   };
+  if (getDefaultUpscaler() !== "") {
+    data.hr_upscaler = getDefaultUpscaler();
+    data.enable_hr = true;
+  }
   return JSON.stringify(data);
 }
 async function makeImage(prompt, negativePrompt, steps, cfg, width, height, highresSteps) {
@@ -5525,6 +5587,51 @@ async function makeImage(prompt, negativePrompt, steps, cfg, width, height, high
     }
   });
   return { path: fullPath, name: fileName, base64: res.data.images[0].split(";base64,").pop() };
+}
+async function getAllLoras() {
+  let url2 = new URL(getSDApiUrl());
+  url2.pathname = "/sdapi/v1/loras";
+  const res = await axios({
+    method: "get",
+    url: url2.toString()
+  });
+  return res.data;
+}
+async function getEmbeddings() {
+  let url2 = new URL(getSDApiUrl());
+  url2.pathname = "/sdapi/v1/embeddings";
+  const res = await axios({
+    method: "get",
+    url: url2.toString()
+  });
+  return res.data;
+}
+async function getModels() {
+  let url2 = new URL(getSDApiUrl());
+  url2.pathname = "/sdapi/v1/sd-models";
+  const res = await axios({
+    method: "get",
+    url: url2.toString()
+  });
+  return res.data;
+}
+async function getVaeModels() {
+  let url2 = new URL(getSDApiUrl());
+  url2.pathname = "/sdapi/v1/sd-vae";
+  const res = await axios({
+    method: "get",
+    url: url2.toString()
+  });
+  return res.data;
+}
+async function getUpscalers() {
+  let url2 = new URL(getSDApiUrl());
+  url2.pathname = "/sdapi/v1/upscalers";
+  const res = await axios({
+    method: "get",
+    url: url2.toString()
+  });
+  return res.data;
 }
 function getTimestamp() {
   const now = /* @__PURE__ */ new Date();

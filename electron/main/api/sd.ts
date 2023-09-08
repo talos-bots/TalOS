@@ -2,12 +2,12 @@ import { ipcMain } from 'electron';
 import axios from 'axios';
 import { StableDiffusionProcessingTxt2Img } from '@/types';
 import Store from 'electron-store';
-const store = new Store({
-    name: 'stableDiffusionData',
-});
 import path from 'path';
 import fs from 'fs-extra';
 import { imagesPath } from '..';
+const store = new Store({
+    name: 'stableDiffusionData',
+});
 
 const getSDApiUrl = (): string => {
     return store.get('apiUrl', '') as string;
@@ -25,6 +25,21 @@ const getDefaultPrompt = (): string => {
     return store.get('defaultPrompt', '') as string;
 }
 
+const setDefaultNegativePrompt = (prompt: string): void => {
+    store.set('defaultNegativePrompt', prompt);
+}
+
+const getDefaultNegativePrompt = (): string => {
+    return store.get('defaultNegativePrompt', '') as string;
+}
+
+const setDefaultUpscaler = (upscaler: string): void => {
+    store.set('defaultUpscaler', upscaler);
+}
+
+const getDefaultUpscaler = (): string => {
+    return store.get('defaultUpscaler', '') as string;
+}
 
 export function SDRoutes(){
     ipcMain.on('setDefaultPrompt', (event, prompt) => {
@@ -51,6 +66,62 @@ export function SDRoutes(){
             console.log(err);
         });
     });
+
+    ipcMain.on('set-negative-prompt', (event, prompt) => {
+        setDefaultNegativePrompt(prompt);
+    });
+
+    ipcMain.on('get-negative-prompt', (event) => {
+        event.sender.send('get-negative-prompt-reply', getDefaultNegativePrompt());
+    });
+
+    ipcMain.on('set-default-upscaler', (event, upscaler) => {
+        setDefaultUpscaler(upscaler);
+    });
+
+    ipcMain.on('get-default-upscaler', (event) => {
+        event.sender.send('get-default-upscaler-reply', getDefaultUpscaler());
+    });
+
+    ipcMain.on('get-loras', (event) => {
+        getAllLoras().then((result) => {
+            event.sender.send('get-loras-reply', result);
+        }).catch((err) => {
+            console.log(err);
+        });
+    });
+
+    ipcMain.on('get-embeddings', (event) => {
+        getEmbeddings().then((result) => {
+            event.sender.send('get-embeddings-reply', result);
+        }).catch((err) => {
+            console.log(err);
+        });
+    });
+
+    ipcMain.on('get-models', (event) => {
+        getModels().then((result) => {
+            event.sender.send('get-models-reply', result);
+        }).catch((err) => {
+            console.log(err);
+        });
+    });
+
+    ipcMain.on('get-vae-models', (event) => {
+        getVaeModels().then((result) => {
+            event.sender.send('get-vae-models-reply', result);
+        }).catch((err) => {
+            console.log(err);
+        });
+    });
+
+    ipcMain.on('get-upscalers', (event) => {
+        getUpscalers().then((result) => {
+            event.sender.send('get-upscalers-reply', result);
+        }).catch((err) => {
+            console.log(err);
+        });
+    });
 }
 
 export const txt2img = async (prompt: string, negativePrompt?: string, steps?: number, cfg?: number, width?: number, height?: number, highresSteps?: number): Promise<any> => {
@@ -70,8 +141,7 @@ export async function makePromptData(
     width: number = 512, 
     height: number = 512, 
     highresSteps: number = 10){
-    const data = {
-        "enable_hr": true,
+    let data = {
         "denoising_strength": .25,
         "firstphase_width": 512,
         "firstphase_height": 512,
@@ -92,7 +162,13 @@ export async function makePromptData(
         "sampler_index": "Euler a",
         "send_images": true,
         "save_images": false,
-        };
+    };
+    if(getDefaultUpscaler() !== ''){
+        // @ts-ignore
+        data.hr_upscaler = getDefaultUpscaler();
+        // @ts-ignore
+        data.enable_hr = true;
+    }
     return JSON.stringify(data);
 }
 
@@ -152,6 +228,16 @@ export async function getModels(){
 export async function getVaeModels(){
     let url = new URL(getSDApiUrl());
     url.pathname = '/sdapi/v1/sd-vae';
+    const res = await axios({
+        method: 'get',
+        url: url.toString(),
+    });
+    return res.data;
+}
+
+export async function getUpscalers(){
+    let url = new URL(getSDApiUrl());
+    url.pathname = '/sdapi/v1/upscalers';
     const res = await axios({
         method: 'get',
         url: url.toString(),
