@@ -2,23 +2,23 @@
 ## Current State of UI
 ## Planned Features
 ### LLaMA.cpp
-- Download, Run, and Configure GGUF or GGML inside of the app. No Kobold.cpp, Oobabooga, or LM Studio required.
+- Download, Run, and Configure GGUF or GGML inside of the app. No Kobold.cpp, Oobabooga, or LM Studio required. **(In Progress)**
 ### Document Completion
 - Inspired by CoPilot and NovelAI, the completions page will allow you to utilize Lorebooks, VectorDBs, and other features to help you code scripts, or write documents.
 ### Guided Experience
-- App Tutorial with IntroJS with a REACT Wrapper.
+- App Tutorial with IntroJS with a REACT Wrapper. **(In Progress)**
 - Documents Page with Guides on usage.
 ### Create Constructs
-- Export to V2 Cards
-- Create AI Assistants or RP Characters.
+- Export to V2 Cards **(Done)**
+- Create AI Assistants or RP Characters. **(Done)**
 ### Multi-Construct Discord Bot
-- Have multiple Constructs speak through one discord bot.
+- Have multiple Constructs speak through one discord bot. **(Done)**
 - Group ordering
 - Reply percentages, lurking, etc.
 - GIF sending, web browsing, vector memories, and RP.
 ### Construct Chat Window
-- A way to test agent features, personalities, and other features.
-- Lorebooks (World Info)
+- A way to test agent features, personalities, and other features. **(Done)**
+- Lorebooks (World Info) **(Done)**
 ### Command Line Interface
 - Start functions by using a CLI inside the window.
 - Novelty more than functionality.
@@ -28,6 +28,8 @@
 - Have your Construct make prompts for you, create images for you, or send you selfies.
 ### Statistics Page
 - See info on Discord usage, Construct Actions, and other usage stats.
+## View the Project Board
+https://github.com/orgs/WaywardWyvernsSoftworks/projects/2
 ### Homepage
 ![Screenshot 2023-09-05 213128](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/e294ed91-c976-43ea-8813-bc683719655f)
 ### Chat Page
