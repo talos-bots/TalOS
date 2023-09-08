@@ -64,7 +64,7 @@ export const txt2img = async (prompt: string, negativePrompt?: string, steps?: n
 
 export async function makePromptData(
     prompt: string, 
-    negativePrompt: string = "bad face, ugly, bad quality, low res, low quality, bad lighting, bad angle, bad composition, bad colors, bad contrast, bad saturation, bad exposure, bad focus, bad framing, bad crop, bad resolution, bad texture, bad rendering, bad shading, bad shadow, ((nude, loli, child))", 
+    negativePrompt: string = 'lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry', 
     steps: number = 25, 
     cfg: number = 7, 
     width: number = 512, 
@@ -76,7 +76,6 @@ export async function makePromptData(
         "firstphase_width": 512,
         "firstphase_height": 512,
         "hr_scale": 1.5,
-        "hr_upscaler": "R-ESRGAN 4x+",
         "hr_second_pass_steps": highresSteps,
         "hr_sampler_name": "Euler a",
         "prompt": prompt,

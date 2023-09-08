@@ -5478,14 +5478,13 @@ const txt2img = async (prompt, negativePrompt, steps, cfg, width, height, highre
     throw new Error(`Failed to send data: ${error.message}`);
   }
 };
-async function makePromptData(prompt, negativePrompt = "bad face, ugly, bad quality, low res, low quality, bad lighting, bad angle, bad composition, bad colors, bad contrast, bad saturation, bad exposure, bad focus, bad framing, bad crop, bad resolution, bad texture, bad rendering, bad shading, bad shadow, ((nude, loli, child))", steps = 25, cfg = 7, width = 512, height = 512, highresSteps = 10) {
+async function makePromptData(prompt, negativePrompt = "lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry", steps = 25, cfg = 7, width = 512, height = 512, highresSteps = 10) {
   const data = {
     "enable_hr": true,
     "denoising_strength": 0.25,
     "firstphase_width": 512,
     "firstphase_height": 512,
     "hr_scale": 1.5,
-    "hr_upscaler": "R-ESRGAN 4x+",
     "hr_second_pass_steps": highresSteps,
     "hr_sampler_name": "Euler a",
     "prompt": prompt,
@@ -6312,7 +6311,7 @@ const constructImagine = {
       },
       {
         name: "Negative Prompt",
-        value: negativePrompt ? negativePrompt : "bad face, ugly, bad quality, low res, low quality, bad lighting, bad angle, bad composition, bad colors, bad contrast, bad saturation, bad exposure, bad focus, bad framing, bad crop, bad resolution, bad texture, bad rendering, bad shading, bad shadow, ((nude, loli, child))",
+        value: negativePrompt ? negativePrompt : "lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry",
         inline: false
       },
       {
@@ -6340,7 +6339,7 @@ const constructImagine = {
         value: highresSteps ? highresSteps.toString() : "10",
         inline: false
       }
-    ]).setFooter({ text: "Powered by Stable Diffusion" });
+    ]).setImage(`attachment://${imageData.name}`).setFooter({ text: "Powered by Stable Diffusion" });
     if (hidden) {
       await interaction.editReply({
         embeds: [],

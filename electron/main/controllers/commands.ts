@@ -776,7 +776,7 @@ export const constructImagine: SlashCommand = {
             },
             {
                 name: 'Negative Prompt',
-                value: negativePrompt? negativePrompt : 'bad face, ugly, bad quality, low res, low quality, bad lighting, bad angle, bad composition, bad colors, bad contrast, bad saturation, bad exposure, bad focus, bad framing, bad crop, bad resolution, bad texture, bad rendering, bad shading, bad shadow, ((nude, loli, child))',
+                value: negativePrompt? negativePrompt : 'lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry',
                 inline: false,
             },
             {
@@ -805,6 +805,7 @@ export const constructImagine: SlashCommand = {
                 inline: false,
             }
         ])
+        .setImage(`attachment://${imageData.name}`)
         .setFooter({text: 'Powered by Stable Diffusion'});
         if(hidden){
             await interaction.editReply({
