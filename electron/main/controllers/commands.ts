@@ -745,17 +745,24 @@ export const constructImagine: SlashCommand = {
             description: 'High resolution steps',
             type: 4,  // Integer type
             required: false,
+        },
+        {
+            name: 'hidden',
+            description: 'Whether the prompt data should be hidden.',
+            type: 5,  // Boolean type
+            required: false,
         }
     ],
     execute: async (interaction: CommandInteraction) => {
         await interaction.deferReply({ephemeral: false});
         const prompt = interaction.options.get('prompt')?.value as string;
-        const negativePrompt = interaction.options.get('negativePrompt')?.value as string;
+        const negativePrompt = interaction.options.get('negativeprompt')?.value as string;
         const steps = interaction.options.get('steps')?.value as number;
         const cfg = interaction.options.get('cfg')?.value as number;
         const width = interaction.options.get('width')?.value as number;
         const height = interaction.options.get('height')?.value as number;
-        const highresSteps = interaction.options.get('highresSteps')?.value as number;
+        const highresSteps = interaction.options.get('highressteps')?.value as number;
+        const hidden = interaction.options.get('hidden')?.value as boolean;
         const imageData = await txt2img(prompt, negativePrompt, steps, cfg, width, height, highresSteps);
         const buffer = Buffer.from(imageData.base64, 'base64');
         let attachment = new AttachmentBuilder(buffer, {name: `${imageData.name}`});
@@ -780,7 +787,7 @@ export const constructImagine: SlashCommand = {
             {
                 name: 'CFG',
                 value: cfg? cfg.toString() : '7',
-                inline: true,
+                inline: false,
             },
             {
                 name: 'Width',
@@ -795,15 +802,23 @@ export const constructImagine: SlashCommand = {
             {
                 name: 'Highres Steps',
                 value: highresSteps? highresSteps.toString() : '10',
-                inline: true,
+                inline: false,
             }
         ])
-        .setImage(`attachment://${imageData.name}`)
         .setFooter({text: 'Powered by Stable Diffusion'});
-        await interaction.editReply({
-            embeds: [embed],
-            files: [attachment],
-        });
+        if(hidden){
+            await interaction.editReply({
+                embeds: [],
+                files: [attachment],
+            });
+            return;
+        }else{
+            await interaction.editReply({
+                embeds: [embed],
+                files: [attachment],
+            });
+            return;
+        }
     }
 };
 

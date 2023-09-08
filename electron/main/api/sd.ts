@@ -120,6 +120,36 @@ export async function makeImage(prompt: string, negativePrompt?: string, steps?:
     return {path: fullPath, name: fileName, base64: res.data.images[0].split(';base64,').pop()};
 }
 
+export async function getAllLoras(){
+    let url = new URL(getSDApiUrl());
+    url.pathname = '/sdapi/v1/loras';
+    const res = await axios({
+        method: 'get',
+        url: url.toString(),
+    });
+    return res.data;
+}
+
+export async function getEmbeddings(){
+    let url = new URL(getSDApiUrl());
+    url.pathname = '/sdapi/v1/embeddings';
+    const res = await axios({
+        method: 'get',
+        url: url.toString(),
+    });
+    return res.data;
+}
+
+export async function getModels(){
+    let url = new URL(getSDApiUrl());
+    url.pathname = '/sdapi/v1/sd-models';
+    const res = await axios({
+        method: 'get',
+        url: url.toString(),
+    });
+    return res.data;
+}
+
 function getTimestamp() {
     const now = new Date();
 

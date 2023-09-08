@@ -6281,18 +6281,26 @@ const constructImagine = {
       type: 4,
       // Integer type
       required: false
+    },
+    {
+      name: "hidden",
+      description: "Whether the prompt data should be hidden.",
+      type: 5,
+      // Boolean type
+      required: false
     }
   ],
   execute: async (interaction) => {
-    var _a, _b, _c, _d, _e, _f, _g;
+    var _a, _b, _c, _d, _e, _f, _g, _h;
     await interaction.deferReply({ ephemeral: false });
     const prompt = (_a = interaction.options.get("prompt")) == null ? void 0 : _a.value;
-    const negativePrompt = (_b = interaction.options.get("negativePrompt")) == null ? void 0 : _b.value;
+    const negativePrompt = (_b = interaction.options.get("negativeprompt")) == null ? void 0 : _b.value;
     const steps = (_c = interaction.options.get("steps")) == null ? void 0 : _c.value;
     const cfg = (_d = interaction.options.get("cfg")) == null ? void 0 : _d.value;
     const width = (_e = interaction.options.get("width")) == null ? void 0 : _e.value;
     const height = (_f = interaction.options.get("height")) == null ? void 0 : _f.value;
-    const highresSteps = (_g = interaction.options.get("highresSteps")) == null ? void 0 : _g.value;
+    const highresSteps = (_g = interaction.options.get("highressteps")) == null ? void 0 : _g.value;
+    const hidden = (_h = interaction.options.get("hidden")) == null ? void 0 : _h.value;
     const imageData = await txt2img(prompt, negativePrompt, steps, cfg, width, height, highresSteps);
     const buffer2 = Buffer.from(imageData.base64, "base64");
     let attachment = new discord_js.AttachmentBuilder(buffer2, { name: `${imageData.name}` });
@@ -6315,7 +6323,7 @@ const constructImagine = {
       {
         name: "CFG",
         value: cfg ? cfg.toString() : "7",
-        inline: true
+        inline: false
       },
       {
         name: "Width",
@@ -6330,13 +6338,22 @@ const constructImagine = {
       {
         name: "Highres Steps",
         value: highresSteps ? highresSteps.toString() : "10",
-        inline: true
+        inline: false
       }
-    ]).setImage(`attachment://${imageData.name}`).setFooter({ text: "Powered by Stable Diffusion" });
-    await interaction.editReply({
-      embeds: [embed],
-      files: [attachment]
-    });
+    ]).setFooter({ text: "Powered by Stable Diffusion" });
+    if (hidden) {
+      await interaction.editReply({
+        embeds: [],
+        files: [attachment]
+      });
+      return;
+    } else {
+      await interaction.editReply({
+        embeds: [embed],
+        files: [attachment]
+      });
+      return;
+    }
   }
 };
 const DefaultCommands = [
