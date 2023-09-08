@@ -6617,6 +6617,32 @@ const completeString = {
     }
   }
 };
+const instructCommand = {
+  name: "instruct",
+  description: "Instructs the bot to do something.",
+  options: [
+    {
+      name: "instruction",
+      description: "The instruction to give.",
+      type: 3,
+      // String type
+      required: true
+    }
+  ],
+  execute: async (interaction) => {
+    var _a;
+    await interaction.deferReply({ ephemeral: false });
+    const instruction = (_a = interaction.options.get("instruction")) == null ? void 0 : _a.value;
+    const reply = await doInstruct(instruction);
+    await interaction.editReply({
+      content: `Instruct: ${instruction}
+
+Response:
+${reply}`
+    });
+    return;
+  }
+};
 const DefaultCommands = [
   PingCommand,
   RegisterCommand,
@@ -6635,7 +6661,8 @@ const DefaultCommands = [
   SysCommand,
   toggleVectorCommand,
   constructImagine,
-  completeString
+  completeString,
+  instructCommand
 ];
 const intents = {
   intents: [

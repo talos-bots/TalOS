@@ -5,7 +5,7 @@ import { addChat, getChat, getConstruct, removeChat, updateChat } from "../api/p
 import { assembleChatFromData, assembleConstructFromData } from "../helpers/helpers";
 import { retrieveConstructs, setDoMultiLine } from "./ConstructController";
 import { clearWebhooksFromChannel, doGlobalNicknameChange } from "../api/discord";
-import { generateText, getStatus } from "../api/llm";
+import { doInstruct, generateText, getStatus } from "../api/llm";
 import { deleteIndex } from "../api/vector";
 import { getDefaultCfg, getDefaultHeight, getDefaultHighresSteps, getDefaultNegativePrompt, getDefaultSteps, getDefaultWidth, txt2img } from "../api/sd";
 
@@ -853,6 +853,53 @@ const completeString: SlashCommand = {
     }
 };
 
+const instructCommand: SlashCommand = {
+    name: 'instruct',
+    description: 'Instructs the bot to do something.',
+    options: [
+        {
+            name: 'instruction',
+            description: 'The instruction to give.',
+            type: 3,  // String type
+            required: true,
+        },
+    ],
+    execute: async (interaction: CommandInteraction) => {
+        await interaction.deferReply({ephemeral: false});
+        const instruction = interaction.options.get('instruction')?.value as string;
+        const reply = await doInstruct(instruction);
+        await interaction.editReply({
+            content: `Instruct: ${instruction}\n\nResponse:\n${reply}`,
+        });
+        return;
+    }
+};
+
+const leaveServerCommand: SlashCommand = {
+    name: 'leave',
+    description: 'Leaves the current server.',
+    execute: async (interaction: CommandInteraction) => {
+        await interaction.deferReply({ephemeral: true});
+        if (interaction.guildId === null) {
+            await interaction.editReply({
+            content: "This command can only be used in a server.",
+            });
+            return;
+        }
+        if(interaction.guild === null){
+            await interaction.editReply({
+            content: "This command can only be used in a server.",
+            });
+            return;
+        }
+        await interaction.guild.leave();
+        await interaction.editReply({
+            content: `Left server.`,
+        });
+        return;
+    }
+};
+
 export const DefaultCommands = [
     PingCommand,
     RegisterCommand,
@@ -872,4 +919,5 @@ export const DefaultCommands = [
     toggleVectorCommand,
     constructImagine,
     completeString,
+    instructCommand,
 ];
