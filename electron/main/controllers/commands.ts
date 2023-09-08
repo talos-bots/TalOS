@@ -5,7 +5,7 @@ import { addChat, getChat, getConstruct, removeChat, updateChat } from "../api/p
 import { assembleChatFromData, assembleConstructFromData } from "../helpers/helpers";
 import { retrieveConstructs, setDoMultiLine } from "./ConstructController";
 import { clearWebhooksFromChannel, doGlobalNicknameChange } from "../api/discord";
-import { getStatus } from "../api/llm";
+import { generateText, getStatus } from "../api/llm";
 import { deleteIndex } from "../api/vector";
 import { getDefaultCfg, getDefaultHeight, getDefaultHighresSteps, getDefaultNegativePrompt, getDefaultSteps, getDefaultWidth, txt2img } from "../api/sd";
 
@@ -824,6 +824,35 @@ export const constructImagine: SlashCommand = {
     }
 };
 
+const completeString: SlashCommand = {
+    name: 'complete',
+    description: 'Completes a prompt.',
+    options: [
+        {
+            name: 'prompt',
+            description: 'Primary prompt',
+            type: 3,  // String type
+            required: true,
+        },
+    ],
+    execute: async (interaction: CommandInteraction) => {
+        await interaction.deferReply({ephemeral: false});
+        const prompt = interaction.options.get('prompt')?.value as string;
+        const reply = await generateText(prompt);
+        if(reply === null){
+            await interaction.editReply({
+                content: 'Prompt too short.',
+            });
+            return;
+        }else{
+            await interaction.editReply({
+                content: `${prompt} ${reply.results[0]}`,
+            });
+            return;
+        }
+    }
+};
+
 export const DefaultCommands = [
     PingCommand,
     RegisterCommand,
@@ -841,5 +870,6 @@ export const DefaultCommands = [
     DoCharacterGreetingsCommand,
     SysCommand,
     toggleVectorCommand,
-    constructImagine
+    constructImagine,
+    completeString,
 ];

@@ -6587,6 +6587,36 @@ const constructImagine = {
     }
   }
 };
+const completeString = {
+  name: "complete",
+  description: "Completes a prompt.",
+  options: [
+    {
+      name: "prompt",
+      description: "Primary prompt",
+      type: 3,
+      // String type
+      required: true
+    }
+  ],
+  execute: async (interaction) => {
+    var _a;
+    await interaction.deferReply({ ephemeral: false });
+    const prompt = (_a = interaction.options.get("prompt")) == null ? void 0 : _a.value;
+    const reply = await generateText(prompt);
+    if (reply === null) {
+      await interaction.editReply({
+        content: "Prompt too short."
+      });
+      return;
+    } else {
+      await interaction.editReply({
+        content: `${prompt} ${reply.results[0]}`
+      });
+      return;
+    }
+  }
+};
 const DefaultCommands = [
   PingCommand,
   RegisterCommand,
@@ -6604,7 +6634,8 @@ const DefaultCommands = [
   DoCharacterGreetingsCommand,
   SysCommand,
   toggleVectorCommand,
-  constructImagine
+  constructImagine,
+  completeString
 ];
 const intents = {
   intents: [
