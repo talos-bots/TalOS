@@ -507,6 +507,9 @@ function containsName(message: string, chars: ConstructInterface[]){
 }
 
 export async function doImageReaction(message: Message){
+    if (message.reactions.cache.some(reaction => reaction.emoji.name === '✅')) {
+        return;
+    }
     if(message.attachments.size > 0){
         message.react('❎');
         return;
@@ -535,6 +538,7 @@ export async function doImageReaction(message: Message){
         message.react('❎');
         return;
     }
+
     message.react('✅');
     let prompt = message.cleanContent;
     let imageData = await makeImage(prompt);
@@ -542,6 +546,7 @@ export async function doImageReaction(message: Message){
     let attachment = new AttachmentBuilder(buffer, {name: `${imageData.name}`});
     message.reply({files: [attachment]});
 }
+
 
 function DiscordController(){
     getDiscordSettings();

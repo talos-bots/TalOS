@@ -5704,6 +5704,9 @@ function containsName(message, chars) {
   return false;
 }
 async function doImageReaction(message) {
+  if (message.reactions.cache.some((reaction) => reaction.emoji.name === "✅")) {
+    return;
+  }
   if (message.attachments.size > 0) {
     message.react("❎");
     return;
