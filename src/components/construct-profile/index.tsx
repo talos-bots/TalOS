@@ -20,7 +20,7 @@ const ConstructProfile: React.FC<Props> = ({ character, onClick, active }) => {
 
     return (
         <div
-            className="themed-root-no-padding w-36 h-full flex flex-col justify-center items-center cursor-pointer relative shrink-0 grow-0"
+            className={"themed-root-no-padding w-36 h-full flex flex-col justify-center items-center cursor-pointer relative shrink-0 grow-0 "}
             onMouseEnter={() => setIsHovered(true)} 
             onMouseLeave={() => setIsHovered(false)} 
             onClick={() => { if (onClick !== undefined) onClick(character) }}
@@ -41,8 +41,8 @@ const ConstructProfile: React.FC<Props> = ({ character, onClick, active }) => {
             )}
     
             {active && !isHovered && (
-                <div className="absolute top-0 left-0 w-6 h-6 bg-theme-root shadow-lg rounded-lg">
-                <div className="absolute top-1 left-1 w-4 h-4 bg-green-500 shadow-lg rounded-lg"></div>
+                <div className="absolute top-0 left-0 w-7 h-7 bg-theme-root shadow-lg rounded-tl-lg rounded-br-lg">
+                    <div className="absolute top-1 left-1 w-5 h-5 bg-green-500 shadow-lg rounded-lg"></div>
                 </div>
             )}
         </div>
