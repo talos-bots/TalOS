@@ -1,6 +1,9 @@
 import { PaLMFilters } from '@/components/llm-panel/palm-panel';
 import { EndpointType, LLMConnectionInformation, Settings } from '@/types';
 import { ipcRenderer } from 'electron';
+// @ts-ignore
+import llamaTokenizer from 'llama-tokenizer-js'
+import { encode } from 'gpt-tokenizer'
 
 // Generate Text
 export const generateText = (
@@ -121,4 +124,14 @@ export const getPaLMFilters = (): Promise<PaLMFilters> => {
             resolve(data);
         });
     });
+}
+
+export function getLlamaTokens(text: string): number{
+	const tokens: number = llamaTokenizer.encode(text).length;
+	return tokens;
+}
+
+export function getGPTTokens(text: string): number{
+	const tokens: number = encode(text).length;
+	return tokens;
 }
