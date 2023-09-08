@@ -762,7 +762,8 @@ export const constructImagine: SlashCommand = {
         const width = interaction.options.get('width')?.value as number;
         const height = interaction.options.get('height')?.value as number;
         const highresSteps = interaction.options.get('highressteps')?.value as number;
-        const hidden = interaction.options.get('hidden')?.value as boolean;
+        let hidden = interaction.options.get('hidden')?.value as boolean;
+        if(hidden === undefined) hidden = true;
         const imageData = await txt2img(prompt, negativePrompt, steps, cfg, width, height, highresSteps);
         const buffer = Buffer.from(imageData.base64, 'base64');
         let attachment = new AttachmentBuilder(buffer, {name: `${imageData.name}`});

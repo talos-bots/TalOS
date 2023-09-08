@@ -6490,7 +6490,9 @@ const constructImagine = {
     const width = (_e = interaction.options.get("width")) == null ? void 0 : _e.value;
     const height = (_f = interaction.options.get("height")) == null ? void 0 : _f.value;
     const highresSteps = (_g = interaction.options.get("highressteps")) == null ? void 0 : _g.value;
-    const hidden = (_h = interaction.options.get("hidden")) == null ? void 0 : _h.value;
+    let hidden = (_h = interaction.options.get("hidden")) == null ? void 0 : _h.value;
+    if (hidden === void 0)
+      hidden = true;
     const imageData = await txt2img(prompt, negativePrompt, steps, cfg, width, height, highresSteps);
     const buffer2 = Buffer.from(imageData.base64, "base64");
     let attachment = new discord_js.AttachmentBuilder(buffer2, { name: `${imageData.name}` });
