@@ -148,6 +148,7 @@ const DiscordPage = () => {
                                 <div className="themed-input flex flex-col items-center w-full h-15vh overflow-y-auto">
                                     <i className="text-sm">When enabled, the bot will operate as a Multi-Construct bot, and will attempt to maintain mutliple personas through one bot. Turning this off and on will require a bot restart.</i>
                                     <ReactSwitch
+                                        disabled={discordCharacterMode}
                                         checked={discordMultiConstructMode}
                                         onChange={() => setDiscordMultiConstructMode(!discordMultiConstructMode)}
                                         handleDiameter={30}
@@ -163,6 +164,7 @@ const DiscordPage = () => {
                                 <div className="themed-input flex flex-col items-center w-full">
                                     <i className="text-sm">When enabled, the bot will operate as a Character Chat bot, and will not perform Agent tasks. Turning this off and on will require a bot restart.</i>
                                     <ReactSwitch
+                                        disabled={discordMultiConstructMode}
                                         checked={discordCharacterMode}
                                         onChange={() => setDiscordCharacterMode(!discordCharacterMode)}
                                         handleDiameter={30}
@@ -178,6 +180,7 @@ const DiscordPage = () => {
                                 <div className="themed-input flex flex-col items-center w-full">
                                     <i className="text-sm">Can only be activated when in Character Chat Mode. This is distinct from the multi-construct mode. Turning this off and on will require a bot restart.</i>
                                     <ReactSwitch
+                                        disabled={!discordCharacterMode}
                                         checked={discordMultiCharacterMode}
                                         onChange={() => setDiscordMultiCharacterMode(!discordMultiCharacterMode)}
                                         handleDiameter={30}
@@ -222,6 +225,7 @@ const DiscordPage = () => {
                                 <div className="themed-input flex flex-col items-center w-full">
                                     <i className="text-sm">Can only be activated when both the applicationID and auth token are set.</i>
                                     <ReactSwitch
+                                        disabled={discordBotToken === "" || discordApplicationID === "" || discordBotToken === undefined || discordApplicationID === undefined}
                                         checked={isBotActive}
                                         onChange={(e) => {
                                             toggleBotActive(e);
