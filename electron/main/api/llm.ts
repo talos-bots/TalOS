@@ -264,7 +264,7 @@ export const generateText = async (
                 console.log(response.data)
                 if (response.status === 200) {
                     results = response.data['results'][0]['text'];
-                    return { results: [results], prompt: prompt };
+                    return results = { results: [results], prompt: prompt };
                 }else{
                     return results = { results: null, error: response.data, prompt: prompt};
                 }
@@ -502,9 +502,9 @@ export const generateText = async (
             }
         break;
     default:
-        return { results: null, error: 'Invalid Endpoint', prompt: prompt };
+        return  results = { results: null, error: 'Invalid Endpoint', prompt: prompt };
     }
-    return { results: null, error: 'No Valid Response from LLM', prompt: prompt };
+    return results = { results: null, error: 'No Valid Response from LLM', prompt: prompt };
 };
 
 export async function doInstruct(instruction: string, guidance?: string, context?: string, examples?: string[] | string): Promise<string> {

@@ -1497,7 +1497,7 @@ const generateText = async (prompt, configuredName = "You", stopList = null) => 
         console.log(response.data);
         if (response.status === 200) {
           results = response.data["results"][0]["text"];
-          return { results: [results], prompt };
+          return results = { results: [results], prompt };
         } else {
           return results = { results: null, error: response.data, prompt };
         }
@@ -1734,9 +1734,9 @@ Assistant:
       }
       break;
     default:
-      return { results: null, error: "Invalid Endpoint", prompt };
+      return results = { results: null, error: "Invalid Endpoint", prompt };
   }
-  return { results: null, error: "No Valid Response from LLM", prompt };
+  return results = { results: null, error: "No Valid Response from LLM", prompt };
 };
 async function doInstruct(instruction, guidance, context, examples) {
   let prompt = "";
@@ -2117,9 +2117,7 @@ async function generateContinueChatLog(construct, chatLog, currentUser, messages
   if (promptWithWorldInfo !== null && promptWithWorldInfo !== void 0) {
     prompt = promptWithWorldInfo;
   }
-  if (replaceUser2 === true) {
-    prompt = prompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${construct.name}`);
-  }
+  prompt = prompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${construct.name}`);
   const response = await generateText(prompt, currentUser, stopList);
   if (response && response.results && response.results[0]) {
     return breakUpCommands(construct.name, response.results[0], currentUser, stopList, doMultiLine);
@@ -3336,7 +3334,7 @@ async function doImageReaction(message) {
       inline: false
     }
   ]).setImage(`attachment://${imageData.name}`).setFooter({ text: "Powered by Stable Diffusion" });
-  if (showDiffusionDetails) {
+  if (!showDiffusionDetails) {
     message.reply({ files: [attachment], embeds: [embed] });
   } else {
     message.reply({ files: [attachment] });
@@ -4299,7 +4297,7 @@ const constructImagine = {
     const highresSteps = (_g = interaction.options.get("highressteps")) == null ? void 0 : _g.value;
     let hidden = (_h = interaction.options.get("hidden")) == null ? void 0 : _h.value;
     if (hidden === void 0) {
-      hidden = getShowDiffusionDetails();
+      hidden = !getShowDiffusionDetails();
     }
     const imageData = await txt2img(prompt, negativePrompt, steps, cfg, width, height, highresSteps);
     if (imageData === null) {
