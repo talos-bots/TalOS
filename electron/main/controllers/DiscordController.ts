@@ -30,6 +30,8 @@ function getDiscordSettings(){
     doStableDiffusion = getDoStableDiffusion();
     doStableReactions = getDoStableReactions();
     doGeneralPurpose = getDoGeneralPurpose();
+    diffusionWhitelist = getDiffusionWhitelist();
+    showDiffusionDetails = getShowDiffusionDetails();
 }
 
 export const setDiscordMode = (mode: DiscordMode) => {
@@ -56,6 +58,7 @@ export const getDoAutoReply =  (): boolean => {
 
 export const setDoStableDiffusion = (doStableDiffusion: boolean): void => {
     store.set('doStableDiffusion', doStableDiffusion);
+    doStableDiffusion = doStableDiffusion;
     registerCommands();
 }
 
@@ -65,6 +68,7 @@ export const getDoStableDiffusion =  (): boolean => {
 
 export const setDoStableReactions = (doStableReactions: boolean): void => {
     store.set('doStableReactions', doStableReactions);
+    doStableReactions = doStableReactions;
 }
 
 export const getDoStableReactions =  (): boolean => {
@@ -73,6 +77,7 @@ export const getDoStableReactions =  (): boolean => {
 
 export const setDoGeneralPurpose = (doGeneralPurpose: boolean): void => {
     store.set('doGeneralPurpose', doGeneralPurpose);
+    doGeneralPurpose = doGeneralPurpose;
 }
 
 export const getDoGeneralPurpose =  (): boolean => {
@@ -81,6 +86,7 @@ export const getDoGeneralPurpose =  (): boolean => {
 
 export const setDiffusionWhitelist = (whitelist: string[]): void => {
     store.set('diffusionWhitelist', whitelist);
+    diffusionWhitelist = whitelist;
 }
 
 export const getDiffusionWhitelist = (): string[] => {
@@ -93,6 +99,7 @@ export const addDiffusionWhitelist = (channelID: string): void => {
         whitelist.push(channelID);
     }
     store.set('diffusionWhitelist', whitelist);
+    diffusionWhitelist = whitelist;
 }
 
 export const removeDiffusionWhitelist = (channelID: string): void => {
@@ -101,10 +108,12 @@ export const removeDiffusionWhitelist = (channelID: string): void => {
         whitelist.splice(whitelist.indexOf(channelID), 1);
     }
     store.set('diffusionWhitelist', whitelist);
+    diffusionWhitelist = whitelist;
 }
 
 export const setShowDiffusionDetails = (show: boolean): void => {
     store.set('showDiffusionDetails', show);
+    showDiffusionDetails = show;
 }
 
 export const getShowDiffusionDetails = (): boolean => {
@@ -572,37 +581,51 @@ function containsName(message: string, chars: ConstructInterface[]){
 }
 
 export async function doImageReaction(message: Message){
-    if(!doStableReactions) return;
-    if(!diffusionWhitelist.includes(message.channel.id)) return;
+    if(!doStableReactions){
+        console.log('Stable Reactions is disabled');
+        return;
+    }
+    if(!diffusionWhitelist.includes(message.channel.id)){
+        console.log('Channel is not whitelisted');
+        return;
+    }
     if (message.reactions.cache.some(reaction => reaction.emoji.name === '✅')) {
+        console.log('Message already has a reaction');
         return;
     }
     if(message.attachments.size > 0){
         message.react('❎');
+        console.log('Message has an attachment');
         return;
     }
     if(message.embeds.length > 0){
         message.react('❎');
+        console.log('Message has an embed');
         return;
     }
     if(message.content.includes('http')){
         message.react('❎');
+        console.log('Message has a link');
         return;
     }
     if(message.content.includes('www')){
+        console.log('Message has a link');
         message.react('❎');
         return;
     }
     if(message.content.includes('.com')){
         message.react('❎');
+        console.log('Message has a link');
         return;
     }
     if(message.content.includes('.net')){
         message.react('❎');
+        console.log('Message has a link');
         return;
     }
     if(message.cleanContent.length < 1){
         message.react('❎');
+        console.log('Message has no content');
         return;
     }
 
@@ -614,6 +637,7 @@ export async function doImageReaction(message: Message){
             // @ts-ignore
             message.reactions.cache.get('✅').remove();
         }
+        console.log('Image data is null');
         return;
     }
     const buffer = Buffer.from(imageData.base64, 'base64');
@@ -665,6 +689,7 @@ export async function doImageReaction(message: Message){
     .setImage(`attachment://${imageData.name}`)
     .setFooter({text: 'Powered by Stable Diffusion'});
     if(showDiffusionDetails){
+
         message.reply({files: [attachment], embeds: [embed]});
     }else{
         message.reply({files: [attachment]});

@@ -2682,6 +2682,7 @@ const store$3 = new Store({
 let maxMessages = 25;
 let doAutoReply = false;
 let doStableReactions = false;
+let showDiffusionDetails = false;
 let diffusionWhitelist = [];
 function getDiscordSettings() {
   maxMessages = getMaxMessages();
@@ -2690,6 +2691,8 @@ function getDiscordSettings() {
   getDoStableDiffusion();
   doStableReactions = getDoStableReactions();
   getDoGeneralPurpose();
+  diffusionWhitelist = getDiffusionWhitelist();
+  showDiffusionDetails = getShowDiffusionDetails();
 }
 const setDiscordMode = (mode) => {
   store$3.set("mode", mode);
@@ -2710,6 +2713,7 @@ const getDoAutoReply = () => {
 };
 const setDoStableDiffusion = (doStableDiffusion2) => {
   store$3.set("doStableDiffusion", doStableDiffusion2);
+  doStableDiffusion2 = doStableDiffusion2;
   registerCommands();
 };
 const getDoStableDiffusion = () => {
@@ -2717,12 +2721,14 @@ const getDoStableDiffusion = () => {
 };
 const setDoStableReactions = (doStableReactions2) => {
   store$3.set("doStableReactions", doStableReactions2);
+  doStableReactions2 = doStableReactions2;
 };
 const getDoStableReactions = () => {
   return store$3.get("doStableReactions", false);
 };
 const setDoGeneralPurpose = (doGeneralPurpose2) => {
   store$3.set("doGeneralPurpose", doGeneralPurpose2);
+  doGeneralPurpose2 = doGeneralPurpose2;
 };
 const getDoGeneralPurpose = () => {
   return store$3.get("doGeneralPurpose", false);
@@ -2736,6 +2742,7 @@ const addDiffusionWhitelist = (channelID) => {
     whitelist.push(channelID);
   }
   store$3.set("diffusionWhitelist", whitelist);
+  diffusionWhitelist = whitelist;
 };
 const removeDiffusionWhitelist = (channelID) => {
   let whitelist = getDiffusionWhitelist();
@@ -2743,9 +2750,11 @@ const removeDiffusionWhitelist = (channelID) => {
     whitelist.splice(whitelist.indexOf(channelID), 1);
   }
   store$3.set("diffusionWhitelist", whitelist);
+  diffusionWhitelist = whitelist;
 };
 const setShowDiffusionDetails = (show) => {
   store$3.set("showDiffusionDetails", show);
+  showDiffusionDetails = show;
 };
 const getShowDiffusionDetails = () => {
   return store$3.get("showDiffusionDetails", false);
@@ -3186,39 +3195,51 @@ function containsName(message, chars) {
 }
 async function doImageReaction(message) {
   var _a, _b;
-  if (!doStableReactions)
+  if (!doStableReactions) {
+    console.log("Stable Reactions is disabled");
     return;
-  if (!diffusionWhitelist.includes(message.channel.id))
+  }
+  if (!diffusionWhitelist.includes(message.channel.id)) {
+    console.log("Channel is not whitelisted");
     return;
+  }
   if (message.reactions.cache.some((reaction) => reaction.emoji.name === "✅")) {
+    console.log("Message already has a reaction");
     return;
   }
   if (message.attachments.size > 0) {
     message.react("❎");
+    console.log("Message has an attachment");
     return;
   }
   if (message.embeds.length > 0) {
     message.react("❎");
+    console.log("Message has an embed");
     return;
   }
   if (message.content.includes("http")) {
     message.react("❎");
+    console.log("Message has a link");
     return;
   }
   if (message.content.includes("www")) {
+    console.log("Message has a link");
     message.react("❎");
     return;
   }
   if (message.content.includes(".com")) {
     message.react("❎");
+    console.log("Message has a link");
     return;
   }
   if (message.content.includes(".net")) {
     message.react("❎");
+    console.log("Message has a link");
     return;
   }
   if (message.cleanContent.length < 1) {
     message.react("❎");
+    console.log("Message has no content");
     return;
   }
   message.react("✅");
@@ -3228,11 +3249,12 @@ async function doImageReaction(message) {
     if (((_b = (_a = message == null ? void 0 : message.reactions) == null ? void 0 : _a.cache) == null ? void 0 : _b.get("✅")) !== void 0) {
       message.reactions.cache.get("✅").remove();
     }
+    console.log("Image data is null");
     return;
   }
   const buffer = Buffer.from(imageData.base64, "base64");
   let attachment = new discord_js.AttachmentBuilder(buffer, { name: `${imageData.name}` });
-  new discord_js.EmbedBuilder().setTitle("Imagine").setFields([
+  const embed = new discord_js.EmbedBuilder().setTitle("Imagine").setFields([
     {
       name: "Prompt",
       value: prompt,
@@ -3274,7 +3296,9 @@ async function doImageReaction(message) {
       inline: false
     }
   ]).setImage(`attachment://${imageData.name}`).setFooter({ text: "Powered by Stable Diffusion" });
-  {
+  if (showDiffusionDetails) {
+    message.reply({ files: [attachment], embeds: [embed] });
+  } else {
     message.reply({ files: [attachment] });
   }
 }
