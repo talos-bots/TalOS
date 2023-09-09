@@ -283,6 +283,7 @@ export async function sendMessageAsCharacter(char: ConstructInterface, channelID
     }
     if (!webhook) {
         console.error("Failed to create webhook.");
+        sendMessage(channelID, '*Failed to create webhook. Check the number of webhooks in channel, if it is at 15, run /clearallwebhooks. Otherwise, ask your server adminstrator to give you the permissions they removed like a twat.*');
         return;
     }
     if(message.length < 1) return;

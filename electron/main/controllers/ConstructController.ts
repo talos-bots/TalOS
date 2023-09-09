@@ -69,7 +69,7 @@ const setAsPrimary = async (id: ConstructID): Promise<void> => {
     }
 }
 
-export function getCharacterPromptFromConstruct(construct: any) {
+export function getCharacterPromptFromConstruct(construct: any, replaceUser: boolean = true) {
     let prompt = '';
     if(construct.background.length > 1){
         prompt += construct.background + '\n';
@@ -89,15 +89,23 @@ export function getCharacterPromptFromConstruct(construct: any) {
     if(construct.personality.length > 1){
         prompt += construct.personality + '\n';
     }
-    return prompt.replaceAll('{{char}}', `${construct.name}`);
+    if(replaceUser === true){
+        return prompt.replaceAll('{{char}}', `${construct.name}`);
+    }else{
+        return prompt;
+    }
 }
 
-export function assemblePrompt(construct: ConstructInterface, chatLog: ChatInterface, currentUser: string = 'you', messagesToInclude?: any){
+export function assemblePrompt(construct: ConstructInterface, chatLog: ChatInterface, currentUser: string = 'you', messagesToInclude?: any, replaceUser: boolean = true){
     let prompt = '';
     prompt += getCharacterPromptFromConstruct(construct);
     prompt += assemblePromptFromLog(chatLog, messagesToInclude);
     prompt += `${construct.name}:`;
-    return prompt.replaceAll('{{user}}', `${currentUser}`);
+    if(replaceUser === true){
+        return prompt.replaceAll('{{user}}', `${currentUser}`).replaceAll('{{char}}', `${construct.name}`);
+    }else{
+        return prompt;
+    }
 }
 
 export async function handleLorebookPrompt(construct: ConstructInterface, prompt: string, chatLog: ChatInterface){
@@ -229,7 +237,7 @@ export function assembleInstructPrompt(construct: any, chatLog: ChatInterface, c
     return prompt.replaceAll('{{user}}', `${currentUser}`);
 }
 
-export async function generateThoughts(construct: ConstructInterface, chat: ChatInterface, currentUser: string = 'you', messagesToInclude: number = 25, doMultiLine?: boolean){
+export async function generateThoughts(construct: ConstructInterface, chat: ChatInterface, currentUser: string = 'you', messagesToInclude: number = 25, doMultiLine?: boolean, replaceUser: boolean = true){
     let lastTwoMessages = chat.messages.slice(-2);
     let messagesExceptLastTwo = chat.messages.slice(0, -2);
     messagesExceptLastTwo = messagesExceptLastTwo.slice(-messagesToInclude);
@@ -257,7 +265,9 @@ export async function generateThoughts(construct: ConstructInterface, chat: Chat
     prompt += `${lastTwoMessages[0].user.trim()}: ${lastTwoMessages[0].text.trim()}\n`;
     prompt += `${lastTwoMessages[1].user.trim()}: ${lastTwoMessages[1].text.trim()}\n\n`;
     prompt += `### Response:\n`;
-    prompt = prompt.replaceAll('{{user}}', `${currentUser}`).replaceAll('{{char}}', `${construct.name}`);
+    if(replaceUser === true){
+        prompt = prompt.replaceAll('{{user}}', `${currentUser}`).replaceAll('{{char}}', `${construct.name}`);
+    }
     const response = await generateText(prompt, currentUser);
     if (response && response.results && response.results[0]) {
         return breakUpCommands(construct.name, response.results[0], currentUser, undefined, doMultiLine);
@@ -267,7 +277,7 @@ export async function generateThoughts(construct: ConstructInterface, chat: Chat
     }
 }
 
-export async function generateContinueChatLog(construct: any, chatLog: ChatInterface, currentUser?: string, messagesToInclude?: any, stopList?: string[], authorsNote?: string | string[], authorsNoteDepth?: number, doMultiLine?: boolean) {
+export async function generateContinueChatLog(construct: any, chatLog: ChatInterface, currentUser?: string, messagesToInclude?: any, stopList?: string[], authorsNote?: string | string[], authorsNoteDepth?: number, doMultiLine?: boolean, replaceUser: boolean = true) {
     let prompt = assemblePrompt(construct, chatLog, currentUser, messagesToInclude);
 
     if ((construct.authorsNote !== undefined && construct.authorsNote !== '' && construct.authorsNote !== null) ||
@@ -305,12 +315,18 @@ export async function generateContinueChatLog(construct: any, chatLog: ChatInter
                 newPrompt += splitPrompt[i];
             }
         }
-
-        prompt = newPrompt.replaceAll('{{user}}', `${currentUser}`).replaceAll('{{char}}', `${construct.name}`);
+        if(replaceUser === true){
+            prompt = newPrompt.replaceAll('{{user}}', `${currentUser}`).replaceAll('{{char}}', `${construct.name}`);
+        }else{
+            prompt = newPrompt;
+        }
     }
     let promptWithWorldInfo = await handleLorebookPrompt(construct, prompt, chatLog);
     if(promptWithWorldInfo !== null && promptWithWorldInfo !== undefined){
         prompt = promptWithWorldInfo;
+    }
+    if(replaceUser === true){
+        prompt = prompt.replaceAll('{{user}}', `${currentUser}`).replaceAll('{{char}}', `${construct.name}`);
     }
     const response = await generateText(prompt, currentUser, stopList);
     if (response && response.results && response.results[0]) {

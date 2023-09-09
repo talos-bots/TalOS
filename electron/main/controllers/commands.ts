@@ -1,6 +1,6 @@
 import { AttachmentBuilder, CommandInteraction, EmbedBuilder } from "discord.js";
 import { Alias, MessageInterface, SlashCommand } from "../types/types";
-import { addAlias, addDiffusionWhitelist, addRegisteredChannel, continueChatLog, getDiffusionWhitelist, getRegisteredChannels, getShowDiffusionDetails, getUsername, removeDiffusionWhitelist, removeRegisteredChannel, setDoAutoReply, setMaxMessages } from "./DiscordController";
+import { addAlias, addDiffusionWhitelist, addRegisteredChannel, continueChatLog, getDiffusionWhitelist, getRegisteredChannels, getShowDiffusionDetails, getUsername, removeDiffusionWhitelist, removeRegisteredChannel, setDoAutoReply, setMaxMessages, setReplaceUser } from "./DiscordController";
 import { addChat, getChat, getConstruct, removeChat, updateChat } from "../api/pouchdb";
 import { assembleChatFromData, assembleConstructFromData } from "../helpers/helpers";
 import { retrieveConstructs, setDoMultiLine } from "./ConstructController";
@@ -772,6 +772,27 @@ const instructCommand: SlashCommand = {
     }
 };
 
+const replaceUserCommand: SlashCommand = {
+    name: 'doplaceholderreplace',
+    description: 'Where or not to replace a {{user}} with a username, and {{char}} with the construct name.',
+    options: [
+        {
+            name: 'replace',
+            description: 'Whether to replace the placeholders.',
+            type: 5,  // Boolean type
+            required: true,
+        }
+    ],
+    execute: async (interaction: CommandInteraction) => {
+        await interaction.deferReply({ephemeral: false});
+        const replace = interaction.options.get('replace')?.value as boolean;
+        setReplaceUser(replace);
+        await interaction.editReply({
+            content: `Set replace user to ${replace}`,
+        });
+    }
+}
+
 const leaveServerCommand: SlashCommand = {
     name: 'leave',
     description: 'Leaves the current server.',
@@ -816,6 +837,7 @@ export const DefaultCommands = [
     toggleVectorCommand,
     completeString,
     instructCommand,
+    replaceUserCommand
 ];
 
 export const constructImagine: SlashCommand = {

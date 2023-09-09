@@ -22,6 +22,7 @@ let doStableReactions = false;
 let showDiffusionDetails = false;
 let doGeneralPurpose = false;
 let diffusionWhitelist: string[] = [];
+let replaceUser = true;
 
 function getDiscordSettings(){
     maxMessages = getMaxMessages();
@@ -32,6 +33,7 @@ function getDiscordSettings(){
     doGeneralPurpose = getDoGeneralPurpose();
     diffusionWhitelist = getDiffusionWhitelist();
     showDiffusionDetails = getShowDiffusionDetails();
+    replaceUser = getReplaceUser();
 }
 
 export const setDiscordMode = (mode: DiscordMode) => {
@@ -118,6 +120,15 @@ export const setShowDiffusionDetails = (show: boolean): void => {
 
 export const getShowDiffusionDetails = (): boolean => {
     return store.get('showDiffusionDetails', false) as boolean;
+}
+
+export const setReplaceUser = (replace: boolean): void => {
+    store.set('replaceUser', replace);
+    replaceUser = replace;
+}
+
+export const getReplaceUser = (): boolean => {
+    return store.get('replaceUser', false) as boolean;
 }
 
 export const getUsername = async (userID: string, channelID: string) => {
@@ -333,11 +344,12 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
         username = alias;
     }
     if(message.channel === null) return;
-    const result = await generateContinueChatLog(construct, chatLog, username, maxMessages);
+    const result = await generateContinueChatLog(construct, chatLog, username, maxMessages, undefined, undefined, undefined, getDoMultiLine(), replaceUser);
     let reply: string;
     if (result !== null) {
         reply = result;
     } else {
+        sendMessage(message.channel.id, '**No response from LLM. Check your endpoint or settings and try again.**');
         return;
     }
     const replyMessage = {
@@ -409,10 +421,11 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
         let result;
         sendTyping(message);
         do {
-            result = await generateContinueChatLog(constructArray[i], chatLog, username, maxMessages);
+            result = await generateContinueChatLog(constructArray[i], chatLog, username, maxMessages, undefined, undefined, undefined, getDoMultiLine(), replaceUser);
             tries++;
             if (tries > 10) {
-                result = '**No response from LLM within 10 tries. Check your endpoint and try again.**'
+                sendMessage(message.channel.id, '**No response from LLM. Check your endpoint or settings and try again.**');
+                return;
                 break;
             }
         } while (result === null);

@@ -1865,7 +1865,7 @@ const setAsPrimary = async (id) => {
     setDiscordBotInfo(construct.name, construct.avatar);
   }
 };
-function getCharacterPromptFromConstruct(construct) {
+function getCharacterPromptFromConstruct(construct, replaceUser2 = true) {
   let prompt = "";
   if (construct.background.length > 1) {
     prompt += construct.background + "\n";
@@ -1885,14 +1885,22 @@ function getCharacterPromptFromConstruct(construct) {
   if (construct.personality.length > 1) {
     prompt += construct.personality + "\n";
   }
-  return prompt.replaceAll("{{char}}", `${construct.name}`);
+  if (replaceUser2 === true) {
+    return prompt.replaceAll("{{char}}", `${construct.name}`);
+  } else {
+    return prompt;
+  }
 }
-function assemblePrompt(construct, chatLog, currentUser = "you", messagesToInclude) {
+function assemblePrompt(construct, chatLog, currentUser = "you", messagesToInclude, replaceUser2 = true) {
   let prompt = "";
   prompt += getCharacterPromptFromConstruct(construct);
   prompt += assemblePromptFromLog(chatLog, messagesToInclude);
   prompt += `${construct.name}:`;
-  return prompt.replaceAll("{{user}}", `${currentUser}`);
+  if (replaceUser2 === true) {
+    return prompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${construct.name}`);
+  } else {
+    return prompt;
+  }
 }
 async function handleLorebookPrompt(construct, prompt, chatLog) {
   const lorebooksData = await getLorebooks();
@@ -2019,7 +2027,7 @@ function assembleInstructPrompt(construct, chatLog, currentUser = "you", message
   let prompt = "";
   return prompt.replaceAll("{{user}}", `${currentUser}`);
 }
-async function generateThoughts(construct, chat, currentUser = "you", messagesToInclude = 25, doMultiLine) {
+async function generateThoughts(construct, chat, currentUser = "you", messagesToInclude = 25, doMultiLine, replaceUser2 = true) {
   let lastTwoMessages = chat.messages.slice(-2);
   let messagesExceptLastTwo = chat.messages.slice(0, -2);
   messagesExceptLastTwo = messagesExceptLastTwo.slice(-messagesToInclude);
@@ -2058,7 +2066,9 @@ async function generateThoughts(construct, chat, currentUser = "you", messagesTo
 `;
   prompt += `### Response:
 `;
-  prompt = prompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${construct.name}`);
+  if (replaceUser2 === true) {
+    prompt = prompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${construct.name}`);
+  }
   const response = await generateText(prompt, currentUser);
   if (response && response.results && response.results[0]) {
     return breakUpCommands(construct.name, response.results[0], currentUser, void 0, doMultiLine);
@@ -2067,7 +2077,7 @@ async function generateThoughts(construct, chat, currentUser = "you", messagesTo
     return null;
   }
 }
-async function generateContinueChatLog(construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth, doMultiLine) {
+async function generateContinueChatLog(construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth, doMultiLine, replaceUser2 = true) {
   let prompt = assemblePrompt(construct, chatLog, currentUser, messagesToInclude);
   if (construct.authorsNote !== void 0 && construct.authorsNote !== "" && construct.authorsNote !== null || authorsNote !== void 0 && authorsNote !== "" && authorsNote !== null) {
     if (!authorsNote) {
@@ -2097,11 +2107,18 @@ async function generateContinueChatLog(construct, chatLog, currentUser, messages
         newPrompt += splitPrompt[i];
       }
     }
-    prompt = newPrompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${construct.name}`);
+    if (replaceUser2 === true) {
+      prompt = newPrompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${construct.name}`);
+    } else {
+      prompt = newPrompt;
+    }
   }
   let promptWithWorldInfo = await handleLorebookPrompt(construct, prompt, chatLog);
   if (promptWithWorldInfo !== null && promptWithWorldInfo !== void 0) {
     prompt = promptWithWorldInfo;
+  }
+  if (replaceUser2 === true) {
+    prompt = prompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${construct.name}`);
   }
   const response = await generateText(prompt, currentUser, stopList);
   if (response && response.results && response.results[0]) {
@@ -2684,6 +2701,7 @@ let doAutoReply = false;
 let doStableReactions = false;
 let showDiffusionDetails = false;
 let diffusionWhitelist = [];
+let replaceUser = true;
 function getDiscordSettings() {
   maxMessages = getMaxMessages();
   getDoMultiLine();
@@ -2693,6 +2711,7 @@ function getDiscordSettings() {
   getDoGeneralPurpose();
   diffusionWhitelist = getDiffusionWhitelist();
   showDiffusionDetails = getShowDiffusionDetails();
+  replaceUser = getReplaceUser();
 }
 const setDiscordMode = (mode) => {
   store$3.set("mode", mode);
@@ -2758,6 +2777,13 @@ const setShowDiffusionDetails = (show) => {
 };
 const getShowDiffusionDetails = () => {
   return store$3.get("showDiffusionDetails", false);
+};
+const setReplaceUser = (replace) => {
+  store$3.set("replaceUser", replace);
+  replaceUser = replace;
+};
+const getReplaceUser = () => {
+  return store$3.get("replaceUser", false);
 };
 const getUsername = async (userID, channelID) => {
   var _a;
@@ -2948,11 +2974,12 @@ async function doCharacterReply(construct, chatLog, message) {
   }
   if (message.channel === null)
     return;
-  const result = await generateContinueChatLog(construct, chatLog, username, maxMessages);
+  const result = await generateContinueChatLog(construct, chatLog, username, maxMessages, void 0, void 0, void 0, getDoMultiLine(), replaceUser);
   let reply;
   if (result !== null) {
     reply = result;
   } else {
+    sendMessage(message.channel.id, "**No response from LLM. Check your endpoint or settings and try again.**");
     return;
   }
   const replyMessage = {
@@ -3020,11 +3047,11 @@ async function doRoundRobin(constructArray, chatLog, message) {
     let result;
     sendTyping(message);
     do {
-      result = await generateContinueChatLog(constructArray[i], chatLog, username, maxMessages);
+      result = await generateContinueChatLog(constructArray[i], chatLog, username, maxMessages, void 0, void 0, void 0, getDoMultiLine(), replaceUser);
       tries++;
       if (tries > 10) {
-        result = "**No response from LLM within 10 tries. Check your endpoint and try again.**";
-        break;
+        sendMessage(message.channel.id, "**No response from LLM. Check your endpoint or settings and try again.**");
+        return;
       }
     } while (result === null);
     let reply = result;
@@ -4137,6 +4164,28 @@ ${reply}`
     return;
   }
 };
+const replaceUserCommand = {
+  name: "doplaceholderreplace",
+  description: "Where or not to replace a {{user}} with a username, and {{char}} with the construct name.",
+  options: [
+    {
+      name: "replace",
+      description: "Whether to replace the placeholders.",
+      type: 5,
+      // Boolean type
+      required: true
+    }
+  ],
+  execute: async (interaction) => {
+    var _a;
+    await interaction.deferReply({ ephemeral: false });
+    const replace = (_a = interaction.options.get("replace")) == null ? void 0 : _a.value;
+    setReplaceUser(replace);
+    await interaction.editReply({
+      content: `Set replace user to ${replace}`
+    });
+  }
+};
 const DefaultCommands = [
   PingCommand,
   RegisterCommand,
@@ -4155,7 +4204,8 @@ const DefaultCommands = [
   SysCommand,
   toggleVectorCommand,
   completeString,
-  instructCommand
+  instructCommand,
+  replaceUserCommand
 ];
 const constructImagine = {
   name: "cosimagine",
@@ -4586,6 +4636,7 @@ async function sendMessageAsCharacter(char, channelID, message) {
   }
   if (!webhook) {
     console.error("Failed to create webhook.");
+    sendMessage(channelID, "*Failed to create webhook. Check the number of webhooks in channel, if it is at 15, run /clearallwebhooks. Otherwise, ask your server adminstrator to give you the permissions they removed like a twat.*");
     return;
   }
   if (message.length < 1)

@@ -191,7 +191,7 @@ const DiscordPage = () => {
                                     />
                                 </div>
                             </div>
-                            <div className="col-span-2 flex flex-row text-left gap-4 mt-2">
+                            <div className="col-span-2 flex flex-row text-left gap-2 mt-2">
                                 <button className="themed-button-pos w-full" onClick={() => saveDiscordConfig()}>Save</button>
                             </div>
                         </div>
@@ -245,7 +245,7 @@ const DiscordPage = () => {
                                     <a href={`https://discord.com/oauth2/authorize?client_id=${discordApplicationID}&scope=bot&permissions=41389525433936`} onClick={(e) => handleLinkClick(e, `https://discord.com/oauth2/authorize?client_id=${discordApplicationID}&scope=bot&permissions=41389525433936`)} className="themed-button-pos w-full">Invite Bot</a>
                                 </div>
                             </div>
-                            <div className="col-span-2 flex flex-row text-left gap-4 mt-2">
+                            <div className="col-span-2 flex flex-row text-left gap-2 mt-2">
                                 <button className="themed-button-pos w-full" onClick={() => saveDiscordConfig()}>Save</button>
                             </div>
                         </div>
