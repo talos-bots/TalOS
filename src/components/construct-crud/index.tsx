@@ -8,7 +8,8 @@ import StringArrayEditor from "../string-array-editor";
 import { setConstructAsPrimary, addConstructToActive, constructIsActive, getActiveConstructList, removeConstructFromActive } from "@/api/constructapi";
 import StringArrayEditorCards from "../string-array-editor-cards";
 import { saveTavernCardAsImage } from "@/api/extrasapi";
-import { Download } from "lucide-react";
+import { Download, RefreshCw } from "lucide-react";
+import { sendTxt2Img } from "@/api/sdapi";
 
 const ConstructManagement = () => {
     const { id } = useParams<{ id: string }>();
@@ -28,6 +29,7 @@ const ConstructManagement = () => {
     const [constructAuthorsNote, setConstructAuthorsNote] = useState<string>('');
     const [isActive, setIsActive] = useState<boolean>(false);
     const [isPrimary, setIsPrimary] = useState<boolean>(false);
+    const [waitingForImage, setWaitingForImage] = useState<boolean>(false);
 
     const makeActive = async () => {
         if(constructState !== null) {
@@ -45,6 +47,19 @@ const ConstructManagement = () => {
         if(constructState !== null) {
             await removeConstructFromActive(constructState._id);
         }
+    }
+
+    const generateConstructImage = async () => {
+        setWaitingForImage(true);
+        if(constructVisualDescription !== '') {
+            const imageData = await sendTxt2Img(constructVisualDescription);
+            if(imageData !== null) {
+                console.log(imageData);
+                setConstructImage(`data:image/jpeg;base64,`+imageData.base64);
+                saveConstruct();
+            }
+        }
+        setWaitingForImage(false);
     }
 
     useEffect(() => {
@@ -182,9 +197,12 @@ const ConstructManagement = () => {
                             />
                         </div>
                         <div className="flex flex-col h-3/6 w-full items-center justify-center">
-                            <label htmlFor="image-upload">
-                                {constructImage === '' ? <RiQuestionMark className="construct-image-default"/> : <img src={constructImage} alt={constructName} className="construct-image"/>}
-                            </label>
+                        <label htmlFor="image-upload" className="relative">
+                            <div className={"absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center" + (!waitingForImage ? " hidden" : "")}>
+                                <div className="animate-spin rounded-full h-20 w-20 border-b-4 border-theme-text"></div>
+                            </div>
+                            {constructImage === '' ? <RiQuestionMark className="construct-image-default"/> : <img src={constructImage} alt={constructName} className="construct-image"/>}
+                        </label>
                             <input 
                                 type="file" 
                                 required={true}
@@ -194,6 +212,7 @@ const ConstructManagement = () => {
                                 onChange={handleImageUpload}
                             />
                         </div>
+                        <button className="themed-button-pos" onClick={() => generateConstructImage()} title="Generate Image using Visual Description"><RefreshCw/></button>
                         <div className="flex flex-col flex-grow-0 h-1/6 w-full">
                             <label htmlFor="construct-role" className="font-semibold">Nickname</label>
                             <input

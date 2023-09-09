@@ -1,12 +1,14 @@
-import { StableDiffusionProcessingTxt2Img } from "@/types";
 import { ipcRenderer } from "electron";
-
+export type ImageReply = {
+    name: string,
+    base64: string
+    model: string
+}
 export const sendTxt2Img = (
-    data: StableDiffusionProcessingTxt2Img, 
-    endpoint: string
-): Promise<any> => { 
+    prompt: string, negativePrompt?: string, steps?: number, cfg?: number, width?: number, height?: number, highresSteps?: number, denoisingStrength?: number
+): Promise<ImageReply | null> => { 
     return new Promise((resolve, reject) => {
-        ipcRenderer.send('txt2img', data, endpoint);
+        ipcRenderer.send('txt2img', prompt, negativePrompt, steps, cfg, width, height, highresSteps, denoisingStrength);
         
         ipcRenderer.once('txt2img-reply', (event, result) => {
             resolve(result);

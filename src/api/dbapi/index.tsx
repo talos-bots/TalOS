@@ -141,7 +141,9 @@ export async function getAttachments(): Promise<Attachment[]> {
                         doc.doc._id,
                         doc.doc.name,
                         doc.doc.type,
+                        doc.doc.fileext,
                         doc.doc.data,
+                        doc.doc.metadata
                     );
                 });
                 resolve(attachments);
@@ -163,7 +165,9 @@ export async function getAttachment(id: string): Promise<Attachment> {
                     data._id,
                     data.name,
                     data.type,
+                    data.fileext,
                     data.data,
+                    data.metadata
                 );
                 resolve(attachment);
             } else {

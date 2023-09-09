@@ -1,11 +1,8 @@
 import { ipcMain } from 'electron';
 import axios from 'axios';
-import { StableDiffusionProcessingTxt2Img } from '@/types';
 import Store from 'electron-store';
-import path from 'path';
-import fs from 'fs-extra';
-import { imagesPath } from '..';
-import { get } from 'http';
+import { AttachmentInferface } from '../types/types';
+import { addAttachment } from './pouchdb';
 const store = new Store({
     name: 'stableDiffusionData',
 });
@@ -316,6 +313,19 @@ export async function makeImage(prompt: string, negativePrompt?: string, steps?:
         return null;
     }
     let fileName = `image_${getTimestamp()}.jpeg`;
+    const assemblePayload = JSON.parse(data);
+    const attachment: AttachmentInferface = {
+        _id: (new Date().getTime()).toString(),
+        name: fileName,
+        type: 'image/jpeg',
+        fileext: 'jpeg',
+        data: res.data.images[0].split(';base64,').pop(),
+        metadata: {
+            model: model,
+            ...assemblePayload
+        }
+    }
+    addAttachment(attachment);
     return {name: fileName, base64: res.data.images[0].split(';base64,').pop(), model: model};
 }
 

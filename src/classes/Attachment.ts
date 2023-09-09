@@ -3,20 +3,26 @@ export class Attachment{
         public _id: string = (new Date().getTime()).toString(),
         public name: string = '',
         public type: string = '',
+        public fileext: string = '',
         public data: string = '',
+        public metadata: any = {}
     ) {}
 
-    setAttachment(name: string, type: string, data: string){
+    setAttachment(name: string, type: string, fileext: string, data: string, metadata: any){
         this.name = name;
         this.type = type;
+        this.fileext = fileext;
         this.data = data;
+        this.metadata = metadata;
     }
 
     getAttachment(){
         return {
             name: this.name,
             type: this.type,
+            fileext: this.fileext,
             data: this.data,
+            metadata: this.metadata
         }
     }
 
@@ -58,5 +64,9 @@ export class Attachment{
 
     getAttachmentDataAsFile(){
         return new File([this.data], this.name, {type: this.type});
+    }
+
+    getAttachmentMetadata(){
+        return this.metadata;
     }
 }

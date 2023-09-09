@@ -33,10 +33,11 @@ export type MessageInterface = {
 
 export type AttachmentInferface = {
     _id: string;
+    name: string;
     type: string;
-    filename: string;
+    fileext: string;
     data: string;
-    size: number;
+    metadata: any;
 }
 
 export type ConstructInterface = {

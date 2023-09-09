@@ -2636,6 +2636,19 @@ async function makeImage(prompt, negativePrompt, steps, cfg, width, height, high
     return null;
   }
   let fileName = `image_${getTimestamp()}.jpeg`;
+  const assemblePayload = JSON.parse(data);
+  const attachment = {
+    _id: (/* @__PURE__ */ new Date()).getTime().toString(),
+    name: fileName,
+    type: "image/jpeg",
+    fileext: "jpeg",
+    data: res.data.images[0].split(";base64,").pop(),
+    metadata: {
+      model,
+      ...assemblePayload
+    }
+  };
+  addAttachment(attachment);
   return { name: fileName, base64: res.data.images[0].split(";base64,").pop(), model };
 }
 async function getAllLoras() {
