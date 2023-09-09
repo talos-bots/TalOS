@@ -910,7 +910,7 @@ export const constructImagine: SlashCommand = {
         const highresSteps = interaction.options.get('highressteps')?.value as number;
         let hidden = interaction.options.get('hidden')?.value as boolean;
         if(hidden === undefined){
-            hidden = getShowDiffusionDetails();
+            hidden = !getShowDiffusionDetails();
         }
         const imageData = await txt2img(prompt, negativePrompt, steps, cfg, width, height, highresSteps);
         if(imageData === null){
