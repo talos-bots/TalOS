@@ -326,7 +326,6 @@ export async function generateContinueChatLog(construct: any, chatLog: ChatInter
         prompt = promptWithWorldInfo;
     }
         prompt = prompt.replaceAll('{{user}}', `${currentUser}`).replaceAll('{{char}}', `${construct.name}`);
-    }
     const response = await generateText(prompt, currentUser, stopList);
     if (response && response.results && response.results[0]) {
         return breakUpCommands(construct.name, response.results[0], currentUser, stopList, doMultiLine);
