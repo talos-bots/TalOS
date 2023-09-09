@@ -10,6 +10,7 @@ import StringArrayEditorCards from "../string-array-editor-cards";
 import { saveTavernCardAsImage } from "@/api/extrasapi";
 import { Download, RefreshCw } from "lucide-react";
 import { sendTxt2Img } from "@/api/sdapi";
+import { Alert } from "@material-tailwind/react";
 
 const ConstructManagement = () => {
     const { id } = useParams<{ id: string }>();
@@ -30,6 +31,7 @@ const ConstructManagement = () => {
     const [isActive, setIsActive] = useState<boolean>(false);
     const [isPrimary, setIsPrimary] = useState<boolean>(false);
     const [waitingForImage, setWaitingForImage] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
 
     const makeActive = async () => {
         if(constructState !== null) {
@@ -57,6 +59,8 @@ const ConstructManagement = () => {
                 console.log(imageData);
                 setConstructImage(`data:image/jpeg;base64,`+imageData.base64);
                 saveConstruct();
+            } else {
+                setError('Error generating image. Check your Stable Diffusion connection settings.');
             }
         }
         setWaitingForImage(false);
@@ -180,6 +184,22 @@ const ConstructManagement = () => {
     }
 
     return (
+        <>
+        {error !== null ? (
+			<Alert color="red" 
+				className="absolute top-8 right-8 w-3/12" 
+				style={{zIndex: 1000}} 
+				onClose={() => setError(null)}
+				animate={{
+					mount: { y: 0 },
+					unmount: { y: 100 },
+				}}
+				>
+				{error}
+			</Alert>
+		) : (
+			null
+		)}
         <div className="w-full h-[calc(100vh-70px)] grid grid-rows-[auto,1fr] themed-root gap-2">
             <h2 className="text-2xl font-bold text-theme-text text-shadow-xl">Construct Editor</h2>
             <div className="grid grid-cols-5 grid-rows-[calc, 1fr] gap-2 text-left">
@@ -324,6 +344,7 @@ const ConstructManagement = () => {
                 </div>
             </div>
         </div>
+        </>
     );
 };
 
