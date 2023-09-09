@@ -1,4 +1,18 @@
 # ConstructOS
+## Overview
+- Chat with AI like in SillyTavern or any other LLM chat app.
+- Desktop app, one install, no NPM I or installation of Python.
+- VectorDB (Long Term Memories)
+- Discord Bot
+- - Stable Diffusion connection, use your local machine to generate images on Discord!
+  - chat with one or multiple Constructs (Characters) through one bot at the sametime!
+  - General Purpose commands, autorole, and more.
+- Lorebooks (World Info) to pair with all modes.
+- Instruct Mode, have the LLM complete tasks or instructions in UI or through Discord
+- Web Browing LLM
+- and much much more! Find more details at the project board, or the planned features section below. Feel free to join our Discord to ask questions, get help, or join the team!
+### Discord Server:
+https://discord.com/invite/HNSaTjExYy
 ## Planned Features
 ### LLaMA.cpp
 - Download, Run, and Configure GGUF or GGML inside of the app. No Kobold.cpp, Oobabooga, or LM Studio required. **(In Progress)**
@@ -10,6 +24,8 @@
 ### Create Constructs
 - Export to V2 Cards **(Done)**
 - Create AI Assistants or RP Characters. **(Done)**
+- Use LLM to help you create persona details for your character.
+- Use Stable Diffusion to create profile images for your character. **(Done)**
 ### Thoughts **(In Progress)**
 - Have your Construct or RP Character think inside of Discord, or the chat window.
 - Adds depth to Characters, and will likely increase quality of RP and chat output.
@@ -28,6 +44,9 @@
 - Everything the discord bot has, but on your phone's default messaging app.
 ### Stable Diffusion
 - Have your Construct make prompts for you, create images for you, or send you selfies.
+- Full Discord integration **(Done)**
+- - Use /cosimagine to connect to your local Automatic1111 WebUI instance to generate images on Discord! **(Done)**
+  - React to any message with valid text with a 🖼️ and it will generate an image with that prompt! **(Done)**
 ### Statistics Page
 - See info on Discord usage, Construct Actions, and other usage stats.
 ## View the Project Board
