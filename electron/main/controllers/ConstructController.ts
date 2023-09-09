@@ -325,7 +325,6 @@ export async function generateContinueChatLog(construct: any, chatLog: ChatInter
     if(promptWithWorldInfo !== null && promptWithWorldInfo !== undefined){
         prompt = promptWithWorldInfo;
     }
-    if(replaceUser === true){
         prompt = prompt.replaceAll('{{user}}', `${currentUser}`).replaceAll('{{char}}', `${construct.name}`);
     }
     const response = await generateText(prompt, currentUser, stopList);
