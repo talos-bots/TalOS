@@ -30,11 +30,24 @@ const ConnectionBox = (props: ConnectionBoxProps) => {
         getConnectionSettings();
     }, []);
 
-    const connect = async () => {
+    const saveEndpoint = async () => {
         await setLLMConnectionInformation(endpoint, endpointType, password);
+    }
+
+    const connect = async () => {
         let status = await getStatus(endpoint, endpointType);
         setStatus(status);
     }
+
+    useEffect(() => {
+        try{
+            if(endpoint !== ""){
+                connect();
+            }
+        }catch(e){
+            setStatus("Disconnected");
+        }
+    }, [endpoint, endpointType, password]);
 
     return (
         <div className="flex flex-col w-full text-left gap-4">
@@ -67,6 +80,7 @@ const ConnectionBox = (props: ConnectionBoxProps) => {
             ) : null}
             <button className="themed-button-pos w-full"
                 onClick={() => {
+                    saveEndpoint();
                     connect();
                 }}
             >

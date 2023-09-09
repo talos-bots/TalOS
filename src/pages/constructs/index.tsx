@@ -71,7 +71,7 @@ const ConstructsPage = () => {
         <div className="w-full h-[calc(100vh-70px)] grid grid-rows-[auto,1fr] overflow-y-auto overflow-x-hidden themed-root">
             <h2 className="text-2xl font-bold text-theme-text text-shadow-xl">Constructs</h2>
             <div className="flex flex-col gap-8">
-                <div className="grid grid-cols-5 gap-0 w-15vw h-5vh">
+                <div className="grid grid-cols-5 gap-1 w-15vw h-5vh">
                     <Link to="/constructs/new" className="themed-button-pos flex items-center justify-center" data-tooltip="Add New Construct" id="newConstruct">
                         <FiPlus className='absolute'size={50}/>
                     </Link>
@@ -100,7 +100,7 @@ const ConstructsPage = () => {
                         </div>
                     }
                 </div>
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-2">
                 {Array.isArray(filteredCharacters) && filteredCharacters.sort((a, b) => {
                     if (a.name && b.name) {
                         return a.name.localeCompare(b.name);

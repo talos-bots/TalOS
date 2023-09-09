@@ -140,3 +140,28 @@ function fetchFromMainWithArgs(event: string, replyEvent: string, ...args: any[]
         });
     });
 }
+
+// Enable Stable Diffusion Commands
+export const getDoStableDiffusionStatus = (): Promise<boolean> => {
+    return fetchFromMain('get-do-stable-diffusion', 'get-do-stable-diffusion-reply');
+}
+
+export const setDoStableDiffusionStatus = (status: boolean): Promise<boolean> => {
+    return fetchFromMainWithArgs('set-do-stable-diffusion', 'set-do-stable-diffusion-reply', status);
+}
+
+export const setDoStableDiffusionReactsStatus = (status: boolean): Promise<boolean> => {
+    return fetchFromMainWithArgs('set-do-stable-reactions', 'set-do-stable-reactions-reply', status);
+}
+
+export const getDoStableDiffusionReactsStatus = (): Promise<boolean> => {
+    return fetchFromMain('get-do-stable-reactions', 'get-do-stable-reactions-reply');
+}
+
+export const getShowDiffusionDetailsStatus = (): Promise<boolean> => {
+    return fetchFromMain('get-show-diffusion-details', 'get-show-diffusion-details-reply');
+}
+
+export const setShowDiffusionDetailsStatus = (status: boolean): Promise<boolean> => {
+    return fetchFromMainWithArgs('set-show-diffusion-details', 'set-show-diffusion-details-reply', status);
+}

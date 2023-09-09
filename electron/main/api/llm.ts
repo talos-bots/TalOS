@@ -231,7 +231,7 @@ export const generateText = async (
                 console.log(response.data)
             } catch (error) {
                 console.log(error);
-                return results = { results: [`**Error:** ${error}`] }
+                return results = { results: null, error: error, prompt: prompt }
             }        
         break;
         case 'Ooba':
@@ -264,13 +264,13 @@ export const generateText = async (
                 console.log(response.data)
                 if (response.status === 200) {
                     results = response.data['results'][0]['text'];
-                    return { results: [results] };
+                    return { results: [results], prompt: prompt };
                 }else{
-                    return results = { results: ['**No valid response from LLM.**']};
+                    return results = { results: null, error: response.data, prompt: prompt};
                 }
             } catch (error) {
                 console.log(error);
-                return results = { results: [`**Error:** ${error}`] }
+                return results = { results: null, error: error, prompt: prompt }
             }
         break;
         case 'OAI':
@@ -293,13 +293,13 @@ export const generateText = async (
                 });
                 if(response.data.choices[0].message.content === undefined){
                     console.log(response.data)
-                    return results = { results: ['**No valid response from LLM.**']};
+                    return results = { results: null, error: response.data, prompt: prompt};
                 }else{
-                    return results = { results: [response.data.choices[0].message.content]};
+                    return results = { results: [response.data.choices[0].message.content], prompt: prompt};
                 }
             } catch (error) {
                 console.log(error);
-                return results = { results: [`**Error:** ${error}`] }
+                return results = { results: null, error: error, prompt: prompt }
             }
         break;
         case 'Horde':
@@ -337,7 +337,7 @@ export const generateText = async (
                     { headers: { 'Content-Type': 'application/json', 'apikey': hordeKey } }
                 ).catch((error) => {
                     console.log(error);
-                    return results = { results: [`**Error:** ${error}`] }
+                    return results = { results: null, error: error, prompt: prompt }
                 });
                 const taskId = response.data.id;
                 console.log(response.data)
@@ -360,13 +360,13 @@ export const generateText = async (
                         headers: { 'Content-Type': 'application/json', 'apikey': hordeKey }
                         });
                         const generatedText = getText.data.generations[0].text;
-                        return results = { results: [generatedText] };
+                        return results = { results: [generatedText], prompt: prompt };
                         break;
                     }
                 }
             } catch (error) {
                 console.log(error);
-                return results = { results: [`**Error:** ${error}`] }
+                return results = { results: null, error: error, prompt: prompt }
             }
         break;
         case 'P-OAI':
@@ -390,13 +390,13 @@ export const generateText = async (
                 });
                 if(response.data?.choices[0]?.message?.content === undefined){
                     console.log(response.data)
-                    return results = { results: ['**No valid response from LLM.**']}
+                    return results = { results: null, error: response.data, prompt: prompt}
                 }else{
-                    return results = { results: [response.data.choices[0].message.content]};
+                    return results = { results: [response.data.choices[0].message.content], prompt: prompt};
                 }
             } catch (error) {
                 console.log(error);
-                return results = { results: [`**Error:** ${error}`]}
+                return results = { results: null, error: error, prompt: prompt}
             }
         break;
         case 'P-Claude':
@@ -422,11 +422,11 @@ export const generateText = async (
                     return results = { results: [claudeResponse.data.choices[0].message.content] };
                 } else {
                     console.log('Unexpected Response:', claudeResponse);
-                    return results = { results: ['**No valid response from LLM.**'] };
+                    return results = { results: null, error: response.data, prompt: prompt};
                 }
             } catch (error: any) {
                 console.error('Error during P-Claude case:', error);
-                return results = { results: [`**Error:** ${error.message}`] };
+                return results = { results: null, error: error, prompt: prompt };
             }
             break;        
         break;
@@ -495,16 +495,16 @@ export const generateText = async (
                     throw new Error('No valid response from LLM.');
                 }
         
-                return results = { results: [googleReply.data.candidates[0]?.output] };
+                return results = { results: [googleReply.data.candidates[0]?.output], prompt: prompt };
             } catch (error: any) {
                 console.error(error);
-                return results = { results: [`**Error:** ${error.message}`] };
+                return results = { results: null, error: error, prompt: prompt };
             }
         break;
     default:
-        return { results: ['Invalid endpoint.'] };
+        return { results: null, error: 'Invalid Endpoint', prompt: prompt };
     }
-    return { results: ['No valid response from LLM.'] };
+    return { results: null, error: 'No Valid Response from LLM', prompt: prompt };
 };
 
 export async function doInstruct(instruction: string, guidance?: string, context?: string, examples?: string[] | string): Promise<string> {

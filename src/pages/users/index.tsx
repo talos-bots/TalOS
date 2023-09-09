@@ -58,7 +58,7 @@ const UserPage = () => {
                     </button>
                     {Array.isArray(users) && users.map((user: User) => {
                         return (
-                            <UserInfo user={user} onClick={(user: User | null) => {setSelectedUser(user)}} onDelete={onDelete}/>
+                            <UserInfo key={user._id} user={user} onClick={(user: User | null) => {setSelectedUser(user)}} onDelete={onDelete}/>
                         );
                     })}
                 </div>

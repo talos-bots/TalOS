@@ -94,7 +94,7 @@ const ConstructBox: React.FC<Props> = ({character}) => {
     return (
         <div className="character-box themed-box h-calc(100vh/6) w-full justify-center">
             <div className="text-2xl font-bold z-10 flex justify-between items-center" onDoubleClick={() => setIsOpen(!isOpen)}>
-                <div className="flex flex-row gap-4 justify-center items-center">
+                <div className="flex flex-row gap-2 justify-center items-center">
                     {!isOpen ? (
                     <div className="themed-message-avatar">
                         {character && (character.avatar === '' ? <RiQuestionMark /> : <img id={character._id} src={character.avatar} alt={characterName} className="themed-message-avatar"/>)}
@@ -107,7 +107,7 @@ const ConstructBox: React.FC<Props> = ({character}) => {
                 </button>
             </div>
             {isOpen && character && (
-            <div className="grid grid-cols-5 gap-4">
+            <div className="grid grid-cols-5 gap-2">
                 <div className="col-span-1 items-start">
                     <Link to={`/constructs/${character._id}`}>
                         {character && (character.avatar === '' ? <RiQuestionMark className="construct-image-default"/> : <img id={character._id} src={character.avatar} alt={characterName} className="agent-image-default cursor-pointer object-fit rounded-theme-border-radius"/>)}
@@ -119,7 +119,7 @@ const ConstructBox: React.FC<Props> = ({character}) => {
                         <b>Construct Status:</b> {isActive ? <span className="text-theme-flavor-text font-bold">Active</span> : <span className="text-theme-hover-neg font-bold">Inactive</span>}{isActive && <span className="text-theme-flavor-text font-bold"> + {isPrimary ? 'Primary': 'Secondary'}</span>}
                     </div>
                 </div>
-                <div className="col-span-4 grid-cols-3 gap-4 grid justify-start">
+                <div className="col-span-4 grid-cols-3 gap-2 grid justify-start">
                     <div className="col-span-1 flex flex-col justify-start items-start">
                         <label className="text-xl font-semibold text-left">User Actions</label>
                         <div className="w-full h-1/2 overflow-hidden">

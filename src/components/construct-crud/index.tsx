@@ -165,11 +165,11 @@ const ConstructManagement = () => {
     }
 
     return (
-        <div className="w-full h-[calc(100vh-70px)] grid grid-rows-[auto,1fr] themed-root gap-4">
+        <div className="w-full h-[calc(100vh-70px)] grid grid-rows-[auto,1fr] themed-root gap-2">
             <h2 className="text-2xl font-bold text-theme-text text-shadow-xl">Construct Editor</h2>
-            <div className="grid grid-cols-5 grid-rows-[calc, 1fr] gap-4 text-left">
-                <div className="col-span-1 items-center gap-4 h-full">
-                    <div className="w-full flex flex-col h-full items-center justify-center gap-4">
+            <div className="grid grid-cols-5 grid-rows-[calc, 1fr] gap-2 text-left">
+                <div className="col-span-1 items-center gap-2 h-full">
+                    <div className="w-full flex flex-col h-full items-center justify-center gap-2">
                         <div className="flex flex-col h-1/6 w-full">
                             <label htmlFor="construct-role" className="font-semibold">Name</label>
                             <input
@@ -220,8 +220,8 @@ const ConstructManagement = () => {
                         </div>
                     </div>
                 </div>
-                <div className="col-span-2 gap-4 grid grid-rows-2">
-                    <div className="row-span-1 flex flex-col gap-4 flex-grow-0">
+                <div className="col-span-2 gap-2 grid grid-rows-2">
+                    <div className="row-span-1 flex flex-col gap-2 flex-grow-0">
                     <div className="flex flex-col h-1/2 flex-grow-0">
                             <label htmlFor="construct-background" className="font-semibold">Background</label>
                             <textarea
@@ -241,7 +241,7 @@ const ConstructManagement = () => {
                             />
                         </div>
                     </div>
-                    <div className="row-span-1 flex flex-col gap-4 flex-grow-0">
+                    <div className="row-span-1 flex flex-col gap-2 flex-grow-0">
                         <div className="flex flex-col h-1/2 flex-grow-0">
                             <label htmlFor="construct-appearance" className="font-semibold">Visual Description</label>
                             <textarea
@@ -260,8 +260,8 @@ const ConstructManagement = () => {
                         </div>
                     </div>
                 </div>
-                <div className="col-span-2 gap-4 grid grid-rows-2">
-                    <div className="row-span-1 flex flex-col gap-4 flex-grow-0">
+                <div className="col-span-2 gap-2 grid grid-rows-2">
+                    <div className="row-span-1 flex flex-col gap-2 flex-grow-0">
                         <div className="flex flex-col h-1/2 overflow-y-auto flex-grow-0">
                             <label htmlFor="construct-interests" className="font-semibold">Interests</label>
                             <StringArrayEditorCards

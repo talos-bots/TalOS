@@ -229,7 +229,7 @@ export function assembleInstructPrompt(construct: any, chatLog: ChatInterface, c
     return prompt.replaceAll('{{user}}', `${currentUser}`);
 }
 
-export async function generateThoughts(construct: ConstructInterface, chat: ChatInterface, currentUser: string = 'you', messagesToInclude: number = 25){
+export async function generateThoughts(construct: ConstructInterface, chat: ChatInterface, currentUser: string = 'you', messagesToInclude: number = 25, doMultiLine?: boolean){
     let lastTwoMessages = chat.messages.slice(-2);
     let messagesExceptLastTwo = chat.messages.slice(0, -2);
     messagesExceptLastTwo = messagesExceptLastTwo.slice(-messagesToInclude);
@@ -260,14 +260,14 @@ export async function generateThoughts(construct: ConstructInterface, chat: Chat
     prompt = prompt.replaceAll('{{user}}', `${currentUser}`).replaceAll('{{char}}', `${construct.name}`);
     const response = await generateText(prompt, currentUser);
     if (response && response.results && response.results[0]) {
-        return breakUpCommands(construct.name, response.results[0], currentUser);
+        return breakUpCommands(construct.name, response.results[0], currentUser, undefined, doMultiLine);
     } else {
-        console.log('No valid response from GenerateText');
+        console.log('No valid response from GenerateText:', response.error.toString());
         return null;
     }
 }
 
-export async function generateContinueChatLog(construct: any, chatLog: ChatInterface, currentUser?: string, messagesToInclude?: any, stopList?: string[], authorsNote?: string | string[], authorsNoteDepth?: number) {
+export async function generateContinueChatLog(construct: any, chatLog: ChatInterface, currentUser?: string, messagesToInclude?: any, stopList?: string[], authorsNote?: string | string[], authorsNoteDepth?: number, doMultiLine?: boolean) {
     let prompt = assemblePrompt(construct, chatLog, currentUser, messagesToInclude);
 
     if ((construct.authorsNote !== undefined && construct.authorsNote !== '' && construct.authorsNote !== null) ||
@@ -314,20 +314,20 @@ export async function generateContinueChatLog(construct: any, chatLog: ChatInter
     }
     const response = await generateText(prompt, currentUser, stopList);
     if (response && response.results && response.results[0]) {
-        return breakUpCommands(construct.name, response.results[0], currentUser, stopList);
+        return breakUpCommands(construct.name, response.results[0], currentUser, stopList, doMultiLine);
     } else {
-        console.log('No valid response from GenerateText');
+        console.log('No valid response from GenerateText:', response.error.toString());
         return null;
     }
 }
 
-export function breakUpCommands(charName: string, commandString: string, user = 'You', stopList: string[] = []): string {
+export function breakUpCommands(charName: string, commandString: string, user = 'You', stopList: string[] = [], doMultiLine: boolean = false): string {
     let lines = commandString.split('\n');
     let formattedCommands = [];
     let currentCommand = '';
     let isFirstLine = true;
     
-    if (getDoMultiLine() === false){
+    if (doMultiLine === false){
         lines = lines.slice(0, 1);
         let command = lines[0];
         return command;
@@ -388,7 +388,7 @@ export async function removeMessagesFromChatLog(chatLog: ChatInterface, messageC
     return newChatLog;
 }
 
-export async function regenerateMessageFromChatLog(chatLog: ChatInterface, messageContent: string, messageID?: string, authorsNote?: string, authorsNoteDepth?: number){
+export async function regenerateMessageFromChatLog(chatLog: ChatInterface, messageContent: string, messageID?: string, authorsNote?: string, authorsNoteDepth?: number, doMultiLine?: boolean){
     let messages = chatLog.messages;
     let beforeMessages: MessageInterface[] = [];
     let afterMessages: MessageInterface[] = [];
@@ -431,7 +431,7 @@ export async function regenerateMessageFromChatLog(chatLog: ChatInterface, messa
         console.log('Could not assemble construct from data');
         return;
     }
-    let newReply = await generateContinueChatLog(construct, chatLog, foundMessage.participants[0], undefined, undefined, authorsNote, authorsNoteDepth);
+    let newReply = await generateContinueChatLog(construct, chatLog, foundMessage.participants[0], undefined, undefined, authorsNote, authorsNoteDepth, doMultiLine);
     if(newReply === null){
         console.log('Could not generate new reply');
         return;

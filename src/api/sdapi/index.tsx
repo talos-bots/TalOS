@@ -204,3 +204,17 @@ export const getDefaultNegativePrompt = (): Promise<string> => {
         });
     });
 };
+
+export const setDefaultPrompt = (positivePrompt: string): void => {
+    ipcRenderer.send('set-default-prompt', positivePrompt);
+}
+
+export const getDefaultPrompt = (): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        ipcRenderer.send('get-default-prompt');
+
+        ipcRenderer.once('get-default-prompt-reply', (event, result) => {
+            resolve(result);
+        });
+    });
+};

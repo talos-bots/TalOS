@@ -184,7 +184,7 @@ const ChatLog = (props: ChatLogProps) => {
 				}
 			}}
 		>
-			<div className="box-border w-3/6 h-[calc(100vh-70px)] flex flex-col gap-4">
+			<div className="box-border w-3/6 h-[calc(100vh-70px)] flex flex-col gap-2">
 				<div className="w-full flex flex-row items-center justify-end">
 					{chatLog === null ? (
 						null

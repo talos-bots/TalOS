@@ -99,12 +99,12 @@ export const getDefaultUpscale = (): number => {
 }
 
 export function SDRoutes(){
-    ipcMain.on('setdefaultPrompt', (event, prompt) => {
+    ipcMain.on('set-default-prompt', (event, prompt) => {
         setDefaultPrompt(prompt);
     });
 
-    ipcMain.on('getDefaultPrompt', (event) => {
-        event.sender.send('getDefaultPrompt-reply', getDefaultPrompt());
+    ipcMain.on('get-default-prompt', (event) => {
+        event.sender.send('get-default-prompt-reply', getDefaultPrompt());
     });
 
     ipcMain.on('set-sdapi-url', (event, apiUrl) => {
@@ -262,7 +262,7 @@ export async function makePromptData(
         "hr_scale": getDefaultUpscale(),
         "hr_second_pass_steps": highresSteps,
         "hr_sampler_name": "Euler a",
-        "prompt": prompt,
+        "prompt": getDefaultPrompt() + prompt,
         "seed": -1,
         "sampler_name": "Euler a",
         "batch_size": 1,
@@ -301,18 +301,22 @@ export async function makeImage(prompt: string, negativePrompt?: string, steps?:
         url: url.toString(),
         data: data,
         headers: { 'Content-Type': 'application/json' },
+    }).then((res) => {
+        return res;
+    }).catch((err) => {
+        console.log(err);
     });
+    url.pathname = '/sdapi/v1/options';
+    let model = await axios.get(url.toString()).then((res) => {
+        return res.data.sd_model_checkpoint;
+    }).catch((err) => {
+        console.log(err);
+    });
+    if(!res){
+        return null;
+    }
     let fileName = `image_${getTimestamp()}.jpeg`;
-    let fullPath = path.join(imagesPath, fileName);
-    let base64Image = res.data.images[0].split(';base64,').pop();
-    await fs.writeFile(fullPath, base64Image, {encoding: 'base64'}, function(err) {
-        if (err) {
-            console.error('Error writing file: ', err);
-        } else {
-            console.log('File written successfully: ', fileName);
-        }
-    });
-    return {path: fullPath, name: fileName, base64: res.data.images[0].split(';base64,').pop()};
+    return {name: fileName, base64: res.data.images[0].split(';base64,').pop(), model: model};
 }
 
 export async function getAllLoras(){

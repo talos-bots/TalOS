@@ -123,10 +123,10 @@ const ChatSelector = (props: ChatSelectorProps) => {
     if(!isLoaded) return (<Loading/>);
 
     return (
-        <div className="grid grid-rows-3 w-90vw h-[calc(95vh-70px)] gap-4 m-auto mt-4 grow-0">
+        <div className="grid grid-rows-3 w-90vw h-[calc(95vh-70px)] gap-2 m-auto mt-4 grow-0">
             <div className="row-span-1 w-full min-h-fit themed-root grow-0 overflow-x-auto">
                 <h3 className="font-semibold">Constructs</h3>
-                <div className="flex flex-row w-full max-w-full h-5/6 gap-4 overflow-x-auto grow-0">
+                <div className="flex flex-row w-full max-w-full h-5/6 gap-2 overflow-x-auto grow-0">
                     {Array.isArray(constructs) && constructs.sort((a, b) => {
                     if (a.name && b.name) {
                         return a.name.localeCompare(b.name);
@@ -154,7 +154,7 @@ const ChatSelector = (props: ChatSelectorProps) => {
                     </Link>
                 </div>
             </div>
-            <div className="row-span-2 w-full h-full grid grid-cols-4 grow-0 gap-4">
+            <div className="row-span-2 w-full h-full grid grid-cols-4 grow-0 gap-2">
                 <div className="col-span-2 flex flex-col themed-root mb-4">
                     <h3 className="font-semibold">Chats</h3>
                     <div className="grid grid-cols-5 gap-0 w-15vw h-5vh">
@@ -179,7 +179,7 @@ const ChatSelector = (props: ChatSelectorProps) => {
                         })}
                     </div>
                 </div>
-                <div className="col-span-2 grid grid-rows-2 gap-4 mb-4">
+                <div className="col-span-2 grid grid-rows-2 gap-2 mb-4">
                     <div className="row-span-1 themed-root flex flex-col">
                         <h3 className="font-semibold">Chatting Settings</h3>
                         <div className="grid grid-cols-2 w-full">

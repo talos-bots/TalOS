@@ -2,10 +2,10 @@ import { ipcMain } from 'electron';
 import { ActivityType, Client, GatewayIntentBits, Collection, REST, Routes, Partials, TextChannel, DMChannel, NewsChannel, Snowflake, Webhook, Message, CommandInteraction, Events, PartialGroupDMChannel } from 'discord.js';
 import Store from 'electron-store';
 import { win } from '..';
-import { doImageReaction, getUsername, handleDiscordMessage, handleRemoveMessage, handleRengenerateMessage } from '../controllers/DiscordController';
+import { doImageReaction, getDoStableDiffusion, getUsername, handleDiscordMessage, handleRemoveMessage, handleRengenerateMessage } from '../controllers/DiscordController';
 import { ConstructInterface, SlashCommand } from '../types/types';
 import { assembleConstructFromData, base642Buffer } from '../helpers/helpers';
-import { DefaultCommands } from '../controllers/commands';
+import { DefaultCommands, stableDiffusionCommands } from '../controllers/commands';
 import { retrieveConstructs } from '../controllers/ConstructController';
 import { getConstruct } from './pouchdb';
 
@@ -33,20 +33,30 @@ let characterMode = false;
 let multiCharacterMode = false;
 let multiConstructMode = false;
 
-async function registerCommands() {
+export async function registerCommands() {
     if(!isReady) return;
     const rest = new REST().setToken(token);
+    let commandsToSet = commands;
+    if(getDoStableDiffusion()){
+        console.log("Stable diffusion enabled...");
+        commandsToSet = [...commands, ...stableDiffusionCommands];
+    }
     try {
-      console.log('Started refreshing application (/) commands.');
-  
-      await rest.put(
-        Routes.applicationCommands(applicationID),
-        { body: commands.map(cmd => ({ name: cmd.name, description: cmd.description, options: cmd.options })) },
-      );
-  
-      console.log('Successfully reloaded application (/) commands.');
+        console.log('Started refreshing application (/) commands.');
+            
+        await rest.put(
+            Routes.applicationCommands(applicationID),
+            { body: commandsToSet.map(cmd => ({ name: cmd.name, description: cmd.description, options: cmd.options })) },
+        ).then(() => {
+            console.log('Successfully reloaded application (/) commands.');
+            console.log('The following commands were set:', commandsToSet.map(cmd => cmd.name));
+        }).catch((error) => {
+            console.error(error);
+            throw new Error('Failed to reload application (/) commands.');
+        });
+
     } catch (error) {
-      console.error(error);
+        console.error(error);
     }
 }
 
@@ -617,9 +627,11 @@ export function DiscordJSRoutes(){
 
     disClient.on('interactionCreate', async (interaction) => {
         if (!interaction.isCommand()) return;
-
-        const command = commands.find(cmd => cmd.name === interaction.commandName);
-      
+        let commandsToCheck = commands;
+        if(getDoStableDiffusion()){
+            commandsToCheck = [...commands, ...stableDiffusionCommands];
+        }
+        const command = commandsToCheck.find(cmd => cmd.name === interaction.commandName);
         if (!command) return;
       
         try {

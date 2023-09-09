@@ -142,8 +142,8 @@ const LorebookCrud = (props: LorebookCrudProps) => {
 
     return (
         <div className="gap-2 h-full overflow-y-auto flex flex-col">
-            <div className="w-full h-full grid grid-cols-4 justify-start gap-4">
-                <div className="col-span-1 flex flex-col gap-4 h-full text-left">
+            <div className="w-full h-full grid grid-cols-4 justify-start gap-2">
+                <div className="col-span-1 flex flex-col gap-2 h-full text-left">
                     <div className="flex flex-col items-center justify-center h-1/6 mt-4">
                         <label htmlFor="image-upload">
                             {bookImage === '' ? <RiQuestionMark className="book-image-default"/> : <img src={bookImage} alt={bookName} className="book-image"/>}
@@ -227,7 +227,7 @@ const LorebookCrud = (props: LorebookCrudProps) => {
                         </div>
                     </div>
                 </div>
-                <div className="col-span-3 flex flex-col gap-4 h-full w-full overflow-y-auto">
+                <div className="col-span-3 flex flex-col gap-2 h-full w-full overflow-y-auto">
                     <h3 className="font-semibold">Entries</h3>
                     <button className="themed-button-pos w-full" onClick={() => setLorebookEntries([...bookEntries, new LoreEntry()])}>Add Entry</button>
                     {Array.isArray(bookEntries) && bookEntries.map((entry, index) => {

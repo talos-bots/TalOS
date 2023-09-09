@@ -58,7 +58,7 @@ const LorebooksPage = () => {
                 </button>
                 {Array.isArray(lorebooks) && lorebooks.map((book: Lorebook) => {
                     return (
-                        <LorebookInfo book={book} onClick={(book: Lorebook | null) => {setSelectedBook(book)}} onDelete={onDelete}/>
+                        <LorebookInfo key={book._id} book={book} onClick={(book: Lorebook | null) => {setSelectedBook(book)}} onDelete={onDelete}/>
                     );
                 })}
             </div>

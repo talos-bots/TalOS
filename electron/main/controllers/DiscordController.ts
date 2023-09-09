@@ -3,11 +3,11 @@ import Store from 'electron-store';
 import { generateContinueChatLog, getDoMultiLine, regenerateMessageFromChatLog, removeMessagesFromChatLog, retrieveConstructs } from './ConstructController';
 import { addChat, getChat, getConstruct, updateChat } from '../api/pouchdb';
 import { addUserFromDiscordMessage, assembleChatFromData, assembleConstructFromData, convertDiscordMessageToMessage } from '../helpers/helpers';
-import { AttachmentBuilder, CommandInteraction, Message } from 'discord.js';
-import { deleteMessage, disClient, editMessage, isAutoReplyMode, isMultiCharacterMode, sendMessage, sendMessageAsCharacter, sendTyping } from '../api/discord';
+import { AttachmentBuilder, CommandInteraction, EmbedBuilder, Message } from 'discord.js';
+import { deleteMessage, disClient, editMessage, isAutoReplyMode, isMultiCharacterMode, registerCommands, sendMessage, sendMessageAsCharacter, sendTyping } from '../api/discord';
 import { Alias, ChannelConfigInterface, ChatInterface, ConstructInterface } from '../types/types';
 import { addVectorFromMessage } from '../api/vector';
-import { makeImage } from '../api/sd';
+import { getDefaultCfg, getDefaultHeight, getDefaultHighresSteps, getDefaultNegativePrompt, getDefaultSteps, getDefaultWidth, makeImage } from '../api/sd';
 
 const store = new Store({
     name: 'discordData',
@@ -17,11 +17,19 @@ type DiscordMode = 'Character' | 'Construct';
 let maxMessages = 25;
 let doMultiLine = false;
 let doAutoReply = false;
+let doStableDiffusion = false;
+let doStableReactions = false;
+let showDiffusionDetails = false;
+let doGeneralPurpose = false;
+let diffusionWhitelist: string[] = [];
 
 function getDiscordSettings(){
     maxMessages = getMaxMessages();
     doMultiLine = getDoMultiLine();
     doAutoReply = getDoAutoReply();
+    doStableDiffusion = getDoStableDiffusion();
+    doStableReactions = getDoStableReactions();
+    doGeneralPurpose = getDoGeneralPurpose();
 }
 
 export const setDiscordMode = (mode: DiscordMode) => {
@@ -44,6 +52,63 @@ export const setDoAutoReply = (doAutoReply: boolean): void => {
 
 export const getDoAutoReply =  (): boolean => {
     return store.get('doAutoReply', false) as boolean;
+}
+
+export const setDoStableDiffusion = (doStableDiffusion: boolean): void => {
+    store.set('doStableDiffusion', doStableDiffusion);
+    registerCommands();
+}
+
+export const getDoStableDiffusion =  (): boolean => {
+    return store.get('doStableDiffusion', false) as boolean;
+}
+
+export const setDoStableReactions = (doStableReactions: boolean): void => {
+    store.set('doStableReactions', doStableReactions);
+}
+
+export const getDoStableReactions =  (): boolean => {
+    return store.get('doStableReactions', false) as boolean;
+}
+
+export const setDoGeneralPurpose = (doGeneralPurpose: boolean): void => {
+    store.set('doGeneralPurpose', doGeneralPurpose);
+}
+
+export const getDoGeneralPurpose =  (): boolean => {
+    return store.get('doGeneralPurpose', false) as boolean;
+}
+
+export const setDiffusionWhitelist = (whitelist: string[]): void => {
+    store.set('diffusionWhitelist', whitelist);
+}
+
+export const getDiffusionWhitelist = (): string[] => {
+    return store.get('diffusionWhitelist', []) as string[];
+}
+
+export const addDiffusionWhitelist = (channelID: string): void => {
+    let whitelist = getDiffusionWhitelist();
+    if(!whitelist.includes(channelID)){
+        whitelist.push(channelID);
+    }
+    store.set('diffusionWhitelist', whitelist);
+}
+
+export const removeDiffusionWhitelist = (channelID: string): void => {
+    let whitelist = getDiffusionWhitelist();
+    if(whitelist.includes(channelID)){
+        whitelist.splice(whitelist.indexOf(channelID), 1);
+    }
+    store.set('diffusionWhitelist', whitelist);
+}
+
+export const setShowDiffusionDetails = (show: boolean): void => {
+    store.set('showDiffusionDetails', show);
+}
+
+export const getShowDiffusionDetails = (): boolean => {
+    return store.get('showDiffusionDetails', false) as boolean;
 }
 
 export const getUsername = async (userID: string, channelID: string) => {
@@ -507,6 +572,8 @@ function containsName(message: string, chars: ConstructInterface[]){
 }
 
 export async function doImageReaction(message: Message){
+    if(!doStableReactions) return;
+    if(!diffusionWhitelist.includes(message.channel.id)) return;
     if (message.reactions.cache.some(reaction => reaction.emoji.name === '✅')) {
         return;
     }
@@ -542,9 +609,66 @@ export async function doImageReaction(message: Message){
     message.react('✅');
     let prompt = message.cleanContent;
     let imageData = await makeImage(prompt);
+    if(imageData === null){
+        if(message?.reactions?.cache?.get('✅') !== undefined){
+            // @ts-ignore
+            message.reactions.cache.get('✅').remove();
+        }
+        return;
+    }
     const buffer = Buffer.from(imageData.base64, 'base64');
     let attachment = new AttachmentBuilder(buffer, {name: `${imageData.name}`});
-    message.reply({files: [attachment]});
+    const embed = new EmbedBuilder()
+    .setTitle('Imagine')
+    .setFields([
+        {
+            name: 'Prompt',
+            value: prompt,
+            inline: false,
+        },
+        {
+            name: 'Negative Prompt',
+            value: `${getDefaultNegativePrompt()}`,
+            inline: false,
+        },
+        {
+            name: 'Steps',
+            value: getDefaultSteps().toString(),
+            inline: true,
+        },
+        {
+            name: 'CFG',
+            value: getDefaultCfg().toString(),
+            inline: false,
+        },
+        {
+            name: 'Width',
+            value: getDefaultWidth().toString(),
+            inline: true,
+        },
+        {
+            name: 'Height',
+            value: getDefaultHeight().toString(),
+            inline: true,
+        },
+        {
+            name: 'Highres Steps',
+            value: getDefaultHighresSteps().toString(),
+            inline: false,
+        },
+        {
+            name: 'Model',
+            value: `${imageData.model}`,
+            inline: false,
+        }
+    ])
+    .setImage(`attachment://${imageData.name}`)
+    .setFooter({text: 'Powered by Stable Diffusion'});
+    if(showDiffusionDetails){
+        message.reply({files: [attachment], embeds: [embed]});
+    }else{
+        message.reply({files: [attachment]});
+    }
 }
 
 
@@ -576,6 +700,58 @@ function DiscordController(){
 
     ipcMain.handle('isChannelRegistered', (event, arg) => {
         return isChannelRegistered(arg);
+    });
+
+    ipcMain.on('get-do-stable-diffusion', (event, arg) => {
+        event.reply('get-do-stable-diffusion-reply', getDoStableDiffusion());
+    });
+
+    ipcMain.on('set-do-stable-diffusion', (event, arg) => {
+        setDoStableDiffusion(arg);
+    });
+
+    ipcMain.on('get-do-stable-reactions', (event, arg) => {
+        event.reply('get-do-stable-reactions-reply', getDoStableReactions());
+    });
+
+    ipcMain.on('set-do-stable-reactions', (event, arg) => {
+        setDoStableReactions(arg);
+    });
+
+    ipcMain.on('get-do-general-purpose', (event, arg) => {
+        event.reply('get-do-general-purpose-reply', getDoGeneralPurpose());
+    });
+
+    ipcMain.on('set-do-general-purpose', (event, arg) => {
+        setDoGeneralPurpose(arg);
+    });
+
+    ipcMain.on('get-do-auto-reply', (event, arg) => {
+        event.reply('get-do-auto-reply-reply', getDoAutoReply());
+    });
+
+    ipcMain.on('set-do-auto-reply', (event, arg) => {
+        setDoAutoReply(arg);
+    });
+
+    ipcMain.handle('get-diffusion-whitelist', (event, arg) => {
+        return getDiffusionWhitelist();
+    });
+
+    ipcMain.handle('add-diffusion-whitelist', (event, arg) => {
+        addDiffusionWhitelist(arg);
+    });
+
+    ipcMain.handle('remove-diffusion-whitelist', (event, arg) => {
+        removeDiffusionWhitelist(arg);
+    });
+
+    ipcMain.handle('get-show-diffusion-details', (event, arg) => {
+        return getShowDiffusionDetails();
+    });
+
+    ipcMain.handle('set-show-diffusion-details', (event, arg) => {
+        setShowDiffusionDetails(arg);
     });
 }
 

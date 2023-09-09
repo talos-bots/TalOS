@@ -1,6 +1,6 @@
 import { AttachmentBuilder, CommandInteraction, EmbedBuilder } from "discord.js";
 import { Alias, MessageInterface, SlashCommand } from "../types/types";
-import { addAlias, addRegisteredChannel, continueChatLog, getRegisteredChannels, getUsername, removeRegisteredChannel, setDoAutoReply, setMaxMessages } from "./DiscordController";
+import { addAlias, addDiffusionWhitelist, addRegisteredChannel, continueChatLog, getDiffusionWhitelist, getRegisteredChannels, getShowDiffusionDetails, getUsername, removeDiffusionWhitelist, removeRegisteredChannel, setDoAutoReply, setMaxMessages } from "./DiscordController";
 import { addChat, getChat, getConstruct, removeChat, updateChat } from "../api/pouchdb";
 import { assembleChatFromData, assembleConstructFromData } from "../helpers/helpers";
 import { retrieveConstructs, setDoMultiLine } from "./ConstructController";
@@ -700,130 +700,6 @@ export const toggleVectorCommand: SlashCommand = {
     }
 };
 
-export const constructImagine: SlashCommand = {
-    name: 'cosimagine',
-    description: 'Makes an image from text.',
-    options: [
-        {
-            name: 'prompt',
-            description: 'Primary prompt',
-            type: 3,  // String type
-            required: true,
-        },
-        {
-            name: 'negativeprompt',
-            description: 'Negative prompt',
-            type: 3,  // String type
-            required: false,
-        },
-        {
-            name: 'steps',
-            description: 'Steps',
-            type: 4,  // Integer type
-            required: false,
-        },
-        {
-            name: 'cfg',
-            description: 'Configuration value',
-            type: 4,  // Integer type
-            required: false,
-        },
-        {
-            name: 'width',
-            description: 'Width',
-            type: 4,  // Integer type
-            required: false,
-        },
-        {
-            name: 'height',
-            description: 'Height',
-            type: 4,  // Integer type
-            required: false,
-        },
-        {
-            name: 'highressteps',
-            description: 'High resolution steps',
-            type: 4,  // Integer type
-            required: false,
-        },
-        {
-            name: 'hidden',
-            description: 'Whether the prompt data should be hidden.',
-            type: 5,  // Boolean type
-            required: false,
-        }
-    ],
-    execute: async (interaction: CommandInteraction) => {
-        await interaction.deferReply({ephemeral: false});
-        const prompt = interaction.options.get('prompt')?.value as string;
-        const negativePrompt = interaction.options.get('negativeprompt')?.value as string;
-        const steps = interaction.options.get('steps')?.value as number;
-        const cfg = interaction.options.get('cfg')?.value as number;
-        const width = interaction.options.get('width')?.value as number;
-        const height = interaction.options.get('height')?.value as number;
-        const highresSteps = interaction.options.get('highressteps')?.value as number;
-        let hidden = interaction.options.get('hidden')?.value as boolean;
-        if(hidden === undefined) hidden = true;
-        const imageData = await txt2img(prompt, negativePrompt, steps, cfg, width, height, highresSteps);
-        const buffer = Buffer.from(imageData.base64, 'base64');
-        let attachment = new AttachmentBuilder(buffer, {name: `${imageData.name}`});
-        const embed = new EmbedBuilder()
-        .setTitle('Imagine')
-        .setFields([
-            {
-                name: 'Prompt',
-                value: prompt,
-                inline: false,
-            },
-            {
-                name: 'Negative Prompt',
-                value: negativePrompt? negativePrompt : `${getDefaultNegativePrompt()}`,
-                inline: false,
-            },
-            {
-                name: 'Steps',
-                value: steps? steps.toString() : getDefaultSteps().toString(),
-                inline: true,
-            },
-            {
-                name: 'CFG',
-                value: cfg? cfg.toString() : getDefaultCfg().toString(),
-                inline: false,
-            },
-            {
-                name: 'Width',
-                value: width? width.toString() : getDefaultWidth().toString(),
-                inline: true,
-            },
-            {
-                name: 'Height',
-                value: height? height.toString() : getDefaultHeight().toString(),
-                inline: true,
-            },
-            {
-                name: 'Highres Steps',
-                value: highresSteps? highresSteps.toString() : getDefaultHighresSteps().toString(),
-                inline: false,
-            }
-        ])
-        .setImage(`attachment://${imageData.name}`)
-        .setFooter({text: 'Powered by Stable Diffusion'});
-        if(hidden){
-            await interaction.editReply({
-                embeds: [],
-                files: [attachment],
-            });
-            return;
-        }else{
-            await interaction.editReply({
-                embeds: [embed],
-                files: [attachment],
-            });
-            return;
-        }
-    }
-};
-
 const completeString: SlashCommand = {
     name: 'complete',
     description: 'Completes a prompt.',
@@ -938,7 +814,205 @@ export const DefaultCommands = [
     DoCharacterGreetingsCommand,
     SysCommand,
     toggleVectorCommand,
-    constructImagine,
     completeString,
     instructCommand,
+];
+
+export const constructImagine: SlashCommand = {
+    name: 'cosimagine',
+    description: 'Makes an image from text.',
+    options: [
+        {
+            name: 'prompt',
+            description: 'Primary prompt',
+            type: 3,  // String type
+            required: true,
+        },
+        {
+            name: 'negativeprompt',
+            description: 'Negative prompt',
+            type: 3,  // String type
+            required: false,
+        },
+        {
+            name: 'steps',
+            description: 'Steps',
+            type: 4,  // Integer type
+            required: false,
+        },
+        {
+            name: 'cfg',
+            description: 'Configuration value',
+            type: 4,  // Integer type
+            required: false,
+        },
+        {
+            name: 'width',
+            description: 'Width',
+            type: 4,  // Integer type
+            required: false,
+        },
+        {
+            name: 'height',
+            description: 'Height',
+            type: 4,  // Integer type
+            required: false,
+        },
+        {
+            name: 'highressteps',
+            description: 'High resolution steps',
+            type: 4,  // Integer type
+            required: false,
+        },
+        {
+            name: 'hidden',
+            description: 'Whether the prompt data should be hidden.',
+            type: 5,  // Boolean type
+            required: false,
+        }
+    ],
+    execute: async (interaction: CommandInteraction) => {
+        await interaction.deferReply({ephemeral: false});
+        if(!getDiffusionWhitelist().includes(interaction.channelId)){
+            await interaction.editReply({
+                content: 'This command is not allowed in this channel.',
+            });
+            return;
+        }
+        const prompt = interaction.options.get('prompt')?.value as string;
+        const negativePrompt = interaction.options.get('negativeprompt')?.value as string;
+        const steps = interaction.options.get('steps')?.value as number;
+        const cfg = interaction.options.get('cfg')?.value as number;
+        const width = interaction.options.get('width')?.value as number;
+        const height = interaction.options.get('height')?.value as number;
+        const highresSteps = interaction.options.get('highressteps')?.value as number;
+        let hidden = interaction.options.get('hidden')?.value as boolean;
+        if(hidden === undefined){
+            hidden = getShowDiffusionDetails();
+        }
+        const imageData = await txt2img(prompt, negativePrompt, steps, cfg, width, height, highresSteps);
+        if(imageData === null){
+            await interaction.editReply({
+                content: 'An unknown error has occured. Please check your endpoint, settings, and try again.',
+            });
+            return;
+        }
+        const buffer = Buffer.from(imageData.base64, 'base64');
+        let attachment = new AttachmentBuilder(buffer, {name: `${imageData.name}`});
+        const embed = new EmbedBuilder()
+        .setTitle('Imagine')
+        .setFields([
+            {
+                name: 'Prompt',
+                value: prompt,
+                inline: false,
+            },
+            {
+                name: 'Negative Prompt',
+                value: negativePrompt? negativePrompt : `${getDefaultNegativePrompt()}`,
+                inline: false,
+            },
+            {
+                name: 'Steps',
+                value: steps? steps.toString() : getDefaultSteps().toString(),
+                inline: true,
+            },
+            {
+                name: 'CFG',
+                value: cfg? cfg.toString() : getDefaultCfg().toString(),
+                inline: false,
+            },
+            {
+                name: 'Width',
+                value: width? width.toString() : getDefaultWidth().toString(),
+                inline: true,
+            },
+            {
+                name: 'Height',
+                value: height? height.toString() : getDefaultHeight().toString(),
+                inline: true,
+            },
+            {
+                name: 'Highres Steps',
+                value: highresSteps? highresSteps.toString() : getDefaultHighresSteps().toString(),
+                inline: false,
+            },
+            {
+                name: 'Model',
+                value: `${imageData.model}`,
+                inline: false,
+            }
+        ])
+        .setImage(`attachment://${imageData.name}`)
+        .setFooter({text: 'Powered by Stable Diffusion'});
+        if(hidden){
+            await interaction.editReply({
+                embeds: [],
+                files: [attachment],
+            });
+            return;
+        }else{
+            await interaction.editReply({
+                embeds: [embed],
+                files: [attachment],
+            });
+            return;
+        }
+    }
+};
+
+const addDiffusionWhitelistCommand: SlashCommand = {
+    name: 'sdaddchannel',
+    description: 'Adds a channel to the diffusion whitelist.',
+    options: [
+        {
+            name: 'channel',
+            description: 'The channel to add.',
+            type: 7,  // Channel type
+            required: false,
+        },
+    ],
+    execute: async (interaction: CommandInteraction) => {
+        await interaction.deferReply({ephemeral: false});
+        let channel = interaction.options.get('channel')?.value as string;
+        if(channel === undefined){
+            channel = interaction.channelId;
+        }
+        addDiffusionWhitelist(channel);
+        await interaction.editReply({
+            content: `Added <#${channel}> to the diffusion whitelist.`,
+        });
+        return;
+    }
+};
+
+const removeDiffusionWhitelistCommand: SlashCommand = {
+    name: 'sdremovechannel',
+    description: 'Removes a channel from the diffusion whitelist.',
+    options: [
+        {
+            name: 'channel',
+            description: 'The channel to remove.',
+            type: 7,  // Channel type
+            required: false,
+        },
+    ],
+    execute: async (interaction: CommandInteraction) => {
+        await interaction.deferReply({ephemeral: false});
+        let channel = interaction.options.get('channel')?.value as string;
+        if(channel === undefined){
+            channel = interaction.channelId;
+        }
+        removeDiffusionWhitelist(channel);
+        await interaction.editReply({
+            content: `Removed <#${channel}> from the diffusion whitelist.`,
+        });
+        return;
+    }
+};
+
+export const stableDiffusionCommands = [
+    constructImagine,
+    addDiffusionWhitelistCommand,
+    removeDiffusionWhitelistCommand,
 ];
