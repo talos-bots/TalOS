@@ -176,3 +176,202 @@ export interface LLMConnectionInformation {
 }
 
 export type CompletionType = 'code' | 'novel' | 'song' | 'script' | 'other';
+
+export const emotions = [
+    {
+        value: 'admiration',
+        label: 'Admiration'
+    },
+    {
+        value: 'amusement',
+        label: 'Amusement'
+    },
+    {
+        value: 'anger',
+        label: 'Anger'
+    },
+    {
+        value: 'annoyance',
+        label: 'Annoyance'
+    },
+    {
+        value: 'approval',
+        label: 'Approval'
+    },
+    {
+        value: 'caring',
+        label: 'Caring'
+    },
+    {
+        value: 'confusion',
+        label: 'Confusion'
+    },
+    {
+        value: 'curiosity',
+        label: 'Curiosity'
+    },
+    {
+        value: 'desire',
+        label: 'Desire'
+    },
+    {
+        value: 'disappointment',
+        label: 'Disappointment'
+    },
+    {
+        value: 'disapproval',
+        label: 'Disapproval'
+    },
+    {
+        value: 'disgust',
+        label: 'Disgust'
+    },
+    {
+        value: 'embarrassment',
+        label: 'Embarrassment'
+    },
+    {
+        value: 'fear',
+        label: 'Fear'
+    },
+    {
+        value: 'gratitude',
+        label: 'Gratitude'
+    },
+    {
+        value: 'grief',
+        label: 'Grief'
+    },
+    {
+        value: 'joy',
+        label: 'Joy'
+    },
+    {
+        value: 'love',
+        label: 'Love'
+    },
+    {
+        value: 'nervousness',
+        label: 'Nervousness'
+    },
+    {
+        value: 'neutral',
+        label: 'Neutral'
+    },
+    {
+        value: 'optimism',
+        label: 'Optimism'
+    },
+    {
+        value: 'pride',
+        label: 'Pride'
+    },
+    {
+        value: 'realization',
+        label: 'Realization'
+    },
+    {
+        value: 'relief',
+        label: 'Relief'
+    },
+    {
+        value: 'remorse',
+        label: 'Remorse'
+    },
+    {
+        value: 'sadness',
+        label: 'Sadness'
+    },
+    {
+        value: 'surprise',
+        label: 'Surprise'
+    }
+]
+
+export type Emotion = 'surprise' | 'sadness' | 'remorse' | 'relief' | 'realization' | 'pride' | 'optimism' | 'neutral' | 'nervousness' | 'love' | 'joy' | 'grief' | 'gratitude' | 'fear' | 'embarrassment' | 'disgust' | 'disapproval' | 'disappointment' | 'desire' | 'curiosity' | 'confusion' | 'caring' | 'approval' | 'annoyance' | 'anger' | 'amusement' | 'admiration';
+
+export const spriteSetTypes = [
+    {
+        value: 'everyday',
+        label: 'Everyday'
+    },
+    {
+        value: 'formal',
+        label: 'Formal'
+    },
+    {
+        value: 'sleepwear',
+        label: 'Sleepwear'
+    },
+    {
+        value: 'swimwear',
+        label: 'Swimwear'
+    },
+    {
+        value: 'underwear',
+        label: 'Underwear'
+    },
+    {
+        value: 'naked',
+        label: 'Naked'
+    },
+    {
+        value: 'battle',
+        label: 'Battle'
+    },
+    {
+        value: 'winter',
+        label: 'Winter',
+    },
+    {
+        value: 'halloween',
+        label: 'Halloween'
+    },
+    {
+        value: 'christmas',
+        label: 'Christmas'
+    }
+]
+
+export const narrativeRoles = [
+    {
+        value: 'protagonist',
+        label: 'Protagonist'
+    },
+    {
+        value: 'antagonist',
+        label: 'Antagonist'
+    },
+    {
+        value: 'supporting',
+        label: 'Supporting'
+    },
+    {
+        value: 'neutral',
+        label: 'Neutral'
+    },
+    {
+        value: 'other',
+        label: 'Other'
+    },
+    {
+        value: 'love interest',
+        label: 'Love Interest'
+    },
+    {
+        value: 'mentor',
+        label: 'Mentor'
+    },
+    {
+        value: 'sidekick',
+        label: 'Sidekick'
+    },
+    {
+        value: 'villain',
+        label: 'Villain'
+    },
+    {
+        value: 'friend',
+        label: 'Friend'
+    },
+];

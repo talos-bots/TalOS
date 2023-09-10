@@ -47,6 +47,7 @@
     "@uiw/react-codemirror": "^4.21.9",
     "@uiw/react-md-editor": "^3.23.5",
     "@uiw/react-textarea-code-editor": "^2.1.7",
+    "@xenova/transformers": "^2.6.0",
     "autoprefixer": "^10.4.14",
     "axios": "^1.4.0",
     "azure-cognitiveservices-search": "^1.1.0-preview",

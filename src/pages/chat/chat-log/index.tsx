@@ -4,12 +4,13 @@ import { Chat } from "@/classes/Chat";
 import { Message } from "@/classes/Message";
 import { getChat, getUser, saveNewChat, updateChat } from "@/api/dbapi";
 import MessageComponent from "@/pages/chat/chat-log/message";
-import { addUserMessage, getLoadingMessage, regenerateMessage, sendMessage, wait } from "../helpers";
+import { addUserMessage, getLoadingMessage, regenerateMessage, regenerateUserMessage, sendMessage, wait } from "../helpers";
 import { Alert } from "@material-tailwind/react";
 import ChatInfo from "@/pages/chat/chat-info";
 import Loading from "@/components/loading";
 import { User } from "@/classes/User";
 import { addVectorFromMessage } from "@/api/vectorapi";
+import { getTextEmotion } from "@/api/llmapi";
 interface ChatLogProps {
 	chatLogID?: string;
 }
@@ -65,6 +66,7 @@ const ChatLog = (props: ChatLogProps) => {
 		if(chat === null) return;
 		if(message !== "" && message !== null && message !== undefined && message !== " " && message !== "\n"){
 			let newMessage = addUserMessage(message, currentUser);
+			newMessage.emotion = await getTextEmotion(message);
 			chat.addMessage(newMessage);
 			if(messages.includes(newMessage)){
 				console.log("message already exists");
@@ -152,6 +154,42 @@ const ChatLog = (props: ChatLogProps) => {
 		});
 	}
 
+	const userRegenerate = async (messageID: string, messageText: string) => {
+		if(chatLog === null) return;
+		await regenerateUserMessage(chatLog, messageText, messageID).then((newMessage) => {
+			if(newMessage === null) return;
+			chatLog.editMessageText(messageID, newMessage);
+			setChatLog(chatLog);
+			let newMessages = messages.map((message) => {
+				if(message._id === messageID) {
+					message.text = newMessage;
+				}
+				return message;
+			});
+			setMessages(newMessages);
+		});
+	}
+
+	const splitChatLogAtMessage = (messageID: string) => {
+		if(chatLog === null) return;
+		
+		let index = chatLog.messages.findIndex(message => message._id === messageID);
+		if (index === -1) return;
+	
+		let newChat = new Chat();
+		newChat.name = chatLog.name + ` (${messageID} branch)`;
+		newChat.constructs = chatLog.constructs;
+		newChat.chatConfigs = chatLog.chatConfigs;
+		newChat.humans = chatLog.humans;
+		newChat.global = chatLog.global;
+		newChat.doVector = chatLog.doVector;
+		newChat.messages = chatLog.messages.slice(0, index + 1);
+		saveNewChat(newChat);
+		setChatLog(newChat);
+		setMessages(newChat.messages);
+	}
+	
+
 	const handleDetailsChange = async (newChat: Chat) => {
 		setChatLog(newChat);
 		setMessages(newChat.messages);
@@ -196,7 +234,7 @@ const ChatLog = (props: ChatLogProps) => {
 					<div className="themed-message-box">
 						{Array.isArray(messages) && messages.slice(messages.length - numToDisplay, messages.length).map((message) => {
 							return (
-								<MessageComponent key={message._id} message={message} onDelete={deleteMessage} onEdit={editMessage} onRegenerate={onRegenerate}/>
+								<MessageComponent key={message._id} message={message} onDelete={deleteMessage} onEdit={editMessage} onRegenerate={onRegenerate} onSplit={splitChatLogAtMessage} onUserRegenerate={userRegenerate}/>
 							);
 						})}
 						<div ref={messagesEndRef}></div>

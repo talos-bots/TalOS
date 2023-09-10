@@ -1,10 +1,10 @@
 import { ipcMain } from 'electron';
 import Store from 'electron-store';
-import { assembleConstructFromData, assembleLorebookFromData, assemblePromptFromLog } from '../helpers/helpers';
+import { assembleConstructFromData, assembleLorebookFromData, assemblePromptFromLog, assembleUserFromData } from '../helpers/helpers';
 import { generateText } from '../api/llm';
 import { isReady, setDiscordBotInfo } from '../api/discord';
-import { getConstruct, getLorebooks, updateChat } from '../api/pouchdb';
-import { ChatInterface, ConstructInterface, LoreEntryInterface, MessageInterface } from '../types/types';
+import { getConstruct, getLorebooks, getUser, updateChat } from '../api/pouchdb';
+import { ChatInterface, ConstructInterface, LoreEntryInterface, MessageInterface, UserInterface } from '../types/types';
 const store = new Store({
     name: 'constructData',
 });
@@ -69,7 +69,7 @@ const setAsPrimary = async (id: ConstructID): Promise<void> => {
     }
 }
 
-export function getCharacterPromptFromConstruct(construct: any, replaceUser: boolean = true) {
+export function getCharacterPromptFromConstruct(construct: ConstructInterface, replaceUser: boolean = true) {
     let prompt = '';
     if(construct.background.length > 1){
         prompt += construct.background + '\n';
@@ -96,6 +96,33 @@ export function getCharacterPromptFromConstruct(construct: any, replaceUser: boo
     }
 }
 
+export function getUserPromptFromUser(user: UserInterface, replaceUser: boolean = true) {
+    let prompt = '';
+    if(user.background.length > 1){
+        prompt += user.background + '\n';
+    }
+    if(user.interests.length > 1){
+        prompt += 'Interests:\n';
+        for(let i = 0; i < user.interests.length; i++){
+            prompt += '- ' + user.interests[i] + '\n';
+        }
+    }
+    if(user.relationships.length > 1){
+        prompt += 'Relationships:\n';
+        for(let i = 0; i < user.relationships.length; i++){
+            prompt += '- ' + user.relationships[i] + '\n';
+        }
+    }
+    if(user.personality.length > 1){
+        prompt += user.personality + '\n';
+    }
+    if(replaceUser === true){
+        return prompt.replaceAll('{{char}}', `${user ? (user?.nickname || user.name) : 'DefaultUser'}`);
+    }else{
+        return prompt;
+    }
+}
+
 export function assemblePrompt(construct: ConstructInterface, chatLog: ChatInterface, currentUser: string = 'you', messagesToInclude?: any, replaceUser: boolean = true){
     let prompt = '';
     prompt += getCharacterPromptFromConstruct(construct);
@@ -103,6 +130,18 @@ export function assemblePrompt(construct: ConstructInterface, chatLog: ChatInter
     prompt += `${construct.name}:`;
     if(replaceUser === true){
         return prompt.replaceAll('{{user}}', `${currentUser}`).replaceAll('{{char}}', `${construct.name}`);
+    }else{
+        return prompt;
+    }
+}
+
+export function assembleUserPrompt(user: UserInterface, chatLog: ChatInterface, currentUser: string = 'you', messagesToInclude?: any, replaceUser: boolean = true){
+    let prompt = '';
+    prompt += getUserPromptFromUser(user);
+    prompt += assemblePromptFromLog(chatLog, messagesToInclude);
+    prompt += `${user ? (user?.nickname || user.name) : 'DefaultUser'}:`; 
+    if(replaceUser === true){
+        return prompt.replaceAll('{{user}}', `${currentUser}`).replaceAll('{{char}}', `${user ? (user?.nickname || user.name) : 'DefaultUser'}`);
     }else{
         return prompt;
     }
@@ -272,7 +311,7 @@ export async function generateThoughts(construct: ConstructInterface, chat: Chat
     if (response && response.results && response.results[0]) {
         return breakUpCommands(construct.name, response.results[0], currentUser, undefined, doMultiLine);
     } else {
-        console.log('No valid response from GenerateText:', response.error.toString());
+        console.log('No valid response from GenerateText:', response?.error?.toString());
         return null;
     }
 }
@@ -330,7 +369,19 @@ export async function generateContinueChatLog(construct: any, chatLog: ChatInter
     if (response && response.results && response.results[0]) {
         return breakUpCommands(construct.name, response.results[0], currentUser, stopList, doMultiLine);
     } else {
-        console.log('No valid response from GenerateText:', response.error.toString());
+        console.log('No valid response from GenerateText:', response?.error?.toString());
+        return null;
+    }
+}
+
+export async function generateContinueChatLogAsUser(user: UserInterface, chatLog: ChatInterface, currentUser?: string, messagesToInclude?: any, stopList?: string[], authorsNote?: string | string[], authorsNoteDepth?: number, doMultiLine?: boolean, replaceUser: boolean = true) {
+    let prompt = assembleUserPrompt(user, chatLog, currentUser, messagesToInclude);
+    prompt = prompt.replaceAll('{{char}}', `${user ? (user?.nickname || user.name) : 'DefaultUser'}`);
+    const response = await generateText(prompt, currentUser, stopList);
+    if (response && response.results && response.results[0]) {
+        return breakUpCommands(`${user ? (user?.nickname || user.name) : 'DefaultUser'}`, response.results[0], currentUser, stopList, doMultiLine);
+    } else {
+        console.log('No valid response from GenerateText:', response?.error?.toString());
         return null;
     }
 }
@@ -471,6 +522,75 @@ export async function regenerateMessageFromChatLog(chatLog: ChatInterface, messa
     return newReply;
 }
 
+export async function regenerateUserMessageFromChatLog(chatLog: ChatInterface, messageContent: string, messageID?: string, authorsNote?: string, authorsNoteDepth?: number, doMultiLine?: boolean){
+    let messages = chatLog.messages;
+    let beforeMessages: MessageInterface[] = [];
+    let afterMessages: MessageInterface[] = [];
+    let foundMessage: MessageInterface | undefined;
+    let messageIndex = -1;
+    for(let i = 0; i < messages.length; i++){
+        if(messageID !== undefined){
+            if(messages[i]._id === messageID){
+                messageIndex = i;
+                foundMessage = messages[i];
+                break;
+            }
+        }else{
+            if(messages[i].text.trim().includes(messageContent.trim())){
+                messageIndex = i;
+                foundMessage = messages[i];
+                break;
+            }
+        }
+    }
+    if(foundMessage === undefined){
+        console.log('Could not find message to regenerate');
+        return;
+    }
+    if (messageIndex !== -1) {
+        beforeMessages = messages.slice(0, messageIndex);
+        afterMessages = messages.slice(messageIndex + 1);
+        messages.splice(messageIndex, 1);
+    }
+    
+    // If you want to update the chat without the target message
+    chatLog.messages = messages;
+    let userData = await getUser(foundMessage.userID);
+    if(userData === null){
+        console.log('Could not find construct to regenerate message');
+        return;
+    }
+    let construct = assembleUserFromData(userData);
+    if(construct === null){
+        console.log('Could not assemble construct from data');
+        return;
+    }
+    let newReply = await generateContinueChatLogAsUser(construct, chatLog, foundMessage.participants[0], undefined, undefined, authorsNote, authorsNoteDepth, doMultiLine);
+    if(newReply === null){
+        console.log('Could not generate new reply');
+        return;
+    }
+    let newMessage = {
+        _id: Date.now().toString(),
+        user: construct ? (construct?.nickname || construct.name) : 'DefaultUser',
+        avatar: construct.avatar,
+        text: newReply,
+        userID: construct._id,
+        timestamp: Date.now(),
+        origin: 'Discord',
+        isHuman: true,
+        isCommand: false,
+        isPrivate: false,
+        participants: foundMessage.participants,
+        attachments: [],
+        isThought: false,
+    }
+    messages = beforeMessages.concat(newMessage, afterMessages);    
+    chatLog.messages = messages;
+    await updateChat(chatLog);
+    return newReply;
+}
+
 function constructController() {
     ActiveConstructs = retrieveConstructs();
     
@@ -557,6 +677,12 @@ function constructController() {
 
     ipcMain.on('generate-thoughts', (event, construct, chat, currentUser, messagesToInclude, uniqueEventName) => {
         generateThoughts(construct, chat, currentUser, messagesToInclude).then((response) => {
+            event.reply(uniqueEventName, response);
+        });
+    });
+
+    ipcMain.on('regenerate-user-message-from-chat-log', (event, chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, uniqueEventName) => {
+        regenerateUserMessageFromChatLog(chatLog, messageContent, messageID, authorsNote, authorsNoteDepth).then((response) => {
             event.reply(uniqueEventName, response);
         });
     });

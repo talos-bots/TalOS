@@ -19,7 +19,7 @@ const setDefaultPrompt = (prompt: string): void => {
     store.set('defaultPrompt', prompt);
 }
 
-const getDefaultPrompt = (): string => {
+export const getDefaultPrompt = (): string => {
     return store.get('defaultPrompt', '') as string;
 }
 

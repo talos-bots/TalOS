@@ -4,12 +4,20 @@ import { Configuration, OpenAIApi } from 'openai';
 import Store from 'electron-store';
 import { w3cwebsocket as W3CWebSocket } from 'websocket';
 import { instructPrompt, instructPromptWithContext, instructPromptWithExamples, instructPromptWithGuidance, instructPromptWithGuidanceAndContext, instructPromptWithGuidanceAndContextAndExamples, instructPromptWithGuidanceAndExamples } from '../types/prompts';
+import { getClassification } from '../model-pipeline/text-classification';
 
 const HORDE_API_URL = 'https://aihorde.net/api';
 
 const store = new Store({
     name: 'llmData',
 });
+
+type ContextRatio = {
+    conversation: number;
+    memories: number;
+    lorebook: number;
+    construct: number;
+}
 
 type EndpointType = 'Kobold' | 'Ooba' | 'OAI' | 'Horde' | 'P-OAI' | 'P-Claude' | 'PaLM';
 
@@ -602,5 +610,11 @@ export function LanguageModelAPI(){
 
     ipcMain.on('get-palm-filters', (event) => {
         event.reply('get-palm-filters-reply', palmFilters);
+    });
+
+    ipcMain.on('get-text-classification', (event, uniqueEventName, text) => {
+        getClassification(text).then((result) => {
+            event.reply(uniqueEventName, result);
+        });
     });
 }

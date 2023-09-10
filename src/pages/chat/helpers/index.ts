@@ -1,9 +1,11 @@
-import { generateContinueChatLog, regenerateMessageFromChatLog } from "@/api/constructapi";
+import { generateContinueChatLog, regenerateMessageFromChatLog, regenerateUserMessageFromChatLog } from "@/api/constructapi";
 import { getConstruct, getUser, updateChat } from "@/api/dbapi";
+import { getTextEmotion } from "@/api/llmapi";
 import { getRelaventMemories } from "@/api/vectorapi";
 import { Chat } from "@/classes/Chat";
 import { Message } from "@/classes/Message";
 import { User } from "@/classes/User";
+import { Emotion } from "@/types";
 
 export async function getLoadingMessage(constructID: string){
     let activeConstruct = await getConstruct(constructID);
@@ -32,15 +34,17 @@ export function addUserMessage(messageText: string, user: User | null) {
     newMessage.isHuman = true;
     newMessage.participants = [user?._id || 'DefaultUser'];
     newMessage.userID = user?._id || 'DefaultUser';
+    newMessage.emotion = 'neutral';
+    newMessage.isThought = false;
     return newMessage;
 }
 
 export async function sendMessage(chatlog: Chat, constructID: string, user: User | null) {
     let activeConstruct = await getConstruct(constructID);
     if (!chatlog.constructs || chatlog.constructs.length === 0) return null;
-    const memories = await getRelaventMemories(chatlog._id, chatlog.lastMessage.text);
-    console.log(memories);
     let response = await generateContinueChatLog(activeConstruct, chatlog, user ? (user.nickname || user.name) : 'DefaultUser');
+    let emotion = await getTextEmotion(response);
+    console.log(emotion);
     if (!response) return null;
     let newMessage = new Message();
     newMessage.origin = 'ConstructOS';
@@ -52,12 +56,21 @@ export async function sendMessage(chatlog: Chat, constructID: string, user: User
     newMessage.isHuman = false;
     newMessage.participants = [user?._id || 'DefaultUser', constructID];
     newMessage.userID = constructID;
+    newMessage.emotion = emotion;
+    newMessage.isThought = false;
     return newMessage;
 }
 
 export async function regenerateMessage(chatlog: Chat, messageText: string, messageID?: string){
     if(!messageID) return null;
     let newReply = await regenerateMessageFromChatLog(chatlog, messageText, messageID);
+    if(!newReply) return null;
+    return newReply;
+}
+
+export async function regenerateUserMessage(chatlog: Chat, messageText: string, messageID?: string){
+    if(!messageID) return null;
+    let newReply = await regenerateUserMessageFromChatLog(chatlog, messageText, messageID);
     if(!newReply) return null;
     return newReply;
 }

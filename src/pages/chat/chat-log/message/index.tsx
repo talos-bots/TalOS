@@ -1,7 +1,7 @@
 import { getConstruct } from "@/api/dbapi";
 import { Attachment } from "@/classes/Attachment";
 import { Message } from "@/classes/Message";
-import { EditIcon, RefreshCw, TrashIcon } from "lucide-react";
+import { EditIcon, RefreshCw, Split, TrashIcon } from "lucide-react";
 import { KeyboardEvent, useEffect, useRef, useState } from "react";
 import { RiQuestionMark } from "react-icons/ri";
 import ReactMarkdown from 'react-markdown';
@@ -12,6 +12,8 @@ interface Props {
     onDelete?: (messageID: string) => void;
     onEdit?: (messageID: string, newText: string) => void;
     onRegenerate?: (messageID: string, messageText: string) => void;
+    onSplit?: (messageID: string) => void;
+    onUserRegenerate?: (messageID: string, messageText: string) => void;
 }
 
 export function getFormattedTime(timestamp: number): string {
@@ -22,7 +24,7 @@ export function getFormattedTime(timestamp: number): string {
     return `${hours}:${minutes}:${seconds} ${date.toLocaleDateString()}`;
 }
 
-const MessageComponent = ({ message, onDelete, onEdit, onRegenerate }: Props) => {
+const MessageComponent = ({ message, onDelete, onEdit, onRegenerate, onSplit, onUserRegenerate }: Props) => {
     const [text, setText] = useState<string>("");
     const [user, setUser] = useState<string>("");
     const [userID, setUserID] = useState<string>("");
@@ -113,8 +115,19 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate }: Props) =>
                         <div className="flex flex-row text-xs top-3 absolute right-2 italic gap-1">
                             {isTyping === false && (
                                 <>
-                                {isHuman ? null : 
-                                    <button className="message-button" 
+                                {isHuman ? 
+                                    <button className="message-button"
+                                        title="Regenerate"
+                                        onClick={() => {
+                                            if(onUserRegenerate === undefined) return;
+                                            setIsTyping(true)
+                                            onUserRegenerate(message._id, message.text)
+                                        }}>
+                                        <RefreshCw size={14} />
+                                    </button>
+                                : 
+                                    <button className="message-button"
+                                        title="Regenerate"
                                         onClick={() => {
                                             if(onRegenerate === undefined) return;
                                             setIsTyping(true)
@@ -124,6 +137,16 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate }: Props) =>
                                     </button>
                                 }
                                 <button className="message-button"
+                                    title="New Chat from this message"
+                                    onClick={() => {
+                                        if(onSplit === undefined) return;
+                                        onSplit(message._id);
+                                    }}
+                                    >
+                                    <Split size={14} />
+                                </button>
+                                <button className="message-button"
+                                    title="Edit"
                                     onClick={() => {
                                         handleEditMessage(null)
                                     }}
@@ -131,6 +154,7 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate }: Props) =>
                                     <EditIcon size={14} />
                                 </button>
                                 <button className="message-button"
+                                    title="Delete"
                                     onClick={() => {
                                         if(onDelete === undefined) return;
                                         onDelete(message._id);

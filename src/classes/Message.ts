@@ -1,3 +1,4 @@
+import { Emotion } from "@/types";
 import { Attachment } from "./Attachment";
 
 export class Message{
@@ -15,9 +16,10 @@ export class Message{
         public participants: string[] = [],
         public attachments: Attachment[] = [],
         public isThought: boolean = false,
+        public emotion: Emotion = 'neutral',
     ) {}
 
-    setMessage(user: string, userID: string, text: string, timestamp: number, origin: string, isHuman: boolean, isCommand: boolean, isPrivate: boolean, participants: string[], attachments: Attachment[]){
+    setMessage(user: string, userID: string, text: string, timestamp: number, origin: string, isHuman: boolean, isCommand: boolean, isPrivate: boolean, participants: string[], attachments: Attachment[], isThought: boolean, emotion: Emotion){
         this.user = user;
         this.text = text;
         this.userID = userID;
@@ -28,6 +30,8 @@ export class Message{
         this.isPrivate = isPrivate;
         this.participants = participants;
         this.attachments = attachments;
+        this.isThought = isThought;
+        this.emotion = emotion;
     }
 
     getMessage(){
@@ -41,6 +45,8 @@ export class Message{
             isPrivate: this.isPrivate,
             participants: this.participants,
             attachments: this.attachments,
+            isThought: this.isThought,
+            emotion: this.emotion
         }
     }
 

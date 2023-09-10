@@ -7,7 +7,7 @@ import { AttachmentBuilder, CommandInteraction, EmbedBuilder, Message } from 'di
 import { deleteMessage, disClient, editMessage, isAutoReplyMode, isMultiCharacterMode, registerCommands, sendMessage, sendMessageAsCharacter, sendTyping } from '../api/discord';
 import { Alias, ChannelConfigInterface, ChatInterface, ConstructInterface } from '../types/types';
 import { addVectorFromMessage } from '../api/vector';
-import { getDefaultCfg, getDefaultHeight, getDefaultHighresSteps, getDefaultNegativePrompt, getDefaultSteps, getDefaultWidth, makeImage } from '../api/sd';
+import { getDefaultCfg, getDefaultHeight, getDefaultHighresSteps, getDefaultNegativePrompt, getDefaultPrompt, getDefaultSteps, getDefaultWidth, makeImage } from '../api/sd';
 
 const store = new Store({
     name: 'discordData',
@@ -665,7 +665,7 @@ export async function doImageReaction(message: Message){
     .setFields([
         {
             name: 'Prompt',
-            value: prompt,
+            value: getDefaultPrompt() + prompt,
             inline: false,
         },
         {

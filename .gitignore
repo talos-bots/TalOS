@@ -128,3 +128,4 @@ dist
 dist-electron/
 backend/venv
 release/
+public/models/

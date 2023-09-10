@@ -7,7 +7,7 @@ import { retrieveConstructs, setDoMultiLine } from "./ConstructController";
 import { clearWebhooksFromChannel, doGlobalNicknameChange } from "../api/discord";
 import { doInstruct, generateText, getStatus } from "../api/llm";
 import { deleteIndex } from "../api/vector";
-import { getDefaultCfg, getDefaultHeight, getDefaultHighresSteps, getDefaultNegativePrompt, getDefaultSteps, getDefaultWidth, txt2img } from "../api/sd";
+import { getDefaultCfg, getDefaultHeight, getDefaultHighresSteps, getDefaultNegativePrompt, getDefaultSteps, getDefaultWidth, txt2img, getDefaultPrompt } from "../api/sd";
 
 export const RegisterCommand: SlashCommand = {
     name: 'register',
@@ -926,7 +926,7 @@ export const constructImagine: SlashCommand = {
         .setFields([
             {
                 name: 'Prompt',
-                value: prompt,
+                value: getDefaultPrompt() + prompt,
                 inline: false,
             },
             {

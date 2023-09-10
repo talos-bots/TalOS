@@ -1,4 +1,26 @@
 "use strict";
+var __create = Object.create;
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
 Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
 const electron = require("electron");
 const node_os = require("node:os");
@@ -1290,6 +1312,23 @@ const instructPromptWithGuidanceAndExamples = `
 
 ### Response:
 `;
+const task = "text-classification";
+const model = "distilbert-base-uncased-go-emotions-onnx";
+const modelPromise = new Promise(async (resolve, reject) => {
+  try {
+    const { pipeline, env } = await import("@xenova/transformers");
+    env.allowRemoteModels = false;
+    env.localModelPath = modelsPath;
+    env.backends.onnx.wasm.wasmPaths = wasmPath;
+    resolve(await pipeline(task, model));
+  } catch (err) {
+    reject(err);
+  }
+});
+async function getClassification(text) {
+  const model2 = await modelPromise;
+  return await model2(text);
+}
 const HORDE_API_URL = "https://aihorde.net/api";
 const store$6 = new Store({
   name: "llmData"
@@ -1815,6 +1854,11 @@ function LanguageModelAPI() {
   electron.ipcMain.on("get-palm-filters", (event) => {
     event.reply("get-palm-filters-reply", palmFilters);
   });
+  electron.ipcMain.on("get-text-classification", (event, uniqueEventName, text) => {
+    getClassification(text).then((result) => {
+      event.reply(uniqueEventName, result);
+    });
+  });
 }
 const store$5 = new Store({
   name: "constructData"
@@ -1892,6 +1936,32 @@ function getCharacterPromptFromConstruct(construct, replaceUser2 = true) {
     return prompt;
   }
 }
+function getUserPromptFromUser(user, replaceUser2 = true) {
+  let prompt = "";
+  if (user.background.length > 1) {
+    prompt += user.background + "\n";
+  }
+  if (user.interests.length > 1) {
+    prompt += "Interests:\n";
+    for (let i = 0; i < user.interests.length; i++) {
+      prompt += "- " + user.interests[i] + "\n";
+    }
+  }
+  if (user.relationships.length > 1) {
+    prompt += "Relationships:\n";
+    for (let i = 0; i < user.relationships.length; i++) {
+      prompt += "- " + user.relationships[i] + "\n";
+    }
+  }
+  if (user.personality.length > 1) {
+    prompt += user.personality + "\n";
+  }
+  if (replaceUser2 === true) {
+    return prompt.replaceAll("{{char}}", `${user ? (user == null ? void 0 : user.nickname) || user.name : "DefaultUser"}`);
+  } else {
+    return prompt;
+  }
+}
 function assemblePrompt(construct, chatLog, currentUser = "you", messagesToInclude, replaceUser2 = true) {
   let prompt = "";
   prompt += getCharacterPromptFromConstruct(construct);
@@ -1899,6 +1969,17 @@ function assemblePrompt(construct, chatLog, currentUser = "you", messagesToInclu
   prompt += `${construct.name}:`;
   if (replaceUser2 === true) {
     return prompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${construct.name}`);
+  } else {
+    return prompt;
+  }
+}
+function assembleUserPrompt(user, chatLog, currentUser = "you", messagesToInclude, replaceUser2 = true) {
+  let prompt = "";
+  prompt += getUserPromptFromUser(user);
+  prompt += assemblePromptFromLog(chatLog, messagesToInclude);
+  prompt += `${user ? (user == null ? void 0 : user.nickname) || user.name : "DefaultUser"}:`;
+  if (replaceUser2 === true) {
+    return prompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${user ? (user == null ? void 0 : user.nickname) || user.name : "DefaultUser"}`);
   } else {
     return prompt;
   }
@@ -2029,6 +2110,7 @@ function assembleInstructPrompt(construct, chatLog, currentUser = "you", message
   return prompt.replaceAll("{{user}}", `${currentUser}`);
 }
 async function generateThoughts(construct, chat, currentUser = "you", messagesToInclude = 25, doMultiLine, replaceUser2 = true) {
+  var _a;
   let lastTwoMessages = chat.messages.slice(-2);
   let messagesExceptLastTwo = chat.messages.slice(0, -2);
   messagesExceptLastTwo = messagesExceptLastTwo.slice(-messagesToInclude);
@@ -2074,11 +2156,12 @@ async function generateThoughts(construct, chat, currentUser = "you", messagesTo
   if (response && response.results && response.results[0]) {
     return breakUpCommands(construct.name, response.results[0], currentUser, void 0, doMultiLine);
   } else {
-    console.log("No valid response from GenerateText:", response.error.toString());
+    console.log("No valid response from GenerateText:", (_a = response == null ? void 0 : response.error) == null ? void 0 : _a.toString());
     return null;
   }
 }
 async function generateContinueChatLog(construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth, doMultiLine, replaceUser2 = true) {
+  var _a;
   let prompt = assemblePrompt(construct, chatLog, currentUser, messagesToInclude);
   if (construct.authorsNote !== void 0 && construct.authorsNote !== "" && construct.authorsNote !== null || authorsNote !== void 0 && authorsNote !== "" && authorsNote !== null) {
     if (!authorsNote) {
@@ -2124,7 +2207,19 @@ async function generateContinueChatLog(construct, chatLog, currentUser, messages
   if (response && response.results && response.results[0]) {
     return breakUpCommands(construct.name, response.results[0], currentUser, stopList, doMultiLine);
   } else {
-    console.log("No valid response from GenerateText:", response.error.toString());
+    console.log("No valid response from GenerateText:", (_a = response == null ? void 0 : response.error) == null ? void 0 : _a.toString());
+    return null;
+  }
+}
+async function generateContinueChatLogAsUser(user, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth, doMultiLine, replaceUser2 = true) {
+  var _a;
+  let prompt = assembleUserPrompt(user, chatLog, currentUser, messagesToInclude);
+  prompt = prompt.replaceAll("{{char}}", `${user ? (user == null ? void 0 : user.nickname) || user.name : "DefaultUser"}`);
+  const response = await generateText(prompt, currentUser, stopList);
+  if (response && response.results && response.results[0]) {
+    return breakUpCommands(`${user ? (user == null ? void 0 : user.nickname) || user.name : "DefaultUser"}`, response.results[0], currentUser, stopList, doMultiLine);
+  } else {
+    console.log("No valid response from GenerateText:", (_a = response == null ? void 0 : response.error) == null ? void 0 : _a.toString());
     return null;
   }
 }
@@ -2250,6 +2345,72 @@ async function regenerateMessageFromChatLog(chatLog, messageContent, messageID, 
   await updateChat(chatLog);
   return newReply;
 }
+async function regenerateUserMessageFromChatLog(chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, doMultiLine) {
+  let messages = chatLog.messages;
+  let beforeMessages = [];
+  let afterMessages = [];
+  let foundMessage;
+  let messageIndex = -1;
+  for (let i = 0; i < messages.length; i++) {
+    if (messageID !== void 0) {
+      if (messages[i]._id === messageID) {
+        messageIndex = i;
+        foundMessage = messages[i];
+        break;
+      }
+    } else {
+      if (messages[i].text.trim().includes(messageContent.trim())) {
+        messageIndex = i;
+        foundMessage = messages[i];
+        break;
+      }
+    }
+  }
+  if (foundMessage === void 0) {
+    console.log("Could not find message to regenerate");
+    return;
+  }
+  if (messageIndex !== -1) {
+    beforeMessages = messages.slice(0, messageIndex);
+    afterMessages = messages.slice(messageIndex + 1);
+    messages.splice(messageIndex, 1);
+  }
+  chatLog.messages = messages;
+  let userData = await getUser(foundMessage.userID);
+  if (userData === null) {
+    console.log("Could not find construct to regenerate message");
+    return;
+  }
+  let construct = assembleUserFromData(userData);
+  if (construct === null) {
+    console.log("Could not assemble construct from data");
+    return;
+  }
+  let newReply = await generateContinueChatLogAsUser(construct, chatLog, foundMessage.participants[0], void 0, void 0, authorsNote, authorsNoteDepth, doMultiLine);
+  if (newReply === null) {
+    console.log("Could not generate new reply");
+    return;
+  }
+  let newMessage = {
+    _id: Date.now().toString(),
+    user: construct ? (construct == null ? void 0 : construct.nickname) || construct.name : "DefaultUser",
+    avatar: construct.avatar,
+    text: newReply,
+    userID: construct._id,
+    timestamp: Date.now(),
+    origin: "Discord",
+    isHuman: true,
+    isCommand: false,
+    isPrivate: false,
+    participants: foundMessage.participants,
+    attachments: [],
+    isThought: false
+  };
+  messages = beforeMessages.concat(newMessage, afterMessages);
+  chatLog.messages = messages;
+  await updateChat(chatLog);
+  return newReply;
+}
 function constructController() {
   ActiveConstructs = retrieveConstructs();
   electron.ipcMain.on("add-construct-to-active", (event, arg) => {
@@ -2323,6 +2484,11 @@ function constructController() {
       event.reply(uniqueEventName, response);
     });
   });
+  electron.ipcMain.on("regenerate-user-message-from-chat-log", (event, chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, uniqueEventName) => {
+    regenerateUserMessageFromChatLog(chatLog, messageContent, messageID, authorsNote, authorsNoteDepth).then((response) => {
+      event.reply(uniqueEventName, response);
+    });
+  });
 }
 require("@tensorflow/tfjs");
 async function getAllVectors(schemaName) {
@@ -2356,8 +2522,8 @@ async function addVectorFromMessage(schemaName, message) {
   });
 }
 async function getVector(text) {
-  return use.load().then(async (model) => {
-    const embeddings = await model.embed([text]);
+  return use.load().then(async (model2) => {
+    const embeddings = await model2.embed([text]);
     return embeddings.arraySync()[0];
   });
 }
@@ -2627,7 +2793,7 @@ async function makeImage(prompt, negativePrompt, steps, cfg, width, height, high
     console.log(err);
   });
   url2.pathname = "/sdapi/v1/options";
-  let model = await axios.get(url2.toString()).then((res2) => {
+  let model2 = await axios.get(url2.toString()).then((res2) => {
     return res2.data.sd_model_checkpoint;
   }).catch((err) => {
     console.log(err);
@@ -2644,12 +2810,12 @@ async function makeImage(prompt, negativePrompt, steps, cfg, width, height, high
     fileext: "jpeg",
     data: res.data.images[0].split(";base64,").pop(),
     metadata: {
-      model,
+      model: model2,
       ...assemblePayload
     }
   };
   addAttachment(attachment);
-  return { name: fileName, base64: res.data.images[0].split(";base64,").pop(), model };
+  return { name: fileName, base64: res.data.images[0].split(";base64,").pop(), model: model2 };
 }
 async function getAllLoras() {
   let url2 = new URL(getSDApiUrl());
@@ -3300,7 +3466,7 @@ async function doImageReaction(message) {
   const embed = new discord_js.EmbedBuilder().setTitle("Imagine").setFields([
     {
       name: "Prompt",
-      value: prompt,
+      value: getDefaultPrompt() + prompt,
       inline: false
     },
     {
@@ -4316,7 +4482,7 @@ const constructImagine = {
     const embed = new discord_js.EmbedBuilder().setTitle("Imagine").setFields([
       {
         name: "Prompt",
-        value: prompt,
+        value: getDefaultPrompt() + prompt,
         inline: false
       },
       {
@@ -5341,6 +5507,8 @@ exports.win = null;
 const preload = node_path.join(__dirname, "../preload/index.js");
 const url = process.env.VITE_DEV_SERVER_URL;
 const indexHtml = node_path.join(process.env.DIST, "index.html");
+const modelsPath = node_path.join(process.env.VITE_PUBLIC, "models/");
+const wasmPath = node_path.join(process.env.VITE_PUBLIC, "wasm/");
 const dataPath = path.join(electron.app.getPath("userData"), "data/");
 const imagesPath = path.join(dataPath, "images/");
 fs.mkdirSync(dataPath, { recursive: true });
@@ -5475,5 +5643,7 @@ async function requestFullDiskAccess() {
 exports.dataPath = dataPath;
 exports.imagesPath = imagesPath;
 exports.isDarwin = isDarwin;
+exports.modelsPath = modelsPath;
 exports.store = store;
+exports.wasmPath = wasmPath;
 //# sourceMappingURL=index.js.map

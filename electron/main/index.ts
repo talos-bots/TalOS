@@ -54,6 +54,8 @@ export let win: BrowserWindow | null = null;
 const preload = join(__dirname, "../preload/index.js");
 const url = process.env.VITE_DEV_SERVER_URL;
 const indexHtml = join(process.env.DIST, "index.html");
+export const modelsPath = join(process.env.VITE_PUBLIC, "models/");
+export const wasmPath = join(process.env.VITE_PUBLIC, "wasm/");
 export const dataPath = path.join(app.getPath("userData"), "data/");
 export const imagesPath = path.join(dataPath, "images/");
 fs.mkdirSync(dataPath, { recursive: true });

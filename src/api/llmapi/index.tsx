@@ -1,5 +1,5 @@
 import { PaLMFilters } from '@/components/llm-panel/palm-panel';
-import { EndpointType, LLMConnectionInformation, Settings } from '@/types';
+import { Emotion, EndpointType, LLMConnectionInformation, Settings } from '@/types';
 import { ipcRenderer } from 'electron';
 // @ts-ignore
 import llamaTokenizer from 'llama-tokenizer-js'
@@ -134,4 +134,15 @@ export function getLlamaTokens(text: string): number{
 export function getGPTTokens(text: string): number{
 	const tokens: number = encode(text).length;
 	return tokens;
+}
+
+export function getTextEmotion(text: string): Promise<Emotion>{
+    return new Promise((resolve, reject) => {
+        const uniqueEventName = "get-text-classification-reply-" + Date.now() + "-" + Math.random();
+        ipcRenderer.send('get-text-classification', uniqueEventName, text);
+        ipcRenderer.once(uniqueEventName, (event, data) => {
+            if(data.error) reject(data.error);
+            resolve(data[0].label);
+        });
+    });
 }

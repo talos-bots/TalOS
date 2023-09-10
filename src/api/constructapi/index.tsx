@@ -124,6 +124,16 @@ export const regenerateMessageFromChatLog = (chatLog: Chat, messageContent: stri
     });
 }
 
+export const regenerateUserMessageFromChatLog = (chatLog: Chat, messageContent: string, messageID: string, authorsNote?: string | string[], authorsNoteDepth?: number): Promise<any> => {
+    return new Promise((resolve, reject) => {
+        const uniqueEventName = "regenerate-user-message-from-chat-log-reply-" + Date.now() + "-" + Math.random();
+        ipcRenderer.send('regenerate-user-message-from-chat-log', chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, uniqueEventName);
+        ipcRenderer.once(uniqueEventName, (event, response) => {
+            resolve(response);
+        });
+    });
+}
+
 export const breakUpCommands = (charName: string, commandString: string, user: any, stopList: any): Promise<any> => {
     return new Promise((resolve, reject) => {
         const uniqueEventName = "break-up-commands-reply-" + Date.now() + "-" + Math.random();

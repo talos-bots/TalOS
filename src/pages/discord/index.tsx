@@ -43,6 +43,19 @@ const DiscordPage = () => {
         isBotActive();
     }, []);
 
+    useEffect(() => {
+        if(discordCharacterMode) {
+            setDiscordMultiConstructMode(false);
+        }
+        if(discordMultiCharacterMode) {
+            setDiscordMultiConstructMode(false);
+        }
+        if(discordMultiConstructMode) {
+            setDiscordCharacterMode(false);
+            setDiscordMultiCharacterMode(false);
+        }
+    }, [discordCharacterMode, discordMultiCharacterMode, discordMultiConstructMode]);
+
     const toggleBotActive = async (e: boolean) => {
         if (e) {
             let result = await loginToDiscord(discordBotToken, discordApplicationID);
