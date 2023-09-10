@@ -1,3 +1,4 @@
+import { Emotion } from "@/types";
 import { ConstructChatConfig } from "./Construct";
 import { Message } from "./Message";
 
@@ -137,6 +138,23 @@ export class Chat{
             // If the edited message is the last message, update the lastMessage as well.
             if (this.lastMessage && this.lastMessage._id === messageID) {
                 this.lastMessage.text = newText;
+            }
+        } else {
+            console.error(`No message found with ID: ${messageID}`);
+        }
+    }
+
+    editMessageEmotion(messageID: string, newEmotion: Emotion){
+        // Find the message with the given ID.
+        const message = this.messages.find((m) => m._id === messageID);
+        
+        // If the message exists, update its emotion property.
+        if (message) {
+            message.emotion = newEmotion;
+            
+            // If the edited message is the last message, update the lastMessage as well.
+            if (this.lastMessage && this.lastMessage._id === messageID) {
+                this.lastMessage.emotion = newEmotion;
             }
         } else {
             console.error(`No message found with ID: ${messageID}`);

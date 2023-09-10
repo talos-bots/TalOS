@@ -1,4 +1,3 @@
-import { cat } from '@xenova/transformers';
 import { modelsPath, wasmPath } from '..';
 
 const task: string = 'text-classification';
@@ -37,7 +36,7 @@ const modelPromise: Promise<any> = new Promise(async (resolve, reject) => {
     }
 });
 
-// We export a function that takes a string and returns a promise that resolves to the model's prediction.
+// We export a function that takes a string and returns a promise that resolves to the model's 
 async function getClassification(text: string): Promise<any> {
     const model = await modelPromise;
     const results = await model(text);
