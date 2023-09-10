@@ -10,7 +10,7 @@ import ChatInfo from "@/pages/chat/chat-info";
 import Loading from "@/components/loading";
 import { User } from "@/classes/User";
 import { addVectorFromMessage } from "@/api/vectorapi";
-import { getTextEmotion } from "@/api/llmapi";
+import { getDoEmotions, getTextEmotion } from "@/api/llmapi";
 interface ChatLogProps {
 	chatLogID?: string;
 }
@@ -24,6 +24,7 @@ const ChatLog = (props: ChatLogProps) => {
 	const [isLoaded, setIsLoaded] = useState<boolean>(false);
 	const [numToDisplay, setNumToDisplay] = useState<number>(35);
 	const [currentUser, setCurrentUser] = useState<User | null>(null);
+	const [doEmotions, setDoEmotions] = useState<boolean>(false);
 
 	useEffect(() => {
 		if(chatLogID !== undefined) {
@@ -57,6 +58,11 @@ const ChatLog = (props: ChatLogProps) => {
 		if (messagesEndRef.current !== null) {
 		  messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
 		}
+		getDoEmotions().then((value) => {
+			setDoEmotions(value);
+		}).catch((err) => {
+			console.error(err);
+		});
 	}, [messages]);
 
 	const handleMessageSend = async (message: string) => {
@@ -66,7 +72,9 @@ const ChatLog = (props: ChatLogProps) => {
 		if(chat === null) return;
 		if(message !== "" && message !== null && message !== undefined && message !== " " && message !== "\n"){
 			let newMessage = addUserMessage(message, currentUser);
-			newMessage.emotion = await getTextEmotion(message);
+			if(doEmotions === true){
+				newMessage.emotion = await getTextEmotion(newMessage.text);
+			}
 			chat.addMessage(newMessage);
 			if(messages.includes(newMessage)){
 				console.log("message already exists");
@@ -85,6 +93,12 @@ const ChatLog = (props: ChatLogProps) => {
 			let botMessage = await sendMessage(chat, chat.constructs[i], currentUser);
 			if (botMessage !== null){
 				chat.addMessage(botMessage);
+				if(doEmotions === true){
+					botMessage.emotion = await getTextEmotion(botMessage.text);
+				}
+				if(chat?.doVector === true){
+					addVectorFromMessage(chat._id, botMessage);
+				}
 				setMessages(prevMessages => {
 					// Remove the loadingMessage
 					const updatedMessages = prevMessages.filter(msg => msg._id !== loadingMessage._id);
@@ -92,9 +106,6 @@ const ChatLog = (props: ChatLogProps) => {
 					// Add the botMessage
 					if (botMessage !== null) {
 						updatedMessages.push(botMessage);
-						if(chat?.doVector === true){
-							addVectorFromMessage(chat._id, botMessage);
-						}
 					}
 		
 					return updatedMessages;

@@ -158,7 +158,7 @@ const DiscordPage = () => {
                             </div>
                             <div className="col-span-1 flex flex-col text-left">
                                 <label className="text-theme-text font-semibold">Multiple Construct Mode</label>
-                                <div className="themed-input flex flex-col items-center w-full h-15vh overflow-y-auto">
+                                <div className="themed-input flex flex-col items-center w-full overflow-y-auto">
                                     <i className="text-sm">When enabled, the bot will operate as a Multi-Construct bot, and will attempt to maintain mutliple personas through one bot. Turning this off and on will require a bot restart.</i>
                                     <ReactSwitch
                                         disabled={discordCharacterMode || isBotActive}

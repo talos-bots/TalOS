@@ -4,6 +4,7 @@ import { defaultThemes } from "@/constants";
 import { useEffect, useState } from "react";
 import Accordian from "@/components/accordian";
 import StableDiffusionPanel from "./stable-diffuson";
+import ConstructSettingsPanel from "./constructs";
 
 const SettingsPage = () => {
     const [currentTheme, setCurrentTheme] = useState<string>("");
@@ -33,20 +34,23 @@ const SettingsPage = () => {
                             <StableDiffusionPanel />
                         </Accordian>
                     </div>
-                    <div className="col-span-1">
+                    <div className="col-span-1 flex flex-col gap-2">
                         <Accordian title="Theme">
-                        <div className="flex flex-col">
-                            <div className="grid grid-cols-2 gap-2">
-                                {Array.isArray(defaultThemes) && defaultThemes.map((theme, index) => {
-                                    return (
-                                        <button key={index} onClick={() => setTheme(theme._id)} className="themed-button-pos">
-                                            {theme.name}
-                                            {currentTheme === theme._id && <span className="text-theme-text"> (Current)</span>}
-                                        </button>
-                                    )
-                                })}
+                            <div className="flex flex-col">
+                                <div className="grid grid-cols-2 gap-2">
+                                    {Array.isArray(defaultThemes) && defaultThemes.map((theme, index) => {
+                                        return (
+                                            <button key={index} onClick={() => setTheme(theme._id)} className="themed-button-pos">
+                                                {theme.name}
+                                                {currentTheme === theme._id && <span className="text-theme-text"> (Current)</span>}
+                                            </button>
+                                        )
+                                    })}
+                                </div>
                             </div>
-                        </div>
+                        </Accordian>
+                        <Accordian title="Construct Settings">
+                            <ConstructSettingsPanel />
                         </Accordian>
                     </div>
                 </div>
