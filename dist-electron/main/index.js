@@ -1340,7 +1340,8 @@ const modelPromise = new Promise(async (resolve, reject) => {
 });
 async function getClassification(text) {
   const model2 = await modelPromise;
-  return await model2(text);
+  const results = await model2(text);
+  return results[0].label;
 }
 const HORDE_API_URL = "https://aihorde.net/api";
 const store$6 = new Store({
@@ -1380,6 +1381,7 @@ let hordeModel = store$6.get("hordeModel", "");
 let stopBrackets = store$6.get("stopBrackets", true);
 let openaiModel = store$6.get("openaiModel", "gpt-3.5-turbo-16k");
 let palmFilters = store$6.get("palmFilters", defaultPaLMFilters);
+let doEmotions = store$6.get("doEmotions", false);
 const getLLMConnectionInformation = () => {
   return { endpoint, endpointType, password, settings, hordeModel, stopBrackets };
 };
@@ -1416,6 +1418,13 @@ const setLLMModel = (newHordeModel) => {
 const setPaLMFilters = (newPaLMFilters) => {
   store$6.set("palmFilters", newPaLMFilters);
   palmFilters = newPaLMFilters;
+};
+const setDoEmotions = (newDoEmotions) => {
+  store$6.set("doEmotions", newDoEmotions);
+  doEmotions = doEmotions;
+};
+const getDoEmotions = () => {
+  return doEmotions;
 };
 async function getStatus(testEndpoint, testEndpointType) {
   let endpointUrl = testEndpoint ? testEndpoint : endpoint;
@@ -1871,6 +1880,13 @@ function LanguageModelAPI() {
     getClassification(text).then((result) => {
       event.reply(uniqueEventName, result);
     });
+  });
+  electron.ipcMain.on("set-do-emotions", (event, newDoEmotions) => {
+    setDoEmotions(newDoEmotions);
+    event.reply("set-do-emotions-reply", getDoEmotions());
+  });
+  electron.ipcMain.on("get-do-emotions", (event) => {
+    event.reply("get-do-emotions-reply", getDoEmotions());
   });
 }
 const store$5 = new Store({

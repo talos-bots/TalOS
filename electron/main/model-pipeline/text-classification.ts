@@ -37,10 +37,11 @@ const modelPromise: Promise<any> = new Promise(async (resolve, reject) => {
     }
 });
 
-// The run function is used by the `transformers:run` event handler.
+// We export a function that takes a string and returns a promise that resolves to the model's prediction.
 async function getClassification(text: string): Promise<any> {
     const model = await modelPromise;
-    return await model(text);
+    const results = await model(text);
+    return results[0].label;
 }
 
 export {

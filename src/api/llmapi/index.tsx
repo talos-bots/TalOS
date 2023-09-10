@@ -142,7 +142,21 @@ export function getTextEmotion(text: string): Promise<Emotion>{
         ipcRenderer.send('get-text-classification', uniqueEventName, text);
         ipcRenderer.once(uniqueEventName, (event, data) => {
             if(data.error) reject(data.error);
-            resolve(data[0].label);
+            resolve(data);
+        });
+    });
+}
+
+export function setDoEmotions(value: boolean){
+    ipcRenderer.send('set-do-emotions', value);
+}
+
+export function getDoEmotions(): Promise<boolean>{
+    return new Promise((resolve, reject) => {
+        ipcRenderer.send('get-do-emotions');
+        ipcRenderer.once('get-do-emotions-reply', (event, data) => {
+            if(data.error) reject(data.error);
+            resolve(data);
         });
     });
 }

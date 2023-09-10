@@ -88,6 +88,7 @@ let hordeModel = store.get('hordeModel', '');
 let stopBrackets = store.get('stopBrackets', true);
 let openaiModel = store.get('openaiModel', 'gpt-3.5-turbo-16k') as OAI_Model;
 let palmFilters = store.get('palmFilters', defaultPaLMFilters) as PaLMFilters;
+let doEmotions = store.get('doEmotions', false) as boolean;
 
 const getLLMConnectionInformation = () => {
     return { endpoint, endpointType, password, settings, hordeModel, stopBrackets };
@@ -131,6 +132,15 @@ const setPaLMFilters = (newPaLMFilters: PaLMFilters) => {
     store.set('palmFilters', newPaLMFilters);
     palmFilters = newPaLMFilters;
 };
+
+const setDoEmotions = (newDoEmotions: boolean) => {
+    store.set('doEmotions', newDoEmotions);
+    doEmotions = doEmotions;
+}
+
+const getDoEmotions = () => {
+    return doEmotions;
+}
 
 export async function getStatus(testEndpoint?: string, testEndpointType?: string){
     let endpointUrl = testEndpoint ? testEndpoint : endpoint;
@@ -617,4 +627,14 @@ export function LanguageModelAPI(){
             event.reply(uniqueEventName, result);
         });
     });
+
+    ipcMain.on('set-do-emotions', (event, newDoEmotions) => {
+        setDoEmotions(newDoEmotions);
+        event.reply('set-do-emotions-reply', getDoEmotions());
+    });
+
+    ipcMain.on('get-do-emotions', (event) => {
+        event.reply('get-do-emotions-reply', getDoEmotions());
+    });
+    
 }
