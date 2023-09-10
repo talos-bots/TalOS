@@ -78,9 +78,10 @@ export function assembleAttachmentFromData(data: any){
 	const attachment: AttachmentInferface = {
 		_id: data._id,
 		type: data.type,
-		filename: data.filename,
+		name: data.filename,
 		data: data.data,
-		size: data.size,
+		fileext : data.fileext,
+		metadata: data.metadata,
 	}
 	return attachment;
 }
@@ -120,9 +121,9 @@ export function assemblePromptFromLog(data: any, messagesToInclude: number = 25)
 	return prompt;
 }
 
-export function convertDiscordMessageToMessage(message: Message, activeConstructs: string[]){
+export async function convertDiscordMessageToMessage(message: Message, activeConstructs: string[]){
 	let attachments: AttachmentInferface[] = [];
-	let username = getUsername(message.author.id, message.channelId)
+	let username = await getUsername(message.author.id, message.channelId)
 	if(username === null){
 		username = message.author.displayName;
 	}
@@ -131,9 +132,10 @@ export function convertDiscordMessageToMessage(message: Message, activeConstruct
 			attachments.push({
 				_id: attachment.id,
 				type: attachment.contentType? attachment.contentType : 'unknown',
-				filename: attachment.name,
+				name: attachment.name,
 				data: attachment.url,
-				size: attachment.size,
+				metadata: attachment.size,
+				fileext : attachment.name,
 			});
 		});
 	}

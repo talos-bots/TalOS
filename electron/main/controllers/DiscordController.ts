@@ -131,7 +131,7 @@ export const getReplaceUser = (): boolean => {
     return store.get('replaceUser', false) as boolean;
 }
 
-export const getUsername = async (userID: string, channelID: string) => {
+export async function getUsername(userID: string, channelID: string){
     const channels = getRegisteredChannels();
     for(let i = 0; i < channels.length; i++){
         if(channels[i]._id === channelID){
@@ -143,12 +143,17 @@ export const getUsername = async (userID: string, channelID: string) => {
             }
         }
     }
-    let name = disClient.users.fetch(userID).then(user => {
-        if(user.displayName !== undefined){
-            return user.displayName;
-        }
-    });
-    return name;
+
+    try {
+        let user = await disClient.users.fetch(userID);
+        let name = user.displayName !== undefined ? user.displayName : user.username;
+        console.log(name);
+        return name;
+    } catch (error) {
+        console.error('Error fetching user:', error);
+        // handle error appropriately here, perhaps returning a default or error value
+        return 'Unknown user';
+    }
 }
 
 export const addAlias = (newAlias: Alias, channelID: string) => {
@@ -251,7 +256,7 @@ export async function handleDiscordMessage(message: Message) {
     if(!registered) return;
     const activeConstructs = retrieveConstructs();
     if(activeConstructs.length < 1) return;
-    const newMessage = convertDiscordMessageToMessage(message, activeConstructs);
+    const newMessage = await convertDiscordMessageToMessage(message, activeConstructs);
     addUserFromDiscordMessage(message);
     let constructArray = [];
     for (let i = 0; i < activeConstructs.length; i++) {
@@ -388,7 +393,7 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
         authorID = message.user.id;
     }
     let alias = await getUsername(authorID, chatLog._id);
-    if(alias !== null && alias !== undefined){
+    if(alias !== null && alias !== undefined && alias){
         username = alias;
     }
     if(message.channel === null) return;

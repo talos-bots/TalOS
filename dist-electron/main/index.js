@@ -1098,9 +1098,9 @@ function assemblePromptFromLog(data, messagesToInclude = 25) {
   }
   return prompt;
 }
-function convertDiscordMessageToMessage(message, activeConstructs) {
+async function convertDiscordMessageToMessage(message, activeConstructs) {
   let attachments = [];
-  let username = getUsername(message.author.id, message.channelId);
+  let username = await getUsername(message.author.id, message.channelId);
   if (username === null) {
     username = message.author.displayName;
   }
@@ -1109,9 +1109,10 @@ function convertDiscordMessageToMessage(message, activeConstructs) {
       attachments.push({
         _id: attachment.id,
         type: attachment.contentType ? attachment.contentType : "unknown",
-        filename: attachment.name,
+        name: attachment.name,
         data: attachment.url,
-        size: attachment.size
+        metadata: attachment.size,
+        fileext: attachment.name
       });
     });
   }
@@ -2118,6 +2119,7 @@ async function generateContinueChatLog(construct, chatLog, currentUser, messages
     prompt = promptWithWorldInfo;
   }
   prompt = prompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${construct.name}`);
+  console.log(currentUser);
   const response = await generateText(prompt, currentUser, stopList);
   if (response && response.results && response.results[0]) {
     return breakUpCommands(construct.name, response.results[0], currentUser, stopList, doMultiLine);
@@ -2796,7 +2798,7 @@ const setReplaceUser = (replace) => {
 const getReplaceUser = () => {
   return store$3.get("replaceUser", false);
 };
-const getUsername = async (userID, channelID) => {
+async function getUsername(userID, channelID) {
   var _a;
   const channels = getRegisteredChannels();
   for (let i = 0; i < channels.length; i++) {
@@ -2810,13 +2812,16 @@ const getUsername = async (userID, channelID) => {
       }
     }
   }
-  let name = disClient.users.fetch(userID).then((user) => {
-    if (user.displayName !== void 0) {
-      return user.displayName;
-    }
-  });
-  return name;
-};
+  try {
+    let user = await disClient.users.fetch(userID);
+    let name = user.displayName !== void 0 ? user.displayName : user.username;
+    console.log(name);
+    return name;
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    return "Unknown user";
+  }
+}
 const addAlias = (newAlias, channelID) => {
   const channels = getRegisteredChannels();
   for (let i = 0; i < channels.length; i++) {
@@ -2889,7 +2894,7 @@ async function handleDiscordMessage(message) {
   const activeConstructs = retrieveConstructs();
   if (activeConstructs.length < 1)
     return;
-  const newMessage = convertDiscordMessageToMessage(message, activeConstructs);
+  const newMessage = await convertDiscordMessageToMessage(message, activeConstructs);
   addUserFromDiscordMessage(message);
   let constructArray = [];
   for (let i = 0; i < activeConstructs.length; i++) {
@@ -3028,7 +3033,7 @@ async function doRoundRobin(constructArray, chatLog, message) {
     authorID = message.user.id;
   }
   let alias = await getUsername(authorID, chatLog._id);
-  if (alias !== null && alias !== void 0) {
+  if (alias !== null && alias !== void 0 && alias) {
     username = alias;
   }
   if (message.channel === null)

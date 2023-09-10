@@ -279,7 +279,6 @@ export async function generateThoughts(construct: ConstructInterface, chat: Chat
 
 export async function generateContinueChatLog(construct: any, chatLog: ChatInterface, currentUser?: string, messagesToInclude?: any, stopList?: string[], authorsNote?: string | string[], authorsNoteDepth?: number, doMultiLine?: boolean, replaceUser: boolean = true) {
     let prompt = assemblePrompt(construct, chatLog, currentUser, messagesToInclude);
-
     if ((construct.authorsNote !== undefined && construct.authorsNote !== '' && construct.authorsNote !== null) ||
     (authorsNote !== undefined && authorsNote !== '' && authorsNote !== null)) {
         if (!authorsNote) {
@@ -326,6 +325,7 @@ export async function generateContinueChatLog(construct: any, chatLog: ChatInter
         prompt = promptWithWorldInfo;
     }
         prompt = prompt.replaceAll('{{user}}', `${currentUser}`).replaceAll('{{char}}', `${construct.name}`);
+        console.log(currentUser);
     const response = await generateText(prompt, currentUser, stopList);
     if (response && response.results && response.results[0]) {
         return breakUpCommands(construct.name, response.results[0], currentUser, stopList, doMultiLine);
