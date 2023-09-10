@@ -1313,14 +1313,25 @@ const instructPromptWithGuidanceAndExamples = `
 ### Response:
 `;
 const task = "text-classification";
-const model = "distilbert-base-uncased-go-emotions-onnx";
+const model = "Cohee/distilbert-base-uncased-go-emotions-onnx";
+const getModels$1 = async () => {
+  try {
+    const { pipeline, env } = await import("@xenova/transformers");
+    env.localModelPath = modelsPath;
+    env.backends.onnx.wasm.wasmPaths = wasmPath;
+    await pipeline(task, model, { cache_dir: modelsPath, quantized: true }).then((model2) => {
+      console.log("Text Classification model loaded");
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};
 const modelPromise = new Promise(async (resolve, reject) => {
   try {
     const { pipeline, env } = await import("@xenova/transformers");
-    env.allowRemoteModels = false;
     env.localModelPath = modelsPath;
     env.backends.onnx.wasm.wasmPaths = wasmPath;
-    resolve(await pipeline(task, model));
+    resolve(await pipeline(task, model, { cache_dir: modelsPath, quantized: true }));
   } catch (err) {
     reject(err);
   }
@@ -5556,6 +5567,7 @@ async function createWindow() {
   LangChainRoutes();
   VectorDBRoutes();
   update(exports.win);
+  getModels$1();
 }
 electron.app.whenReady().then(createWindow);
 electron.app.on("window-all-closed", () => {

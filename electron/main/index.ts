@@ -15,6 +15,7 @@ import { ElectronDBRoutes } from "./api/electrondb";
 import { LangChainRoutes } from "./api/langchain";
 import { update } from "./update";
 import { VectorDBRoutes } from "./api/vector";
+import { getModels } from "./model-pipeline/text-classification";
 
 // The built directory structure
 //
@@ -105,6 +106,7 @@ async function createWindow() {
   LangChainRoutes();
   VectorDBRoutes();
   update(win)
+  getModels();
 }
 
 app.whenReady().then(createWindow);
