@@ -13,6 +13,7 @@ export const getModels = async () => {
     try{
         const { pipeline, env } = await import('@xenova/transformers');
         env.localModelPath = modelsPath;
+        env.backends.onnx.wasm.numThreads = 1;
         env.backends.onnx.wasm.wasmPaths = wasmPath;
         await pipeline(task, model, { cache_dir: modelsPath, quantized: true}).then((model) => {
             console.log("Text Classification model loaded");
@@ -28,6 +29,7 @@ const modelPromise: Promise<any> = new Promise(async (resolve, reject) => {
 
         // Only use local models
         env.localModelPath = modelsPath;
+        env.backends.onnx.wasm.numThreads = 1;
         env.backends.onnx.wasm.wasmPaths = wasmPath;
         resolve(await pipeline(task, model, { cache_dir: modelsPath, quantized: true}));
     } catch (err) {
