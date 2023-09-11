@@ -2,7 +2,6 @@ import { ipcMain } from 'electron';
 import axios from 'axios';
 import { Configuration, OpenAIApi } from 'openai';
 import Store from 'electron-store';
-import { w3cwebsocket as W3CWebSocket } from 'websocket';
 import { instructPrompt, instructPromptWithContext, instructPromptWithExamples, instructPromptWithGuidance, instructPromptWithGuidanceAndContext, instructPromptWithGuidanceAndContextAndExamples, instructPromptWithGuidanceAndExamples } from '../types/prompts';
 import { getCaption, getClassification } from '../model-pipeline/transformers';
 
