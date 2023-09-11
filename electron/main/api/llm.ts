@@ -372,9 +372,9 @@ export const generateText = async (
                 while (true) {
                     await new Promise(resolve => setTimeout(resolve, 5000));
                     const statusCheck = await axios.get(`${HORDE_API_URL}/v2/generate/text/status/${taskId}`, {
-                        headers: { 'Content-Type': 'application/json', 'apikey': hordeKey }
+                        headers: { 'Content-Type': 'application/json', 'apikey': hordeKey.trim() }
                     });
-                    console.log('Horde Key: ', hordeKey)
+                    console.log('Horde Key: ', hordeKey.trim())
                     console.log(statusCheck.data)
                     let done = false;
                     if (statusCheck.data.done === true) {
