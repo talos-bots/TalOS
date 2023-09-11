@@ -108,13 +108,24 @@ export function assemblePromptFromLog(data: any, messagesToInclude: number = 25)
 	messages = messages.slice(-messagesToInclude);
 	for(let i = 0; i < messages.length; i++){
 		if(messages[i].isCommand === true){
-			prompt += `${messages[i].text.trim()}` + '\n';
+			prompt += `${messages[i].text.trim()}\n`;
 			continue;
 		}else{
 			if(messages[i].isThought === true){
                 prompt += `${messages[i].user}'s Thoughts: ${messages[i].text.trim()}\n`;
             }else{
-                prompt += `${messages[i].user}: ${messages[i].text.trim()}\n`;
+				let captionText = '';
+				if(messages[i].attachments.length > 0){
+					for(let j = 0; j < messages[i].attachments.length; j++) {
+						let attachmentCaption = messages[i].attachments[j]?.metadata?.caption;
+						if(attachmentCaption){
+							captionText += `[${messages[i].user} sent an image of ${attachmentCaption}] `;
+						}else{
+							captionText += `[${messages[i].user} sent a file called ${messages[i].attachments[j]?.name}] `;
+						}
+					}
+				}
+                prompt += `${messages[i].user}: ${messages[i].text.trim()} ${captionText}\n`;
             }
 		}
 	}

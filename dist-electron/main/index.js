@@ -33,6 +33,7 @@ const LeveldbAdapter = require("pouchdb-adapter-leveldb");
 const fs = require("fs");
 const axios = require("axios");
 const openai = require("openai");
+const promises = require("fs/promises");
 const FormData = require("form-data");
 const vectra = require("vectra");
 const use = require("@tensorflow-models/universal-sentence-encoder");
@@ -1100,6 +1101,7 @@ function assembleUserFromData(data) {
   return user;
 }
 function assemblePromptFromLog(data, messagesToInclude = 25) {
+  var _a, _b, _c;
   let prompt = "";
   let messages = data.messages;
   messages = messages.slice(-messagesToInclude);
@@ -1113,7 +1115,18 @@ function assemblePromptFromLog(data, messagesToInclude = 25) {
         prompt += `${messages[i].user}'s Thoughts: ${messages[i].text.trim()}
 `;
       } else {
-        prompt += `${messages[i].user}: ${messages[i].text.trim()}
+        let captionText = "";
+        if (messages[i].attachments.length > 0) {
+          for (let j = 0; j < messages[i].attachments.length; j++) {
+            let attachmentCaption = (_b = (_a = messages[i].attachments[j]) == null ? void 0 : _a.metadata) == null ? void 0 : _b.caption;
+            if (attachmentCaption) {
+              captionText += `[${messages[i].user} sent an image of ${attachmentCaption}] `;
+            } else {
+              captionText += `[${messages[i].user} sent a file called ${(_c = messages[i].attachments[j]) == null ? void 0 : _c.name}] `;
+            }
+          }
+        }
+        prompt += `${messages[i].user}: ${messages[i].text.trim()} ${captionText}
 `;
       }
     }
@@ -1323,6 +1336,9 @@ const getModels$1 = async () => {
     await pipeline(task, model, { cache_dir: modelsPath, quantized: true }).then((model2) => {
       console.log("Text Classification model loaded");
     });
+    await pipeline("image-to-text", "rocca/openai-clip-js", { cache_dir: modelsPath, quantized: true }).then((model2) => {
+      console.log("Image Captioning model loaded");
+    });
   } catch (err) {
     console.log(err);
   }
@@ -1331,10 +1347,21 @@ const modelPromise = new Promise(async (resolve, reject) => {
   try {
     const { pipeline, env } = await import("@xenova/transformers");
     env.localModelPath = modelsPath;
-    env.backends.onnx.wasm.numThreads = 1;
     env.backends.onnx.wasm.wasmPaths = wasmPath;
     resolve(await pipeline(task, model, { cache_dir: modelsPath, quantized: true }));
   } catch (err) {
+    reject(err);
+  }
+});
+const captionPromise = new Promise(async (resolve, reject) => {
+  try {
+    const { pipeline, env } = await import("@xenova/transformers");
+    env.localModelPath = modelsPath;
+    env.backends.onnx.wasm.wasmPaths = wasmPath;
+    console.log("Loading caption model");
+    resolve(await pipeline("image-to-text", "rocca/openai-clip-js", { cache_dir: modelsPath, quantized: true }));
+  } catch (err) {
+    console.log(err);
     reject(err);
   }
 });
@@ -1342,6 +1369,20 @@ async function getClassification(text) {
   const model2 = await modelPromise;
   const results = await model2(text);
   return results[0].label;
+}
+async function getCaption(image) {
+  var _a;
+  console.log("Getting caption for image");
+  const buffer = Buffer.from(image, "base64");
+  const randomName = Math.random().toString(36).substring(7);
+  await promises.writeFile(path.join(imagesPath, `temp-image-${randomName}.png`), buffer);
+  const model2 = await captionPromise;
+  const results = await model2(path.join(imagesPath, `temp-image-${randomName}.png`)).catch((err) => {
+    console.log("Caption error", err);
+  });
+  await promises.unlink(path.join(imagesPath, `temp-image-${randomName}.png`));
+  console.log("Caption results", results);
+  return (_a = results[0]) == null ? void 0 : _a.generated_text;
 }
 const HORDE_API_URL = "https://aihorde.net/api";
 const store$6 = new Store({
@@ -1382,6 +1423,7 @@ let stopBrackets = store$6.get("stopBrackets", true);
 let openaiModel = store$6.get("openaiModel", "gpt-3.5-turbo-16k");
 let palmFilters = store$6.get("palmFilters", defaultPaLMFilters);
 let doEmotions = store$6.get("doEmotions", false);
+let doCaption = store$6.get("doCaption", false);
 const getLLMConnectionInformation = () => {
   return { endpoint, endpointType, password, settings, hordeModel, stopBrackets };
 };
@@ -1425,6 +1467,13 @@ const setDoEmotions = (newDoEmotions) => {
 };
 const getDoEmotions = () => {
   return doEmotions;
+};
+const setDoCaption = (newDoCaption) => {
+  store$6.set("doCaption", newDoCaption);
+  doCaption = newDoCaption;
+};
+const getDoCaption = () => {
+  return doCaption;
 };
 async function getStatus(testEndpoint, testEndpointType) {
   let endpointUrl = testEndpoint ? testEndpoint : endpoint;
@@ -1881,12 +1930,25 @@ function LanguageModelAPI() {
       event.reply(uniqueEventName, result);
     });
   });
+  electron.ipcMain.on("get-image-to-text", (event, uniqueEventName, base64) => {
+    console.log("get-image-to-text");
+    getCaption(base64).then((result) => {
+      event.reply(uniqueEventName, result);
+    });
+  });
   electron.ipcMain.on("set-do-emotions", (event, newDoEmotions) => {
     setDoEmotions(newDoEmotions);
     event.reply("set-do-emotions-reply", getDoEmotions());
   });
   electron.ipcMain.on("get-do-emotions", (event) => {
     event.reply("get-do-emotions-reply", getDoEmotions());
+  });
+  electron.ipcMain.on("set-do-caption", (event, newDoCaption) => {
+    setDoCaption(newDoCaption);
+    event.reply("set-do-caption-reply", getDoCaption());
+  });
+  electron.ipcMain.on("get-do-caption", (event) => {
+    event.reply("get-do-caption-reply", getDoCaption());
   });
 }
 const store$5 = new Store({

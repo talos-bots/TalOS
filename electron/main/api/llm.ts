@@ -4,7 +4,7 @@ import { Configuration, OpenAIApi } from 'openai';
 import Store from 'electron-store';
 import { w3cwebsocket as W3CWebSocket } from 'websocket';
 import { instructPrompt, instructPromptWithContext, instructPromptWithExamples, instructPromptWithGuidance, instructPromptWithGuidanceAndContext, instructPromptWithGuidanceAndContextAndExamples, instructPromptWithGuidanceAndExamples } from '../types/prompts';
-import { getClassification } from '../model-pipeline/text-classification';
+import { getCaption, getClassification } from '../model-pipeline/transformers';
 
 const HORDE_API_URL = 'https://aihorde.net/api';
 
@@ -89,6 +89,7 @@ let stopBrackets = store.get('stopBrackets', true);
 let openaiModel = store.get('openaiModel', 'gpt-3.5-turbo-16k') as OAI_Model;
 let palmFilters = store.get('palmFilters', defaultPaLMFilters) as PaLMFilters;
 let doEmotions = store.get('doEmotions', false) as boolean;
+let doCaption = store.get('doCaption', false) as boolean;
 
 const getLLMConnectionInformation = () => {
     return { endpoint, endpointType, password, settings, hordeModel, stopBrackets };
@@ -138,8 +139,17 @@ const setDoEmotions = (newDoEmotions: boolean) => {
     doEmotions = doEmotions;
 }
 
-const getDoEmotions = () => {
+export const getDoEmotions = () => {
     return doEmotions;
+}
+
+const setDoCaption = (newDoCaption: boolean) => {
+    store.set('doCaption', newDoCaption);
+    doCaption = newDoCaption;
+}
+
+export const getDoCaption = () => {
+    return doCaption;
 }
 
 export async function getStatus(testEndpoint?: string, testEndpointType?: string){
@@ -628,6 +638,13 @@ export function LanguageModelAPI(){
         });
     });
 
+    ipcMain.on('get-image-to-text', (event, uniqueEventName, base64) => {
+        console.log('get-image-to-text');
+        getCaption(base64).then((result) => {
+            event.reply(uniqueEventName, result);
+        });
+    });
+
     ipcMain.on('set-do-emotions', (event, newDoEmotions) => {
         setDoEmotions(newDoEmotions);
         event.reply('set-do-emotions-reply', getDoEmotions());
@@ -637,4 +654,12 @@ export function LanguageModelAPI(){
         event.reply('get-do-emotions-reply', getDoEmotions());
     });
     
+    ipcMain.on('set-do-caption', (event, newDoCaption) => {
+        setDoCaption(newDoCaption);
+        event.reply('set-do-caption-reply', getDoCaption());
+    });
+
+    ipcMain.on('get-do-caption', (event) => {
+        event.reply('get-do-caption-reply', getDoCaption());
+    });
 }

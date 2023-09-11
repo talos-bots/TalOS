@@ -1,7 +1,7 @@
 import { getConstruct } from "@/api/dbapi";
 import { Attachment } from "@/classes/Attachment";
 import { Message } from "@/classes/Message";
-import { EditIcon, RefreshCw, Split, TrashIcon } from "lucide-react";
+import { EditIcon, File, RefreshCw, Split, TrashIcon } from "lucide-react";
 import { KeyboardEvent, useEffect, useRef, useState } from "react";
 import { RiQuestionMark } from "react-icons/ri";
 import ReactMarkdown from 'react-markdown';
@@ -201,9 +201,31 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate, onSplit, on
                     </div>)}
                     <div className="flex flex-row gap-2">
                         {attachments.map((attachment, index) => {
-                            return (
-                                <div key={index} className="w-16 h-16 rounded-md bg-gray-300"></div>
-                            );
+                            let newData = attachment.data;
+                            if(attachment.type === "image/png") {
+                                newData = "data:image/png;base64," + newData;
+                            } else if(attachment.type === "image/jpeg") {
+                                newData = "data:image/jpeg;base64," + newData;
+                            } else if(attachment.type === "image/gif") {
+                                newData = "data:image/gif;base64," + newData;
+                            } else if(attachment.type === "image/webp") {
+                                newData = "data:image/webp;base64," + newData;
+                            }else{
+                                newData = `data:${attachment.type};base64,` + newData;
+                            }
+                            if(attachment.type === "image/png" || attachment.type === "image/jpeg" || attachment.type === "image/gif" || attachment.type === "image/webp"){
+                                return (
+                                    <div key={index}>
+                                        <img className="w-1/2 object-cover rounded-md"src={newData} alt={attachment?.metadata?.caption ? attachment?.metadata?.caption : 'A Photo'} title={attachment?.metadata?.caption ? attachment?.metadata?.caption : 'A Photo'}/>
+                                    </div>
+                                )
+                            }else{
+                                return (
+                                    <div key={index}>
+                                        <a href={newData} download={attachment.name}><File size={46} />{attachment.name}</a>
+                                    </div>
+                                )
+                            }
                         })}
                     </div>
                 </div>

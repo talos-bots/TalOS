@@ -1,11 +1,9 @@
 import { generateContinueChatLog, regenerateMessageFromChatLog, regenerateUserMessageFromChatLog } from "@/api/constructapi";
-import { getConstruct, getUser, updateChat } from "@/api/dbapi";
-import { getTextEmotion } from "@/api/llmapi";
-import { getRelaventMemories } from "@/api/vectorapi";
+import { getConstruct } from "@/api/dbapi";
+import { Attachment } from "@/classes/Attachment";
 import { Chat } from "@/classes/Chat";
 import { Message } from "@/classes/Message";
 import { User } from "@/classes/User";
-import { Emotion } from "@/types";
 
 export async function getLoadingMessage(constructID: string){
     let activeConstruct = await getConstruct(constructID);
@@ -22,7 +20,7 @@ export async function getLoadingMessage(constructID: string){
     return newMessage;
 }
 
-export function addUserMessage(messageText: string, user: User | null) {
+export function addUserMessage(messageText: string, user: User | null, attachments?: Attachment[]) {
     let newMessage = new Message();
     newMessage.origin = 'ConstructOS';
     newMessage.text = messageText.replace(/^\s+|\s+$/g, '');
@@ -36,6 +34,7 @@ export function addUserMessage(messageText: string, user: User | null) {
     newMessage.userID = user?._id || 'DefaultUser';
     newMessage.emotion = 'neutral';
     newMessage.isThought = false;
+    newMessage.attachments = attachments || [];
     return newMessage;
 }
 
@@ -43,8 +42,6 @@ export async function sendMessage(chatlog: Chat, constructID: string, user: User
     let activeConstruct = await getConstruct(constructID);
     if (!chatlog.constructs || chatlog.constructs.length === 0) return null;
     let response = await generateContinueChatLog(activeConstruct, chatlog, user ? (user.nickname || user.name) : 'DefaultUser');
-    let emotion = await getTextEmotion(response);
-    console.log(emotion);
     if (!response) return null;
     let newMessage = new Message();
     newMessage.origin = 'ConstructOS';
@@ -56,7 +53,7 @@ export async function sendMessage(chatlog: Chat, constructID: string, user: User
     newMessage.isHuman = false;
     newMessage.participants = [user?._id || 'DefaultUser', constructID];
     newMessage.userID = constructID;
-    newMessage.emotion = emotion;
+    newMessage.emotion = 'neutral';
     newMessage.isThought = false;
     return newMessage;
 }

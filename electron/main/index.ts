@@ -15,7 +15,7 @@ import { ElectronDBRoutes } from "./api/electrondb";
 import { LangChainRoutes } from "./api/langchain";
 import { update } from "./update";
 import { VectorDBRoutes } from "./api/vector";
-import { getModels } from "./model-pipeline/text-classification";
+import { getModels } from "./model-pipeline/transformers";
 
 // The built directory structure
 //

@@ -1,9 +1,10 @@
-import { getDoEmotions, setDoEmotions } from "@/api/llmapi";
+import { getDoCaptioning, getDoEmotions, setDoCaptioning, setDoEmotions } from "@/api/llmapi";
 import { useEffect, useState } from "react";
 import ReactSwitch from "react-switch";
 
 const ConstructSettingsPanel = () => {
     const [doEmotionClassification, setDoEmotionClassification] = useState(false);
+    const [doImageCaptioning, setDoImageCaptioning] = useState(false);
 
     useEffect(() => {
         fetchConstructSettings();
@@ -15,10 +16,16 @@ const ConstructSettingsPanel = () => {
         }).catch((err) => {
             console.error(err);
         });
+        getDoCaptioning().then((value) => {
+            setDoImageCaptioning(value);
+        }).catch((err) => {
+            console.error(err);
+        });
     };
     
     const saveConstructSettings = () => {
         setDoEmotions(doEmotionClassification)
+        setDoCaptioning(doImageCaptioning)
     };
 
     return (
@@ -35,6 +42,21 @@ const ConstructSettingsPanel = () => {
                         uncheckedIcon={false}
                         checkedIcon={true}
                         id="doEmotionClassification"
+                    />
+                </div>
+            </div>
+            <div className="col-span-1 flex flex-col text-left">
+                <label className="text-theme-text font-semibold">Image Captioning</label>
+                <div className="themed-input flex flex-col items-center w-full overflow-y-auto">
+                    <i className="text-sm">When enabled images will be captioned and descriptions will be shown to the LLM.<br/><b>Warning: This uses a small, but noticable amount of GPU/CPU and if you're not on a machine fast enough, this will slow down your chatting experience.</b></i>
+                    <ReactSwitch
+                        checked={doImageCaptioning}
+                        onChange={() => setDoImageCaptioning(!doImageCaptioning)}
+                        handleDiameter={30}
+                        width={60}
+                        uncheckedIcon={false}
+                        checkedIcon={true}
+                        id="doImageCaptioning"
                     />
                 </div>
             </div>

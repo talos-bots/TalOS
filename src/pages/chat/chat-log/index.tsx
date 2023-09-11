@@ -10,7 +10,8 @@ import ChatInfo from "@/pages/chat/chat-info";
 import Loading from "@/components/loading";
 import { User } from "@/classes/User";
 import { addVectorFromMessage } from "@/api/vectorapi";
-import { getDoEmotions, getTextEmotion } from "@/api/llmapi";
+import { getDoCaptioning, getDoEmotions, getImageCaption, getTextEmotion } from "@/api/llmapi";
+import { Attachment } from "@/classes/Attachment";
 interface ChatLogProps {
 	chatLogID?: string;
 }
@@ -25,6 +26,7 @@ const ChatLog = (props: ChatLogProps) => {
 	const [numToDisplay, setNumToDisplay] = useState<number>(35);
 	const [currentUser, setCurrentUser] = useState<User | null>(null);
 	const [doEmotions, setDoEmotions] = useState<boolean>(false);
+	const [doCaptioning, setDoCaptioning] = useState<boolean>(false);
 
 	useEffect(() => {
 		if(chatLogID !== undefined) {
@@ -63,17 +65,64 @@ const ChatLog = (props: ChatLogProps) => {
 		}).catch((err) => {
 			console.error(err);
 		});
+		getDoCaptioning().then((value) => {
+			setDoCaptioning(value);
+		}).catch((err) => {
+			console.error(err);
+		});
 	}, [messages]);
 
-	const handleMessageSend = async (message: string) => {
+	const handleMessageSend = async (message: string, attachments?: File[]) => {
 		if(hasSentMessage === true) return;
 		setHasSentMessage(true);
 		let chat: Chat | null = chatLog;
 		if(chat === null) return;
-		if(message !== "" && message !== null && message !== undefined && message !== " " && message !== "\n"){
+		let newAttachments: Attachment[] = [];
+		if (attachments !== undefined && attachments.length) {
+			const uploadedAttachments: Attachment[] = [];
+			attachments.forEach((file, index) => {
+				const reader = new FileReader();
+				reader.onload = () => {
+					const base64Data = reader.result?.toString().split(',')[1];
+					let attachment = new Attachment();
+					attachment.data = base64Data || '';
+					attachment.fileext = file.name.split('.').pop() || '';
+					attachment.name = file.name;
+					attachment.type = file.type;
+					uploadedAttachments.push(attachment);
+				};
+				reader.readAsDataURL(file);
+			});
+			newAttachments = uploadedAttachments;
+		}
+		if((message !== "" && message !== null && message !== undefined && message !== " " && message !== "\n") || newAttachments !== undefined && newAttachments.length > 0){
 			let newMessage = addUserMessage(message, currentUser);
 			if(doEmotions === true){
 				newMessage.emotion = await getTextEmotion(newMessage.text);
+			}
+			console.log(newAttachments);
+			if(newAttachments !== undefined && newAttachments.length > 0){
+				console.log(newAttachments);
+				for(let i = 0; i < newAttachments.length; i++){
+					if(newAttachments[i] !== undefined && newAttachments[i] !== null){
+						console.log(newAttachments[i]);
+						if(newAttachments[i].type.includes("image")){
+							console.log("image detected");
+							if(doCaptioning === true){
+								console.log("captioning image");
+								let caption = await getImageCaption(newAttachments[i].data);
+								console.log(caption);
+								if(caption !== null){
+									newAttachments[i].metadata = {
+										caption: caption,
+										userID: currentUser?._id
+									};
+								};
+							}
+						}
+					}
+					newMessage.attachments.push(newAttachments[i]);
+				}
 			}
 			chat.addMessage(newMessage);
 			if(messages.includes(newMessage)){

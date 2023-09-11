@@ -147,6 +147,18 @@ export function getTextEmotion(text: string): Promise<Emotion>{
     });
 }
 
+export function getImageCaption(image: string): Promise<string>{
+    return new Promise((resolve, reject) => {
+        console.log("getting image caption");
+        const uniqueEventName = "get-image-to-text-reply-" + Date.now() + "-" + Math.random();
+        ipcRenderer.send('get-image-to-text', uniqueEventName, image);
+        ipcRenderer.once(uniqueEventName, (event, data) => {
+            if(data.error) reject(data.error);
+            resolve(data);
+        });
+    });
+}
+
 export function setDoEmotions(value: boolean){
     ipcRenderer.send('set-do-emotions', value);
 }
@@ -155,6 +167,20 @@ export function getDoEmotions(): Promise<boolean>{
     return new Promise((resolve, reject) => {
         ipcRenderer.send('get-do-emotions');
         ipcRenderer.once('get-do-emotions-reply', (event, data) => {
+            if(data.error) reject(data.error);
+            resolve(data);
+        });
+    });
+}
+
+export function setDoCaptioning(value: boolean){
+    ipcRenderer.send('set-do-caption', value);
+}
+
+export function getDoCaptioning(): Promise<boolean>{
+    return new Promise((resolve, reject) => {
+        ipcRenderer.send('get-do-caption');
+        ipcRenderer.once('get-do-caption-reply', (event, data) => {
             if(data.error) reject(data.error);
             resolve(data);
         });
