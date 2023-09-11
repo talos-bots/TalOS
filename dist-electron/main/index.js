@@ -3147,9 +3147,8 @@ const isChannelRegistered = (channel) => {
   return false;
 };
 async function handleDiscordMessage(message) {
+  var _a, _b;
   if (message.author.bot)
-    return;
-  if (message.channel.isDMBased())
     return;
   if (message.content.startsWith("."))
     return;
@@ -3161,7 +3160,7 @@ async function handleDiscordMessage(message) {
       break;
     }
   }
-  if (!registered)
+  if (!registered && !message.channel.isDMBased())
     return;
   const activeConstructs = retrieveConstructs();
   if (activeConstructs.length < 1)
@@ -3194,7 +3193,7 @@ async function handleDiscordMessage(message) {
   } else {
     chatLog = {
       _id: message.channel.id,
-      name: 'Discord "' + message.channel.name + '" Chat',
+      name: 'Discord "' + (((_a = message == null ? void 0 : message.channel) == null ? void 0 : _a.isDMBased()) ? `DM ${message.author.displayName}` : `${(_b = message == null ? void 0 : message.channel) == null ? void 0 : _b.id}`) + `" Chat`,
       type: "Discord",
       messages: [newMessage],
       lastMessage: newMessage,
@@ -3227,7 +3226,7 @@ async function handleDiscordMessage(message) {
   }
   const mode = getDiscordMode();
   if (mode === "Character") {
-    if (isMultiCharacterMode()) {
+    if (isMultiCharacterMode() && !message.channel.isDMBased()) {
       chatLog = await doRoundRobin(constructArray, chatLog, message);
       if (chatLog !== void 0) {
         if (doAutoReply) {

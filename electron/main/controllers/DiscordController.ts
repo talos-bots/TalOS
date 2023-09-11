@@ -243,7 +243,6 @@ export const isChannelRegistered = (channel: string): boolean => {
 
 export async function handleDiscordMessage(message: Message) {
     if(message.author.bot) return;
-    if(message.channel.isDMBased()) return;
     if(message.content.startsWith('.')) return;
     let registeredChannels = getRegisteredChannels();
     let registered = false;
@@ -253,7 +252,7 @@ export async function handleDiscordMessage(message: Message) {
             break;
         }
     }
-    if(!registered) return;
+    if(!registered && !message.channel.isDMBased()) return;
     const activeConstructs = retrieveConstructs();
     if(activeConstructs.length < 1) return;
     const newMessage = await convertDiscordMessageToMessage(message, activeConstructs);
@@ -282,7 +281,7 @@ export async function handleDiscordMessage(message: Message) {
     }else{
         chatLog = {
             _id: message.channel.id,
-            name: 'Discord "' + message.channel.name + '" Chat',
+            name: 'Discord "' + (message?.channel?.isDMBased()? `DM ${message.author.displayName}` : `${message?.channel?.id}`) + `" Chat`,
             type: 'Discord',
             messages: [newMessage],
             lastMessage: newMessage,
@@ -315,7 +314,7 @@ export async function handleDiscordMessage(message: Message) {
     }
     const mode = getDiscordMode();
     if(mode === 'Character'){
-        if(isMultiCharacterMode()){
+        if(isMultiCharacterMode() && !message.channel.isDMBased()){
             chatLog = await doRoundRobin(constructArray, chatLog, message);
             if(chatLog !== undefined)
             if(doAutoReply){
