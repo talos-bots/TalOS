@@ -140,21 +140,32 @@ export async function convertDiscordMessageToMessage(message: Message, activeCon
 		username = message.author.displayName;
 	}
 	if(message.attachments.size > 0){
-		message.attachments.forEach(async attachment => {
-			if(attachment.contentType?.includes('image')){
-				let caption = await getCaption(attachment.url);
-				console.log('Caption:', caption);
+		for (const attachment of message.attachments.values()) {
+			try {
+				let response = await axios.get(attachment.url, { responseType: 'arraybuffer' });
+				let base64Data = Buffer.from(response.data, 'binary').toString('base64');
+				
+				let newAttachment: AttachmentInferface = {
+					_id: attachment.id,
+					type: attachment.contentType ? attachment.contentType : 'unknown',
+					name: attachment.name,
+					data: base64Data.split(';base64,').pop() || '',
+					metadata: attachment.size,
+					fileext: attachment.name.split('.').pop() || 'unknown',
+				}
+				
+				if (attachment.contentType?.includes('image')) {
+					let caption = await getCaption(newAttachment.data);
+					newAttachment.metadata = {
+						caption: caption,
+						size: attachment.size,
+					}
+				}
+				attachments.push(newAttachment);
+			} catch (error) {
+				console.error('Error fetching attachment:', error);
 			}
-			let newAttachment: AttachmentInferface = {
-				_id: attachment.id,
-				type: attachment.contentType? attachment.contentType : 'unknown',
-				name: attachment.name,
-				data: attachment.url,
-				metadata: attachment.size,
-				fileext : attachment.name.split('.').pop() || 'unknown',
-			}
-			attachments.push(newAttachment);
-		});
+		}
 	}
 	const convertedMessage: MessageInterface = {
 		_id: message.id,

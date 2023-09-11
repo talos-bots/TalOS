@@ -1193,28 +1193,37 @@ function assemblePromptFromLog(data, messagesToInclude = 25) {
   return prompt;
 }
 async function convertDiscordMessageToMessage(message, activeConstructs) {
+  var _a;
   let attachments = [];
   let username = await getUsername(message.author.id, message.channelId);
   if (username === null) {
     username = message.author.displayName;
   }
   if (message.attachments.size > 0) {
-    message.attachments.forEach(async (attachment) => {
-      var _a;
-      if ((_a = attachment.contentType) == null ? void 0 : _a.includes("image")) {
-        let caption = await getCaption(attachment.url);
-        console.log("Caption:", caption);
+    for (const attachment of message.attachments.values()) {
+      try {
+        let response = await axios.get(attachment.url, { responseType: "arraybuffer" });
+        let base64Data = Buffer.from(response.data, "binary").toString("base64");
+        let newAttachment = {
+          _id: attachment.id,
+          type: attachment.contentType ? attachment.contentType : "unknown",
+          name: attachment.name,
+          data: base64Data.split(";base64,").pop() || "",
+          metadata: attachment.size,
+          fileext: attachment.name.split(".").pop() || "unknown"
+        };
+        if ((_a = attachment.contentType) == null ? void 0 : _a.includes("image")) {
+          let caption = await getCaption(newAttachment.data);
+          newAttachment.metadata = {
+            caption,
+            size: attachment.size
+          };
+        }
+        attachments.push(newAttachment);
+      } catch (error) {
+        console.error("Error fetching attachment:", error);
       }
-      let newAttachment = {
-        _id: attachment.id,
-        type: attachment.contentType ? attachment.contentType : "unknown",
-        name: attachment.name,
-        data: attachment.url,
-        metadata: attachment.size,
-        fileext: attachment.name.split(".").pop() || "unknown"
-      };
-      attachments.push(newAttachment);
-    });
+    }
   }
   const convertedMessage = {
     _id: message.id,
