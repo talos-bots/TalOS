@@ -1490,6 +1490,7 @@ const getDoCaption = () => {
   return doCaption;
 };
 async function getStatus(testEndpoint, testEndpointType) {
+  var _a, _b, _c;
   let endpointUrl = testEndpoint ? testEndpoint : endpoint;
   let endpointStatusType = testEndpointType ? testEndpointType : endpointType;
   let endpointURLObject;
@@ -1535,6 +1536,18 @@ async function getStatus(testEndpoint, testEndpointType) {
       case "P-Claude":
         return "P-Claude statusis not yet supported.";
       case "PaLM":
+        try {
+          const models = await axios.get(`https://generativelanguage.googleapis.com/v1beta2/models?key=${endpointUrl}`).then((response2) => {
+            return response2;
+          }).catch((error) => {
+            console.log(error);
+          });
+          if ((_c = (_b = (_a = models == null ? void 0 : models.data) == null ? void 0 : _a.models) == null ? void 0 : _b[0]) == null ? void 0 : _c.name) {
+            return "PaLM endpoint is steady. Key is valid.";
+          }
+        } catch (error) {
+          return "PaLM endpoint is not responding.";
+        }
         return "PaLM status is not yet supported.";
       default:
         return "Invalid endpoint type.";
