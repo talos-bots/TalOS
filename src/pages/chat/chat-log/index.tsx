@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import InputGroup from "@/pages/chat/chat-input";
 import { Chat } from "@/classes/Chat";
 import { Message } from "@/classes/Message";
-import { getChat, getUser, saveNewChat, updateChat } from "@/api/dbapi";
+import { getChat, getConstruct, getStorageValue, getUser, saveNewChat, updateChat } from "@/api/dbapi";
 import MessageComponent from "@/pages/chat/chat-log/message";
 import { addUserMessage, doSlashCommand, getLoadingMessage, regenerateMessage, regenerateUserMessage, sendMessage, wait } from "../helpers";
 import { Alert } from "@material-tailwind/react";
@@ -27,7 +27,9 @@ const ChatLog = (props: ChatLogProps) => {
 	const [currentUser, setCurrentUser] = useState<User | null>(null);
 	const [doEmotions, setDoEmotions] = useState<boolean>(false);
 	const [doCaptioning, setDoCaptioning] = useState<boolean>(false);
-
+	const [doGreetings, setDoGreetings] = useState<boolean>(false);
+	const [characterMode, setCharacterMode] = useState<boolean>(false);
+	
 	useEffect(() => {
 		if(chatLogID !== undefined) {
 			const getChatLog = async () => {
@@ -70,7 +72,52 @@ const ChatLog = (props: ChatLogProps) => {
 		}).catch((err) => {
 			console.error(err);
 		});
+		getStorageValue('doGreetings').then((value) => {
+            setDoGreetings(JSON.parse(value));
+        }).catch((err) => {
+            console.error(err);
+        });
+        getStorageValue('characterMode').then((value) => {
+            setCharacterMode(JSON.parse(value));
+        }).catch((err) => {
+            console.error(err);
+        });
 	}, [messages]);
+
+	useEffect(() => {
+		if(chatLog !== null){
+			addGreetings(chatLog);
+		}
+	}, [chatLog]);
+
+	const addGreetings = async (chat: Chat) => {
+		if(chat === null) return;
+		if(messages.length < 1){
+			if(chatLog !== null && chatLog !== undefined){
+				if(doGreetings){
+					const construct = await getConstruct(chatLog.constructs[0])
+					let randomGreeting = construct?.greetings[Math.floor(Math.random() * construct?.greetings.length)];
+					let newMessage = new Message();
+					newMessage.text = randomGreeting;
+					newMessage.avatar = construct?.avatar;
+					newMessage.user = construct?.name;
+					newMessage.origin = 'ConstructOS';
+					newMessage.timestamp = new Date().getTime();
+					newMessage.isCommand = false;
+					newMessage.isPrivate = true;
+					newMessage.isHuman = false;
+					newMessage.participants = [currentUser?._id || 'DefaultUser', construct?._id];
+					newMessage.userID = construct?._id;
+					newMessage.emotion = 'neutral';
+					newMessage.isThought = false;
+					setMessages(prevMessages => [...prevMessages, newMessage]);
+					chat.addMessage(newMessage);
+					await updateChat(chat);
+					setChatLog(chat);
+				}
+			}
+		}
+	}
 
 	const readFileAsDataURL = (file: File): Promise<string> => {
 		return new Promise((resolve, reject) => {
@@ -108,7 +155,6 @@ const ChatLog = (props: ChatLogProps) => {
 					uploadedAttachments.push(attachment);
 				} catch (error) {
 					console.error("File reading error", error);
-					// Handle file reading error appropriately
 				}
 			}
 			newAttachments = uploadedAttachments;

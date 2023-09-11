@@ -10,6 +10,7 @@ import { PlusIcon } from "lucide-react";
 import { AiOutlineUpload } from "react-icons/ai";
 import { getActiveConstructList } from "@/api/constructapi";
 import { removeAllMemories } from "@/api/vectorapi";
+import ChatSettings from "../chat-settings";
 interface ChatSelectorProps {
     onClick?: (chatID: Chat) => void;
 }
@@ -184,13 +185,7 @@ const ChatSelector = (props: ChatSelectorProps) => {
                 <div className="col-span-2 grid grid-rows-2 gap-2 mb-4 h-60vh">
                     <div className="row-span-1 themed-root flex flex-col">
                         <h3 className="font-semibold">Chatting Settings</h3>
-                        <div className="grid grid-cols-2 w-full">
-                            <div className="flex flex-col col-span-1 w-full h-full">
-                            </div>
-                            <div className="flex flex-col col-span-1 w-full h-full">
-
-                            </div>
-                        </div>
+                        <ChatSettings/>
                     </div>
                     <div className="row-span-1 themed-root flex flex-col">
                         <h3 className="font-semibold">Selected Chat Details</h3>
