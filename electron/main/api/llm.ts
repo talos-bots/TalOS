@@ -507,6 +507,7 @@ export const generateText = async (
                 });
                 
                 if (!googleReply.data) {
+                    console.log(googleReply)
                     throw new Error('No valid response from LLM.');
                 }
         

@@ -1841,6 +1841,7 @@ Assistant:
           headers: { "Content-Type": "application/json" }
         });
         if (!googleReply.data) {
+          console.log(googleReply);
           throw new Error("No valid response from LLM.");
         }
         if (googleReply.data.error) {
