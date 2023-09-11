@@ -1837,7 +1837,7 @@ Assistant:
       };
       console.log("PaLM Payload:", PaLM_Payload);
       try {
-        const googleReply = await axios.post(`https://generativelanguage.googleapis.com/v1beta2/models/text-bison-001:generateText?key=${endpoint}`, PaLM_Payload, {
+        const googleReply = await axios.post(`https://generativelanguage.googleapis.com/v1beta2/models/text-bison-001:generateText?key=${endpoint.trim()}`, PaLM_Payload, {
           headers: { "Content-Type": "application/json" }
         });
         if (!googleReply.data) {
