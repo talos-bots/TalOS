@@ -89,7 +89,7 @@ let openaiModel = store.get('openaiModel', 'gpt-3.5-turbo-16k') as OAI_Model;
 let palmFilters = store.get('palmFilters', defaultPaLMFilters) as PaLMFilters;
 let doEmotions = store.get('doEmotions', false) as boolean;
 let doCaption = store.get('doCaption', false) as boolean;
-let palmModel = store.get('palmModel', 'text-bison-001') as string;
+let palmModel = store.get('palmModel', 'models/text-bison-001') as string;
 
 const getLLMConnectionInformation = () => {
     return { endpoint, endpointType, password, settings, hordeModel, stopBrackets };
@@ -516,7 +516,7 @@ export const generateText = async (
                         "threshold": palmFilters.HARM_CATEGORY_DANGEROUS as PaLMFilterType ? palmFilters.HARM_CATEGORY_DANGEROUS : "BLOCK_NONE"
                     }
                 ],
-                temperature: settings.temperature ? settings.temperature : 0.9,
+                temperature: (settings?.temperature !== undefined && settings.temperature <= 1) ? settings.temperature : 1,
                 top_p: settings.top_p ? settings.top_p : 0.9,
                 top_k: settings.top_k ? settings.top_k : 0,
                 stopSequences: stops.slice(0, 3),
@@ -524,7 +524,7 @@ export const generateText = async (
             }
             console.log('PaLM Payload:', PaLM_Payload)
             try {
-                const googleReply = await axios.post(`https://generativelanguage.googleapis.com/v1beta2/models/${palmModel.trim()}:generateText?key=${endpoint.trim()}`, PaLM_Payload, {
+                const googleReply = await axios.post(`https://generativelanguage.googleapis.com/v1beta2/${palmModel.trim()}:generateText?key=${endpoint.trim()}`, PaLM_Payload, {
                     headers: {'Content-Type': 'application/json'}
                 });
                 
