@@ -8,7 +8,7 @@ import {
     getDefaultWidth, setDefaultWidth,
     getDefaultHeight, setDefaultHeight,
     getDefaultHighresSteps, setDefaultHighresSteps,
-    getDefaultDenoisingStrength, setDefaultDenoisingStrength, getDefaultNegativePrompt, setDefaultNegativePrompt, getDefaultUpscale, setDefaultUpscale, getDefaultPrompt } from "@/api/sdapi";
+    getDefaultDenoisingStrength, setDefaultDenoisingStrength, getDefaultNegativePrompt, setDefaultNegativePrompt, getDefaultUpscale, setDefaultUpscale, getDefaultPrompt, setSDDefaultPrompt } from "@/api/sdapi";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { URL } from "url";
@@ -184,7 +184,7 @@ const StableDiffusionPanel = () => {
             <label htmlFor="default-prompt" className="text-theme-text font-semibold">Postive Prompt Prefix</label>
             <i>Adds the following to the beginning of every prompt sent to SD. Use this to add tags like "masterpiece, best quality".</i>
             <textarea id="default-prompt" value={defaultPrompt} className="themed-input" onChange={(e) => setDefaultPrompt(e.target.value)}/>
-            <button className="themed-button-pos" onClick={() => setDefaultPrompt(defaultPrompt)}>Save</button>
+            <button className="themed-button-pos" onClick={() => setSDDefaultPrompt(defaultPrompt)}>Save</button>
         </div>
 
     </div>

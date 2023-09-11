@@ -207,7 +207,7 @@ export const getDefaultNegativePrompt = (): Promise<string> => {
     });
 };
 
-export const setDefaultPrompt = (positivePrompt: string): void => {
+export const setSDDefaultPrompt = (positivePrompt: string): void => {
     ipcRenderer.send('set-default-prompt', positivePrompt);
 }
 
