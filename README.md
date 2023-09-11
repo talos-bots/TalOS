@@ -9,7 +9,7 @@
   - General Purpose commands, autorole, and more.
 - Lorebooks (World Info) to pair with all modes.
 - Instruct Mode, have the LLM complete tasks or instructions in UI or through Discord
-- Web Browing LLM
+- Web Browsing LLM
 - and much much more! Find more details at the project board, or the planned features section below. Feel free to join our Discord to ask questions, get help, or join the team!
 ### Discord Server:
 https://discord.com/invite/HNSaTjExYy
