@@ -1126,7 +1126,7 @@ function assemblePromptFromLog(data, messagesToInclude = 25) {
             }
           }
         }
-        prompt += `${messages[i].user}: ${messages[i].text.trim()} ${captionText}
+        prompt += `${messages[i].user}: ${messages[i].text.trim()}${captionText}
 `;
       }
     }
