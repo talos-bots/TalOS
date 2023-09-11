@@ -1438,7 +1438,7 @@ let openaiModel = store$6.get("openaiModel", "gpt-3.5-turbo-16k");
 let palmFilters = store$6.get("palmFilters", defaultPaLMFilters);
 let doEmotions = store$6.get("doEmotions", false);
 let doCaption = store$6.get("doCaption", false);
-let palmModel = store$6.get("palmModel", "text-bison-001");
+let palmModel = store$6.get("palmModel", "models/text-bison-001");
 const getLLMConnectionInformation = () => {
   return { endpoint, endpointType, password, settings, hordeModel, stopBrackets };
 };
@@ -1814,9 +1814,7 @@ Assistant:
       }
       break;
     case "PaLM":
-      const MODEL_NAME = "models/text-bison-001";
       const PaLM_Payload = {
-        "model": MODEL_NAME,
         "prompt": {
           text: `${prompt}`
         },
@@ -1850,15 +1848,14 @@ Assistant:
             "threshold": palmFilters.HARM_CATEGORY_DANGEROUS ? palmFilters.HARM_CATEGORY_DANGEROUS : "BLOCK_NONE"
           }
         ],
-        temperature: settings.temperature ? settings.temperature : 0.9,
-        top_p: settings.top_p ? settings.top_p : 0.9,
-        top_k: settings.top_k ? settings.top_k : 0,
-        stopSequences: stops.slice(0, 3),
-        maxOutputTokens: settings.max_tokens ? settings.max_tokens : 350
+        "temperature": (settings == null ? void 0 : settings.temperature) !== void 0 && settings.temperature <= 1 ? settings.temperature : 1,
+        "candidateCount": 1,
+        "maxOutputTokens": settings.max_tokens ? settings.max_tokens : 350,
+        "topP": settings.top_p ? settings.top_p : 0.9,
+        "topK": settings.top_k !== void 0 && settings.top_k >= 1 ? settings.top_k : 1
       };
-      console.log("PaLM Payload:", PaLM_Payload);
       try {
-        const googleReply = await axios.post(`https://generativelanguage.googleapis.com/v1beta2/models/${palmModel.trim()}:generateText?key=${endpoint.trim()}`, PaLM_Payload, {
+        const googleReply = await axios.post(`https://generativelanguage.googleapis.com/v1beta2/${palmModel.trim()}:generateText?key=${endpoint.trim()}`, PaLM_Payload, {
           headers: { "Content-Type": "application/json" }
         });
         if (!googleReply.data) {
@@ -1876,7 +1873,7 @@ Assistant:
         }
         return results = { results: [(_i = googleReply.data.candidates[0]) == null ? void 0 : _i.output], prompt };
       } catch (error) {
-        console.error(error);
+        console.error(error.response.data);
         return results = { results: null, error, prompt };
       }
       break;

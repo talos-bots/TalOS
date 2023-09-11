@@ -481,8 +481,7 @@ export const generateText = async (
         break;
         case 'PaLM':
             const MODEL_NAME = "models/text-bison-001";
-            const PaLM_Payload = { 
-                "model": MODEL_NAME,
+            const PaLM_Payload = {
                 "prompt": {
                     text: `${prompt}`,
                 },
@@ -516,13 +515,12 @@ export const generateText = async (
                         "threshold": palmFilters.HARM_CATEGORY_DANGEROUS as PaLMFilterType ? palmFilters.HARM_CATEGORY_DANGEROUS : "BLOCK_NONE"
                     }
                 ],
-                temperature: (settings?.temperature !== undefined && settings.temperature <= 1) ? settings.temperature : 1,
-                top_p: settings.top_p ? settings.top_p : 0.9,
-                top_k: settings.top_k ? settings.top_k : 0,
-                stopSequences: stops.slice(0, 3),
-                maxOutputTokens: settings.max_tokens ? settings.max_tokens : 350,
+                "temperature": (settings?.temperature !== undefined && settings.temperature <= 1) ? settings.temperature : 1,
+                "candidateCount": 1,
+                "maxOutputTokens": settings.max_tokens ? settings.max_tokens : 350,
+                "topP": settings.top_p ? settings.top_p : 0.9,
+                "topK": (settings.top_k !== undefined && settings.top_k >= 1) ? settings.top_k : 1,
             }
-            console.log('PaLM Payload:', PaLM_Payload)
             try {
                 const googleReply = await axios.post(`https://generativelanguage.googleapis.com/v1beta2/${palmModel.trim()}:generateText?key=${endpoint.trim()}`, PaLM_Payload, {
                     headers: {'Content-Type': 'application/json'}
@@ -547,7 +545,7 @@ export const generateText = async (
         
                 return results = { results: [googleReply.data.candidates[0]?.output], prompt: prompt };
             } catch (error: any) {
-                console.error(error);
+                console.error(error.response.data);
                 return results = { results: null, error: error, prompt: prompt };
             }
         break;
