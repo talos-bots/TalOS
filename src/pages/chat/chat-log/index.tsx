@@ -72,44 +72,55 @@ const ChatLog = (props: ChatLogProps) => {
 		});
 	}, [messages]);
 
+	const readFileAsDataURL = (file: File): Promise<string> => {
+		return new Promise((resolve, reject) => {
+			const reader = new FileReader();
+			reader.onload = () => {
+				resolve(reader.result as string);
+			};
+			reader.onerror = () => {
+				reject(new Error("File reading failed"));
+			};
+			reader.readAsDataURL(file);
+		});
+	};
+
 	const handleMessageSend = async (message: string, attachments?: File[]) => {
 		if(hasSentMessage === true) return;
 		setHasSentMessage(true);
 		let chat: Chat | null = chatLog;
 		if(chat === null) return;
 		let newAttachments: Attachment[] = [];
-		if (attachments !== undefined && attachments.length) {
+		if (Array.isArray(attachments)) {
 			const uploadedAttachments: Attachment[] = [];
-			attachments.forEach((file, index) => {
-				const reader = new FileReader();
-				reader.onload = () => {
-					const base64Data = reader.result?.toString().split(',')[1];
+			for (const file of attachments) {
+				try {
+					const dataUrl = await readFileAsDataURL(file);
+					const base64Data = dataUrl.split(',')[1];
 					let attachment = new Attachment();
 					attachment.data = base64Data || '';
 					attachment.fileext = file.name.split('.').pop() || '';
 					attachment.name = file.name;
 					attachment.type = file.type;
 					uploadedAttachments.push(attachment);
-				};
-				reader.readAsDataURL(file);
-			});
+				} catch (error) {
+					console.error("File reading error", error);
+					// Handle file reading error appropriately
+				}
+			}
 			newAttachments = uploadedAttachments;
 		}
-		if((message !== "" && message !== null && message !== undefined && message !== " " && message !== "\n") || newAttachments !== undefined && newAttachments.length > 0){
+		if((message !== "" && message !== null && message !== undefined && message !== " " && message !== "\n") || (newAttachments.length > 0)){
 			let newMessage = addUserMessage(message, currentUser);
 			if(doEmotions === true){
 				newMessage.emotion = await getTextEmotion(newMessage.text);
 			}
-			console.log(newAttachments);
 			if(newAttachments !== undefined && newAttachments.length > 0){
-				console.log(newAttachments);
 				for(let i = 0; i < newAttachments.length; i++){
 					if(newAttachments[i] !== undefined && newAttachments[i] !== null){
 						console.log(newAttachments[i]);
 						if(newAttachments[i].type.includes("image")){
-							console.log("image detected");
 							if(doCaptioning === true){
-								console.log("captioning image");
 								let caption = await getImageCaption(newAttachments[i].data);
 								console.log(caption);
 								if(caption !== null){

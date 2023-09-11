@@ -11,15 +11,18 @@ const InputGroup = (props: InputGroupProps) => {
 	const [attachments, setAttachments] = useState<File[]>([]);
 
 	const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const files = Array.from(e.target.files || []);
-		setAttachments([...attachments, ...files]);
+		const files = e.target.files;
+		if (files) {
+			const fileArray = Array.from(files);
+			setAttachments([...attachments, ...fileArray]);
+		}
 	};
 
 	return (
 		<div className="flex items-center w-full justify-between rounded-full bg-theme-root backdrop-blur-sm box-border py-1 px-2.5 border-theme-border border-theme-border-width theme-border-style">
 			<input 
 				type="file" 
-				onChange={handleFileUpload} 
+				onChange={(event) => handleFileUpload(event)} 
 				style={{ display: 'none' }} 
 				id="file-upload" 
 				multiple
