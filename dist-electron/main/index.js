@@ -1537,7 +1537,7 @@ async function getStatus(testEndpoint, testEndpointType) {
         return "P-Claude statusis not yet supported.";
       case "PaLM":
         try {
-          const models = await axios.get(`https://generativelanguage.googleapis.com/v1beta2/models?key=${endpointUrl}`).then((response2) => {
+          const models = await axios.get(`https://generativelanguage.googleapis.com/v1beta2/models?key=${endpointUrl.trim()}`).then((response2) => {
             return response2;
           }).catch((error) => {
             console.log(error);
