@@ -1037,6 +1037,65 @@ function PouchDBRoutes() {
     lorebookDB = new PouchDB("lorebook", { prefix: dataPath, adapter: "leveldb" });
   }
 }
+const task = "text-classification";
+const model = "Cohee/distilbert-base-uncased-go-emotions-onnx";
+const getModels$1 = async () => {
+  try {
+    const { pipeline, env } = await import("@xenova/transformers");
+    env.localModelPath = modelsPath;
+    env.backends.onnx.wasm.numThreads = 1;
+    env.backends.onnx.wasm.wasmPaths = wasmPath;
+    await pipeline(task, model, { cache_dir: modelsPath, quantized: true }).then((model2) => {
+      console.log("Text Classification model loaded");
+    });
+    await pipeline("image-to-text", "Xenova/vit-gpt2-image-captioning", { cache_dir: modelsPath, quantized: true }).then((model2) => {
+      console.log("Image Captioning model loaded");
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};
+const modelPromise = new Promise(async (resolve, reject) => {
+  try {
+    const { pipeline, env } = await import("@xenova/transformers");
+    env.localModelPath = modelsPath;
+    env.backends.onnx.wasm.wasmPaths = wasmPath;
+    resolve(await pipeline(task, model, { cache_dir: modelsPath, quantized: true }));
+  } catch (err) {
+    reject(err);
+  }
+});
+const captionPromise = new Promise(async (resolve, reject) => {
+  try {
+    const { pipeline, env } = await import("@xenova/transformers");
+    env.localModelPath = modelsPath;
+    env.backends.onnx.wasm.wasmPaths = wasmPath;
+    console.log("Loading caption model");
+    resolve(await pipeline("image-to-text", "Xenova/vit-gpt2-image-captioning", { cache_dir: modelsPath, quantized: true }));
+  } catch (err) {
+    console.log(err);
+    reject(err);
+  }
+});
+async function getClassification(text) {
+  const model2 = await modelPromise;
+  const results = await model2(text);
+  return results[0].label;
+}
+async function getCaption(image) {
+  var _a;
+  console.log("Getting caption for image");
+  const buffer = Buffer.from(image, "base64");
+  const randomName = Math.random().toString(36).substring(7);
+  await promises.writeFile(path.join(imagesPath, `temp-image-${randomName}.png`), buffer);
+  const model2 = await captionPromise;
+  const results = await model2(path.join(imagesPath, `temp-image-${randomName}.png`)).catch((err) => {
+    console.log("Caption error", err);
+  });
+  await promises.unlink(path.join(imagesPath, `temp-image-${randomName}.png`));
+  console.log("Caption results", results);
+  return (_a = results[0]) == null ? void 0 : _a.generated_text;
+}
 function assembleConstructFromData(data) {
   if (data === null)
     return null;
@@ -1140,15 +1199,21 @@ async function convertDiscordMessageToMessage(message, activeConstructs) {
     username = message.author.displayName;
   }
   if (message.attachments.size > 0) {
-    message.attachments.forEach((attachment) => {
-      attachments.push({
+    message.attachments.forEach(async (attachment) => {
+      var _a;
+      if ((_a = attachment.contentType) == null ? void 0 : _a.includes("image")) {
+        let caption = await getCaption(attachment.url);
+        console.log("Caption:", caption);
+      }
+      let newAttachment = {
         _id: attachment.id,
         type: attachment.contentType ? attachment.contentType : "unknown",
         name: attachment.name,
         data: attachment.url,
         metadata: attachment.size,
-        fileext: attachment.name
-      });
+        fileext: attachment.name.split(".").pop() || "unknown"
+      };
+      attachments.push(newAttachment);
     });
   }
   const convertedMessage = {
@@ -1325,65 +1390,6 @@ const instructPromptWithGuidanceAndExamples = `
 
 ### Response:
 `;
-const task = "text-classification";
-const model = "Cohee/distilbert-base-uncased-go-emotions-onnx";
-const getModels$1 = async () => {
-  try {
-    const { pipeline, env } = await import("@xenova/transformers");
-    env.localModelPath = modelsPath;
-    env.backends.onnx.wasm.numThreads = 1;
-    env.backends.onnx.wasm.wasmPaths = wasmPath;
-    await pipeline(task, model, { cache_dir: modelsPath, quantized: true }).then((model2) => {
-      console.log("Text Classification model loaded");
-    });
-    await pipeline("image-to-text", "rocca/openai-clip-js", { cache_dir: modelsPath, quantized: true }).then((model2) => {
-      console.log("Image Captioning model loaded");
-    });
-  } catch (err) {
-    console.log(err);
-  }
-};
-const modelPromise = new Promise(async (resolve, reject) => {
-  try {
-    const { pipeline, env } = await import("@xenova/transformers");
-    env.localModelPath = modelsPath;
-    env.backends.onnx.wasm.wasmPaths = wasmPath;
-    resolve(await pipeline(task, model, { cache_dir: modelsPath, quantized: true }));
-  } catch (err) {
-    reject(err);
-  }
-});
-const captionPromise = new Promise(async (resolve, reject) => {
-  try {
-    const { pipeline, env } = await import("@xenova/transformers");
-    env.localModelPath = modelsPath;
-    env.backends.onnx.wasm.wasmPaths = wasmPath;
-    console.log("Loading caption model");
-    resolve(await pipeline("image-to-text", "rocca/openai-clip-js", { cache_dir: modelsPath, quantized: true }));
-  } catch (err) {
-    console.log(err);
-    reject(err);
-  }
-});
-async function getClassification(text) {
-  const model2 = await modelPromise;
-  const results = await model2(text);
-  return results[0].label;
-}
-async function getCaption(image) {
-  var _a;
-  console.log("Getting caption for image");
-  const buffer = Buffer.from(image, "base64");
-  const randomName = Math.random().toString(36).substring(7);
-  await promises.writeFile(path.join(imagesPath, `temp-image-${randomName}.png`), buffer);
-  const model2 = await captionPromise;
-  const results = await model2(path.join(imagesPath, `temp-image-${randomName}.png`)).catch((err) => {
-    console.log("Caption error", err);
-  });
-  await promises.unlink(path.join(imagesPath, `temp-image-${randomName}.png`));
-  console.log("Caption results", results);
-  return (_a = results[0]) == null ? void 0 : _a.generated_text;
-}
 const HORDE_API_URL = "https://aihorde.net/api";
 const store$6 = new Store({
   name: "llmData"
@@ -5069,8 +5075,6 @@ function DiscordJSRoutes() {
   disClient.on("messageCreate", async (message) => {
     var _a, _b;
     if (message.author.id === ((_a = disClient.user) == null ? void 0 : _a.id))
-      return;
-    if (message.attachments.size > 0)
       return;
     if (message.webhookId)
       return;

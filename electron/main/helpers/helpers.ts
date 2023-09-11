@@ -6,6 +6,7 @@ import { getUsername } from "../controllers/DiscordController";
 import { addUser, getUser, updateUser } from "../api/pouchdb";
 // @ts-ignore
 import { encode } from 'gpt-tokenizer'
+import { getCaption } from "../model-pipeline/transformers";
 
 export function assembleConstructFromData(data: any){
 	if(data === null) return null;
@@ -139,15 +140,20 @@ export async function convertDiscordMessageToMessage(message: Message, activeCon
 		username = message.author.displayName;
 	}
 	if(message.attachments.size > 0){
-		message.attachments.forEach(attachment => {
-			attachments.push({
+		message.attachments.forEach(async attachment => {
+			if(attachment.contentType?.includes('image')){
+				let caption = await getCaption(attachment.url);
+				console.log('Caption:', caption);
+			}
+			let newAttachment: AttachmentInferface = {
 				_id: attachment.id,
 				type: attachment.contentType? attachment.contentType : 'unknown',
 				name: attachment.name,
 				data: attachment.url,
 				metadata: attachment.size,
-				fileext : attachment.name,
-			});
+				fileext : attachment.name.split('.').pop() || 'unknown',
+			}
+			attachments.push(newAttachment);
 		});
 	}
 	const convertedMessage: MessageInterface = {

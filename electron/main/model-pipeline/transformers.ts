@@ -18,7 +18,7 @@ export const getModels = async () => {
         await pipeline(task, model, { cache_dir: modelsPath, quantized: true}).then((model) => {
             console.log("Text Classification model loaded");
         });
-        await pipeline('image-to-text', 'rocca/openai-clip-js', { cache_dir: modelsPath, quantized: true}).then((model) => {
+        await pipeline('image-to-text', 'Xenova/vit-gpt2-image-captioning', { cache_dir: modelsPath, quantized: true}).then((model) => {
             console.log("Image Captioning model loaded");
         });
     }catch(err){
@@ -48,7 +48,7 @@ const captionPromise: Promise<any> = new Promise(async (resolve, reject) => {
         env.localModelPath = modelsPath;
         env.backends.onnx.wasm.wasmPaths = wasmPath;
         console.log('Loading caption model');
-        resolve(await pipeline('image-to-text', 'rocca/openai-clip-js', { cache_dir: modelsPath, quantized: true}));
+        resolve(await pipeline('image-to-text', 'Xenova/vit-gpt2-image-captioning', { cache_dir: modelsPath, quantized: true}));
     }catch(err){
         console.log(err);
         reject(err);

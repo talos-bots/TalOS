@@ -477,7 +477,6 @@ export function DiscordJSRoutes(){
 
     disClient.on('messageCreate', async (message) => {
         if (message.author.id === disClient.user?.id) return;
-        if (message.attachments.size > 0) return;
         if (message.webhookId) return;
         messageQueue.push(message);
         await processQueue();
