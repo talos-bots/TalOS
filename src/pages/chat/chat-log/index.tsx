@@ -45,7 +45,7 @@ const ChatLog = (props: ChatLogProps) => {
 			}).catch((err) => {
 				console.error(err);
 			});
-			let userID = JSON.parse(localStorage.getItem("currentUser")?.toString() || "");
+			let userID = JSON.parse(localStorage.getItem("currentUser")?.toString() || "{}");
 			if(userID !== null && userID !== undefined){
 				getUser(userID).then((user) => {
 					if(user === null) throw new Error("User not found");
@@ -65,22 +65,22 @@ const ChatLog = (props: ChatLogProps) => {
 		getDoEmotions().then((value) => {
 			setDoEmotions(value);
 		}).catch((err) => {
-			console.error(err);
+			// console.error(err);
 		});
 		getDoCaptioning().then((value) => {
 			setDoCaptioning(value);
 		}).catch((err) => {
-			console.error(err);
+			// console.error(err);
 		});
 		getStorageValue('doGreetings').then((value) => {
             setDoGreetings(JSON.parse(value));
         }).catch((err) => {
-            console.error(err);
+            // console.error(err);
         });
         getStorageValue('characterMode').then((value) => {
             setCharacterMode(JSON.parse(value));
         }).catch((err) => {
-            console.error(err);
+            // console.error(err);
         });
 	}, [messages]);
 
@@ -96,24 +96,27 @@ const ChatLog = (props: ChatLogProps) => {
 			if(chatLog !== null && chatLog !== undefined){
 				if(doGreetings){
 					const construct = await getConstruct(chatLog.constructs[0])
-					let randomGreeting = construct?.greetings[Math.floor(Math.random() * construct?.greetings.length)];
-					let newMessage = new Message();
-					newMessage.text = randomGreeting;
-					newMessage.avatar = construct?.avatar;
-					newMessage.user = construct?.name;
-					newMessage.origin = 'ConstructOS';
-					newMessage.timestamp = new Date().getTime();
-					newMessage.isCommand = false;
-					newMessage.isPrivate = true;
-					newMessage.isHuman = false;
-					newMessage.participants = [currentUser?._id || 'DefaultUser', construct?._id];
-					newMessage.userID = construct?._id;
-					newMessage.emotion = 'neutral';
-					newMessage.isThought = false;
-					setMessages(prevMessages => [...prevMessages, newMessage]);
-					chat.addMessage(newMessage);
-					await updateChat(chat);
-					setChatLog(chat);
+					if(construct !== null && construct !== undefined){
+						if(construct.greetings.length < 1) return;
+						let randomGreeting = construct?.greetings[Math.floor(Math.random() * construct?.greetings.length)];
+						let newMessage = new Message();
+						newMessage.text = randomGreeting;
+						newMessage.avatar = construct?.avatar;
+						newMessage.user = construct?.name;
+						newMessage.origin = 'ConstructOS';
+						newMessage.timestamp = new Date().getTime();
+						newMessage.isCommand = false;
+						newMessage.isPrivate = true;
+						newMessage.isHuman = false;
+						newMessage.participants = [currentUser?._id || 'DefaultUser', construct?._id];
+						newMessage.userID = construct?._id;
+						newMessage.emotion = 'neutral';
+						newMessage.isThought = false;
+						setMessages(prevMessages => [...prevMessages, newMessage]);
+						chat.addMessage(newMessage);
+						await updateChat(chat);
+						setChatLog(chat);
+					}
 				}
 			}
 		}
