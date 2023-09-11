@@ -105,8 +105,7 @@ async function createWindow() {
   DiscordController();
   LangChainRoutes();
   VectorDBRoutes();
-  update(win)
-  getModels();
+  // update(win)
 }
 
 app.whenReady().then(createWindow);
@@ -129,7 +128,9 @@ app.on("activate", () => {
   if (allWindows.length) {
     allWindows[0].focus();
   } else {
-    createWindow();
+    createWindow().then(() => {
+      getModels();
+    });
   }
 });
 

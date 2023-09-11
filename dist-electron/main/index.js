@@ -38,7 +38,6 @@ const FormData = require("form-data");
 const vectra = require("vectra");
 const use = require("@tensorflow-models/universal-sentence-encoder");
 require("gpt-tokenizer");
-const electronUpdater = require("electron-updater");
 let constructDB$1;
 let chatsDB$1;
 let commandDB$1;
@@ -5546,53 +5545,6 @@ function LangChainRoutes() {
     event.sender.send("get-azure-key-reply", getAzureKey());
   });
 }
-function update(win) {
-  electronUpdater.autoUpdater.autoDownload = false;
-  electronUpdater.autoUpdater.disableWebInstaller = false;
-  electronUpdater.autoUpdater.allowDowngrade = false;
-  electronUpdater.autoUpdater.on("checking-for-update", function() {
-  });
-  electronUpdater.autoUpdater.on("update-available", (arg) => {
-    win.webContents.send("update-can-available", { update: true, version: electron.app.getVersion(), newVersion: arg == null ? void 0 : arg.version });
-  });
-  electronUpdater.autoUpdater.on("update-not-available", (arg) => {
-    win.webContents.send("update-can-available", { update: false, version: electron.app.getVersion(), newVersion: arg == null ? void 0 : arg.version });
-  });
-  electron.ipcMain.handle("check-update", async () => {
-    if (!electron.app.isPackaged) {
-      const error = new Error("The update feature is only available after the package.");
-      return { message: error.message, error };
-    }
-    try {
-      return await electronUpdater.autoUpdater.checkForUpdatesAndNotify();
-    } catch (error) {
-      return { message: "Network error", error };
-    }
-  });
-  electron.ipcMain.handle("start-download", (event) => {
-    startDownload(
-      (error, progressInfo) => {
-        if (error) {
-          event.sender.send("update-error", { message: error.message, error });
-        } else {
-          event.sender.send("download-progress", progressInfo);
-        }
-      },
-      () => {
-        event.sender.send("update-downloaded");
-      }
-    );
-  });
-  electron.ipcMain.handle("quit-and-install", () => {
-    electronUpdater.autoUpdater.quitAndInstall(false, true);
-  });
-}
-function startDownload(callback, complete) {
-  electronUpdater.autoUpdater.on("download-progress", (info) => callback(null, info));
-  electronUpdater.autoUpdater.on("error", (error) => callback(error, null));
-  electronUpdater.autoUpdater.on("update-downloaded", complete);
-  electronUpdater.autoUpdater.downloadUpdate();
-}
 process.env.DIST_ELECTRON = node_path.join(__dirname, "../");
 process.env.DIST = node_path.join(process.env.DIST_ELECTRON, "../dist");
 process.env.VITE_PUBLIC = process.env.VITE_DEV_SERVER_URL ? node_path.join(process.env.DIST_ELECTRON, "../public") : process.env.DIST;
@@ -5658,8 +5610,6 @@ async function createWindow() {
   DiscordController();
   LangChainRoutes();
   VectorDBRoutes();
-  update(exports.win);
-  getModels$1();
 }
 electron.app.whenReady().then(createWindow);
 electron.app.on("window-all-closed", () => {
@@ -5679,7 +5629,9 @@ electron.app.on("activate", () => {
   if (allWindows.length) {
     allWindows[0].focus();
   } else {
-    createWindow();
+    createWindow().then(() => {
+      getModels$1();
+    });
   }
 });
 electron.app.on("ready", () => {
