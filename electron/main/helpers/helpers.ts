@@ -126,7 +126,7 @@ export function assemblePromptFromLog(data: any, messagesToInclude: number = 25)
 						}
 					}
 				}
-                prompt += `${messages[i].user}: ${messages[i].text.trim()}${captionText}\n`;
+                prompt += `${messages[i].user}: ${messages[i].text.trim()}${captionText.trim()}\n`;
             }
 		}
 	}
