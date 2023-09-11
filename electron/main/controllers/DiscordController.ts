@@ -788,11 +788,11 @@ function DiscordController(){
         removeDiffusionWhitelist(arg);
     });
 
-    ipcMain.handle('get-show-diffusion-details', (event, arg) => {
-        return getShowDiffusionDetails();
+    ipcMain.on('get-show-diffusion-details', (event, arg) => {
+        event.sender.send('get-show-diffusion-details-reply', getShowDiffusionDetails());
     });
 
-    ipcMain.handle('set-show-diffusion-details', (event, arg) => {
+    ipcMain.on('set-show-diffusion-details', (event, arg) => {
         setShowDiffusionDetails(arg);
     });
 }

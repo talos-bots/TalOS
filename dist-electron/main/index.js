@@ -3673,10 +3673,10 @@ function DiscordController() {
   electron.ipcMain.handle("remove-diffusion-whitelist", (event, arg) => {
     removeDiffusionWhitelist(arg);
   });
-  electron.ipcMain.handle("get-show-diffusion-details", (event, arg) => {
-    return getShowDiffusionDetails();
+  electron.ipcMain.on("get-show-diffusion-details", (event, arg) => {
+    event.sender.send("get-show-diffusion-details-reply", getShowDiffusionDetails());
   });
-  electron.ipcMain.handle("set-show-diffusion-details", (event, arg) => {
+  electron.ipcMain.on("set-show-diffusion-details", (event, arg) => {
     setShowDiffusionDetails(arg);
   });
 }
