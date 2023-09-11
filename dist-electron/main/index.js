@@ -3147,7 +3147,7 @@ const isChannelRegistered = (channel) => {
   return false;
 };
 async function handleDiscordMessage(message) {
-  var _a, _b;
+  var _a, _b, _c, _d;
   if (message.author.bot)
     return;
   if (message.content.startsWith("."))
@@ -3202,8 +3202,8 @@ async function handleDiscordMessage(message) {
       constructs: activeConstructs,
       humans: [message.author.id],
       chatConfigs: [],
-      doVector: false,
-      global: false
+      doVector: ((_c = message == null ? void 0 : message.channel) == null ? void 0 : _c.isDMBased()) ? true : false,
+      global: ((_d = message == null ? void 0 : message.channel) == null ? void 0 : _d.isDMBased()) ? true : false
     };
     if (chatLog.messages.length > 0) {
       await addChat(chatLog);
