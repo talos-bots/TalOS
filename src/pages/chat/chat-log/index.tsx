@@ -4,7 +4,7 @@ import { Chat } from "@/classes/Chat";
 import { Message } from "@/classes/Message";
 import { getChat, getUser, saveNewChat, updateChat } from "@/api/dbapi";
 import MessageComponent from "@/pages/chat/chat-log/message";
-import { addUserMessage, getLoadingMessage, regenerateMessage, regenerateUserMessage, sendMessage, wait } from "../helpers";
+import { addUserMessage, doSlashCommand, getLoadingMessage, regenerateMessage, regenerateUserMessage, sendMessage, wait } from "../helpers";
 import { Alert } from "@material-tailwind/react";
 import ChatInfo from "@/pages/chat/chat-info";
 import Loading from "@/components/loading";
@@ -86,6 +86,9 @@ const ChatLog = (props: ChatLogProps) => {
 	};
 
 	const handleMessageSend = async (message: string, attachments?: File[]) => {
+		if(message.startsWith("/")){
+			await doSlashCommand(message, chatLog, currentUser, setChatLog, setMessages, updateChat, setError);
+		}
 		if(hasSentMessage === true) return;
 		setHasSentMessage(true);
 		let chat: Chat | null = chatLog;

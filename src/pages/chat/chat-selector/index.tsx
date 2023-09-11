@@ -124,7 +124,7 @@ const ChatSelector = (props: ChatSelectorProps) => {
 
     return (
         <div className="grid grid-rows-3 w-90vw h-[calc(95vh-70px)] gap-2 m-auto mt-4 grow-0">
-            <div className="row-span-1 w-full min-h-fit themed-root grow-0 overflow-x-auto">
+            <div className="row-span-1 w-full h-full themed-root grow-0 overflow-x-auto">
                 <h3 className="font-semibold">Constructs</h3>
                 <div className="flex flex-row w-full max-w-full h-5/6 gap-2 overflow-x-auto grow-0">
                     {Array.isArray(constructs) && constructs.sort((a, b) => {
@@ -155,31 +155,33 @@ const ChatSelector = (props: ChatSelectorProps) => {
                 </div>
             </div>
             <div className="row-span-2 w-full h-full grid grid-cols-4 grow-0 gap-2">
-                <div className="col-span-2 flex flex-col themed-root mb-4">
+                <div className="col-span-2 flex flex-col themed-root mb-4 h-60vh">
                     <h3 className="font-semibold">Chats</h3>
-                    <div className="grid grid-cols-5 gap-0 w-15vw h-5vh">
-                        <label htmlFor="character-image-input" className="themed-button-pos flex items-center justify-center" data-tooltip="Import Chat" id="importChat">
-                            <AiOutlineUpload className='absolute'size={50}/>
-                        </label>
-                        <input
-                            type="file"
-                            accept="application/json"
-                            id="character-image-input"
-                            onChange={(e) => handleImportChat(e.target.files)}
-                            style={{ display: 'none' }}
-                            multiple={true}
-                        />
-                    </div>
-                    <div className="flex flex-col w-full gap-2 overflow-y-auto">
-                        {activeChat !== null && (<ChatDetails key={'activePool'} chat={activeChat} onDoubleClick={handleChatDoubleClick} onClick={handleChatClick} onDelete={handleChatDelete} disabled/>)}
-                        {Array.isArray(chats) && chats.sort((a, b) => b.lastMessageDate - a.lastMessageDate).filter((chat) => {return chat._id !== 'activePool'}).map((chat) => {
-                            return (
-                                <ChatDetails key={chat._id} chat={chat} onDoubleClick={handleChatDoubleClick} onClick={handleChatClick} onDelete={handleChatDelete}/>
-                            )
-                        })}
+                    <div className="flex flex-col h-11/12">
+                        <div className="grid grid-cols-5 gap-0 h-1/14 w-full">
+                            <label htmlFor="character-image-input" className="themed-button-pos flex items-center justify-center w-2/6" data-tooltip="Import Chat" id="importChat">
+                                <AiOutlineUpload className='absolute'size={36}/>
+                            </label>
+                            <input
+                                type="file"
+                                accept="application/json"
+                                id="character-image-input"
+                                onChange={(e) => handleImportChat(e.target.files)}
+                                style={{ display: 'none' }}
+                                multiple={true}
+                            />
+                        </div>
+                        <div className="flex flex-col w-full gap-2 overflow-y-auto h-13/14">
+                            {activeChat !== null && (<ChatDetails key={'activePool'} chat={activeChat} onDoubleClick={handleChatDoubleClick} onClick={handleChatClick} onDelete={handleChatDelete} disabled/>)}
+                            {Array.isArray(chats) && chats.sort((a, b) => b.lastMessageDate - a.lastMessageDate).filter((chat) => {return chat._id !== 'activePool'}).map((chat) => {
+                                return (
+                                    <ChatDetails key={chat._id} chat={chat} onDoubleClick={handleChatDoubleClick} onClick={handleChatClick} onDelete={handleChatDelete}/>
+                                )
+                            })}
+                        </div>
                     </div>
                 </div>
-                <div className="col-span-2 grid grid-rows-2 gap-2 mb-4">
+                <div className="col-span-2 grid grid-rows-2 gap-2 mb-4 h-60vh">
                     <div className="row-span-1 themed-root flex flex-col">
                         <h3 className="font-semibold">Chatting Settings</h3>
                         <div className="grid grid-cols-2 w-full">

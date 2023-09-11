@@ -4,6 +4,7 @@ import { Attachment } from "@/classes/Attachment";
 import { Chat } from "@/classes/Chat";
 import { Message } from "@/classes/Message";
 import { User } from "@/classes/User";
+import { Dispatch, SetStateAction } from "react";
 
 export async function getLoadingMessage(constructID: string){
     let activeConstruct = await getConstruct(constructID);
@@ -81,3 +82,13 @@ export function wait(milliseconds: number): Promise<void> {
 export const truncateText = (text: string, length: number) => {
     return text?.length > length ? text?.substring(0, length) + "..." : text;
 };
+
+export async function doSlashCommand(message: string, chatLog: Chat | null, currentUser: User | null, setChatLog?: Dispatch<SetStateAction<Chat | null>>, setMessages?: Dispatch<SetStateAction<Message[]>>, updateChat?: (chat: Chat) => void, setError?: Dispatch<SetStateAction<string | null>>){
+    if(!message.startsWith('/')) return false;
+    let command = message.split(' ')[0].replace('/', '');
+    let args = message.split(' ').slice(1);
+    switch(command){
+
+    }
+    return false;
+}
