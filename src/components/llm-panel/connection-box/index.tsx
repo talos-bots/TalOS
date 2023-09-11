@@ -93,7 +93,7 @@ const ConnectionBox = (props: ConnectionBoxProps) => {
                 <HordePanel />
             )}
             {endpointType === "PaLM" && (
-                <PaLMPanel />
+                <PaLMPanel endpoint={endpoint}/>
             )}
             <div className="flex flex-col w-full text-left">
                 <label className="text-theme-text text-shadow-xl font-semibold">Status</label>

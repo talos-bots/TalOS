@@ -89,6 +89,7 @@ let openaiModel = store.get('openaiModel', 'gpt-3.5-turbo-16k') as OAI_Model;
 let palmFilters = store.get('palmFilters', defaultPaLMFilters) as PaLMFilters;
 let doEmotions = store.get('doEmotions', false) as boolean;
 let doCaption = store.get('doCaption', false) as boolean;
+let palmModel = store.get('palmModel', 'text-bison-001') as string;
 
 const getLLMConnectionInformation = () => {
     return { endpoint, endpointType, password, settings, hordeModel, stopBrackets };
@@ -149,6 +150,15 @@ const setDoCaption = (newDoCaption: boolean) => {
 
 export const getDoCaption = () => {
     return doCaption;
+}
+
+const setPaLMModel = (newPaLMModel: string) => {
+    store.set('palmModel', newPaLMModel);
+    palmModel = newPaLMModel;
+};
+
+export const getPaLMModel = () => {
+    return palmModel;
 }
 
 export async function getStatus(testEndpoint?: string, testEndpointType?: string){
@@ -514,7 +524,7 @@ export const generateText = async (
             }
             console.log('PaLM Payload:', PaLM_Payload)
             try {
-                const googleReply = await axios.post(`https://generativelanguage.googleapis.com/v1beta2/models/text-bison-001:generateText?key=${endpoint.trim()}`, PaLM_Payload, {
+                const googleReply = await axios.post(`https://generativelanguage.googleapis.com/v1beta2/models/${palmModel.trim()}:generateText?key=${endpoint.trim()}`, PaLM_Payload, {
                     headers: {'Content-Type': 'application/json'}
                 });
                 
@@ -673,5 +683,13 @@ export function LanguageModelAPI(){
 
     ipcMain.on('get-do-caption', (event) => {
         event.reply('get-do-caption-reply', getDoCaption());
+    });
+
+    ipcMain.on('set-palm-model', (event, newPaLMModel) => {
+        setPaLMModel(newPaLMModel);
+    });
+
+    ipcMain.on('get-palm-model', (event) => {
+        event.reply('get-palm-model-reply', getPaLMModel());
     });
 }

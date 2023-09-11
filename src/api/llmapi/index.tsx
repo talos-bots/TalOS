@@ -186,3 +186,17 @@ export function getDoCaptioning(): Promise<boolean>{
         });
     });
 }
+
+export function setPalmModel(model: string){
+    ipcRenderer.send('set-palm-model', model);
+}
+
+export function getPalmModel(): Promise<string>{
+    return new Promise((resolve, reject) => {
+        ipcRenderer.send('get-palm-model');
+        ipcRenderer.once('get-palm-model-reply', (event, data) => {
+            if(data.error) reject(data.error);
+            resolve(data);
+        });
+    });
+}
