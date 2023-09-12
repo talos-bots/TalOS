@@ -1993,72 +1993,107 @@ function LanguageModelAPI() {
 }
 require("@tensorflow/tfjs");
 async function getAllVectors(schemaName) {
-  const indexPath = path.join(dataPath, schemaName);
-  const index = new vectra.LocalIndex(indexPath);
-  if (!await index.isIndexCreated()) {
-    await index.createIndex();
+  try {
+    const indexPath = path.join(dataPath, schemaName);
+    const index = new vectra.LocalIndex(indexPath);
+    if (!await index.isIndexCreated()) {
+      await index.createIndex();
+    }
+    const vectors = await index.listItems();
+    return vectors;
+  } catch (error) {
+    console.error(error);
+    throw new Error("Error in getAllVectors function");
   }
-  const vectors = await index.listItems();
-  return vectors;
 }
 async function getRelaventMemories(schemaName, text) {
-  const indexPath = path.join(dataPath, schemaName);
-  const index = new vectra.LocalIndex(indexPath);
-  if (!await index.isIndexCreated()) {
-    await index.createIndex();
+  try {
+    const indexPath = path.join(dataPath, schemaName);
+    const index = new vectra.LocalIndex(indexPath);
+    if (!await index.isIndexCreated()) {
+      await index.createIndex();
+    }
+    const vector = await getVector(text);
+    const memories = await index.queryItems(vector, 10);
+    return memories;
+  } catch (error) {
+    console.error(error);
+    throw new Error("Error in getRelevantMemories function");
   }
-  const vector = await getVector(text);
-  const memories = await index.queryItems(vector, 10);
-  return memories;
 }
 async function addVectorFromMessage(schemaName, message) {
-  const indexPath = path.join(dataPath, schemaName);
-  const index = new vectra.LocalIndex(indexPath);
-  if (!await index.isIndexCreated()) {
-    await index.createIndex();
+  try {
+    const indexPath = path.join(dataPath, schemaName);
+    const index = new vectra.LocalIndex(indexPath);
+    if (!await index.isIndexCreated()) {
+      await index.createIndex();
+    }
+    await index.insertItem({
+      vector: await getVector(message.text),
+      metadata: message
+    });
+  } catch (error) {
+    console.error(error);
+    throw new Error("Error in addVectorFromMessage function");
   }
-  await index.insertItem({
-    vector: await getVector(message.text),
-    metadata: message
-  });
 }
 async function getVector(text) {
-  return use.load().then(async (model2) => {
-    const embeddings = await model2.embed([text]);
-    return embeddings.arraySync()[0];
-  });
+  try {
+    return use.load().then(async (model2) => {
+      const embeddings = await model2.embed([text]);
+      return embeddings.arraySync()[0];
+    });
+  } catch (error) {
+    console.error(error);
+    throw new Error("Error in getVector function");
+  }
 }
 async function deleteIndex(schemaName) {
-  const indexPath = path.join(dataPath, schemaName);
-  const index = new vectra.LocalIndex(indexPath);
-  if (await index.isIndexCreated()) {
-    await index.deleteIndex();
+  try {
+    const indexPath = path.join(dataPath, schemaName);
+    const index = new vectra.LocalIndex(indexPath);
+    if (await index.isIndexCreated()) {
+      await index.deleteIndex();
+    }
+  } catch (error) {
+    console.error(error);
+    throw new Error("Error in deleteIndex function");
   }
 }
 function VectorDBRoutes() {
   electron.ipcMain.on("get-all-vectors", async (event, schemaName, uniqueReplyName) => {
     getAllVectors(schemaName).then((vectors) => {
       event.reply(uniqueReplyName, vectors);
+    }).catch((error) => {
+      event.reply(uniqueReplyName, error);
     });
   });
   electron.ipcMain.on("get-relavent-memories", async (event, schemaName, text, uniqueReplyName) => {
     getRelaventMemories(schemaName, text).then((memories) => {
       event.reply(uniqueReplyName, memories);
+    }).catch((error) => {
+      event.reply(uniqueReplyName, error);
     });
   });
   electron.ipcMain.on("add-vector-from-message", async (event, schemaName, message, uniqueReplyName) => {
     addVectorFromMessage(schemaName, message).then(() => {
       event.reply(uniqueReplyName, true);
+    }).catch((error) => {
+      event.reply(uniqueReplyName, error);
     });
   });
   electron.ipcMain.on("get-vector", async (event, text, uniqueReplyName) => {
     getVector(text).then((vector) => {
       event.reply(uniqueReplyName, vector);
+    }).catch((error) => {
+      event.reply(uniqueReplyName, error);
     });
   });
   electron.ipcMain.on("delete-index", async (event, schemaName, uniqueReplyName) => {
     deleteIndex(schemaName).then(() => {
       event.reply(uniqueReplyName, true);
+    }).catch((error) => {
+      event.reply(uniqueReplyName, error);
     });
   });
 }
@@ -2418,7 +2453,12 @@ async function generateContinueChatLog(construct, chatLog, currentUser, messages
     }
     prompt = memoryText + prompt;
   }
-  const response = await generateText(prompt, currentUser, stopList);
+  const response = await generateText(prompt, currentUser, stopList).then((response2) => {
+    return response2;
+  }).catch((error) => {
+    console.log("Error from GenerateText:", error);
+    return null;
+  });
   if (response && response.results && response.results[0]) {
     return breakUpCommands(construct.name, response.results[0], currentUser, stopList, doMultiLine);
   } else {
