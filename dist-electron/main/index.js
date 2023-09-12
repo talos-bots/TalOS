@@ -4830,7 +4830,17 @@ function createClient() {
       return;
     messageQueue.push(message);
     await processQueue();
-    (_b = exports.win) == null ? void 0 : _b.webContents.send("discord-message", message);
+    const registeredChannels = getRegisteredChannels();
+    let isRegistered = false;
+    for (let i = 0; i < registeredChannels.length; i++) {
+      if (message.channel.id === registeredChannels[i]._id) {
+        isRegistered = true;
+        break;
+      }
+    }
+    if (isRegistered || message.channel.isDMBased()) {
+      (_b = exports.win) == null ? void 0 : _b.webContents.send("discord-message", message);
+    }
   });
   disClient.on("messageUpdate", async (oldMessage, newMessage) => {
     var _a, _b, _c;

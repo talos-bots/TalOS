@@ -1,6 +1,6 @@
 import { handleLinkClick } from "@/App";
 import { getActiveConstructList, removeConstructFromActive } from "@/api/constructapi";
-import { getConstruct } from "@/api/dbapi";
+import { getConstruct, getStorageValue, setStorageValue } from "@/api/dbapi";
 import { getBotStatus, getDoStableDiffusionReactsStatus, getDoStableDiffusionStatus, getSavedDiscordData, getShowDiffusionDetailsStatus, loginToDiscord, logoutFromDiscord, saveDiscordData, setDoStableDiffusionReactsStatus, setDoStableDiffusionStatus, setShowDiffusionDetailsStatus } from "@/api/discordapi";
 import { Construct } from "@/classes/Construct";
 import Accordian from "@/components/accordion";
@@ -20,6 +20,7 @@ const DiscordPage = () => {
     const [discordStableDiffusion, setDiscordStableDiffusion] = useState<boolean>(false);
     const [discordStableReacts, setDiscordStableReacts] = useState<boolean>(false);
     const [discordShowDiffusionDetails, setDiscordShowDiffusionDetails] = useState<boolean>(false);
+    const [discordDesktopNotifications, setDiscordDesktopNotifications] = useState<boolean>(false);
     const [isBotActive, setIsBotActive] = useState(false);
 
     useEffect(() => {
@@ -33,6 +34,10 @@ const DiscordPage = () => {
             getDoStableDiffusionStatus().then(setDiscordStableDiffusion).catch(console.error);
             getDoStableDiffusionReactsStatus().then(setDiscordStableReacts).catch(console.error);
             getShowDiffusionDetailsStatus().then(setDiscordShowDiffusionDetails).catch(console.error);
+            getStorageValue("discordNotifications").then((value: any) => {
+                const isEnabled = JSON.parse(value)? true : false;
+                setDiscordDesktopNotifications(isEnabled);
+            });
         }
         const isBotActive = async () => {
             const status = await getBotStatus();
@@ -91,6 +96,7 @@ const DiscordPage = () => {
 
     const saveDiscordConfig = async () => {
         await saveDiscordData(discordBotToken, discordApplicationID, discordCharacterMode, discordMultiCharacterMode, discordMultiConstructMode);
+        setStorageValue("discordNotifications", JSON.stringify(discordDesktopNotifications));
     }
 
     const saveDiffusionConfig = async () => {
@@ -256,6 +262,23 @@ const DiscordPage = () => {
                                 <div className="themed-input flex flex-col items-center w-full">
                                     <i className="text-sm">This is the link you will use to invite the bot to your server. Only uses this after entering your applicationId and following the tutorial.</i>
                                     <a href={`https://discord.com/oauth2/authorize?client_id=${discordApplicationID}&scope=bot&permissions=41389525433936`} onClick={(e) => handleLinkClick(e, `https://discord.com/oauth2/authorize?client_id=${discordApplicationID}&scope=bot&permissions=41389525433936`)} className="themed-button-pos w-full">Invite Bot</a>
+                                </div>
+                            </div>
+                            <div className="col-span-1 flex flex-col text-left">
+                                <label className="text-theme-text font-semibold">Show Desktop Notifications</label>
+                                <div className="themed-input flex flex-col items-center w-full">
+                                    <i className="text-sm">When set to on, desktop notifications will be shown for all messages received by the bot.</i>
+                                    <ReactSwitch
+                                        checked={discordDesktopNotifications}
+                                        onChange={(e) => {
+                                            setDiscordDesktopNotifications(e);
+                                        }}
+                                        handleDiameter={30}
+                                        width={60}
+                                        uncheckedIcon={false}
+                                        checkedIcon={true}
+                                        id="discordDesktopNotifications"
+                                    />
                                 </div>
                             </div>
                             <div className="col-span-2 flex flex-row text-left gap-2 mt-2">

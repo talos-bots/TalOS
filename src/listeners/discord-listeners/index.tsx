@@ -1,3 +1,4 @@
+import { getStorageValue } from "@/api/dbapi";
 import { sendDesktopNotification } from "@/components/desktop-notification";
 import { IpcRendererEvent, ipcRenderer } from "electron";
 
@@ -40,7 +41,13 @@ function removeAllDiscordListeners() {
 export function DiscordListeners(){
     removeAllDiscordListeners();
     ipcRenderer.on("discord-message", (event: IpcRendererEvent, data: any) => {
-        // sendDesktopNotification(`[Discord - ${data.author.username}] `, `${data.content}`, () => {});
+        console.log(data);
+        getStorageValue("discordNotifications").then((value: any) => {
+            const isEnabled = JSON.parse(value)? true : false;
+            if (isEnabled) {
+                sendDesktopNotification(`[Discord - ${data.author.username}] `, `${data.content}`, () => {});
+            }
+        });
     });
 
     ipcRenderer.on("discord-ready", (event: IpcRendererEvent, data: any) => {

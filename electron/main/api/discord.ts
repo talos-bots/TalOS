@@ -2,7 +2,7 @@ import { ipcMain } from 'electron';
 import { ActivityType, Client, GatewayIntentBits, Collection, REST, Routes, Partials, TextChannel, DMChannel, NewsChannel, Snowflake, Webhook, Message, CommandInteraction, Events, PartialGroupDMChannel } from 'discord.js';
 import Store from 'electron-store';
 import { win } from '..';
-import { doImageReaction, getDoStableDiffusion, getUsername, handleDiscordMessage, handleRemoveMessage, handleRengenerateMessage } from '../controllers/DiscordController';
+import { doImageReaction, getDoStableDiffusion, getRegisteredChannels, getUsername, handleDiscordMessage, handleRemoveMessage, handleRengenerateMessage } from '../controllers/DiscordController';
 import { ConstructInterface, SlashCommand } from '../types/types';
 import { assembleConstructFromData, base642Buffer } from '../helpers/helpers';
 import { DefaultCommands, stableDiffusionCommands } from '../controllers/commands';
@@ -39,7 +39,17 @@ function createClient(){
         if (message.webhookId) return;
         messageQueue.push(message);
         await processQueue();
-        win?.webContents.send('discord-message', message);
+        const registeredChannels = getRegisteredChannels();
+        let isRegistered = false;
+        for(let i = 0; i < registeredChannels.length; i++){
+            if(message.channel.id === registeredChannels[i]._id){
+                isRegistered = true;
+                break;
+            }
+        }
+        if(isRegistered || message.channel.isDMBased()){
+            win?.webContents.send('discord-message', message);
+        }
     });
 
     disClient.on('messageUpdate', async (oldMessage, newMessage) => {

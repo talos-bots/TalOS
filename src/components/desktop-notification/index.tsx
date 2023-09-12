@@ -1,4 +1,4 @@
-export function sendDesktopNotification(title: string, body: string, onClickCallback: () => void) {
+export function sendDesktopNotification(title: string, body: string, onClickCallback?: () => void) {
     // Check if Notification API is supported
     if (!("Notification" in window)) {
         console.warn("This browser does not support desktop notification.");
