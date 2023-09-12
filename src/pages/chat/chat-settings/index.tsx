@@ -53,7 +53,7 @@ const ChatSettings = () => {
     };
 
     return (
-        <div className="grid grid-cols-2 w-full">
+        <div className="grid grid-cols-2 w-full gap-1">
             <div className="flex flex-col col-span-1 w-full h-full">
                 <div className="col-span-1 flex flex-col text-left">
                     <label className="text-theme-text font-semibold">Send Greetings</label>
