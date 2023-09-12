@@ -1,6 +1,6 @@
 {
   "name": "ConstructOS",
-  "version": "0.8.3",
+  "version": "0.8.9",
   "main": "dist-electron/main/index.js",
   "description": "Electron LLM React",
   "author": "Wayward Wyverns Softworks",
