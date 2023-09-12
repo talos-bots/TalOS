@@ -11,9 +11,17 @@ interface Props {
 const MenuThemeLoader = (props: Props) => {
     const [uiTheme, setUiTheme] = useState<UITheme>();
     const [themeLoaded, setThemeLoaded] = useState(false);
-
+    const [background, setBackground] = useState<string | null>(null);
     useEffect(() => {
         let savedTheme: string | undefined;
+        const getBackground = async () => {
+            const data = await getStorageValue('background');
+            if(data !== null) {
+                setStyle('background-image', `url(./backgrounds/${data})`);
+                setBackground(data);
+            }
+        }
+        getBackground();
         const getSavedTheme = async () => {
             try {
                 savedTheme = await getStorageValue('uiTheme');
@@ -76,7 +84,11 @@ const MenuThemeLoader = (props: Props) => {
                 setStyle(kebabCase('themeBorderType'), uiTheme.themeBorderType);
             }
             if(uiTheme.themeBackground.length > 0) {
-                setStyle('background-image', uiTheme.themeBackground);
+                if(background !== null) {
+                    setStyle('background-image', `url(./backgrounds/${background})`);
+                }else{
+                    setStyle('background-image', uiTheme.themeBackground);
+                }
             }
             if(uiTheme.themeAccent.length > 0) {
                 setStyle(kebabCase('themeAccent'), uiTheme.themeAccent);
@@ -104,7 +116,7 @@ function kebabCase(str: string) {
         .toLowerCase(); // make everything lowercase
 }
 
-function setStyle(styleName: string, styleValue: string) {
+export function setStyle(styleName: string, styleValue: string) {
     document.documentElement.style.setProperty(styleName, styleValue);
 }
 

@@ -57,6 +57,7 @@ const url = process.env.VITE_DEV_SERVER_URL;
 const indexHtml = join(process.env.DIST, "index.html");
 export const modelsPath = join(process.env.VITE_PUBLIC, "models/");
 export const wasmPath = join(process.env.VITE_PUBLIC, "wasm/");
+export const backgroundsPath = join(process.env.VITE_PUBLIC, "backgrounds/");
 export const dataPath = path.join(app.getPath("userData"), "data/");
 export const imagesPath = path.join(dataPath, "images/");
 fs.mkdirSync(dataPath, { recursive: true });
@@ -169,6 +170,33 @@ ipcMain.on("set-data", (event, arg) => {
 
 ipcMain.on("get-data", (event, arg, replyName) => {
   event.sender.send(replyName, store.get(arg));
+});
+
+ipcMain.on('save-background', (event, imageData, name, fileType) => {
+  const imagePath = path.join(backgroundsPath, `${name}.${fileType}`);
+  const data = Buffer.from(imageData, 'base64');
+  fs.writeFileSync(imagePath, data);
+  event.sender.send('save-background-reply', `${name}.${fileType}`);
+});
+
+ipcMain.on('get-backgrounds', (event) => {
+  fs.readdir(backgroundsPath, (err, files) => {
+    if (err) {
+      event.sender.send('get-backgrounds-reply', []);
+      return;
+    }
+    event.sender.send('get-backgrounds-reply', files);
+  });
+});
+
+ipcMain.on('delete-background', (event, name) => {
+  fs.unlink(path.join(backgroundsPath, name), (err) => {
+    if (err) {
+      event.sender.send('delete-background-reply', false);
+      return;
+    }
+    event.sender.send('delete-background-reply', true);
+  });
 });
 
 ipcMain.handle("get-server-port", (event) => {

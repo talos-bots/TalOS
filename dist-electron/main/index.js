@@ -5647,6 +5647,7 @@ const url = process.env.VITE_DEV_SERVER_URL;
 const indexHtml = node_path.join(process.env.DIST, "index.html");
 const modelsPath = node_path.join(process.env.VITE_PUBLIC, "models/");
 const wasmPath = node_path.join(process.env.VITE_PUBLIC, "wasm/");
+const backgroundsPath = node_path.join(process.env.VITE_PUBLIC, "backgrounds/");
 const dataPath = path.join(electron.app.getPath("userData"), "data/");
 const imagesPath = path.join(dataPath, "images/");
 fs.mkdirSync(dataPath, { recursive: true });
@@ -5747,6 +5748,30 @@ electron.ipcMain.on("set-data", (event, arg) => {
 electron.ipcMain.on("get-data", (event, arg, replyName) => {
   event.sender.send(replyName, store.get(arg));
 });
+electron.ipcMain.on("save-background", (event, imageData, name, fileType) => {
+  const imagePath = path.join(backgroundsPath, `${name}.${fileType}`);
+  const data = Buffer.from(imageData, "base64");
+  fs.writeFileSync(imagePath, data);
+  event.sender.send("save-background-reply", `${name}.${fileType}`);
+});
+electron.ipcMain.on("get-backgrounds", (event) => {
+  fs.readdir(backgroundsPath, (err, files) => {
+    if (err) {
+      event.sender.send("get-backgrounds-reply", []);
+      return;
+    }
+    event.sender.send("get-backgrounds-reply", files);
+  });
+});
+electron.ipcMain.on("delete-background", (event, name) => {
+  fs.unlink(path.join(backgroundsPath, name), (err) => {
+    if (err) {
+      event.sender.send("delete-background-reply", false);
+      return;
+    }
+    event.sender.send("delete-background-reply", true);
+  });
+});
 electron.ipcMain.handle("get-server-port", (event) => {
   try {
     const appRoot = electron.app.getAppPath();
@@ -5779,6 +5804,7 @@ async function requestFullDiskAccess() {
     }
   }
 }
+exports.backgroundsPath = backgroundsPath;
 exports.dataPath = dataPath;
 exports.imagesPath = imagesPath;
 exports.isDarwin = isDarwin;
