@@ -103,7 +103,7 @@ const EntryCrud = (props: EntryCrudProps) => {
                         </div>
                         <div className="flex flex-col h-3/4">
                             <label htmlFor="entry-content" className="font-semibold">Content</label>
-                            <textarea className="themed-input w-full h-full" id="entry-content" value={entryContent} onChange={e => setEntryContent(e.target.value.trim())} />
+                            <textarea className="themed-input w-full h-full" id="entry-content" value={entryContent} onChange={e => setEntryContent(e.target.value)} />
                         </div>
                     </div>
                     <div className="col-span-1 h-full">
@@ -117,7 +117,7 @@ const EntryCrud = (props: EntryCrudProps) => {
                         </div>
                         <div className="flex flex-col h-2/4">
                             <label htmlFor="entry-comment" className="font-semibold">Comment</label>
-                            <textarea className="themed-input w-full h-full" id="entry-comment" value={entryComment} onChange={e => setEntryComment(e.target.value.trim())} />
+                            <textarea className="themed-input w-full h-full" id="entry-comment" value={entryComment} onChange={e => setEntryComment(e.target.value)} />
                         </div>
                     </div>
                 </div>
