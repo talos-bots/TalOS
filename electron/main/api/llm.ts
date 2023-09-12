@@ -519,11 +519,11 @@ export const generateText = async (
                 "temperature": (settings?.temperature !== undefined && settings.temperature <= 1) ? settings.temperature : 1,
                 "candidateCount": 1,
                 "maxOutputTokens": settings.max_tokens ? settings.max_tokens : 350,
-                "topP": settings.top_p ? settings.top_p : 0.9,
+                "topP": (settings.top_p !== undefined && settings.top_k <= 1) ? settings.top_p : 0.9,
                 "topK": (settings.top_k !== undefined && settings.top_k >= 1) ? settings.top_k : 1,
             }
             try {
-                const googleReply = await axios.post(`https://generativelanguage.googleapis.com/v1beta2/${palmModel.trim()}:generateText?key=${endpoint.trim()}`, PaLM_Payload, {
+                const googleReply = await axios.post(`https://generativelanguage.googleapis.com/v1beta2/models/text-bison-001:generateText?key=${endpoint.trim()}`, PaLM_Payload, {
                     headers: {'Content-Type': 'application/json'}
                 });
                 
