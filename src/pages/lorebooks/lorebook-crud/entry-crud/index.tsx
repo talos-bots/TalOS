@@ -1,5 +1,5 @@
 import { EntryPostion, LoreEntry } from "@/classes/Lorebook";
-import Accordian from "@/components/accordian";
+import Accordian from "@/components/accordion";
 import { useEffect, useState } from "react";
 import ReactSwitch from "react-switch";
 

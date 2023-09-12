@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { AiOutlineDown, AiOutlineUp } from "react-icons/ai";
-interface AccordianProps {
+interface AccordionProps {
     title: string;
     children: React.ReactNode;
     className?: string;
 }
-const Accordian = (props: AccordianProps) => {
+const Accordion = (props: AccordionProps) => {
     const { title, children, className } = props;
     const [isExpanded, setIsExpanded] = useState(false);
 
@@ -23,7 +23,7 @@ const Accordian = (props: AccordianProps) => {
     }, [isExpanded, title]);
     
     return (
-        <div className={"themed-box w-full h-fit justify-center " +className}>
+        <div className={"themed-root w-full h-fit justify-center " +className}>
             <div className="text-2xl font-bold z-10 w-full flex justify-between items-center" onDoubleClick={() => setIsExpanded(!isExpanded)}>
                 <div className="flex flex-row w-full">
                     <div className="flex flex-col w-1/2 items-left text-left justify-start">
@@ -42,4 +42,4 @@ const Accordian = (props: AccordianProps) => {
 
 }
 
-export default Accordian;
+export default Accordion;

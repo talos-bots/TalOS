@@ -38,7 +38,7 @@ const StringArrayEditorCards = (props: MultiInputEditorProps) => {
                 </button>
                 {value[index] !== undefined ? (
                     <textarea
-                        className={(disabled ? "themed-input-root w-10/12" : "themed-input w-9/12")}
+                        className={(disabled ? "themed-input w-10/12" : "themed-input w-9/12")}
                         value={value[index]}
                         disabled={disabled}
                         onChange={(e) => {
@@ -51,7 +51,7 @@ const StringArrayEditorCards = (props: MultiInputEditorProps) => {
                     />
                 ) : ( 
                     <textarea
-                        className={(disabled ? "themed-input-root w-10/12" : "themed-input w-9/12")}
+                        className={(disabled ? "themed-input w-10/12" : "themed-input w-9/12")}
                         value={value[index]}
                         disabled={disabled}
                         onChange={(e) => {

@@ -8,7 +8,7 @@ const NavBar: React.FC = () => {
   const location = useLocation();
 
   return (
-  <nav className={`sm:px-16 px-6 w-full flex items-center justify-between py-5 fixed top-0 z-20 bg-theme-box bg-opacity-50 backdrop-blur-xl border-b-theme-border-width border-b-theme-border theme-border-style`}>
+  <nav className={`sm:px-16 px-6 w-full flex items-center justify-between py-5 fixed top-0 z-20 bg-theme-root bg-opacity-50 backdrop-blur-xl border-b-theme-border-width border-b-theme-border theme-border-style`}>
     <div className="flex items-center gap-2" id='titleBar'>
       <p className="text-theme-text text-[18px] font-bold">Construct<span className="text-theme-flavor-text">OS</span> - AI Agent Manager</p>
     </div>

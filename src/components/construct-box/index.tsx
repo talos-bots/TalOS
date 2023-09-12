@@ -92,7 +92,7 @@ const ConstructBox: React.FC<Props> = ({character}) => {
     }
 
     return (
-        <div className="character-box themed-box h-calc(100vh/6) w-full justify-center">
+        <div className="character-box themed-root h-calc(100vh/6) w-full justify-center">
             <div className="text-2xl font-bold z-10 flex justify-between items-center" onDoubleClick={() => setIsOpen(!isOpen)}>
                 <div className="flex flex-row gap-2 justify-center items-center">
                     {!isOpen ? (
@@ -137,7 +137,7 @@ const ConstructBox: React.FC<Props> = ({character}) => {
                             </div>
                         </div>
                         <label className="text-xl font-semibold text-left">Commands</label>
-                        <div className="w-full h-1/2 overflow-hidden themed-input-root">
+                        <div className="w-full h-1/2 overflow-hidden themed-input">
                             {character.commands.map((command, index) => {
                                 return (
                                     <div key={index}>
@@ -150,19 +150,19 @@ const ConstructBox: React.FC<Props> = ({character}) => {
                     <div className="col-span-1 flex flex-col justify-start items-start">
                         <label className="text-xl font-semibold text-left">Personality</label>
                         <textarea
-                            className="overflow-hidden w-full h-1/3 themed-input-root"
+                            className="overflow-hidden w-full h-1/3 themed-input"
                             value={character.personality}
                             disabled
                         />
                         <label className="text-xl font-semibold text-left">Background</label>
                         <textarea
-                            className="overflow-hidden w-full h-1/3 themed-input-root"
+                            className="overflow-hidden w-full h-1/3 themed-input"
                             value={character.background}
                             disabled
                         />
                         <label className="text-xl font-semibold text-left">Author's Note</label>
                         <textarea
-                            className="overflow-hidden w-full h-1/3 themed-input-root"
+                            className="overflow-hidden w-full h-1/3 themed-input"
                             value={character.authorsNote}
                             disabled
                         />

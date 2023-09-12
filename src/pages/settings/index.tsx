@@ -2,7 +2,7 @@ import { getStorageValue, setStorageValue } from "@/api/dbapi";
 import LLMPanel from "@/components/llm-panel";
 import { defaultThemes } from "@/constants";
 import { useEffect, useState } from "react";
-import Accordian from "@/components/accordian";
+import Accordian from "@/components/accordion";
 import StableDiffusionPanel from "./stable-diffuson";
 import ConstructSettingsPanel from "./constructs";
 import BackgroundSelector from "./background-selector";
@@ -24,7 +24,7 @@ const SettingsPage = () => {
 
     return (
         <div className="w-full h-[calc(100vh-70px)] flex flex-col gap-2 overflow-y-auto overflow-x-hidden p-4">
-            <h2 className="text-2xl font-bold text-theme-text text-shadow-xl themed-box">Settings</h2>
+            <h2 className="text-2xl font-bold text-theme-text text-shadow-xl themed-root">Settings</h2>
             <div className="flex flex-col gap-2">
                 <div className="grid grid-cols-2 gap-2">
                     <div className="col-span-1 flex flex-col gap-2">
