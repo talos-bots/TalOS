@@ -5,7 +5,6 @@ import { FiPlus, FiX } from "react-icons/fi";
 import { Construct } from "@/classes/Construct";
 import { getConstructs, saveNewConstruct } from "@/api/dbapi";
 import ConstructBox from "@/components/construct-box";
-import './construct-page.scss';
 import { importTavernCharacter } from "@/api/extrasapi";
 import { AiOutlineUpload } from "react-icons/ai";
 import { removeAllActiveConstructs } from "@/api/constructapi";
