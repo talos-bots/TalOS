@@ -1508,11 +1508,13 @@ async function getStatus(testEndpoint, testEndpointType) {
       case "Kobold":
         endpointURLObject = new URL(endpointUrl);
         try {
-          response = await axios.get(`${endpointURLObject.protocol}//${endpointURLObject.hostname}:${endpointURLObject.port}/api/v1/model`);
-          if (response.status === 200) {
+          response = await axios.get(`${endpointURLObject.protocol}//${endpointURLObject.hostname}:${endpointURLObject.port}/api/v1/model`).then((response2) => {
+            return response2;
+          }).catch((error) => {
+            console.log(error);
+          });
+          if (response) {
             return response.data.result;
-          } else {
-            return "Kobold endpoint is not responding.";
           }
         } catch (error) {
           return "Kobold endpoint is not responding.";
