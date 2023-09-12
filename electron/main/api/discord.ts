@@ -33,6 +33,200 @@ let characterMode = false;
 let multiCharacterMode = false;
 let multiConstructMode = false;
 
+function createClient(){
+    disClient.on('messageCreate', async (message) => {
+        if (message.author.id === disClient.user?.id) return;
+        if (message.webhookId) return;
+        messageQueue.push(message);
+        await processQueue();
+        win?.webContents.send('discord-message', message);
+    });
+
+    disClient.on('messageUpdate', async (oldMessage, newMessage) => {
+        if (newMessage.author?.id === disClient.user?.id) return;
+        win?.webContents.send('discord-message-update', oldMessage, newMessage);
+    });
+
+    disClient.on('messageDelete', async (message) => {
+        if (message.author?.id === disClient.user?.id) return;
+        win?.webContents.send('discord-message-delete', message);
+    });
+
+    disClient.on("messageReactionAdd", async (reaction, user) => {
+        if (user.id === disClient.user?.id) return;
+        console.log("Reaction added...");
+        try {
+            // Ensure the reaction itself is fully fetched
+            if (reaction.partial) {
+                await reaction.fetch();
+                console.log("Fetching reaction...");
+            }
+    
+            // Ensure the associated message of the reaction is fully fetched
+            if (reaction.message.partial) {
+                await reaction.message.fetch();
+                console.log("Fetching message...");
+            }
+    
+            // Now, reaction.message should be the fully fetched message
+            const message = reaction.message;
+            console.log("Message fetched...");
+
+            if(reaction.emoji.name === '♻️'){
+                console.log("Regenerating message...");
+                await handleRengenerateMessage(message as Message);
+                message.reactions.cache.get('♻️')?.remove();
+            }
+    
+            if(reaction.emoji.name === '🗑️'){
+                console.log("Removing message...");
+                await handleRemoveMessage(message as Message);
+            }
+
+            if(reaction.emoji.name === '🖼️'){
+                console.log("Creating image...");
+                await doImageReaction(message as Message);
+            }
+            win?.webContents.send('discord-message-reaction-add', reaction, user);
+        } catch (error) {
+            console.error('Something went wrong when fetching the message:', error);
+        }
+    });
+    
+
+    disClient.on('messageReactionRemove', async (reaction, user) => {
+        if (user.id === disClient.user?.id) return;
+        win?.webContents.send('discord-message-reaction-remove', reaction, user);
+    });
+
+    disClient.on('messageReactionRemoveAll', async (message) => {
+        if (message.author?.id === disClient.user?.id) return;
+        win?.webContents.send('discord-message-reaction-remove-all', message);
+    });
+
+    disClient.on('messageReactionRemoveEmoji', async (reaction) => {
+        win?.webContents.send('discord-message-reaction-remove-emoji', reaction);
+    });
+
+    disClient.on('channelCreate', async (channel) => {
+        win?.webContents.send('discord-channel-create', channel);
+    });
+
+    disClient.on('channelDelete', async (channel) => {
+        win?.webContents.send('discord-channel-delete', channel);
+    });
+
+    disClient.on('channelPinsUpdate', async (channel, time) => {
+        win?.webContents.send('discord-channel-pins-update', channel, time);
+    });
+
+    disClient.on('channelUpdate', async (oldChannel, newChannel) => {
+        win?.webContents.send('discord-channel-update', oldChannel, newChannel);
+    });
+
+    disClient.on('emojiCreate', async (emoji) => {
+        win?.webContents.send('discord-emoji-create', emoji);
+    });
+
+    disClient.on('emojiDelete', async (emoji) => {
+        win?.webContents.send('discord-emoji-delete', emoji);
+    });
+
+    disClient.on('emojiUpdate', async (oldEmoji, newEmoji) => {
+        win?.webContents.send('discord-emoji-update', oldEmoji, newEmoji);
+    });
+
+    disClient.on('guildBanAdd', async (ban) => {
+        win?.webContents.send('discord-guild-ban-add', ban);
+    });
+
+    disClient.on('guildBanRemove', async (ban) => {
+        win?.webContents.send('discord-guild-ban-remove', ban);
+    });
+
+    disClient.on('guildCreate', async (guild) => {
+        win?.webContents.send('discord-guild-create', guild);
+    });
+
+    disClient.on('guildDelete', async (guild) => {
+        win?.webContents.send('discord-guild-delete', guild);
+    });
+
+    disClient.on('guildUnavailable', async (guild) => {
+        win?.webContents.send('discord-guild-unavailable', guild);
+    });
+
+    disClient.on('guildIntegrationsUpdate', async (guild) => {
+        win?.webContents.send('discord-guild-integrations-update', guild);
+    });
+
+    disClient.on('guildMemberAdd', async (member) => {
+        win?.webContents.send('discord-guild-member-add', member);
+    });
+
+    disClient.on('guildMemberRemove', async (member) => {
+        win?.webContents.send('discord-guild-member-remove', member);
+    });
+
+    disClient.on('guildMemberAvailable', async (member) => {
+        win?.webContents.send('discord-guild-member-available', member);
+    });
+
+    disClient.on('guildMemberUpdate', async (oldMember, newMember) => {
+        win?.webContents.send('discord-guild-member-update', oldMember, newMember);
+    });
+
+    disClient.on('guildMembersChunk', async (members, guild) => {
+        win?.webContents.send('discord-guild-members-chunk', members, guild);
+    });
+
+    disClient.on('guildUpdate', async (oldGuild, newGuild) => {
+        win?.webContents.send('discord-guild-update', oldGuild, newGuild);
+    });
+
+    disClient.on('interactionCreate', async (interaction) => {
+        if (!interaction.isCommand()) return;
+        let commandsToCheck = commands;
+        if(getDoStableDiffusion()){
+            commandsToCheck = [...commands, ...stableDiffusionCommands];
+        }
+        const command = commandsToCheck.find(cmd => cmd.name === interaction.commandName);
+        if (!command) return;
+      
+        try {
+            await command.execute(interaction);
+        } catch (error) {
+            console.error(error);
+            await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+        }
+        win?.webContents.send('discord-interaction-create', interaction);
+    });
+
+    disClient.on('inviteCreate', async (invite) => {
+        win?.webContents.send('discord-invite-create', invite);
+    });
+
+    disClient.on('inviteDelete', async (invite) => {
+        win?.webContents.send('discord-invite-delete', invite);
+    });
+
+    disClient.on('presenceUpdate', async (oldPresence, newPresence) => {
+        win?.webContents.send('discord-presence-update', oldPresence, newPresence);
+    });
+
+    disClient.on('ready', async () => {
+        if(!disClient.user) return;
+        isReady = true;
+        console.log(`Logged in as ${disClient.user.tag}!`);
+        win?.webContents.send('discord-ready', disClient.user.tag);
+        registerCommands();
+        let constructs = retrieveConstructs();
+        let constructRaw = await getConstruct(constructs[0]);
+        let construct = assembleConstructFromData(constructRaw);
+        if(!construct) return;
+        setDiscordBotInfo(construct.name, construct.avatar);
+    });
+}
 export async function registerCommands() {
     if(!isReady) return;
     const rest = new REST().setToken(token);
@@ -475,199 +669,6 @@ export function DiscordJSRoutes(){
         event.sender.send('discord-get-guilds-reply', await getDiscordGuilds());
     });
 
-    disClient.on('messageCreate', async (message) => {
-        if (message.author.id === disClient.user?.id) return;
-        if (message.webhookId) return;
-        messageQueue.push(message);
-        await processQueue();
-        win?.webContents.send('discord-message', message);
-    });
-
-    disClient.on('messageUpdate', async (oldMessage, newMessage) => {
-        if (newMessage.author?.id === disClient.user?.id) return;
-        win?.webContents.send('discord-message-update', oldMessage, newMessage);
-    });
-
-    disClient.on('messageDelete', async (message) => {
-        if (message.author?.id === disClient.user?.id) return;
-        win?.webContents.send('discord-message-delete', message);
-    });
-
-    disClient.on("messageReactionAdd", async (reaction, user) => {
-        if (user.id === disClient.user?.id) return;
-        console.log("Reaction added...");
-        try {
-            // Ensure the reaction itself is fully fetched
-            if (reaction.partial) {
-                await reaction.fetch();
-                console.log("Fetching reaction...");
-            }
-    
-            // Ensure the associated message of the reaction is fully fetched
-            if (reaction.message.partial) {
-                await reaction.message.fetch();
-                console.log("Fetching message...");
-            }
-    
-            // Now, reaction.message should be the fully fetched message
-            const message = reaction.message;
-            console.log("Message fetched...");
-
-            if(reaction.emoji.name === '♻️'){
-                console.log("Regenerating message...");
-                await handleRengenerateMessage(message as Message);
-                message.reactions.cache.get('♻️')?.remove();
-            }
-    
-            if(reaction.emoji.name === '🗑️'){
-                console.log("Removing message...");
-                await handleRemoveMessage(message as Message);
-            }
-
-            if(reaction.emoji.name === '🖼️'){
-                console.log("Creating image...");
-                await doImageReaction(message as Message);
-            }
-            win?.webContents.send('discord-message-reaction-add', reaction, user);
-        } catch (error) {
-            console.error('Something went wrong when fetching the message:', error);
-        }
-    });
-    
-
-    disClient.on('messageReactionRemove', async (reaction, user) => {
-        if (user.id === disClient.user?.id) return;
-        win?.webContents.send('discord-message-reaction-remove', reaction, user);
-    });
-
-    disClient.on('messageReactionRemoveAll', async (message) => {
-        if (message.author?.id === disClient.user?.id) return;
-        win?.webContents.send('discord-message-reaction-remove-all', message);
-    });
-
-    disClient.on('messageReactionRemoveEmoji', async (reaction) => {
-        win?.webContents.send('discord-message-reaction-remove-emoji', reaction);
-    });
-
-    disClient.on('channelCreate', async (channel) => {
-        win?.webContents.send('discord-channel-create', channel);
-    });
-
-    disClient.on('channelDelete', async (channel) => {
-        win?.webContents.send('discord-channel-delete', channel);
-    });
-
-    disClient.on('channelPinsUpdate', async (channel, time) => {
-        win?.webContents.send('discord-channel-pins-update', channel, time);
-    });
-
-    disClient.on('channelUpdate', async (oldChannel, newChannel) => {
-        win?.webContents.send('discord-channel-update', oldChannel, newChannel);
-    });
-
-    disClient.on('emojiCreate', async (emoji) => {
-        win?.webContents.send('discord-emoji-create', emoji);
-    });
-
-    disClient.on('emojiDelete', async (emoji) => {
-        win?.webContents.send('discord-emoji-delete', emoji);
-    });
-
-    disClient.on('emojiUpdate', async (oldEmoji, newEmoji) => {
-        win?.webContents.send('discord-emoji-update', oldEmoji, newEmoji);
-    });
-
-    disClient.on('guildBanAdd', async (ban) => {
-        win?.webContents.send('discord-guild-ban-add', ban);
-    });
-
-    disClient.on('guildBanRemove', async (ban) => {
-        win?.webContents.send('discord-guild-ban-remove', ban);
-    });
-
-    disClient.on('guildCreate', async (guild) => {
-        win?.webContents.send('discord-guild-create', guild);
-    });
-
-    disClient.on('guildDelete', async (guild) => {
-        win?.webContents.send('discord-guild-delete', guild);
-    });
-
-    disClient.on('guildUnavailable', async (guild) => {
-        win?.webContents.send('discord-guild-unavailable', guild);
-    });
-
-    disClient.on('guildIntegrationsUpdate', async (guild) => {
-        win?.webContents.send('discord-guild-integrations-update', guild);
-    });
-
-    disClient.on('guildMemberAdd', async (member) => {
-        win?.webContents.send('discord-guild-member-add', member);
-    });
-
-    disClient.on('guildMemberRemove', async (member) => {
-        win?.webContents.send('discord-guild-member-remove', member);
-    });
-
-    disClient.on('guildMemberAvailable', async (member) => {
-        win?.webContents.send('discord-guild-member-available', member);
-    });
-
-    disClient.on('guildMemberUpdate', async (oldMember, newMember) => {
-        win?.webContents.send('discord-guild-member-update', oldMember, newMember);
-    });
-
-    disClient.on('guildMembersChunk', async (members, guild) => {
-        win?.webContents.send('discord-guild-members-chunk', members, guild);
-    });
-
-    disClient.on('guildUpdate', async (oldGuild, newGuild) => {
-        win?.webContents.send('discord-guild-update', oldGuild, newGuild);
-    });
-
-    disClient.on('interactionCreate', async (interaction) => {
-        if (!interaction.isCommand()) return;
-        let commandsToCheck = commands;
-        if(getDoStableDiffusion()){
-            commandsToCheck = [...commands, ...stableDiffusionCommands];
-        }
-        const command = commandsToCheck.find(cmd => cmd.name === interaction.commandName);
-        if (!command) return;
-      
-        try {
-            await command.execute(interaction);
-        } catch (error) {
-            console.error(error);
-            await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
-        }
-        win?.webContents.send('discord-interaction-create', interaction);
-    });
-
-    disClient.on('inviteCreate', async (invite) => {
-        win?.webContents.send('discord-invite-create', invite);
-    });
-
-    disClient.on('inviteDelete', async (invite) => {
-        win?.webContents.send('discord-invite-delete', invite);
-    });
-
-    disClient.on('presenceUpdate', async (oldPresence, newPresence) => {
-        win?.webContents.send('discord-presence-update', oldPresence, newPresence);
-    });
-
-    disClient.on('ready', async () => {
-        if(!disClient.user) return;
-        isReady = true;
-        console.log(`Logged in as ${disClient.user.tag}!`);
-        win?.webContents.send('discord-ready', disClient.user.tag);
-        registerCommands();
-        let constructs = retrieveConstructs();
-        let constructRaw = await getConstruct(constructs[0]);
-        let construct = assembleConstructFromData(constructRaw);
-        if(!construct) return;
-        setDiscordBotInfo(construct.name, construct.avatar);
-    });
-
     ipcMain.handle('discord-login', async (event, rawToken: string, appId: string) => {
         try {
             if (rawToken === '') {
@@ -697,7 +698,7 @@ export function DiscordJSRoutes(){
             }
             
             await disClient.login(token);
-            
+            createClient();
             if (!disClient.user) {
                 console.error("Discord client user is not initialized.");
                 return false;

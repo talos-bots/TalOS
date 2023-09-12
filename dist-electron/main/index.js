@@ -4800,6 +4800,202 @@ let isReady = false;
 let token = "";
 let applicationID = "";
 let multiCharacterMode = false;
+function createClient() {
+  disClient.on("messageCreate", async (message) => {
+    var _a, _b;
+    if (message.author.id === ((_a = disClient.user) == null ? void 0 : _a.id))
+      return;
+    if (message.webhookId)
+      return;
+    messageQueue.push(message);
+    await processQueue();
+    (_b = exports.win) == null ? void 0 : _b.webContents.send("discord-message", message);
+  });
+  disClient.on("messageUpdate", async (oldMessage, newMessage) => {
+    var _a, _b, _c;
+    if (((_a = newMessage.author) == null ? void 0 : _a.id) === ((_b = disClient.user) == null ? void 0 : _b.id))
+      return;
+    (_c = exports.win) == null ? void 0 : _c.webContents.send("discord-message-update", oldMessage, newMessage);
+  });
+  disClient.on("messageDelete", async (message) => {
+    var _a, _b, _c;
+    if (((_a = message.author) == null ? void 0 : _a.id) === ((_b = disClient.user) == null ? void 0 : _b.id))
+      return;
+    (_c = exports.win) == null ? void 0 : _c.webContents.send("discord-message-delete", message);
+  });
+  disClient.on("messageReactionAdd", async (reaction, user) => {
+    var _a, _b, _c;
+    if (user.id === ((_a = disClient.user) == null ? void 0 : _a.id))
+      return;
+    console.log("Reaction added...");
+    try {
+      if (reaction.partial) {
+        await reaction.fetch();
+        console.log("Fetching reaction...");
+      }
+      if (reaction.message.partial) {
+        await reaction.message.fetch();
+        console.log("Fetching message...");
+      }
+      const message = reaction.message;
+      console.log("Message fetched...");
+      if (reaction.emoji.name === "♻️") {
+        console.log("Regenerating message...");
+        await handleRengenerateMessage(message);
+        (_b = message.reactions.cache.get("♻️")) == null ? void 0 : _b.remove();
+      }
+      if (reaction.emoji.name === "🗑️") {
+        console.log("Removing message...");
+        await handleRemoveMessage(message);
+      }
+      if (reaction.emoji.name === "🖼️") {
+        console.log("Creating image...");
+        await doImageReaction(message);
+      }
+      (_c = exports.win) == null ? void 0 : _c.webContents.send("discord-message-reaction-add", reaction, user);
+    } catch (error) {
+      console.error("Something went wrong when fetching the message:", error);
+    }
+  });
+  disClient.on("messageReactionRemove", async (reaction, user) => {
+    var _a, _b;
+    if (user.id === ((_a = disClient.user) == null ? void 0 : _a.id))
+      return;
+    (_b = exports.win) == null ? void 0 : _b.webContents.send("discord-message-reaction-remove", reaction, user);
+  });
+  disClient.on("messageReactionRemoveAll", async (message) => {
+    var _a, _b, _c;
+    if (((_a = message.author) == null ? void 0 : _a.id) === ((_b = disClient.user) == null ? void 0 : _b.id))
+      return;
+    (_c = exports.win) == null ? void 0 : _c.webContents.send("discord-message-reaction-remove-all", message);
+  });
+  disClient.on("messageReactionRemoveEmoji", async (reaction) => {
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-message-reaction-remove-emoji", reaction);
+  });
+  disClient.on("channelCreate", async (channel) => {
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-channel-create", channel);
+  });
+  disClient.on("channelDelete", async (channel) => {
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-channel-delete", channel);
+  });
+  disClient.on("channelPinsUpdate", async (channel, time) => {
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-channel-pins-update", channel, time);
+  });
+  disClient.on("channelUpdate", async (oldChannel, newChannel) => {
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-channel-update", oldChannel, newChannel);
+  });
+  disClient.on("emojiCreate", async (emoji) => {
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-emoji-create", emoji);
+  });
+  disClient.on("emojiDelete", async (emoji) => {
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-emoji-delete", emoji);
+  });
+  disClient.on("emojiUpdate", async (oldEmoji, newEmoji) => {
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-emoji-update", oldEmoji, newEmoji);
+  });
+  disClient.on("guildBanAdd", async (ban) => {
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-ban-add", ban);
+  });
+  disClient.on("guildBanRemove", async (ban) => {
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-ban-remove", ban);
+  });
+  disClient.on("guildCreate", async (guild) => {
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-create", guild);
+  });
+  disClient.on("guildDelete", async (guild) => {
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-delete", guild);
+  });
+  disClient.on("guildUnavailable", async (guild) => {
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-unavailable", guild);
+  });
+  disClient.on("guildIntegrationsUpdate", async (guild) => {
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-integrations-update", guild);
+  });
+  disClient.on("guildMemberAdd", async (member) => {
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-member-add", member);
+  });
+  disClient.on("guildMemberRemove", async (member) => {
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-member-remove", member);
+  });
+  disClient.on("guildMemberAvailable", async (member) => {
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-member-available", member);
+  });
+  disClient.on("guildMemberUpdate", async (oldMember, newMember) => {
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-member-update", oldMember, newMember);
+  });
+  disClient.on("guildMembersChunk", async (members, guild) => {
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-members-chunk", members, guild);
+  });
+  disClient.on("guildUpdate", async (oldGuild, newGuild) => {
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-update", oldGuild, newGuild);
+  });
+  disClient.on("interactionCreate", async (interaction) => {
+    var _a;
+    if (!interaction.isCommand())
+      return;
+    let commandsToCheck = commands;
+    if (getDoStableDiffusion()) {
+      commandsToCheck = [...commands, ...stableDiffusionCommands];
+    }
+    const command = commandsToCheck.find((cmd) => cmd.name === interaction.commandName);
+    if (!command)
+      return;
+    try {
+      await command.execute(interaction);
+    } catch (error) {
+      console.error(error);
+      await interaction.reply({ content: "There was an error while executing this command!", ephemeral: true });
+    }
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-interaction-create", interaction);
+  });
+  disClient.on("inviteCreate", async (invite) => {
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-invite-create", invite);
+  });
+  disClient.on("inviteDelete", async (invite) => {
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-invite-delete", invite);
+  });
+  disClient.on("presenceUpdate", async (oldPresence, newPresence) => {
+    var _a;
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-presence-update", oldPresence, newPresence);
+  });
+  disClient.on("ready", async () => {
+    var _a;
+    if (!disClient.user)
+      return;
+    isReady = true;
+    console.log(`Logged in as ${disClient.user.tag}!`);
+    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-ready", disClient.user.tag);
+    registerCommands();
+    let constructs = retrieveConstructs();
+    let constructRaw = await getConstruct(constructs[0]);
+    let construct = assembleConstructFromData(constructRaw);
+    if (!construct)
+      return;
+    setDiscordBotInfo(construct.name, construct.avatar);
+  });
+}
 async function registerCommands() {
   if (!isReady)
     return;
@@ -5158,200 +5354,6 @@ function DiscordJSRoutes() {
   electron.ipcMain.on("discord-get-guilds", async (event) => {
     event.sender.send("discord-get-guilds-reply", await getDiscordGuilds());
   });
-  disClient.on("messageCreate", async (message) => {
-    var _a, _b;
-    if (message.author.id === ((_a = disClient.user) == null ? void 0 : _a.id))
-      return;
-    if (message.webhookId)
-      return;
-    messageQueue.push(message);
-    await processQueue();
-    (_b = exports.win) == null ? void 0 : _b.webContents.send("discord-message", message);
-  });
-  disClient.on("messageUpdate", async (oldMessage, newMessage) => {
-    var _a, _b, _c;
-    if (((_a = newMessage.author) == null ? void 0 : _a.id) === ((_b = disClient.user) == null ? void 0 : _b.id))
-      return;
-    (_c = exports.win) == null ? void 0 : _c.webContents.send("discord-message-update", oldMessage, newMessage);
-  });
-  disClient.on("messageDelete", async (message) => {
-    var _a, _b, _c;
-    if (((_a = message.author) == null ? void 0 : _a.id) === ((_b = disClient.user) == null ? void 0 : _b.id))
-      return;
-    (_c = exports.win) == null ? void 0 : _c.webContents.send("discord-message-delete", message);
-  });
-  disClient.on("messageReactionAdd", async (reaction, user) => {
-    var _a, _b, _c;
-    if (user.id === ((_a = disClient.user) == null ? void 0 : _a.id))
-      return;
-    console.log("Reaction added...");
-    try {
-      if (reaction.partial) {
-        await reaction.fetch();
-        console.log("Fetching reaction...");
-      }
-      if (reaction.message.partial) {
-        await reaction.message.fetch();
-        console.log("Fetching message...");
-      }
-      const message = reaction.message;
-      console.log("Message fetched...");
-      if (reaction.emoji.name === "♻️") {
-        console.log("Regenerating message...");
-        await handleRengenerateMessage(message);
-        (_b = message.reactions.cache.get("♻️")) == null ? void 0 : _b.remove();
-      }
-      if (reaction.emoji.name === "🗑️") {
-        console.log("Removing message...");
-        await handleRemoveMessage(message);
-      }
-      if (reaction.emoji.name === "🖼️") {
-        console.log("Creating image...");
-        await doImageReaction(message);
-      }
-      (_c = exports.win) == null ? void 0 : _c.webContents.send("discord-message-reaction-add", reaction, user);
-    } catch (error) {
-      console.error("Something went wrong when fetching the message:", error);
-    }
-  });
-  disClient.on("messageReactionRemove", async (reaction, user) => {
-    var _a, _b;
-    if (user.id === ((_a = disClient.user) == null ? void 0 : _a.id))
-      return;
-    (_b = exports.win) == null ? void 0 : _b.webContents.send("discord-message-reaction-remove", reaction, user);
-  });
-  disClient.on("messageReactionRemoveAll", async (message) => {
-    var _a, _b, _c;
-    if (((_a = message.author) == null ? void 0 : _a.id) === ((_b = disClient.user) == null ? void 0 : _b.id))
-      return;
-    (_c = exports.win) == null ? void 0 : _c.webContents.send("discord-message-reaction-remove-all", message);
-  });
-  disClient.on("messageReactionRemoveEmoji", async (reaction) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-message-reaction-remove-emoji", reaction);
-  });
-  disClient.on("channelCreate", async (channel) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-channel-create", channel);
-  });
-  disClient.on("channelDelete", async (channel) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-channel-delete", channel);
-  });
-  disClient.on("channelPinsUpdate", async (channel, time) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-channel-pins-update", channel, time);
-  });
-  disClient.on("channelUpdate", async (oldChannel, newChannel) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-channel-update", oldChannel, newChannel);
-  });
-  disClient.on("emojiCreate", async (emoji) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-emoji-create", emoji);
-  });
-  disClient.on("emojiDelete", async (emoji) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-emoji-delete", emoji);
-  });
-  disClient.on("emojiUpdate", async (oldEmoji, newEmoji) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-emoji-update", oldEmoji, newEmoji);
-  });
-  disClient.on("guildBanAdd", async (ban) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-ban-add", ban);
-  });
-  disClient.on("guildBanRemove", async (ban) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-ban-remove", ban);
-  });
-  disClient.on("guildCreate", async (guild) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-create", guild);
-  });
-  disClient.on("guildDelete", async (guild) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-delete", guild);
-  });
-  disClient.on("guildUnavailable", async (guild) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-unavailable", guild);
-  });
-  disClient.on("guildIntegrationsUpdate", async (guild) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-integrations-update", guild);
-  });
-  disClient.on("guildMemberAdd", async (member) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-member-add", member);
-  });
-  disClient.on("guildMemberRemove", async (member) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-member-remove", member);
-  });
-  disClient.on("guildMemberAvailable", async (member) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-member-available", member);
-  });
-  disClient.on("guildMemberUpdate", async (oldMember, newMember) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-member-update", oldMember, newMember);
-  });
-  disClient.on("guildMembersChunk", async (members, guild) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-members-chunk", members, guild);
-  });
-  disClient.on("guildUpdate", async (oldGuild, newGuild) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-update", oldGuild, newGuild);
-  });
-  disClient.on("interactionCreate", async (interaction) => {
-    var _a;
-    if (!interaction.isCommand())
-      return;
-    let commandsToCheck = commands;
-    if (getDoStableDiffusion()) {
-      commandsToCheck = [...commands, ...stableDiffusionCommands];
-    }
-    const command = commandsToCheck.find((cmd) => cmd.name === interaction.commandName);
-    if (!command)
-      return;
-    try {
-      await command.execute(interaction);
-    } catch (error) {
-      console.error(error);
-      await interaction.reply({ content: "There was an error while executing this command!", ephemeral: true });
-    }
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-interaction-create", interaction);
-  });
-  disClient.on("inviteCreate", async (invite) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-invite-create", invite);
-  });
-  disClient.on("inviteDelete", async (invite) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-invite-delete", invite);
-  });
-  disClient.on("presenceUpdate", async (oldPresence, newPresence) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-presence-update", oldPresence, newPresence);
-  });
-  disClient.on("ready", async () => {
-    var _a;
-    if (!disClient.user)
-      return;
-    isReady = true;
-    console.log(`Logged in as ${disClient.user.tag}!`);
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-ready", disClient.user.tag);
-    registerCommands();
-    let constructs = retrieveConstructs();
-    let constructRaw = await getConstruct(constructs[0]);
-    let construct = assembleConstructFromData(constructRaw);
-    if (!construct)
-      return;
-    setDiscordBotInfo(construct.name, construct.avatar);
-  });
   electron.ipcMain.handle("discord-login", async (event, rawToken, appId) => {
     try {
       if (rawToken === "") {
@@ -5377,6 +5379,7 @@ function DiscordJSRoutes() {
         store$2.set("discordAppId", appId);
       }
       await disClient.login(token);
+      createClient();
       if (!disClient.user) {
         console.error("Discord client user is not initialized.");
         return false;
