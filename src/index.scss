@@ -184,12 +184,12 @@ ul {
 	padding: 1rem;
 	color: var(--theme-text);
   background-color: var(--theme-button);
-  @apply border-theme-border-width border-theme-border theme-border-style
+  @apply border-theme-border-width border-theme-border theme-border-style rounded-theme-border-radius
 }
 
 .construct-search-bar input:focus{
 	background-color: var(--theme-accent);
-  @apply border-theme-border-width border-theme-border theme-border-style
+  @apply border-theme-border-width border-theme-border theme-border-style rounded-theme-border-radius
 }
 
 .message-button {
