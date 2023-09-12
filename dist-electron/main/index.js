@@ -1600,13 +1600,8 @@ const generateText = async (prompt, configuredName = "You", stopList = null) => 
         };
         response = await axios.post(`${endpointURLObject.protocol}//${endpointURLObject.hostname}:${endpointURLObject.port}/api/v1/generate`, koboldPayload);
         if (response.status === 200) {
-          results = response.data;
-          console.log(results);
-          if (Array.isArray(results)) {
-            return results = results.join(" ");
-          } else {
-            return results;
-          }
+          results = response.data.results[0].text;
+          return results = { results: [results], prompt };
         }
         console.log(response.data);
       } catch (error) {
