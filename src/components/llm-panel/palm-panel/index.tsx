@@ -175,7 +175,7 @@ const PaLMPanel = (props: PaLMPanelProps) => {
                         <label className="text-theme-text text-shadow-xl">{selectedModelObject?.description}</label>
                     </div>
                 ) : null}
-                <button className="themed-button-pos w-full" onClick={() => {setPalmModel(selectedModel);}}>Save</button>
+                {/* <button className="themed-button-pos w-full" onClick={() => {setPalmModel(selectedModel);}}>Save</button> */}
             </div>
         </div>
     );
