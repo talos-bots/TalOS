@@ -85,11 +85,11 @@ const PaLMPanel = (props: PaLMPanelProps) => {
             if(model?.supportedGenerationMethods.includes('generateText')){
                 modelList.push(model);
             }
-            if(modelList.length === 1){
-                setSelectedModel(model.name);
-                setPalmModel(model.name);
-            }
         });
+        if(modelList.length === 1){
+            setSelectedModel(modelList[0].name);
+            setPalmModel(modelList[0].name);
+        }
         setModels(modelList);
         let foundModel = modelList.find((model) => model?.name === selectedModel);
         if(foundModel === undefined){
@@ -143,13 +143,14 @@ const PaLMPanel = (props: PaLMPanelProps) => {
             </div>
             <div className="flex flex-col gap-1">
                 <label className="text-theme-text text-shadow-xl font-semibold">PaLM Models</label>
-                <select className="themed-input w-full" value={selectedModel} onChange={(e) => setSelectedModel(e.target.value)}>
+                {/* <select className="themed-input w-full" value={selectedModel} onChange={(e) => setSelectedModel(e.target.value)}>
                     {models.map((model) => (
                         <option key={model.name} value={model.name} className='themed-input'>
                             {model.displayName}
                         </option>
                     ))}
-                </select>
+                </select> */}
+                <input className="themed-input w-full" value={selectedModel} disabled/>
                 {selectedModelObject !== null ? (
                     <div className="flex flex-col gap-1 themed-box">
                         <label className="text-theme-text text-shadow-xl font-semibold">Name</label>
