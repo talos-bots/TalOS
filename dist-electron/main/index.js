@@ -2447,7 +2447,8 @@ async function generateContinueChatLog(construct, chatLog, currentUser, messages
     for (let i = 0; i < memories.length; i++) {
       if (memories[i] !== void 0) {
         if (memories[i].item.metadata.text !== void 0 && memories[i].item.metadata.text !== null && memories[i].item.metadata.text !== "" && memories[i].item.metadata.text !== chatLog.lastMessage.text) {
-          memoryText += memories[i].item.metadata.text + "\n";
+          memoryText += `${memories[i].item.metadata.user}: ${memories[i].item.metadata.text}
+`;
         }
       }
     }

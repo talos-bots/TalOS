@@ -373,7 +373,7 @@ export async function generateContinueChatLog(construct: any, chatLog: ChatInter
         for(let i = 0; i < memories.length; i++){
             if(memories[i] !== undefined){
                 if(memories[i].item.metadata.text !== undefined && memories[i].item.metadata.text !== null && memories[i].item.metadata.text !== '' && memories[i].item.metadata.text !== chatLog.lastMessage.text){
-                    memoryText += memories[i].item.metadata.text + '\n';
+                    memoryText += `${memories[i].item.metadata.user}: ${memories[i].item.metadata.text}\n`;
                 }
             }
         }
