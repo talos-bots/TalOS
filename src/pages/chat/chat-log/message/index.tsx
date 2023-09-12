@@ -120,7 +120,6 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate, onSplit, on
                                         title="Regenerate"
                                         onClick={() => {
                                             if(onUserRegenerate === undefined) return;
-                                            setIsTyping(true)
                                             onUserRegenerate(message._id, message.text)
                                         }}>
                                         <RefreshCw size={14} />
@@ -130,7 +129,6 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate, onSplit, on
                                         title="Regenerate"
                                         onClick={() => {
                                             if(onRegenerate === undefined) return;
-                                            setIsTyping(true)
                                             onRegenerate(message._id, message.text)
                                         }}>
                                         <RefreshCw size={14} />
