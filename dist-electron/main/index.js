@@ -3206,6 +3206,15 @@ const getRegisteredChannels = () => {
 };
 const addRegisteredChannel = (newChannel) => {
   const existingChannels = getRegisteredChannels();
+  let registered = false;
+  for (let i = 0; i < existingChannels.length; i++) {
+    if (existingChannels[i]._id === newChannel._id) {
+      registered = true;
+      break;
+    }
+  }
+  if (registered)
+    return;
   if (!existingChannels.includes(newChannel)) {
     existingChannels.push(newChannel);
     store$3.set("channels", existingChannels);
@@ -3772,6 +3781,20 @@ const RegisterCommand = {
     if (interaction.guildId === null) {
       await interaction.editReply({
         content: "This command can only be used in a server channel."
+      });
+      return;
+    }
+    const registeredChannels = getRegisteredChannels();
+    let registered = false;
+    for (let i = 0; i < registeredChannels.length; i++) {
+      if (registeredChannels[i]._id === interaction.channelId) {
+        registered = true;
+        break;
+      }
+    }
+    if (registered) {
+      await interaction.editReply({
+        content: "Channel already registered."
       });
       return;
     }
