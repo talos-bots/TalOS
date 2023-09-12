@@ -69,7 +69,7 @@ const PaLMPanel = (props: PaLMPanelProps) => {
         if (endpoint === '') return;
         getModels();
     }, [endpoint]);
-    
+
     const saveFilters = () => {
         setPaLMFilters(filters);
     }
@@ -84,6 +84,10 @@ const PaLMPanel = (props: PaLMPanelProps) => {
         models?.data.models.forEach((model: PaLMModel) => {
             if(model?.supportedGenerationMethods.includes('generateText')){
                 modelList.push(model);
+            }
+            if(modelList.length === 1){
+                setSelectedModel(model.name);
+                setPalmModel(model.name);
             }
         });
         setModels(modelList);
