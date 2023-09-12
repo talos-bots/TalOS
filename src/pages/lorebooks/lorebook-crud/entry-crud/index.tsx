@@ -109,11 +109,11 @@ const EntryCrud = (props: EntryCrudProps) => {
                     <div className="col-span-1 h-full">
                         <div className="flex flex-col h-1/4">
                             <label htmlFor="entry-keys" className="font-semibold">Keys</label>
-                            <textarea className="themed-input w-full" id="entry-keys" value={entryKeys.join(',')} onChange={e => setEntryKeys(e.target.value.trim().split(','))} />
+                            <textarea className="themed-input w-full" id="entry-keys" value={entryKeys.join(',')} onChange={e => setEntryKeys(e.target.value.split(',').map(value => value.trim()))} />
                         </div>
                         <div className="flex flex-col h-1/4">
                             <label htmlFor="entry-secondary-keys" className="font-semibold">Secondary Keys</label>
-                            <textarea className="themed-input w-full" id="entry-secondary-keys" value={entrySecondaryKeys.join(',')} onChange={e => setEntrySecondaryKeys(e.target.value.trim().split(','))} />
+                            <textarea className="themed-input w-full" id="entry-secondary-keys" value={entrySecondaryKeys.join(',')} onChange={e => setEntrySecondaryKeys(e.target.value.split(',').map(value => value.trim()))} />
                         </div>
                         <div className="flex flex-col h-2/4">
                             <label htmlFor="entry-comment" className="font-semibold">Comment</label>
