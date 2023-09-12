@@ -652,8 +652,8 @@ function constructController() {
         event.reply(uniqueEventName, prompt);
     });
 
-    ipcMain.on('generate-continue-chat-log', (event, construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth, uniqueEventName) => {
-        generateContinueChatLog(construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth).then((response) => {
+    ipcMain.on('generate-continue-chat-log', (event, construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth, doMultiline, replaceUser, uniqueEventName) => {
+        generateContinueChatLog(construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth, doMultiline, replaceUser).then((response) => {
             event.reply(uniqueEventName, response);
         });
     });

@@ -94,10 +94,10 @@ export const assembleInstructPrompt = (construct: Construct, chatLog: Chat, curr
     });
 }
 
-export const generateContinueChatLog = (construct: Construct, chatLog: Chat, currentUser?: string, messagesToInclude?: number, stopList?: any, authorsNote?: string | string[], authorsNoteDepth?: number): Promise<string> => {
+export const generateContinueChatLog = (construct: Construct, chatLog: Chat, currentUser?: string, messagesToInclude?: number, stopList?: any, authorsNote?: string | string[], authorsNoteDepth?: number, doMultiline?: boolean, replaceUser?: boolean): Promise<string> => {
     return new Promise((resolve, reject) => {
         const uniqueEventName = "generate-continue-chat-log-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send('generate-continue-chat-log', construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth, uniqueEventName);
+        ipcRenderer.send('generate-continue-chat-log', construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth, doMultiline, replaceUser, uniqueEventName);
         ipcRenderer.once(uniqueEventName, (event, response) => {
             resolve(response);
         });
@@ -114,7 +114,7 @@ export const removeMessagesFromChatLog = (chatLog: Chat, messageContent: string)
     });
 }
 
-export const regenerateMessageFromChatLog = (chatLog: Chat, messageContent: string, messageID: string, authorsNote?: string | string[], authorsNoteDepth?: number): Promise<any> => {
+export const regenerateMessageFromChatLog = (chatLog: Chat, messageContent: string, messageID: string, authorsNote?: string | string[], authorsNoteDepth?: number, doMultiline?: boolean, replaceUser?: boolean): Promise<any> => {
     return new Promise((resolve, reject) => {
         const uniqueEventName = "regenerate-message-from-chat-log-reply-" + Date.now() + "-" + Math.random();
         ipcRenderer.send('regenerate-message-from-chat-log', chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, uniqueEventName);
@@ -124,7 +124,7 @@ export const regenerateMessageFromChatLog = (chatLog: Chat, messageContent: stri
     });
 }
 
-export const regenerateUserMessageFromChatLog = (chatLog: Chat, messageContent: string, messageID: string, authorsNote?: string | string[], authorsNoteDepth?: number): Promise<any> => {
+export const regenerateUserMessageFromChatLog = (chatLog: Chat, messageContent: string, messageID: string, authorsNote?: string | string[], authorsNoteDepth?: number, doMultiline?: boolean, replaceUser?: boolean): Promise<any> => {
     return new Promise((resolve, reject) => {
         const uniqueEventName = "regenerate-user-message-from-chat-log-reply-" + Date.now() + "-" + Math.random();
         ipcRenderer.send('regenerate-user-message-from-chat-log', chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, uniqueEventName);

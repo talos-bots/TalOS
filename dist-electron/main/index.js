@@ -2590,8 +2590,8 @@ function constructController() {
     let prompt = assembleInstructPrompt(construct, chatLog, currentUser);
     event.reply(uniqueEventName, prompt);
   });
-  electron.ipcMain.on("generate-continue-chat-log", (event, construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth, uniqueEventName) => {
-    generateContinueChatLog(construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth).then((response) => {
+  electron.ipcMain.on("generate-continue-chat-log", (event, construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth, doMultiline, replaceUser2, uniqueEventName) => {
+    generateContinueChatLog(construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth, doMultiline, replaceUser2).then((response) => {
       event.reply(uniqueEventName, response);
     });
   });

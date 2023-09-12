@@ -29,7 +29,8 @@ const ChatLog = (props: ChatLogProps) => {
 	const [doCaptioning, setDoCaptioning] = useState<boolean>(false);
 	const [doGreetings, setDoGreetings] = useState<boolean>(false);
 	const [characterMode, setCharacterMode] = useState<boolean>(false);
-	
+	const [doMultiline, setDoMultiline] = useState<boolean>(false);
+
 	useEffect(() => {
 		if(chatLogID !== undefined) {
 			const getChatLog = async () => {
@@ -82,6 +83,11 @@ const ChatLog = (props: ChatLogProps) => {
         }).catch((err) => {
             // console.error(err);
         });
+		getStorageValue('doMultiline').then((value) => {
+			setDoMultiline(JSON.parse(value));
+		}).catch((err) => {
+			// console.error(err);
+		});
 	}, [messages]);
 
 	useEffect(() => {
@@ -202,7 +208,7 @@ const ChatLog = (props: ChatLogProps) => {
 			let loadingMessage = await getLoadingMessage(chat.constructs[i]);
 			loadingMessage._id += "-loading";
 			setMessages(prevMessages => [...prevMessages, loadingMessage]);
-			let botMessage = await sendMessage(chat, chat.constructs[i], currentUser);
+			let botMessage = await sendMessage(chat, chat.constructs[i], currentUser, doMultiline);
 			if (botMessage !== null){
 				chat.addMessage(botMessage);
 				if(doEmotions === true){

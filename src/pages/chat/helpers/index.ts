@@ -39,10 +39,10 @@ export function addUserMessage(messageText: string, user: User | null, attachmen
     return newMessage;
 }
 
-export async function sendMessage(chatlog: Chat, constructID: string, user: User | null) {
+export async function sendMessage(chatlog: Chat, constructID: string, user: User | null, multiline?: boolean) {
     let activeConstruct = await getConstruct(constructID);
     if (!chatlog.constructs || chatlog.constructs.length === 0) return null;
-    let response = await generateContinueChatLog(activeConstruct, chatlog, user ? (user.nickname || user.name) : 'DefaultUser');
+    let response = await generateContinueChatLog(activeConstruct, chatlog, user ? (user.nickname || user.name) : 'DefaultUser', undefined, undefined, undefined, undefined, multiline);
     if (!response) return null;
     let newMessage = new Message();
     newMessage.origin = 'ConstructOS';

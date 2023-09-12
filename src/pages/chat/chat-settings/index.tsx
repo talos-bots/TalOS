@@ -5,6 +5,7 @@ import ReactSwitch from "react-switch";
 const ChatSettings = () => {
     const [doGreetings, setDoGreetings] = useState(false);
     const [characterMode, setCharacterMode] = useState(false);
+    const [doMultiline, setDoMultiline] = useState(false);
 
     useEffect(() => {
         getStorageValue('doGreetings').then((value) => {
@@ -14,6 +15,11 @@ const ChatSettings = () => {
         });
         getStorageValue('characterMode').then((value) => {
             setCharacterMode(JSON.parse(value));
+        }).catch((err) => {
+            console.error(err);
+        });
+        getStorageValue('doMultiline').then((value) => {
+            setDoMultiline(JSON.parse(value));
         }).catch((err) => {
             console.error(err);
         });
@@ -32,6 +38,15 @@ const ChatSettings = () => {
         setCharacterMode(newValue);
         try {
             await setStorageValue('characterMode', JSON.stringify(newValue));
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const handleDoMultilineChange = async (newValue: boolean) => {
+        setDoMultiline(newValue);
+        try {
+            await setStorageValue('doMultiline', JSON.stringify(newValue));
         } catch (err) {
             console.error(err);
         }
@@ -60,7 +75,7 @@ const ChatSettings = () => {
                 <div className="col-span-1 flex flex-col text-left">
                     <label className="text-theme-text font-semibold">Character Mode</label>
                     <div className="themed-input flex flex-col items-center w-full">
-                        <i className="text-sm">Use character names instead of player names.</i>
+                        <i className="text-sm">Use character mode instead of Construct mode.</i>
                         <ReactSwitch
                             checked={characterMode}
                             onChange={() => handleCharacterModeChange(!characterMode)}
@@ -69,6 +84,23 @@ const ChatSettings = () => {
                             uncheckedIcon={false}
                             checkedIcon={true}
                             id="characterMode"
+                        />
+                    </div>
+                </div>
+            </div>
+            <div className="flex flex-col col-span-1 w-full h-full">
+                <div className="col-span-1 flex flex-col text-left">
+                    <label className="text-theme-text font-semibold">Multiline</label>
+                    <div className="themed-input flex flex-col items-center w-full">
+                        <i className="text-sm">Use multiline messages instead of single line messages.</i>
+                        <ReactSwitch
+                            checked={doMultiline}
+                            onChange={() => handleDoMultilineChange(!doMultiline)}
+                            handleDiameter={30}
+                            width={60}
+                            uncheckedIcon={false}
+                            checkedIcon={true}
+                            id="doMultiline"
                         />
                     </div>
                 </div>
