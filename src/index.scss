@@ -176,6 +176,22 @@ ul {
   @apply w-16 h-16 rounded-full object-cover bg-theme-box border-theme-border-width border-theme-border;
 }
 
+.construct-search-bar input{
+	margin-right: auto;
+	margin-left: auto;
+	flex-direction: column;
+	justify-content: flex-start;
+	padding: 1rem;
+	color: var(--theme-text);
+  background-color: var(--theme-button);
+  @apply border-theme-border-width border-theme-border theme-border-style
+}
+
+.construct-search-bar input:focus{
+	background-color: var(--theme-accent);
+  @apply border-theme-border-width border-theme-border theme-border-style
+}
+
 .message-button {
   transition: transform 0.3s;
   font-style: italic;
