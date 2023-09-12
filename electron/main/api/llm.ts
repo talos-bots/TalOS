@@ -271,6 +271,7 @@ export const generateText = async (
                 response = await axios.post(`${endpointURLObject.protocol}//${endpointURLObject.hostname}:${endpointURLObject.port}/api/v1/generate`, koboldPayload);
                 if (response.status === 200) {
                     results = response.data;
+                    console.log(results)
                     if (Array.isArray(results)) {
                         return results = results.join(' ');
                     }else{

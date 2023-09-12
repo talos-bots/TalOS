@@ -1601,6 +1601,7 @@ const generateText = async (prompt, configuredName = "You", stopList = null) => 
         response = await axios.post(`${endpointURLObject.protocol}//${endpointURLObject.hostname}:${endpointURLObject.port}/api/v1/generate`, koboldPayload);
         if (response.status === 200) {
           results = response.data;
+          console.log(results);
           if (Array.isArray(results)) {
             return results = results.join(" ");
           } else {
@@ -1990,6 +1991,77 @@ function LanguageModelAPI() {
     event.reply("get-palm-model-reply", getPaLMModel());
   });
 }
+require("@tensorflow/tfjs");
+async function getAllVectors(schemaName) {
+  const indexPath = path.join(dataPath, schemaName);
+  const index = new vectra.LocalIndex(indexPath);
+  if (!await index.isIndexCreated()) {
+    await index.createIndex();
+  }
+  const vectors = await index.listItems();
+  return vectors;
+}
+async function getRelaventMemories(schemaName, text) {
+  const indexPath = path.join(dataPath, schemaName);
+  const index = new vectra.LocalIndex(indexPath);
+  if (!await index.isIndexCreated()) {
+    await index.createIndex();
+  }
+  const vector = await getVector(text);
+  const memories = await index.queryItems(vector, 10);
+  return memories;
+}
+async function addVectorFromMessage(schemaName, message) {
+  const indexPath = path.join(dataPath, schemaName);
+  const index = new vectra.LocalIndex(indexPath);
+  if (!await index.isIndexCreated()) {
+    await index.createIndex();
+  }
+  await index.insertItem({
+    vector: await getVector(message.text),
+    metadata: message
+  });
+}
+async function getVector(text) {
+  return use.load().then(async (model2) => {
+    const embeddings = await model2.embed([text]);
+    return embeddings.arraySync()[0];
+  });
+}
+async function deleteIndex(schemaName) {
+  const indexPath = path.join(dataPath, schemaName);
+  const index = new vectra.LocalIndex(indexPath);
+  if (await index.isIndexCreated()) {
+    await index.deleteIndex();
+  }
+}
+function VectorDBRoutes() {
+  electron.ipcMain.on("get-all-vectors", async (event, schemaName, uniqueReplyName) => {
+    getAllVectors(schemaName).then((vectors) => {
+      event.reply(uniqueReplyName, vectors);
+    });
+  });
+  electron.ipcMain.on("get-relavent-memories", async (event, schemaName, text, uniqueReplyName) => {
+    getRelaventMemories(schemaName, text).then((memories) => {
+      event.reply(uniqueReplyName, memories);
+    });
+  });
+  electron.ipcMain.on("add-vector-from-message", async (event, schemaName, message, uniqueReplyName) => {
+    addVectorFromMessage(schemaName, message).then(() => {
+      event.reply(uniqueReplyName, true);
+    });
+  });
+  electron.ipcMain.on("get-vector", async (event, text, uniqueReplyName) => {
+    getVector(text).then((vector) => {
+      event.reply(uniqueReplyName, vector);
+    });
+  });
+  electron.ipcMain.on("delete-index", async (event, schemaName, uniqueReplyName) => {
+    deleteIndex(schemaName).then(() => {
+      event.reply(uniqueReplyName, true);
+    });
+  });
+}
 const store$5 = new Store({
   name: "constructData"
 });
@@ -2331,8 +2403,21 @@ async function generateContinueChatLog(construct, chatLog, currentUser, messages
   if (promptWithWorldInfo !== null && promptWithWorldInfo !== void 0) {
     prompt = promptWithWorldInfo;
   }
-  prompt = prompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${construct.name}`);
-  console.log(currentUser);
+  if (replaceUser2 === true) {
+    prompt = prompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${construct.name}`);
+  }
+  if (chatLog.doVector === true) {
+    let memoryText = "";
+    const memories = await getRelaventMemories(chatLog._id, chatLog.lastMessage.text);
+    for (let i = 0; i < memories.length; i++) {
+      if (memories[i] !== void 0) {
+        if (memories[i].item.metadata.text !== void 0 && memories[i].item.metadata.text !== null && memories[i].item.metadata.text !== "" && memories[i].item.metadata.text !== chatLog.lastMessage.text) {
+          memoryText += memories[i].item.metadata.text + "\n";
+        }
+      }
+    }
+    prompt = memoryText + prompt;
+  }
   const response = await generateText(prompt, currentUser, stopList);
   if (response && response.results && response.results[0]) {
     return breakUpCommands(construct.name, response.results[0], currentUser, stopList, doMultiLine);
@@ -2617,77 +2702,6 @@ function constructController() {
   electron.ipcMain.on("regenerate-user-message-from-chat-log", (event, chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, uniqueEventName) => {
     regenerateUserMessageFromChatLog(chatLog, messageContent, messageID, authorsNote, authorsNoteDepth).then((response) => {
       event.reply(uniqueEventName, response);
-    });
-  });
-}
-require("@tensorflow/tfjs");
-async function getAllVectors(schemaName) {
-  const indexPath = path.join(dataPath, schemaName);
-  const index = new vectra.LocalIndex(indexPath);
-  if (!await index.isIndexCreated()) {
-    await index.createIndex();
-  }
-  const vectors = await index.listItems();
-  return vectors;
-}
-async function getRelaventMemories(schemaName, text) {
-  const indexPath = path.join(dataPath, schemaName);
-  const index = new vectra.LocalIndex(indexPath);
-  if (!await index.isIndexCreated()) {
-    await index.createIndex();
-  }
-  const vector = await getVector(text);
-  const memories = await index.queryItems(vector, 10);
-  return memories;
-}
-async function addVectorFromMessage(schemaName, message) {
-  const indexPath = path.join(dataPath, schemaName);
-  const index = new vectra.LocalIndex(indexPath);
-  if (!await index.isIndexCreated()) {
-    await index.createIndex();
-  }
-  await index.insertItem({
-    vector: await getVector(message.text),
-    metadata: message
-  });
-}
-async function getVector(text) {
-  return use.load().then(async (model2) => {
-    const embeddings = await model2.embed([text]);
-    return embeddings.arraySync()[0];
-  });
-}
-async function deleteIndex(schemaName) {
-  const indexPath = path.join(dataPath, schemaName);
-  const index = new vectra.LocalIndex(indexPath);
-  if (await index.isIndexCreated()) {
-    await index.deleteIndex();
-  }
-}
-function VectorDBRoutes() {
-  electron.ipcMain.on("get-all-vectors", async (event, schemaName, uniqueReplyName) => {
-    getAllVectors(schemaName).then((vectors) => {
-      event.reply(uniqueReplyName, vectors);
-    });
-  });
-  electron.ipcMain.on("get-relavent-memories", async (event, schemaName, text, uniqueReplyName) => {
-    getRelaventMemories(schemaName, text).then((memories) => {
-      event.reply(uniqueReplyName, memories);
-    });
-  });
-  electron.ipcMain.on("add-vector-from-message", async (event, schemaName, message, uniqueReplyName) => {
-    addVectorFromMessage(schemaName, message).then(() => {
-      event.reply(uniqueReplyName, true);
-    });
-  });
-  electron.ipcMain.on("get-vector", async (event, text, uniqueReplyName) => {
-    getVector(text).then((vector) => {
-      event.reply(uniqueReplyName, vector);
-    });
-  });
-  electron.ipcMain.on("delete-index", async (event, schemaName, uniqueReplyName) => {
-    deleteIndex(schemaName).then(() => {
-      event.reply(uniqueReplyName, true);
     });
   });
 }
@@ -4334,7 +4348,7 @@ const toggleVectorCommand = {
   ],
   execute: async (interaction) => {
     var _a;
-    let isHidden = (_a = interaction.options.get("on")) == null ? void 0 : _a.value;
+    let isHidden = (_a = interaction.options.get("toggle")) == null ? void 0 : _a.value;
     if (isHidden === void 0)
       isHidden = false;
     await interaction.deferReply({ ephemeral: isHidden });

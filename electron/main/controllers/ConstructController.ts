@@ -5,6 +5,7 @@ import { generateText } from '../api/llm';
 import { isReady, setDiscordBotInfo } from '../api/discord';
 import { getConstruct, getLorebooks, getUser, updateChat } from '../api/pouchdb';
 import { ChatInterface, ConstructInterface, LoreEntryInterface, MessageInterface, UserInterface } from '../types/types';
+import { getRelaventMemories } from '../api/vector';
 const store = new Store({
     name: 'constructData',
 });
@@ -363,8 +364,21 @@ export async function generateContinueChatLog(construct: any, chatLog: ChatInter
     if(promptWithWorldInfo !== null && promptWithWorldInfo !== undefined){
         prompt = promptWithWorldInfo;
     }
+    if(replaceUser === true){
         prompt = prompt.replaceAll('{{user}}', `${currentUser}`).replaceAll('{{char}}', `${construct.name}`);
-        console.log(currentUser);
+    }
+    if(chatLog.doVector === true){
+        let memoryText = ''
+        const memories = await getRelaventMemories(chatLog._id, chatLog.lastMessage.text)
+        for(let i = 0; i < memories.length; i++){
+            if(memories[i] !== undefined){
+                if(memories[i].item.metadata.text !== undefined && memories[i].item.metadata.text !== null && memories[i].item.metadata.text !== '' && memories[i].item.metadata.text !== chatLog.lastMessage.text){
+                    memoryText += memories[i].item.metadata.text + '\n';
+                }
+            }
+        }
+        prompt = memoryText + prompt;
+    }
     const response = await generateText(prompt, currentUser, stopList);
     if (response && response.results && response.results[0]) {
         return breakUpCommands(construct.name, response.results[0], currentUser, stopList, doMultiLine);

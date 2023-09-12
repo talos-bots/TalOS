@@ -641,7 +641,7 @@ export const toggleVectorCommand: SlashCommand = {
         }
     ],
     execute: async (interaction: CommandInteraction) => {
-        let isHidden = interaction.options.get('on')?.value as boolean;
+        let isHidden = interaction.options.get('toggle')?.value as boolean;
         if(isHidden === undefined) isHidden = false;
         await interaction.deferReply({ephemeral: isHidden});
         if (interaction.channelId === null) {

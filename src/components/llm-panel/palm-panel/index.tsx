@@ -65,6 +65,11 @@ const PaLMPanel = (props: PaLMPanelProps) => {
         getModels();
     }, [selectedFilter, selectedFilterValue]);
 
+    useEffect(() => {
+        if (endpoint === '') return;
+        getModels();
+    }, [endpoint]);
+    
     const saveFilters = () => {
         setPaLMFilters(filters);
     }
