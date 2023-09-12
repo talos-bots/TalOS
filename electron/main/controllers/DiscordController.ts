@@ -219,6 +219,14 @@ export const getRegisteredChannels = (): ChannelConfigInterface[] => {
 
 export const addRegisteredChannel = (newChannel: ChannelConfigInterface): void => {
     const existingChannels = getRegisteredChannels();
+    let registered = false;
+    for(let i = 0; i < existingChannels.length; i++){
+        if(existingChannels[i]._id === newChannel._id){
+            registered = true;
+            break;
+        }
+    }
+    if(registered) return;
     if (!existingChannels.includes(newChannel)) {
         existingChannels.push(newChannel);
         store.set('channels', existingChannels);

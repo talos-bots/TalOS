@@ -26,6 +26,20 @@ export const RegisterCommand: SlashCommand = {
             });
             return;
         }
+        const registeredChannels = getRegisteredChannels();
+        let registered = false;
+        for(let i = 0; i < registeredChannels.length; i++){
+            if(registeredChannels[i]._id === interaction.channelId){
+                registered = true;
+                break;
+            }
+        }
+        if(registered){
+            await interaction.editReply({
+                content: "Channel already registered.",
+            });
+            return;
+        }
         addRegisteredChannel({
             _id: interaction.channelId,
             guildId: interaction.guildId,
