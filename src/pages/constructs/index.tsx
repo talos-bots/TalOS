@@ -71,7 +71,7 @@ const ConstructsPage = () => {
             <div className="flex flex-col gap-2">
                 <div className="themed-root">
                     <h2 className="text-2xl font-bold text-theme-text text-shadow-xl">Constructs</h2>
-                    <div className="grid grid-cols-5 gap-1 w-15vw h-5vh">
+                    <div className="grid grid-cols-5 gap-1 w-15vw h-5vh mb-4">
                         <Link to="/constructs/new" className="themed-button-pos flex items-center justify-center" data-tooltip="Add New Construct" id="newConstruct">
                             <FiPlus className='absolute'size={50}/>
                         </Link>
