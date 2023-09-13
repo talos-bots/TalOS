@@ -12,8 +12,9 @@ import { saveTavernCardAsImage } from "@/api/extrasapi";
 import { Download } from "lucide-react";
 interface Props {
     character: Construct;
+    onCharacterDelete: (character: Construct) => void;
 }
-const ConstructBox: React.FC<Props> = ({character}) => {
+const ConstructBox: React.FC<Props> = ({character, onCharacterDelete}) => {
     const [characterName, setCharacterName] = useState<string>(character.name);
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const [isActive, setIsActive] = useState<boolean>(false);
@@ -50,22 +51,25 @@ const ConstructBox: React.FC<Props> = ({character}) => {
 
     const deleteConstructFrom = async () => {
         await deleteConstruct(character._id);
-        window.location.reload();
+        onCharacterDelete(character);
     }
 
     const makeActive = async () => {
         await addConstructToActive(character._id);
-        window.location.reload();
+        setIsActive(true);
+        setIsPrimary(false);
     }
 
     const makePrimary = async () => {
         await setConstructAsPrimary(character._id);
-        window.location.reload();
+        setIsPrimary(true);
+        setIsActive(true);
     }
 
     const makeInactive = async () => {
         await removeConstructFromActive(character._id);
-        window.location.reload();
+        setIsActive(false);
+        setIsPrimary(false);
     }
 
     useEffect(() => {

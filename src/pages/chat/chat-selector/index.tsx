@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import ChatDetails from "./chat-details";
 import Loading from "@/components/loading";
 import { Link } from "react-router-dom";
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, RefreshCcw } from "lucide-react";
 import { AiOutlineUpload } from "react-icons/ai";
 import { getActiveConstructList } from "@/api/constructapi";
 import { removeAllMemories } from "@/api/vectorapi";
@@ -22,6 +22,17 @@ const ChatSelector = (props: ChatSelectorProps) => {
     const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
     const [activeChat, setActiveChat] = useState<Chat | null>(null);
     const [activeConstructs, setActiveConstructs] = useState<string[]>([]);
+    const [searchTerm, setSearchTerm] = useState("");
+
+    const filteredChats = chats ? chats.filter((chat) => {
+        return Object.values(chat).some((value) =>
+          value && 
+          value
+            .toString()
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())
+        );
+    }) : [];
 
     useEffect(() => {
         fetchInfo().then(() => {
@@ -159,8 +170,8 @@ const ChatSelector = (props: ChatSelectorProps) => {
                 <div className="col-span-2 flex flex-col themed-root overflow-y-auto">
                     <h3 className="font-semibold">Chats</h3>
                     <div className="h-11/12">
-                        <div className="grid grid-cols-5 gap-0 h-1/14 w-full grow-0 shrink-0">
-                            <label htmlFor="character-image-input" className="themed-button-pos flex items-center justify-center w-2/6" data-tooltip="Import Chat" id="importChat">
+                        <div className="grid grid-cols-12 gap-1 w-full grow-0 shrink-0 mb-2">
+                            <label htmlFor="character-image-input" className="themed-button-pos flex items-center justify-center col-span-1" data-tooltip="Import Chat" id="importChat">
                                 <AiOutlineUpload className='absolute'size={36}/>
                             </label>
                             <input
@@ -171,10 +182,21 @@ const ChatSelector = (props: ChatSelectorProps) => {
                                 style={{ display: 'none' }}
                                 multiple={true}
                             />
+                            <button className="themed-button-pos col-span-1 flex items-center justify-center" onClick={() => fetchInfo()} data-tooltip="Refresh Chats" id="refreshChats">
+                                <RefreshCcw size={36}/>
+                            </button>
+                            <div className="construct-search-bar col-span-2">
+                                <input
+                                type="text"
+                                placeholder="Search Chats"
+                                value={searchTerm}
+                                onChange={(event) => setSearchTerm(event.target.value)}
+                                />
+                            </div>
                         </div>
                         <div className="flex flex-col w-full gap-2 overflow-y-auto h-13/14 grow-0 shrink-0 ">
                             {activeChat !== null && (<ChatDetails key={'activePool'} chat={activeChat} onDoubleClick={handleChatDoubleClick} onClick={handleChatClick} onDelete={handleChatDelete} disabled/>)}
-                            {Array.isArray(chats) && chats.sort((a, b) => b.lastMessageDate - a.lastMessageDate).filter((chat) => {return chat._id !== 'activePool'}).map((chat) => {
+                            {Array.isArray(filteredChats) && filteredChats.sort((a, b) => b.lastMessageDate - a.lastMessageDate).filter((chat) => {return chat._id !== 'activePool'}).map((chat) => {
                                 return (
                                     <ChatDetails key={chat._id} chat={chat} onDoubleClick={handleChatDoubleClick} onClick={handleChatClick} onDelete={handleChatDelete}/>
                                 )

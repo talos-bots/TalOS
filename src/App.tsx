@@ -16,6 +16,7 @@ import { Steps, Hints } from 'intro.js-react';
 import { getStorageValue, setStorageValue } from './api/dbapi';
 import HomePage from './pages/home';
 import LorebooksPage from './pages/lorebooks';
+import { getDefaultCharactersFromPublic } from './api/extrasapi';
 
 export const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, url: string) => {
   e.preventDefault();
@@ -25,6 +26,7 @@ export const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, url: str
 function App() {
   const [needsReload, setNeedsReload] = useState(false);
   const [doneTutorial, setDoneTutorial] = useState(true);
+  const [isFirstRun, setIsFirstRun] = useState(false);
 
   const returnToMenu = () => {
     history.back();
@@ -40,6 +42,14 @@ function App() {
         setDoneTutorial(hasTrue);
       }
     });
+    getStorageValue('isFirstRun').then((value) => {
+      if(value === null) {
+        setIsFirstRun(true);
+      }else{
+        let hasTrue = value === 'true';
+        setIsFirstRun(hasTrue);
+      }
+    });
   }, []);
 
   useEffect(() => {
@@ -51,7 +61,15 @@ function App() {
   }, []);
   
   const isDev = process.env.NODE_ENV === 'development';
-  
+
+  useEffect(() => {
+    if(isFirstRun) {
+      getDefaultCharactersFromPublic();
+      setStorageValue('isFirstRun', 'false');
+      setIsFirstRun(false);
+    }
+  }, [isFirstRun]);
+
   return (
     <div id='App'>
     <Router>

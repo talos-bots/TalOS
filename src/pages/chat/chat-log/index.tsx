@@ -15,9 +15,10 @@ import { Attachment } from "@/classes/Attachment";
 import { ipcRenderer } from "electron";
 interface ChatLogProps {
 	chatLogID?: string;
+	goBack: () => void;
 }
 const ChatLog = (props: ChatLogProps) => {
-	const { chatLogID } = props;
+	const { chatLogID, goBack } = props;
 	const [chatLog, setChatLog] = useState<Chat | null>(null);
 	const [messages, setMessages] = useState<Message[]>([]);
 	const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -32,6 +33,39 @@ const ChatLog = (props: ChatLogProps) => {
 	const [characterMode, setCharacterMode] = useState<boolean>(false);
 	const [doMultiline, setDoMultiline] = useState<boolean>(false);
 	const [numberOfMessagesToSend, setNumberOfMessagesToSend] = useState<number>(1);
+	const [searchTerm, setSearchTerm] = useState<string>("");
+
+	const filteredMessages = messages.filter((message) => {
+		if(searchTerm === "") return true;
+		if(searchTerm.startsWith("from:")){
+			let user = searchTerm.split(":")[1];
+			if(message.user.toLowerCase().includes(user.toLowerCase())) return true;
+			return false;
+		}
+		if(searchTerm.startsWith("origin:")){
+			let origin = searchTerm.split(":")[1];
+			if(message.origin.toLowerCase().includes(origin.toLowerCase())) return true;
+			return false;
+		}
+		if(message.text.toLowerCase().includes(searchTerm.toLowerCase())) return true;
+		if(message.user.toLowerCase().includes(searchTerm.toLowerCase())) return true;
+		if(message.origin.toLowerCase().includes(searchTerm.toLowerCase())) return true;
+		if(message.participants.includes(searchTerm.toLowerCase())) return true;
+		if(message.attachments.length > 0){
+			for(let i = 0; i < message.attachments.length; i++){
+				if(message.attachments[i].name.toLowerCase().includes(searchTerm.toLowerCase())) return true;
+				if(message.attachments[i].type.toLowerCase().includes(searchTerm.toLowerCase())) return true;
+				if(message.attachments[i].fileext.toLowerCase().includes(searchTerm.toLowerCase())) return true;
+				if(message.attachments[i].metadata !== undefined && message.attachments[i].metadata !== null){
+					if(message.attachments[i].metadata.caption !== undefined && message.attachments[i].metadata.caption !== null){
+						if(message.attachments[i].metadata.caption.toLowerCase().includes(searchTerm.toLowerCase())) return true;
+					}
+				}
+			}
+		}
+		return false;
+	});
+
 
 	useEffect(() => {
 		if(chatLogID !== undefined) {
@@ -377,12 +411,12 @@ const ChatLog = (props: ChatLogProps) => {
 					{chatLog === null ? (
 						null
 					) : (
-						<ChatInfo chat={chatLog} onEdit={handleDetailsChange}/>
+						<ChatInfo chat={chatLog} onEdit={handleDetailsChange} goBack={goBack} searchTerm={searchTerm} setSearchTerm={setSearchTerm}/>
 					)}
 				</div>
 				<div className="h-5/6">
 					<div className="themed-message-box">
-						{Array.isArray(messages) && messages.map((message) => {
+						{Array.isArray(filteredMessages) && filteredMessages.map((message) => {
 							return (
 								<MessageComponent key={message._id} message={message} onDelete={deleteMessage} onEdit={editMessage} onRegenerate={onRegenerate} onSplit={splitChatLogAtMessage} onUserRegenerate={userRegenerate}/>
 							);

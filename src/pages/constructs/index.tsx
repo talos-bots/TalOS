@@ -38,8 +38,12 @@ const ConstructsPage = () => {
                 console.error(error);
             }
         });
-        await Promise.all(uploadPromises);
-        window.location.reload();
+        const constructs: any[] = await Promise.all(uploadPromises);
+        for (const character of constructs) {
+            if(character){
+                setCharacters([...characters, character]);
+            }
+        }
     };    
 
     useEffect(() => {
@@ -62,6 +66,11 @@ const ConstructsPage = () => {
     const clearActive = async () => {
         await removeAllActiveConstructs();
         window.location.reload();
+    }
+
+    const removeConstruct = (construct: Construct) => {
+        const newConstructs = characters.filter((char) => char._id !== construct._id);
+        setCharacters(newConstructs);
     }
 
     if(!isLoaded) return (<Loading/>);
@@ -109,7 +118,7 @@ const ConstructsPage = () => {
                         return 0;
                     }
                 }).map((character, index) => (
-                    <ConstructBox key={index} character={character} />
+                    <ConstructBox key={index} character={character} onCharacterDelete={removeConstruct}/>
                 ))}
                 </div>
             </div>
