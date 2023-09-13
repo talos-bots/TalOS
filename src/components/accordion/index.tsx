@@ -24,7 +24,7 @@ const Accordion = (props: AccordionProps) => {
     
     return (
         <div className={"themed-root w-full h-fit justify-center " +className}>
-            <div className="text-2xl font-bold z-10 w-full flex justify-between items-center" onDoubleClick={() => setIsExpanded(!isExpanded)}>
+            <div className="text-2xl font-bold z-10 w-full flex justify-between items-center" onClick={() => setIsExpanded(!isExpanded)}>
                 <div className="flex flex-row w-full">
                     <div className="flex flex-col w-1/2 items-left text-left justify-start">
                         {title}

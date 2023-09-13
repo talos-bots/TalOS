@@ -24,13 +24,14 @@ const ChatLog = (props: ChatLogProps) => {
 	const [hasSentMessage, setHasSentMessage] = useState<boolean>(false);
 	const [error, setError] = useState<string | null>(null);
 	const [isLoaded, setIsLoaded] = useState<boolean>(false);
-	const [numToDisplay, setNumToDisplay] = useState<number>(35);
+	const [numToDisplay, setNumToDisplay] = useState<number>(60);
 	const [currentUser, setCurrentUser] = useState<User | null>(null);
 	const [doEmotions, setDoEmotions] = useState<boolean>(false);
 	const [doCaptioning, setDoCaptioning] = useState<boolean>(false);
 	const [doGreetings, setDoGreetings] = useState<boolean>(false);
 	const [characterMode, setCharacterMode] = useState<boolean>(false);
 	const [doMultiline, setDoMultiline] = useState<boolean>(false);
+	const [numberOfMessagesToSend, setNumberOfMessagesToSend] = useState<number>(1);
 
 	useEffect(() => {
 		if(chatLogID !== undefined) {
@@ -89,17 +90,22 @@ const ChatLog = (props: ChatLogProps) => {
 			// console.error(err);
 		});
 		getStorageValue('doGreetings').then((value) => {
-            setDoGreetings(JSON.parse(value));
+            setDoGreetings(JSON.parse(value)? JSON.parse(value) : true);
         }).catch((err) => {
             // console.error(err);
         });
         getStorageValue('characterMode').then((value) => {
-            setCharacterMode(JSON.parse(value));
+            setCharacterMode(JSON.parse(value)? JSON.parse(value) : false);
         }).catch((err) => {
             // console.error(err);
         });
 		getStorageValue('doMultiline').then((value) => {
-			setDoMultiline(JSON.parse(value));
+			setDoMultiline(JSON.parse(value)? JSON.parse(value) : false);
+		}).catch((err) => {
+			// console.error(err);
+		});
+		getStorageValue('messagesToSend').then((value) => {
+			setNumberOfMessagesToSend(JSON.parse(value)? JSON.parse(value) : 25);
 		}).catch((err) => {
 			// console.error(err);
 		});
@@ -223,7 +229,7 @@ const ChatLog = (props: ChatLogProps) => {
 			let loadingMessage = await getLoadingMessage(chat.constructs[i]);
 			loadingMessage._id += "-loading";
 			setMessages(prevMessages => [...prevMessages, loadingMessage]);
-			let botMessage = await sendMessage(chat, chat.constructs[i], currentUser, doMultiline);
+			let botMessage = await sendMessage(chat, chat.constructs[i], currentUser, doMultiline, numberOfMessagesToSend);
 			if (botMessage !== null){
 				chat.addMessage(botMessage);
 				if(doEmotions === true){
@@ -254,7 +260,7 @@ const ChatLog = (props: ChatLogProps) => {
 		setChatLog(chat);
 		await updateChat(chat);
 		setHasSentMessage(false);
-		setNumToDisplay(35);
+		setNumToDisplay(60);
 	};	
 
 	const deleteMessage = (messageID: string) => {
