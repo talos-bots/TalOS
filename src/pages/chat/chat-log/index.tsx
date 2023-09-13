@@ -376,7 +376,7 @@ const ChatLog = (props: ChatLogProps) => {
 				</div>
 				<div className="h-5/6">
 					<div className="themed-message-box">
-						{Array.isArray(messages) && messages.slice(messages.length - numToDisplay, messages.length).map((message) => {
+						{Array.isArray(messages) && messages.map((message) => {
 							return (
 								<MessageComponent key={message._id} message={message} onDelete={deleteMessage} onEdit={editMessage} onRegenerate={onRegenerate} onSplit={splitChatLogAtMessage} onUserRegenerate={userRegenerate}/>
 							);
