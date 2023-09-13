@@ -51,7 +51,6 @@ export let isDarwin = process.platform === "darwin";
 // export let isDarwin = true;
 export let win: BrowserWindow | null = null;
 // Here, you can also use other preload
-const preload = join(__dirname, "../preload/index.js");
 const url = process.env.VITE_DEV_SERVER_URL;
 const indexHtml = join(process.env.DIST, "index.html");
 export const modelsPath = join(process.env.VITE_PUBLIC, "models/");
@@ -67,7 +66,6 @@ async function createWindow() {
     title: "ConstructOS - AI Agent Manager",
     icon: join(process.env.VITE_PUBLIC, "favicon.ico"),
     webPreferences: {
-      preload,
       nodeIntegration: true,
       contextIsolation: false,
       webSecurity: false,
@@ -142,7 +140,6 @@ app.on("ready", () => {
 ipcMain.handle("open-win", (_, arg) => {
   const childWindow = new BrowserWindow({
     webPreferences: {
-      preload,
       nodeIntegration: true,
       contextIsolation: false,
     },
