@@ -192,6 +192,7 @@ const ChatDetails = (props: ChatDetailsProps) => {
                 <button className="message-button ml-2 cursor-pointer"
                     onClick={() => {
                         if(onDelete === undefined) return;
+                        if(!confirm(`Are you sure you want to delete this chat? This cannot be undone.`)) return;
                         onDelete(chat);
                     }}
                     title="Delete Chat"

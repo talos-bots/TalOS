@@ -50,6 +50,7 @@ const ConstructBox: React.FC<Props> = ({character, onCharacterDelete}) => {
     }, [character]);
 
     const deleteConstructFrom = async () => {
+        if(!confirm(`Are you sure you want to delete this construct? This cannot be undone.`)) return;
         await deleteConstruct(character._id);
         onCharacterDelete(character);
     }

@@ -38,6 +38,7 @@ const ChatInfo = (props: ChatInfoProps) => {
 
     const handleRemoveAllMessages = () => {
         if(chat === null) return;
+        if(!confirm(`Are you sure you want to clear all messages? This cannot be undone.`)) return;
         chat.messages = [];
         if (onEdit !== undefined) onEdit(chat);
         if (chat.doVector) {
