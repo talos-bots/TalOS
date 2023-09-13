@@ -149,7 +149,8 @@ const ChatDetails = (props: ChatDetailsProps) => {
     };
     
     return (
-        <div 
+        <div
+            title="Double Click me to Open!"
             className="themed-box-no-padding p-2 flex flex-col justify-start items-start relative cursor-pointer"  
             onClick={() => {if(onClick !== undefined) onClick(chat)}} 
             onDoubleClick={()=> {if(onDoubleClick !== undefined) onDoubleClick(chat)}}
