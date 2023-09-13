@@ -6,9 +6,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline'; img-src 'self' data: *;">
     <title>ConstructOS - AI Agent Manager</title>
+    <style>
+      #actual-loading {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background-color: #1a1a1a;
+        color: white;
+        font-size: 2em;
+        z-index: 9999;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      }
+      /* Adjusted spinner styles */
+      .spinner {
+        border: 6px solid #f3f3f3;  /* Reduced border thickness */
+        border-radius: 50%;
+        border-top: 6px solid #3498db;  /* Reduced border thickness */
+        width: 60px;
+        height: 60px;
+        animation: spin 1s linear infinite;  /* Decreased animation duration */
+      }
+      /* Spinner animation */
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div id="actual-loading">
+        <div class="spinner"></div>
+        <div>Loading ConstructOS...</div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

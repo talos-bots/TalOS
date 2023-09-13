@@ -8,6 +8,7 @@ import { deleteMessage, disClient, editMessage, isAutoReplyMode, isMultiCharacte
 import { Alias, ChannelConfigInterface, ChatInterface, ConstructInterface } from '../types/types';
 import { addVectorFromMessage } from '../api/vector';
 import { getDefaultCfg, getDefaultHeight, getDefaultHighresSteps, getDefaultNegativePrompt, getDefaultPrompt, getDefaultSteps, getDefaultWidth, makeImage } from '../api/sd';
+import { win } from '..';
 
 const store = new Store({
     name: 'discordData',
@@ -311,6 +312,7 @@ export async function handleDiscordMessage(message: Message) {
         await updateChat(chatLog);
         return;
     }
+    win?.webContents.send(`chat-message-${message.channel.id}`);
     if(chatLog.doVector){
         if(chatLog.global){
             for(let i = 0; i < constructArray.length; i++){
@@ -320,6 +322,7 @@ export async function handleDiscordMessage(message: Message) {
             addVectorFromMessage(chatLog._id, newMessage);
         }
     }
+    win?.webContents.send(`chat-message-${message.channel.id}`);
     const mode = getDiscordMode();
     if(mode === 'Character'){
         if(isMultiCharacterMode() && !message.channel.isDMBased()){
@@ -462,12 +465,13 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
         chatLog.messages.push(replyMessage);
         chatLog.lastMessage = replyMessage;
         chatLog.lastMessageDate = replyMessage.timestamp;
+        await updateChat(chatLog);
         if(primaryConstruct === constructArray[i]._id){
             await sendMessage(message.channel.id, reply);
         }else{
             await sendMessageAsCharacter(constructArray[i], message.channel.id, reply);
         }
-        await updateChat(chatLog);
+        win?.webContents.send(`chat-message-${message.channel.id}`);
         if(chatLog.doVector){
             if(chatLog.global){
                 for(let i = 0; i < constructArray.length; i++){

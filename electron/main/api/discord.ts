@@ -48,6 +48,7 @@ function createClient(){
             }
         }
         if(isRegistered || message.channel.isDMBased()){
+            win?.webContents.send(`chat-message-${message.channel.id}`);
             win?.webContents.send('discord-message', message);
         }
     });

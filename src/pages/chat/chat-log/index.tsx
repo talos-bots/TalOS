@@ -12,6 +12,7 @@ import { User } from "@/classes/User";
 import { addVectorFromMessage } from "@/api/vectorapi";
 import { getDoCaptioning, getDoEmotions, getImageCaption, getTextEmotion } from "@/api/llmapi";
 import { Attachment } from "@/classes/Attachment";
+import { ipcRenderer } from "electron";
 interface ChatLogProps {
 	chatLogID?: string;
 }
@@ -55,6 +56,20 @@ const ChatLog = (props: ChatLogProps) => {
 					console.error(err);
 				});
 			}
+			ipcRenderer.on(`chat-message-${chatLogID}`, () => {
+				getChat(chatLogID).then((chat) => {
+					if(chat === null) return;
+					if(chat.messages.length > messages.length){
+						setMessages(chat.messages);
+						setChatLog(chat);
+					}
+				}).catch((err) => {
+					console.error(err);
+				});
+			});
+		}
+		return () => {
+			ipcRenderer.removeAllListeners(`chat-message-${chatLogID}`);
 		}
 	}, [chatLogID !== undefined && chatLogID !== null]);
 
