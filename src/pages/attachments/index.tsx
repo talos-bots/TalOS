@@ -48,20 +48,62 @@ const AttachmentsPage = () => {
                     break;
             }
             return dataString;
-        }else{
-            return undefined;
         }
+        return attachment.data;
     }
 
     const handleDownload = (attachment: Attachment) => {
         if(attachment.data === undefined) return;
+    
+        let dataString = getAttachmentData(attachment);
+        if (!dataString) return;
+    
+        // Removing the data URL scheme to get only base64 data
+        const base64Data = dataString.split(",")[1];
+        if (!base64Data) return;
+    
+        // Decoding base64 data
+        const decodedData = atob(base64Data);
+    
+        // Converting decoded base64 string to a Uint8Array to create a Blob
+        const uint8Array = new Uint8Array(decodedData.length);
+        for (let i = 0; i < decodedData.length; ++i) {
+            uint8Array[i] = decodedData.charCodeAt(i);
+        }
+    
+        // The rest of your code
+        let mimetype = "";
+        if(attachment.fileext === undefined) return;
+        switch(attachment.fileext){
+            case "png":
+            case "jpg":
+            case "jpeg":
+            case "gif":
+            case "webp":
+            case "svg":
+                mimetype = `image/${attachment.fileext}`;
+                break;
+            case "mp4":
+            case "webm":
+            case "ogg":
+                mimetype = `video/${attachment.fileext}`;
+                break;
+            case "mp3":
+            case "wav":
+            case "flac":
+                mimetype = `audio/${attachment.fileext}`;
+                break;
+            default:
+                mimetype = `application/${attachment.fileext}`;
+                break;
+        }
+        const file = new Blob([uint8Array], {type: mimetype});
         const element = document.createElement("a");
-        const file = new Blob([attachment.data], {type: `application/${attachment.fileext}`});
         element.href = URL.createObjectURL(file);
         element.download = `${attachment.name}`;
         document.body.appendChild(element);
         element.click();
-    }
+    }    
 
     const handleDelete = (attachment: Attachment) => {
         if(attachment.data === undefined) return;
