@@ -36,7 +36,6 @@ const openai = require("openai");
 const promises = require("fs/promises");
 const FormData = require("form-data");
 const vectra = require("vectra");
-const use = require("@tensorflow-models/universal-sentence-encoder");
 require("gpt-tokenizer");
 let constructDB$1;
 let chatsDB$1;
@@ -1036,19 +1035,20 @@ function PouchDBRoutes() {
     lorebookDB = new PouchDB("lorebook", { prefix: dataPath, adapter: "leveldb" });
   }
 }
-const task = "text-classification";
-const model = "Cohee/distilbert-base-uncased-go-emotions-onnx";
 const getModels$1 = async () => {
   try {
     const { pipeline, env } = await import("@xenova/transformers");
     env.localModelPath = modelsPath;
     env.backends.onnx.wasm.numThreads = 1;
     env.backends.onnx.wasm.wasmPaths = wasmPath;
-    await pipeline(task, model, { cache_dir: modelsPath, quantized: true }).then((model2) => {
+    await pipeline("text-classification", "Cohee/distilbert-base-uncased-go-emotions-onnx", { cache_dir: modelsPath, quantized: true }).then((model) => {
       console.log("Text Classification model loaded");
     });
-    await pipeline("image-to-text", "Xenova/vit-gpt2-image-captioning", { cache_dir: modelsPath, quantized: true }).then((model2) => {
+    await pipeline("image-to-text", "Xenova/vit-gpt2-image-captioning", { cache_dir: modelsPath, quantized: true }).then((model) => {
       console.log("Image Captioning model loaded");
+    });
+    await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", { cache_dir: modelsPath, quantized: true }).then((model) => {
+      console.log("Feature Extraction model loaded");
     });
   } catch (err) {
     console.log(err);
@@ -1059,7 +1059,7 @@ const modelPromise = new Promise(async (resolve, reject) => {
     const { pipeline, env } = await import("@xenova/transformers");
     env.localModelPath = modelsPath;
     env.backends.onnx.wasm.wasmPaths = wasmPath;
-    resolve(await pipeline(task, model, { cache_dir: modelsPath, quantized: true }));
+    resolve(await pipeline("text-classification", "Cohee/distilbert-base-uncased-go-emotions-onnx", { cache_dir: modelsPath, quantized: true }));
   } catch (err) {
     reject(err);
   }
@@ -1076,9 +1076,21 @@ const captionPromise = new Promise(async (resolve, reject) => {
     reject(err);
   }
 });
+const embeddingPromise = new Promise(async (resolve, reject) => {
+  try {
+    const { pipeline, env } = await import("@xenova/transformers");
+    env.localModelPath = modelsPath;
+    env.backends.onnx.wasm.wasmPaths = wasmPath;
+    console.log("Loading embedding model");
+    resolve(await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", { cache_dir: modelsPath, quantized: true }));
+  } catch (err) {
+    console.log(err);
+    reject(err);
+  }
+});
 async function getClassification(text) {
-  const model2 = await modelPromise;
-  const results = await model2(text);
+  const model = await modelPromise;
+  const results = await model(text);
   return results[0].label;
 }
 async function getCaption(image) {
@@ -1087,13 +1099,18 @@ async function getCaption(image) {
   const buffer = Buffer.from(image, "base64");
   const randomName = Math.random().toString(36).substring(7);
   await promises.writeFile(path.join(imagesPath, `temp-image-${randomName}.png`), buffer);
-  const model2 = await captionPromise;
-  const results = await model2(path.join(imagesPath, `temp-image-${randomName}.png`)).catch((err) => {
+  const model = await captionPromise;
+  const results = await model(path.join(imagesPath, `temp-image-${randomName}.png`)).catch((err) => {
     console.log("Caption error", err);
   });
   await promises.unlink(path.join(imagesPath, `temp-image-${randomName}.png`));
   console.log("Caption results", results);
   return (_a = results[0]) == null ? void 0 : _a.generated_text;
+}
+async function getEmbedding(text) {
+  const model = await embeddingPromise;
+  const results = await model(text, { pooling: "mean", normalize: true });
+  return results.data;
 }
 function assembleConstructFromData(data) {
   if (data === null)
@@ -1988,7 +2005,6 @@ function LanguageModelAPI() {
     event.reply("get-palm-model-reply", getPaLMModel());
   });
 }
-require("@tensorflow/tfjs");
 async function getAllVectors(schemaName) {
   try {
     const indexPath = path.join(dataPath, schemaName);
@@ -2036,10 +2052,7 @@ async function addVectorFromMessage(schemaName, message) {
 }
 async function getVector(text) {
   try {
-    return use.load().then(async (model2) => {
-      const embeddings = await model2.embed([text]);
-      return embeddings.arraySync()[0];
-    });
+    return await getEmbedding(text);
   } catch (error) {
     console.error(error);
     throw new Error("Error in getVector function");
@@ -2975,7 +2988,7 @@ async function makeImage(prompt, negativePrompt, steps, cfg, width, height, high
     console.log(err);
   });
   url2.pathname = "/sdapi/v1/options";
-  let model2 = await axios.get(url2.toString()).then((res2) => {
+  let model = await axios.get(url2.toString()).then((res2) => {
     return res2.data.sd_model_checkpoint;
   }).catch((err) => {
     console.log(err);
@@ -2992,12 +3005,12 @@ async function makeImage(prompt, negativePrompt, steps, cfg, width, height, high
     fileext: "jpeg",
     data: res.data.images[0].split(";base64,").pop(),
     metadata: {
-      model: model2,
+      model,
       ...assemblePayload
     }
   };
   addAttachment(attachment);
-  return { name: fileName, base64: res.data.images[0].split(";base64,").pop(), model: model2 };
+  return { name: fileName, base64: res.data.images[0].split(";base64,").pop(), model };
 }
 async function getAllLoras() {
   let url2 = new URL(getSDApiUrl());
@@ -3232,7 +3245,7 @@ const isChannelRegistered = (channel) => {
   return false;
 };
 async function handleDiscordMessage(message) {
-  var _a, _b, _c, _d;
+  var _a, _b, _c, _d, _e, _f;
   if (message.author.bot)
     return;
   if (message.content.startsWith("."))
@@ -3300,6 +3313,7 @@ async function handleDiscordMessage(message) {
     await updateChat(chatLog);
     return;
   }
+  (_e = exports.win) == null ? void 0 : _e.webContents.send(`chat-message-${message.channel.id}`);
   if (chatLog.doVector) {
     if (chatLog.global) {
       for (let i = 0; i < constructArray.length; i++) {
@@ -3309,6 +3323,7 @@ async function handleDiscordMessage(message) {
       addVectorFromMessage(chatLog._id, newMessage);
     }
   }
+  (_f = exports.win) == null ? void 0 : _f.webContents.send(`chat-message-${message.channel.id}`);
   const mode = getDiscordMode();
   if (mode === "Character") {
     if (isMultiCharacterMode() && !message.channel.isDMBased()) {
@@ -3377,6 +3392,7 @@ async function doCharacterReply(construct, chatLog, message) {
   return chatLog;
 }
 async function doRoundRobin(constructArray, chatLog, message) {
+  var _a;
   let primaryConstruct = retrieveConstructs()[0];
   let username = "You";
   let authorID = "You";
@@ -3447,12 +3463,13 @@ async function doRoundRobin(constructArray, chatLog, message) {
     chatLog.messages.push(replyMessage);
     chatLog.lastMessage = replyMessage;
     chatLog.lastMessageDate = replyMessage.timestamp;
+    await updateChat(chatLog);
     if (primaryConstruct === constructArray[i]._id) {
       await sendMessage(message.channel.id, reply);
     } else {
       await sendMessageAsCharacter(constructArray[i], message.channel.id, reply);
     }
-    await updateChat(chatLog);
+    (_a = exports.win) == null ? void 0 : _a.webContents.send(`chat-message-${message.channel.id}`);
     if (chatLog.doVector) {
       if (chatLog.global) {
         for (let i2 = 0; i2 < constructArray.length; i2++) {
@@ -4823,7 +4840,7 @@ let applicationID = "";
 let multiCharacterMode = false;
 function createClient() {
   disClient.on("messageCreate", async (message) => {
-    var _a, _b;
+    var _a, _b, _c;
     if (message.author.id === ((_a = disClient.user) == null ? void 0 : _a.id))
       return;
     if (message.webhookId)
@@ -4839,7 +4856,8 @@ function createClient() {
       }
     }
     if (isRegistered || message.channel.isDMBased()) {
-      (_b = exports.win) == null ? void 0 : _b.webContents.send("discord-message", message);
+      (_b = exports.win) == null ? void 0 : _b.webContents.send(`chat-message-${message.channel.id}`);
+      (_c = exports.win) == null ? void 0 : _c.webContents.send("discord-message", message);
     }
   });
   disClient.on("messageUpdate", async (oldMessage, newMessage) => {
@@ -5672,7 +5690,6 @@ if (!electron.app.requestSingleInstanceLock()) {
 process.env["ELECTRON_DISABLE_SECURITY_WARNINGS"] = "true";
 let isDarwin = process.platform === "darwin";
 exports.win = null;
-const preload = node_path.join(__dirname, "../preload/index.js");
 const url = process.env.VITE_DEV_SERVER_URL;
 const indexHtml = node_path.join(process.env.DIST, "index.html");
 const modelsPath = node_path.join(process.env.VITE_PUBLIC, "models/");
@@ -5688,7 +5705,6 @@ async function createWindow() {
     title: "ConstructOS - AI Agent Manager",
     icon: node_path.join(process.env.VITE_PUBLIC, "favicon.ico"),
     webPreferences: {
-      preload,
       nodeIntegration: true,
       contextIsolation: false,
       webSecurity: false
@@ -5755,7 +5771,6 @@ electron.app.on("ready", () => {
 electron.ipcMain.handle("open-win", (_, arg) => {
   const childWindow = new electron.BrowserWindow({
     webPreferences: {
-      preload,
       nodeIntegration: true,
       contextIsolation: false
     }

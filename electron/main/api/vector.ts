@@ -3,8 +3,7 @@ import { ipcMain } from 'electron';
 import path from 'path';
 import { LocalIndex } from 'vectra';
 import { MessageInterface } from '../types/types';
-require('@tensorflow/tfjs');
-import use from '@tensorflow-models/universal-sentence-encoder';
+import { getEmbedding } from '../model-pipeline/transformers';
 
 export async function getAllVectors(schemaName: string) {
     try {
@@ -56,10 +55,7 @@ export async function addVectorFromMessage(schemaName: string, message: MessageI
 
 export async function getVector(text: string) {
     try {
-        return use.load().then(async (model) => {
-            const embeddings = await model.embed([text]);
-            return embeddings.arraySync()[0];
-        });
+        return await getEmbedding(text);
     } catch (error) {
         console.error(error);
         throw new Error('Error in getVector function');
