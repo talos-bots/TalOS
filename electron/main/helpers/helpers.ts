@@ -3,7 +3,7 @@ import { AttachmentInferface, ChatInterface, ConstructInterface, LorebookInterfa
 import FormData from 'form-data';
 import axios from "axios";
 import { getUsername } from "../controllers/DiscordController";
-import { addUser, getUser, updateUser } from "../api/pouchdb";
+import { addAttachment, addUser, getUser, updateUser } from "../api/pouchdb";
 // @ts-ignore
 import { encode } from 'gpt-tokenizer'
 import { getCaption } from "../model-pipeline/transformers";
@@ -161,6 +161,7 @@ export async function convertDiscordMessageToMessage(message: Message, activeCon
 						size: attachment.size,
 					}
 				}
+				addAttachment(newAttachment);
 				attachments.push(newAttachment);
 			} catch (error) {
 				console.error('Error fetching attachment:', error);

@@ -1235,6 +1235,7 @@ async function convertDiscordMessageToMessage(message, activeConstructs) {
             size: attachment.size
           };
         }
+        addAttachment(newAttachment);
         attachments.push(newAttachment);
       } catch (error) {
         console.error("Error fetching attachment:", error);

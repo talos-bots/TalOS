@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import InputGroup from "@/pages/chat/chat-input";
 import { Chat } from "@/classes/Chat";
 import { Message } from "@/classes/Message";
-import { getChat, getConstruct, getStorageValue, getUser, saveNewChat, updateChat } from "@/api/dbapi";
+import { getChat, getConstruct, getStorageValue, getUser, saveNewAttachment, saveNewChat, updateChat } from "@/api/dbapi";
 import MessageComponent from "@/pages/chat/chat-log/message";
 import { addUserMessage, doSlashCommand, getLoadingMessage, regenerateMessage, regenerateUserMessage, sendMessage, wait } from "../helpers";
 import { Alert } from "@material-tailwind/react";
@@ -217,6 +217,7 @@ const ChatLog = (props: ChatLogProps) => {
 					attachment.name = file.name;
 					attachment.type = file.type;
 					uploadedAttachments.push(attachment);
+					saveNewAttachment(attachment);
 				} catch (error) {
 					console.error("File reading error", error);
 				}
