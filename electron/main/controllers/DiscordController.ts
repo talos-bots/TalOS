@@ -618,10 +618,6 @@ export async function doImageReaction(message: Message){
         console.log('Channel is not whitelisted');
         return;
     }
-    if (message.reactions.cache.some(reaction => reaction.emoji.name === '✅')) {
-        console.log('Message already has a reaction');
-        return;
-    }
     if(message.attachments.size > 0){
         message.react('❎');
         console.log('Message has an attachment');
@@ -660,12 +656,18 @@ export async function doImageReaction(message: Message){
 
     message.react('✅');
     let prompt = message.cleanContent;
-    let imageData = await makeImage(prompt);
+    let imageData = await makeImage(prompt).then((data) => {
+        return data;
+    }).catch((err) => {
+        console.log(err);
+        return null;
+    });
     if(imageData === null){
         if(message?.reactions?.cache?.get('✅') !== undefined){
             // @ts-ignore
             message.reactions.cache.get('✅').remove();
         }
+        message.react('❌');
         console.log('Image data is null');
         return;
     }
