@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import RouteButton from "../route-button";
-import { defaultThemes } from "@/constants";
+import { defaultThemes } from "@/constants/uithemes";
 import { setStorageValue } from "@/api/dbapi";
 
 const DevPanel = () => {

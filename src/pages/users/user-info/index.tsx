@@ -1,5 +1,5 @@
 import { User } from "@/classes/User";
-import { EditIcon, TrashIcon } from "lucide-react";
+import { Download, EditIcon, TrashIcon } from "lucide-react";
 import { RiQuestionMark } from "react-icons/ri";
 
 interface UserInfoProps {
@@ -12,6 +12,17 @@ interface UserInfoProps {
 const UserInfo = (props: UserInfoProps) => {
     const { user, onClick, onDelete, onEdit } = props;
 
+    const exportAsJSON = () => {
+        if(user === null) return;
+        const json = JSON.stringify(user);
+        const element = document.createElement("a");
+        const file = new Blob([json], {type: 'text/plain'});
+        element.href = URL.createObjectURL(file);
+        element.download = `${user.name}.json`;
+        document.body.appendChild(element);
+        element.click();
+    }
+
     return (
         <div className="themed-box-no-padding w-full flex flex-row justify-start p-1 items-center gap-4" onClick={()=> {if(onClick !== undefined) onClick(user ? user : null)}}>
             <div className="grid grid-cols-3 gap-6 w-2/3 justify-start items-center">
@@ -23,6 +34,15 @@ const UserInfo = (props: UserInfoProps) => {
             </div>
             <div className="flex flex-row gap-4 w-1/3 justify-end items-center">
                 {user !== null ? (
+                <>
+                <button
+                    className="message-button mr-4"
+                    onClick={() => {
+                        exportAsJSON();
+                    }}
+                >
+                    <Download size={18} />
+                </button>
                 <button className="message-button mr-4"
                     onClick={() => {
                         if(onDelete === undefined) return;
@@ -32,6 +52,7 @@ const UserInfo = (props: UserInfoProps) => {
                 >
                     <TrashIcon size={18} />
                 </button>
+                </>
                 ) : null}
             </div>
         </div>

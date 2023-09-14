@@ -1235,6 +1235,7 @@ async function convertDiscordMessageToMessage(message, activeConstructs) {
             size: attachment.size
           };
         }
+        addAttachment(newAttachment);
         attachments.push(newAttachment);
       } catch (error) {
         console.error("Error fetching attachment:", error);
@@ -5695,6 +5696,7 @@ const indexHtml = node_path.join(process.env.DIST, "index.html");
 const modelsPath = node_path.join(process.env.VITE_PUBLIC, "models/");
 const wasmPath = node_path.join(process.env.VITE_PUBLIC, "wasm/");
 const backgroundsPath = node_path.join(process.env.VITE_PUBLIC, "backgrounds/");
+const charactersPath = node_path.join(process.env.VITE_PUBLIC, "defaults/characters/");
 const dataPath = path.join(electron.app.getPath("userData"), "data/");
 const imagesPath = path.join(dataPath, "images/");
 fs.mkdirSync(dataPath, { recursive: true });
@@ -5829,6 +5831,15 @@ electron.ipcMain.handle("get-server-port", (event) => {
     throw error;
   }
 });
+electron.ipcMain.on("get-default-characters", (event) => {
+  const characters = [];
+  fs.readdirSync(charactersPath).forEach((file) => {
+    if (file.endsWith(".png")) {
+      characters.push(file);
+    }
+  });
+  event.sender.send("get-default-characters-reply", characters);
+});
 async function requestFullDiskAccess() {
   if (process.platform === "darwin") {
     try {
@@ -5850,6 +5861,7 @@ async function requestFullDiskAccess() {
   }
 }
 exports.backgroundsPath = backgroundsPath;
+exports.charactersPath = charactersPath;
 exports.dataPath = dataPath;
 exports.imagesPath = imagesPath;
 exports.isDarwin = isDarwin;

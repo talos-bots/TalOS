@@ -10,6 +10,7 @@ import { encode } from 'png-chunk-text';
 // @ts-ignore
 import encodePng from 'png-chunks-encode';
 import { TavernCardV2 } from "@/types";
+import { ipcRenderer } from "electron";
 
 export const importTavernCharacter = (file: File): Promise<Construct> => {
     return new Promise((resolve, reject) => {
@@ -232,4 +233,32 @@ export async function saveTavernCardAsImage(construct: Construct) {
     // Save the Blob to a file
     const url = URL.createObjectURL(newBlob);
     return url;
+}
+
+export async function getDefaultCharacters(): Promise<string[]>{
+    return new Promise((resolve, reject) => {
+        ipcRenderer.send('get-default-characters');
+        ipcRenderer.once('get-default-characters-reply', (event, response) => {
+            if(response?.length === 0){
+                resolve([]);
+            } else {
+                resolve(response);
+            }
+        });
+    });
+}
+
+export async function getDefaultCharactersFromPublic(){
+    const defaultCharacters = await getDefaultCharacters();
+    console.log(defaultCharacters);
+    if(defaultCharacters.length === 0) return;
+    for(let i = 0; i < defaultCharacters.length; i++){
+        const character = defaultCharacters[i];
+        // get the character image from public folder
+        const image = await fetch(`./public/defaults/characters/${character}`);
+        const imageBlob = await image.blob();
+        const file = new File([imageBlob], character);
+        const construct = await importTavernCharacter(file);
+        await saveNewConstruct(construct);
+    }
 }

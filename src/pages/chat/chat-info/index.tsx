@@ -5,10 +5,13 @@ import { useEffect, useState } from "react";
 
 interface ChatInfoProps { 
     chat: Chat;
+    searchTerm: string;
     onEdit?: (chat: Chat) => void;
+    setSearchTerm?: (term: string) => void;
+    goBack: () => void;
 }
 const ChatInfo = (props: ChatInfoProps) => {
-    const { chat, onEdit } = props;
+    const { chat, onEdit, searchTerm, setSearchTerm, goBack } = props;
     const [name, setName] = useState<string>("");
     const [isEditing, setIsEditing] = useState<boolean>(false);
 
@@ -35,6 +38,7 @@ const ChatInfo = (props: ChatInfoProps) => {
 
     const handleRemoveAllMessages = () => {
         if(chat === null) return;
+        if(!confirm(`Are you sure you want to clear all messages? This cannot be undone.`)) return;
         chat.messages = [];
         if (onEdit !== undefined) onEdit(chat);
         if (chat.doVector) {
@@ -48,7 +52,7 @@ const ChatInfo = (props: ChatInfoProps) => {
 
     return (
         <div className="themed-root w-full h-5/6 flex flex-row justify-start align-middle items-center gap-6">
-            <button className="message-button" onClick={() => {window.location.reload()}} title="Return to Select">
+            <button className="message-button" onClick={() => {goBack()}} title="Return to Select">
                 <LucideArrowBigLeft size={36} className="text-theme-text"/>
             </button>
             <button className="message-button" onClick={() => handleChatDownload()} title="Download ChatLog">
@@ -85,6 +89,14 @@ const ChatInfo = (props: ChatInfoProps) => {
                     )}
                 </div>
             )}
+            <div className="construct-search-bar">
+                <input
+                type="text"
+                placeholder="Search Messages"
+                value={searchTerm}
+                onChange={(event) => {if(setSearchTerm) setSearchTerm(event.target.value)}}
+                />
+            </div>
         </div>
     );
 }

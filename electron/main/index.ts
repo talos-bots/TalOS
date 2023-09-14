@@ -56,6 +56,7 @@ const indexHtml = join(process.env.DIST, "index.html");
 export const modelsPath = join(process.env.VITE_PUBLIC, "models/");
 export const wasmPath = join(process.env.VITE_PUBLIC, "wasm/");
 export const backgroundsPath = join(process.env.VITE_PUBLIC, "backgrounds/");
+export const charactersPath = join(process.env.VITE_PUBLIC, "defaults/characters/");
 export const dataPath = path.join(app.getPath("userData"), "data/");
 export const imagesPath = path.join(dataPath, "images/");
 fs.mkdirSync(dataPath, { recursive: true });
@@ -210,6 +211,16 @@ ipcMain.handle("get-server-port", (event) => {
     console.error("Failed to get server port:", error);
     throw error; // This will send the error back to the renderer
   }
+});
+
+ipcMain.on("get-default-characters", (event) => {
+  const characters: string[] = [];
+  fs.readdirSync(charactersPath).forEach((file) => {
+    if(file.endsWith(".png")){
+      characters.push(file);
+    }
+  });
+  event.sender.send("get-default-characters-reply", characters);
 });
 
 async function requestFullDiskAccess() {

@@ -1,5 +1,5 @@
 import { Lorebook } from "@/classes/Lorebook";
-import { Book, TrashIcon } from "lucide-react";
+import { Book, Download, TrashIcon } from "lucide-react";
 
 interface LorebookInfoProps {
     book: Lorebook | null;
@@ -11,6 +11,17 @@ interface LorebookInfoProps {
 const LorebookInfo = (props: LorebookInfoProps) => {
     const { book, onClick, onDelete, onEdit } = props;
 
+    const exportAsJSON = () => {
+        if(book === null) return;
+        const json = JSON.stringify(book);
+        const element = document.createElement("a");
+        const file = new Blob([json], {type: 'text/plain'});
+        element.href = URL.createObjectURL(file);
+        element.download = `${book.name}.json`;
+        document.body.appendChild(element);
+        element.click();
+    }
+
     return (
         <div className="themed-box-no-padding w-full flex flex-row justify-start p-1 items-center gap-2" onClick={()=> {if(onClick !== undefined) onClick(book ? book : null)}}>
             <div className="grid grid-cols-3 gap-6 w-2/3 justify-start items-center">
@@ -21,15 +32,25 @@ const LorebookInfo = (props: LorebookInfoProps) => {
             </div>
             <div className="flex flex-row gap-2 w-1/3 justify-end items-center">
                 {book !== null ? (
-                <button className="message-button mr-4"
-                    onClick={() => {
-                        if(onDelete === undefined) return;
-                        if(book === null) return;
-                        onDelete(book);
-                    }}
-                >
-                    <TrashIcon size={18} />
-                </button>
+                <>
+                    <button 
+                    className="message-button mr-4"
+                        onClick={() => {
+                            exportAsJSON();
+                        }}
+                    >
+                        <Download size={18} />
+                    </button>
+                    <button className="message-button mr-4"
+                        onClick={() => {
+                            if(onDelete === undefined) return;
+                            if(book === null) return;
+                            onDelete(book);
+                        }}
+                    >
+                        <TrashIcon size={18} />
+                    </button>
+                </>
                 ) : null}
             </div>
         </div>
