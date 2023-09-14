@@ -55,7 +55,7 @@ const ZeroPage = () => {
 							<option value="Instruct">Instruct</option>
 							<option value="Completion">Completion</option>
 							<option value="Sentiment Analysis">Sentiment Analysis</option>
-							<option value="Sentence Comparison">Sentence Comparison</option>
+							{/* <option value="Sentence Comparison">Sentence Comparison</option> */}
 						</select>
 					</div>
 				</div>
