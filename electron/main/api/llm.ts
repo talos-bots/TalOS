@@ -562,17 +562,17 @@ export async function doInstruct(instruction: string, guidance?: string, context
         examples = examples.join("\n");
     }
 
-    if (guidance && context && examples) {
+    if ((guidance && guidance.length > 0) && (context && context.length > 0) && (examples && examples.length > 0)) {
         prompt = instructPromptWithGuidanceAndContextAndExamples;
-    } else if (guidance && context) {
+    } else if ((guidance && guidance.length > 0) && (context && context.length > 0)) {
         prompt = instructPromptWithGuidanceAndContext;
-    } else if (guidance && examples) {
+    } else if ((guidance && guidance.length > 0) && (examples && examples.length > 0)) {
         prompt = instructPromptWithGuidanceAndExamples;
-    } else if (context && examples) {
+    } else if ((context && context.length > 0) && (examples && examples.length > 0)) {
         prompt = instructPromptWithExamples;
-    } else if (context) {
+    } else if ((context && context.length > 0)) {
         prompt = instructPromptWithContext;
-    } else if (guidance) {
+    } else if ((guidance && guidance.length > 0)) {
         prompt = instructPromptWithGuidance;
     } else {
         prompt = instructPrompt;
