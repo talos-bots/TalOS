@@ -1,4 +1,4 @@
-import { doInstructions, getGPTTokens, getLlamaTokens, getTextEmotion } from "@/api/llmapi";
+import { doInstructions, generateText, getGPTTokens, getLlamaTokens, getTextEmotion } from "@/api/llmapi";
 import TokenTextarea from "@/components/token-textarea";
 import { SendHorizonal } from "lucide-react";
 import React, { useState } from "react";
@@ -23,6 +23,20 @@ const ZeroPage = () => {
 		setResult(returnedResults);
 	};
 
+	const handleCompletion = async () => {
+		const returnedResults = await generateText(instructions);
+		if(returnedResults.error !== undefined) {
+			setResult(returnedResults.error);
+			return;
+		}
+		let fullText = "";
+		fullText = returnedResults.results[0];
+		setResult(fullText);
+	};
+
+	const handleEmbedding = async () => {
+	};
+
 	return (
 		<div className="w-full h-[calc(100vh-70px)] overflow-y-auto overflow-x-hidden p-4">
 			<div className="grid grid-cols-10 w-full h-full gap-2">
@@ -38,10 +52,8 @@ const ZeroPage = () => {
 						<label className="text-theme-text font-semibold">Mode</label>
 						<select className="w-full themed-input" onChange={(e) => setMode(e.target.value as modes)}>
 							<option value="Instruct">Instruct</option>
-							<option value="Embedding">Embedding</option>
 							<option value="Completion">Completion</option>
 							<option value="Sentiment Analysis">Sentiment Analysis</option>
-							<option value="Tokenizer">Tokenizer</option>
 							<option value="Sentence Comparison">Sentence Comparison</option>
 						</select>
 					</div>
@@ -92,7 +104,7 @@ const ZeroPage = () => {
 							<div className="flex flex-col w-full h-full">
 							</div>
 						)}
-						{(mode === "Completion" ||  mode === "Sentiment Analysis" || mode === "Embedding" || mode === "Tokenizer") && (
+						{(mode === "Completion" || mode === "Sentiment Analysis") && (
 							<div className="flex flex-col w-full h-full">
 								<label className="text-theme-text font-semibold">Input</label>
 								<TokenTextarea
@@ -102,14 +114,28 @@ const ZeroPage = () => {
 									tokenType={modelType}
 									className="w-full themed-input flex-grow"
 								/>
-								<button className="w-full themed-button flex flex-row items-center justify-center gap-4" onClick={handleClassify}>
-									Classify Emotion
+								<button className="w-full themed-button flex flex-row items-center justify-center gap-4" 
+									onClick={
+										() =>
+										{switch (mode) {
+											case "Completion":
+												handleCompletion();
+												break;
+											case "Sentiment Analysis":
+												handleClassify();
+												break;
+											default:
+												break;
+											}
+										}
+									}
+								>
 									<SendHorizonal size={26}/>
 								</button>
 							</div>
 						)}
 					</div>
-					<div className="col-span-2 w-full h-full gap-2 flex flex-col">
+					<div className="col-span-2 w-full h-full gap-2 flex flex-col text-left">
 						{mode === "Instruct" && (
 							<div className="flex flex-col w-full h-full">
 							</div>
@@ -118,12 +144,12 @@ const ZeroPage = () => {
 							<div className="flex flex-col w-full h-full">
 							</div>
 						)}
-						{(mode === "Completion" ||  mode === "Sentiment Analysis" || mode === "Embedding" || mode === "Tokenizer") && (
+						{(mode === "Completion" ||  mode === "Sentiment Analysis") && (
 							<div className="flex flex-col w-full h-full">
 							</div>
 						)}
 					</div>
-					<div className="col-span-2 w-full h-full gap-2 flex flex-col">
+					<div className="col-span-2 w-full h-full gap-2 flex flex-col text-left">
 						{mode === "Instruct" && (
 							<div className="flex flex-col w-full h-full">
 								<label className="text-theme-text font-semibold">Results</label>
@@ -141,7 +167,7 @@ const ZeroPage = () => {
 							<div className="flex flex-col w-full h-full">
 							</div>
 						)}
-						{(mode === "Completion" ||  mode === "Sentiment Analysis" || mode === "Embedding" || mode === "Tokenizer") && (
+						{(mode === "Completion" ||  mode === "Sentiment Analysis") && (
 							<div className="flex flex-col w-full h-full">
 								<label className="text-theme-text font-semibold">Results</label>
 								<TokenTextarea
