@@ -5704,7 +5704,7 @@ fs.mkdirSync(imagesPath, { recursive: true });
 const store = new Store();
 async function createWindow() {
   exports.win = new electron.BrowserWindow({
-    title: "ConstructOS - AI Agent Manager",
+    title: "ConstructOS - AI Sandbox",
     icon: node_path.join(process.env.VITE_PUBLIC, "favicon.ico"),
     webPreferences: {
       nodeIntegration: true,
