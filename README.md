@@ -10,6 +10,9 @@
 - Lorebooks (World Info) to pair with all modes.
 - Instruct Mode, have the LLM complete tasks or instructions in UI or through Discord
 - Web Browsing LLM
+- LLM Completions (Code, Novel, Script, Song, etc.)
+- Stable Diffusion Extension (Auto1111 API)
+- Sprites, VRMs, Live2D
 - and much much more! Find more details at the project board, or the planned features section below. Feel free to join our Discord to ask questions, get help, or join the team!
 ### Discord Server:
 https://discord.com/invite/HNSaTjExYy
