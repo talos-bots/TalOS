@@ -22,9 +22,9 @@ const NavBar: React.FC = () => {
       <NavLink to="/zero" title="Zero" className={`p-1 transition-all duration-125 hover:opacity-50`}>
         <Sparkles style={location.pathname === "/zero" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }}/>
       </NavLink>
-      <NavLink to="/completions" title="Completions" className={`p-1 transition-all duration-125 hover:opacity-50`}>
+      {/* <NavLink to="/completions" title="Completions" className={`p-1 transition-all duration-125 hover:opacity-50`}>
         <Text style={location.pathname === "/completions" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }}/>
-      </NavLink>
+      </NavLink> */}
       <NavLink to="/constructs" title="Constructs" className={`p-1 transition-all duration-125 hover:opacity-50`}>
         <Users style={location.pathname === "/constructs" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }} id='constructsPage'/>
       </NavLink>

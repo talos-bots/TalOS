@@ -3,7 +3,7 @@ import TokenTextarea from "@/components/token-textarea";
 import { SendHorizonal } from "lucide-react";
 import React, { useState } from "react";
 type models = "GPT" | "LLaMA";
-type modes = "Embedding" | "Completion" | "Sentiment Analysis" | "Instruct" | "Tokenizer" | "Sentence Comparison";
+type modes = "Completion" | "Sentiment Analysis" | "Instruct" | "Sentence Comparison";
 const ZeroPage = () => {
 	const [modelType, setModelType] = useState<models>("LLaMA");
 	const [mode, setMode] = useState<modes>("Instruct");
@@ -34,16 +34,13 @@ const ZeroPage = () => {
 		setResult(fullText);
 	};
 
-	const handleEmbedding = async () => {
-	};
-
 	return (
 		<div className="w-full h-[calc(100vh-70px)] overflow-y-auto overflow-x-hidden p-4">
 			<div className="grid grid-cols-10 w-full h-full gap-2">
 				<div className="col-span-2 w-full h-full themed-root gap-2 flex flex-col">
 					<h3 className="text-theme-text font-semibold">Zero Shot</h3>
 					<div className="w-full gap-2 flex flex-col text-left">
-						<p className="text-theme-text">Zero Shot is a collection of tools that allow you to interact with LLMs, text-sentence-encoder models, and Sentiment Analysis models. You can use these tools to generate embeddings, and to generate completions.</p>
+						<p className="text-theme-text">Zero Shot is a collection of tools that allow you to interact with LLMs, text-sentence-encoder models, and Sentiment Analysis models. You can use these tools to analyze text, perform instructions, and to generate completions.</p>
 						<label className="text-theme-text font-semibold">LLM Type (Determines Token Count)</label>
 						<select className="w-full themed-input" onChange={(e) => setModelType(e.target.value as models)}>
 							<option value="LLaMA">LLaMA (LLaMA 2/LLaMA)</option>
