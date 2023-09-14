@@ -1,23 +1,24 @@
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import { DiscordListeners } from './listeners/discord-listeners';
+import { useEffect, useState } from 'react';
+import { ipcRenderer } from 'electron';
+import { Steps, Hints } from 'intro.js-react';
+import { getStorageValue, setStorageValue } from './api/dbapi';
+import { getDefaultCharactersFromPublic } from './api/extrasapi';
+import HomePage from './pages/home';
+import LorebooksPage from './pages/lorebooks';
+import AttachmentsPage from './pages/attachments';
+import CompletionsPage from './pages/completions';
+import UserPage from './pages/users';
+import DiscordPage from './pages/discord';
+import MenuThemeLoader from './components/menu-theme-loader';
+import ConstructsPage from './pages/constructs';
 import ChatPage from './pages/chat/';
-import DevPanel from './components/dev-panel';
-import NavBar from './components/shared/NavBar';
 import SettingsPage from './pages/settings';
 import ConstructManagement from './components/construct-crud';
 import ZeroPage from './pages/zero';
-import { useEffect, useState } from 'react';
-import MenuThemeLoader from './components/menu-theme-loader';
-import ConstructsPage from './pages/constructs';
-import DiscordPage from './pages/discord';
-import { ipcRenderer } from 'electron';
-import UserPage from './pages/users';
-import { Steps, Hints } from 'intro.js-react';
-import { getStorageValue, setStorageValue } from './api/dbapi';
-import HomePage from './pages/home';
-import LorebooksPage from './pages/lorebooks';
-import { getDefaultCharactersFromPublic } from './api/extrasapi';
-import AttachmentsPage from './pages/attachments';
+import DevPanel from './components/dev-panel';
+import NavBar from './components/shared/NavBar';
 
 export const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, url: string) => {
   e.preventDefault();
@@ -90,9 +91,10 @@ function App() {
             <Route path='/users' element={<UserPage/>} />
             <Route path='/lorebooks' element={<LorebooksPage/>} />
             <Route path='/attachments' element={<AttachmentsPage/>} />
+            <Route path='/completions' element={<CompletionsPage/>} />
           </Routes>
         </div>
-        {isDev ? <DevPanel /> : null}
+        {/* {isDev ? <DevPanel /> : null} */}
         <Steps
           initialStep={0}
           enabled={!doneTutorial}

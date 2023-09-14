@@ -64,7 +64,7 @@ fs.mkdirSync(imagesPath, { recursive: true });
 export const store = new Store();
 async function createWindow() {
   win = new BrowserWindow({
-    title: "ConstructOS - AI Agent Manager",
+    title: "ConstructOS - AI Sandbox",
     icon: join(process.env.VITE_PUBLIC, "favicon.ico"),
     webPreferences: {
       nodeIntegration: true,

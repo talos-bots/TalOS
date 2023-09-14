@@ -1903,27 +1903,50 @@ async function doInstruct(instruction, guidance, context, examples) {
   if (Array.isArray(examples)) {
     examples = examples.join("\n");
   }
-  if (guidance && context && examples) {
+  if (guidance && guidance.length > 0 && (context && context.length > 0) && (examples && examples.length > 0)) {
     prompt = instructPromptWithGuidanceAndContextAndExamples;
-  } else if (guidance && context) {
+  } else if (guidance && guidance.length > 0 && (context && context.length > 0)) {
     prompt = instructPromptWithGuidanceAndContext;
-  } else if (guidance && examples) {
+  } else if (guidance && guidance.length > 0 && (examples && examples.length > 0)) {
     prompt = instructPromptWithGuidanceAndExamples;
-  } else if (context && examples) {
+  } else if (context && context.length > 0 && (examples && examples.length > 0)) {
     prompt = instructPromptWithExamples;
-  } else if (context) {
+  } else if (context && context.length > 0) {
     prompt = instructPromptWithContext;
-  } else if (guidance) {
+  } else if (guidance && guidance.length > 0) {
     prompt = instructPromptWithGuidance;
   } else {
     prompt = instructPrompt;
   }
-  prompt = prompt.replace("{{guidance}}", guidance || "").replace("{{instruction}}", instruction || "").replace("{{context}}", context || "").replace("{{examples}}", examples || "");
+  prompt = prompt.replace("{{guidance}}", guidance || "").replace("{{instruction}}", instruction || "").replace("{{context}}", context || "").replace("{{examples}}", examples || "").trimStart();
   let result = await generateText(prompt);
   if (!result) {
     return "No valid response from LLM.";
   }
   return result.results[0];
+}
+function assembleInstructPrompt$1(instruction, guidance, context, examples) {
+  let prompt = "";
+  if (Array.isArray(examples)) {
+    examples = examples.join("\n");
+  }
+  if (guidance && guidance.length > 0 && (context && context.length > 0) && (examples && examples.length > 0)) {
+    prompt = instructPromptWithGuidanceAndContextAndExamples;
+  } else if (guidance && guidance.length > 0 && (context && context.length > 0)) {
+    prompt = instructPromptWithGuidanceAndContext;
+  } else if (guidance && guidance.length > 0 && (examples && examples.length > 0)) {
+    prompt = instructPromptWithGuidanceAndExamples;
+  } else if (context && context.length > 0 && (examples && examples.length > 0)) {
+    prompt = instructPromptWithExamples;
+  } else if (context && context.length > 0) {
+    prompt = instructPromptWithContext;
+  } else if (guidance && guidance.length > 0) {
+    prompt = instructPromptWithGuidance;
+  } else {
+    prompt = instructPrompt;
+  }
+  prompt = prompt.replace("{{guidance}}", guidance || "").replace("{{instruction}}", instruction || "").replace("{{context}}", context || "").replace("{{examples}}", examples || "").trimStart();
+  return prompt;
 }
 function LanguageModelAPI() {
   electron.ipcMain.on("generate-text", async (event, prompt, configuredName, stopList, uniqueEventName) => {
@@ -2004,6 +2027,9 @@ function LanguageModelAPI() {
   });
   electron.ipcMain.on("get-palm-model", (event) => {
     event.reply("get-palm-model-reply", getPaLMModel());
+  });
+  electron.ipcMain.on("get-instruct-prompt", (event, instruction, guidance, context, examples, uniqueEventName) => {
+    event.reply(uniqueEventName, assembleInstructPrompt$1(instruction, guidance, context, examples));
   });
 }
 async function getAllVectors(schemaName) {
@@ -3620,10 +3646,6 @@ async function doImageReaction(message) {
     console.log("Channel is not whitelisted");
     return;
   }
-  if (message.reactions.cache.some((reaction) => reaction.emoji.name === "✅")) {
-    console.log("Message already has a reaction");
-    return;
-  }
   if (message.attachments.size > 0) {
     message.react("❎");
     console.log("Message has an attachment");
@@ -3661,11 +3683,17 @@ async function doImageReaction(message) {
   }
   message.react("✅");
   let prompt = message.cleanContent;
-  let imageData = await makeImage(prompt);
+  let imageData = await makeImage(prompt).then((data) => {
+    return data;
+  }).catch((err) => {
+    console.log(err);
+    return null;
+  });
   if (imageData === null) {
     if (((_b = (_a = message == null ? void 0 : message.reactions) == null ? void 0 : _a.cache) == null ? void 0 : _b.get("✅")) !== void 0) {
       message.reactions.cache.get("✅").remove();
     }
+    message.react("❌");
     console.log("Image data is null");
     return;
   }
@@ -5704,7 +5732,7 @@ fs.mkdirSync(imagesPath, { recursive: true });
 const store = new Store();
 async function createWindow() {
   exports.win = new electron.BrowserWindow({
-    title: "ConstructOS - AI Agent Manager",
+    title: "ConstructOS - AI Sandbox",
     icon: node_path.join(process.env.VITE_PUBLIC, "favicon.ico"),
     webPreferences: {
       nodeIntegration: true,

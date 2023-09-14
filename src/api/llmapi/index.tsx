@@ -37,6 +37,22 @@ export const doInstructions = (
     });
 }
 
+export const getInstructPrompt = (
+    instruction: string,
+    guidance?: string,
+    context?: string,
+    examples?: string | string[],
+): Promise<any> => {
+    return new Promise((resolve, reject) => {
+        const uniqueEventName = "get-instruct-prompt-reply-" + Date.now() + "-" + Math.random();
+        ipcRenderer.send('get-instruct-prompt', instruction, guidance, context, examples, uniqueEventName);
+        ipcRenderer.once(uniqueEventName, (event, results) => {
+            resolve(results);
+        });
+
+    });
+}
+
 // Get Status
 export const getStatus = (
     endpoint?: string,
