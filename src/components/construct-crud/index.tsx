@@ -32,6 +32,7 @@ const ConstructManagement = () => {
     const [isPrimary, setIsPrimary] = useState<boolean>(false);
     const [waitingForImage, setWaitingForImage] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+    const [page, setPage] = useState<number>(1);
 
     const makeActive = async () => {
         if(constructState !== null) {
@@ -201,6 +202,7 @@ const ConstructManagement = () => {
 		) : (
 			null
 		)}
+        {page === 1 && (
         <div className="w-full h-[calc(100vh-70px)] grid grid-rows-[auto,1fr] themed-root gap-2">
             <h2 className="text-2xl font-bold text-theme-text text-shadow-xl">Construct Editor</h2>
             <div className="grid grid-cols-5 grid-rows-[calc, 1fr] gap-2 text-left">
@@ -345,6 +347,12 @@ const ConstructManagement = () => {
                 </div>
             </div>
         </div>
+        )}
+        {page === 2 && (
+        <div>
+
+        </div>
+        )}
         </>
     );
 };

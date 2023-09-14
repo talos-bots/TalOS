@@ -1,9 +1,8 @@
-import { deleteUser, getUsers } from "@/api/dbapi";
+import { deleteUser, getUsers, saveNewUser } from "@/api/dbapi";
 import { User } from "@/classes/User";
 import Loading from "@/components/loading";
 import { useEffect, useState } from "react";
 import UserInfo from "./user-info";
-import { RiQuestionMark } from "react-icons/ri";
 import UserCrud from "./user-crud";
 
 const UserPage = () => {
@@ -48,11 +47,35 @@ const UserPage = () => {
         setUsers(newUsers);
     }
 
+    const importFromJJSON = () => {
+        const element = document.createElement("input");
+        element.type = "file";
+        element.accept = ".json";
+        element.onchange = async () => {
+            if(element.files === null) return;
+            const file = element.files[0];
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                if(e.target === null) return;
+                const contents = e.target.result;
+                if(typeof contents !== "string") return;
+                const newUser: User = JSON.parse(contents) as User;
+                await saveNewUser(newUser);
+                setUsers([...users, newUser]);
+            }
+            reader.readAsText(file);
+        }
+        element.click();
+    }
+
     return (
         <div className="w-full p-4 h-[calc(100vh-70px)] flex flex-col gap-2 row-0 overflow-y-auto overflow-x-hidden">
             <div className="grid grid-cols-3 w-full h-11/12 gap-2">
                 <div className="col-span-1 themed-root gap-2 h-full overflow-y-auto flex flex-col">
                     <h3 className="text-xl font-semibold">User Profiles</h3>
+                    <button className="themed-button-neg w-full h-10" onClick={importFromJJSON}>
+                        Import User
+                    </button>
                     <button className="themed-button-pos w-full h-10" onClick={() => {setSelectedUser(null)}}>
                         New User
                     </button>
