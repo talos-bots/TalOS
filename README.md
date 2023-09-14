@@ -10,6 +10,9 @@
 - Lorebooks (World Info) to pair with all modes.
 - Instruct Mode, have the LLM complete tasks or instructions in UI or through Discord
 - Web Browsing LLM
+- LLM Completions (Code, Novel, Script, Song, etc.)
+- Stable Diffusion Extension (Auto1111 API)
+- Sprites, VRMs, Live2D
 - and much much more! Find more details at the project board, or the planned features section below. Feel free to join our Discord to ask questions, get help, or join the team!
 ### Discord Server:
 https://discord.com/invite/HNSaTjExYy
@@ -53,24 +56,25 @@ https://discord.com/invite/HNSaTjExYy
 https://github.com/orgs/WaywardWyvernsSoftworks/projects/2
 ## Current State of UI
 ### Homepage
-![Screenshot 2023-09-05 213128](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/e294ed91-c976-43ea-8813-bc683719655f)
+![Homepage](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/2d0d7937-8f74-4dfc-a085-269e53e6da24)
 ### Chat Page
-![Screenshot 2023-09-05 213611](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/76e4883e-afe1-4ee0-ace7-64244c62d31a)
-![Screenshot 2023-09-05 213957](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/1d0d9c9e-97b4-4efd-8ae2-7fdfb5bb2bb2)
+![ChatPage](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/82f48905-0693-496a-bd74-4af142a035d0)
+![ChatSelectionPage](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/74b17b81-e2ce-4cae-824b-b3df4a4a100f)
 ### Constructs Page
-![Screenshot 2023-09-05 214014](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/0cd555a9-d50e-4603-8f33-88d0426f8313)
-![Screenshot 2023-09-05 214034](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/da6ba0ab-a5ca-4caa-89e2-a9e1b3aa7897)
-![Screenshot 2023-09-05 214047](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/39c85752-cbbc-47d8-840b-2c8f8b8f9c50)
+![ConstructsPageClosed](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/6827b388-e248-4d7c-b295-d28d6cb2335b)
+![ConstructsPageOpen](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/ceab6a40-3efd-4629-9476-b1f68d399358)
+![ConstructCrud1](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/fbde6465-84fa-4033-a175-dc9d0319fdc4)
 ### Lorebooks Page
-![Screenshot 2023-09-05 214103](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/6d76b7ee-4f23-4206-adc7-518bd2ac2f3f)
-![Screenshot 2023-09-05 214125](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/95b6af9d-6fc6-40e1-afdb-b6cfbbc572a0)
+![LorebooksPage](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/0a0c87b3-7921-4135-a069-56ea691eabc4)
+![LorebooksPage2](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/04f1cf3a-8da7-4c68-b922-07f486e17a29)
 ### Discord Bot Page
-![Screenshot 2023-09-05 214144](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/6e1bb228-1d5a-47f2-9d95-269a8d715d47)
+![DiscordPage](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/58f550c0-ff68-4baa-877a-d1cfce367cea)
 ### User Profiles Page
-![Screenshot 2023-09-05 214203](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/c23c5990-1ad0-421c-bd94-8cbb9cf7b212)
-![Screenshot 2023-09-05 214229](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/e092307b-2ddb-4a44-9dbe-a5658d6626ed)
+![UserPage](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/d16c058a-0f77-4311-8582-77db16dfe034)
 ### Settings Page
-![Screenshot 2023-09-05 214252](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/e492fe96-d4be-474d-9f97-7d5b3d5f94e9)
+![SettingsPage](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/acddb68a-18db-477b-8e25-09d0864cda10)
+### Atachments Page
+![AttachmentsPage](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/aba101df-86f3-4b79-a80d-dd059c70bb6b)
 ### Themes
 **Dark Mode (Default)**
 ![Screenshot 2023-09-05 214252](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/9e6c2b91-133c-46b3-9d9f-9c1788199c6e)
