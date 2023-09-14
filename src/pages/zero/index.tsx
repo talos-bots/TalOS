@@ -1,4 +1,4 @@
-import { doInstructions, generateText, getGPTTokens, getLlamaTokens, getTextEmotion } from "@/api/llmapi";
+import { doInstructions, generateText, getGPTTokens, getInstructPrompt, getLlamaTokens, getTextEmotion } from "@/api/llmapi";
 import TokenTextarea from "@/components/token-textarea";
 import { SendHorizonal } from "lucide-react";
 import React, { useState } from "react";
@@ -12,9 +12,13 @@ const ZeroPage = () => {
 	const [examples, setExamples] = useState<string[] | string>("");
 	const [guidance, setGuidance] = useState<string>("");
 	const [context, setContext] = useState<string>("");
+	const [prompt, setPrompt] = useState<string>("");
 
 	const handleInstruct = async () => {
 		const returnedResults = await doInstructions(instructions, guidance, context, examples);
+		getInstructPrompt(instructions, guidance, context, examples).then((prompt) => {
+			setPrompt(prompt);
+		});
 		setResult(returnedResults);
 	};
 
@@ -135,6 +139,15 @@ const ZeroPage = () => {
 					<div className="col-span-2 w-full h-full gap-2 flex flex-col text-left">
 						{mode === "Instruct" && (
 							<div className="flex flex-col w-full h-full">
+								<label className="text-theme-text font-semibold">Prompt</label>
+								<TokenTextarea
+									value={prompt}
+									onChange={(value) => setPrompt(value)}
+									placeholder="Prompt"
+									tokenType={modelType}
+									className="w-full themed-input flex-grow"
+									readonly
+								/>
 							</div>
 						)}
 						{mode === "Sentence Comparison" && (

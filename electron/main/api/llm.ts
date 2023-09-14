@@ -581,12 +581,43 @@ export async function doInstruct(instruction: string, guidance?: string, context
     prompt = prompt.replace("{{guidance}}", guidance || "")
                  .replace("{{instruction}}", instruction || "")
                  .replace("{{context}}", context || "")
-                 .replace("{{examples}}", examples || "");
+                 .replace("{{examples}}", examples || "").trimStart();
     let result = await generateText(prompt);
     if(!result){
         return 'No valid response from LLM.';
     }
     return result.results[0];
+}
+
+export function assembleInstructPrompt(instruction: string, guidance?: string, context?: string, examples?: string[] | string){
+    let prompt = '';
+
+    // Convert examples array to string if it's an array
+    if (Array.isArray(examples)) {
+        examples = examples.join("\n");
+    }
+
+    if ((guidance && guidance.length > 0) && (context && context.length > 0) && (examples && examples.length > 0)) {
+        prompt = instructPromptWithGuidanceAndContextAndExamples;
+    } else if ((guidance && guidance.length > 0) && (context && context.length > 0)) {
+        prompt = instructPromptWithGuidanceAndContext;
+    } else if ((guidance && guidance.length > 0) && (examples && examples.length > 0)) {
+        prompt = instructPromptWithGuidanceAndExamples;
+    } else if ((context && context.length > 0) && (examples && examples.length > 0)) {
+        prompt = instructPromptWithExamples;
+    } else if ((context && context.length > 0)) {
+        prompt = instructPromptWithContext;
+    } else if ((guidance && guidance.length > 0)) {
+        prompt = instructPromptWithGuidance;
+    } else {
+        prompt = instructPrompt;
+    }
+
+    prompt = prompt.replace("{{guidance}}", guidance || "")
+                 .replace("{{instruction}}", instruction || "")
+                 .replace("{{context}}", context || "")
+                 .replace("{{examples}}", examples || "").trimStart();
+    return prompt;
 }
 
 export function LanguageModelAPI(){
@@ -688,5 +719,9 @@ export function LanguageModelAPI(){
 
     ipcMain.on('get-palm-model', (event) => {
         event.reply('get-palm-model-reply', getPaLMModel());
+    });
+
+    ipcMain.on('get-instruct-prompt', (event, instruction, guidance, context, examples, uniqueEventName) => {
+        event.reply(uniqueEventName, assembleInstructPrompt(instruction, guidance, context, examples));
     });
 }

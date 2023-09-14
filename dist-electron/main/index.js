@@ -1918,12 +1918,35 @@ async function doInstruct(instruction, guidance, context, examples) {
   } else {
     prompt = instructPrompt;
   }
-  prompt = prompt.replace("{{guidance}}", guidance || "").replace("{{instruction}}", instruction || "").replace("{{context}}", context || "").replace("{{examples}}", examples || "");
+  prompt = prompt.replace("{{guidance}}", guidance || "").replace("{{instruction}}", instruction || "").replace("{{context}}", context || "").replace("{{examples}}", examples || "").trimStart();
   let result = await generateText(prompt);
   if (!result) {
     return "No valid response from LLM.";
   }
   return result.results[0];
+}
+function assembleInstructPrompt$1(instruction, guidance, context, examples) {
+  let prompt = "";
+  if (Array.isArray(examples)) {
+    examples = examples.join("\n");
+  }
+  if (guidance && guidance.length > 0 && (context && context.length > 0) && (examples && examples.length > 0)) {
+    prompt = instructPromptWithGuidanceAndContextAndExamples;
+  } else if (guidance && guidance.length > 0 && (context && context.length > 0)) {
+    prompt = instructPromptWithGuidanceAndContext;
+  } else if (guidance && guidance.length > 0 && (examples && examples.length > 0)) {
+    prompt = instructPromptWithGuidanceAndExamples;
+  } else if (context && context.length > 0 && (examples && examples.length > 0)) {
+    prompt = instructPromptWithExamples;
+  } else if (context && context.length > 0) {
+    prompt = instructPromptWithContext;
+  } else if (guidance && guidance.length > 0) {
+    prompt = instructPromptWithGuidance;
+  } else {
+    prompt = instructPrompt;
+  }
+  prompt = prompt.replace("{{guidance}}", guidance || "").replace("{{instruction}}", instruction || "").replace("{{context}}", context || "").replace("{{examples}}", examples || "").trimStart();
+  return prompt;
 }
 function LanguageModelAPI() {
   electron.ipcMain.on("generate-text", async (event, prompt, configuredName, stopList, uniqueEventName) => {
@@ -2004,6 +2027,9 @@ function LanguageModelAPI() {
   });
   electron.ipcMain.on("get-palm-model", (event) => {
     event.reply("get-palm-model-reply", getPaLMModel());
+  });
+  electron.ipcMain.on("get-instruct-prompt", (event, instruction, guidance, context, examples, uniqueEventName) => {
+    event.reply(uniqueEventName, assembleInstructPrompt$1(instruction, guidance, context, examples));
   });
 }
 async function getAllVectors(schemaName) {
