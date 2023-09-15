@@ -369,11 +369,8 @@ ul {
   animation: slide-in-bottom 1s forwards;
 }
 
-.slide-in-right-message {
-  animation: slide-in-right 1s forwards;
-}
-.slide-in-left-message {
-  animation: slide-in-left 1s forwards;
+.slide-in-bottom-message {
+  animation: slide-in-bottom .3s forwards;
 }
 
 /* Slide-out to the left */
@@ -389,7 +386,7 @@ ul {
 }
 
 .slide-out-left {
-  animation: slide-out-left .7s ease-in-out forwards;
+  animation: slide-out-left .5s ease-in-out forwards;
 }
 
 /* Slide-out to the right */

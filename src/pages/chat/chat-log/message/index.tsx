@@ -105,7 +105,7 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate, onSplit, on
     };
 
     return (
-        <div className={`themed-message slide-in-bottom ${className} ${isDeleted && 'slide-out-left'}`}>
+        <div className={`themed-message slide-in-bottom-message ${className} ${isDeleted && 'slide-out-left'}`}>
             <div className="flex flex-col">
                 <div className="flex flex-row items-center">
                     <div className="flex flex-row items-center w-full gap-2">
@@ -158,7 +158,7 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate, onSplit, on
                                     title="Delete"
                                     onClick={async () => {
                                         setIsDeleted(true);
-                                        await new Promise(r => setTimeout(r, 750));
+                                        await new Promise(r => setTimeout(r, 550));
                                         if(onDelete === undefined) return;
                                         onDelete(message._id);
                                     }}

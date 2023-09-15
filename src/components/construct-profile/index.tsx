@@ -20,7 +20,7 @@ const ConstructProfile: React.FC<Props> = ({ character, onClick, active }) => {
 
     return (
         <div
-            className={"themed-root-no-padding w-36 h-full flex flex-col justify-center items-center cursor-pointer relative shrink-0 grow-0 "}
+            className={"themed-root-no-padding w-36 h-full flex flex-col justify-center items-center cursor-pointer relative shrink-0 grow-0 pop-in"}
             onMouseEnter={() => setIsHovered(true)} 
             onMouseLeave={() => setIsHovered(false)} 
             onClick={() => { if (onClick !== undefined) onClick(character) }}
