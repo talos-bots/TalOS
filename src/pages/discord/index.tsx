@@ -112,14 +112,14 @@ const DiscordPage = () => {
 
     return (
         <div className="w-full h-[calc(100vh-70px)] flex flex-col gap-2 overflow-y-auto overflow-x-hidden p-4">
-            <h2 className="text-2xl font-bold text-theme-text text-shadow-xl themed-root pop-in">Discord Configuration Panel</h2>
+            <h2 className="text-2xl font-bold text-theme-text text-shadow-xl themed-root slide-in-top">Discord Configuration Panel</h2>
             <div className="grid grid-cols-2 gap-2">
                 <div className="col-span-1">
-                    <Accordian title="What is this?">
+                    <Accordian title="What is this?" className="slide-in-left">
                     </Accordian>
                 </div>
                 <div className="col-span-1">
-                    <Accordian title="How do I use this?">
+                    <Accordian title="How do I use this?" className="slide-in-right">
                         <div className="text-left ">
                             <h3>Creating the Discord Bot</h3>
                             <ol>
@@ -148,7 +148,7 @@ const DiscordPage = () => {
             </div>
             <div className="grid grid-cols-2 gap-2">
                 <div className="col-span-1">
-                    <Accordian title="Construct Chat Configuration">
+                    <Accordian title="Construct Chat Configuration" className="slide-in-left">
                         <div className="grid grid-cols-2 gap-2">
                             <div className="col-span-1 flex flex-col text-left">
                                 <label className="text-theme-text font-semibold">Active Constructs</label>
@@ -217,7 +217,7 @@ const DiscordPage = () => {
                     </Accordian>
                 </div>
                 <div className="col-span-1">
-                    <Accordian title="Bot Configuration">
+                    <Accordian title="Bot Configuration" className="slide-in-right">
                         <div className="grid grid-cols-2 gap-2">
                             <div className="col-span-1 flex flex-col text-left">
                                 <label className="text-theme-text font-semibold">Bot Token</label>
@@ -288,7 +288,7 @@ const DiscordPage = () => {
                     </Accordian>
                 </div>
                 <div className="col-span-1">
-                    <Accordian title="Stable Diffusion Extension">
+                    <Accordian title="Stable Diffusion Extension" className="slide-in-left">
                         <div className="grid grid-cols-2 gap-2">
                             <div className="col-span-1 flex flex-col text-left">
                                 <label className="text-theme-text font-semibold">Stable Diffusion Commands</label>

@@ -24,19 +24,19 @@ const SettingsPage = () => {
 
     return (
         <div className="w-full h-[calc(100vh-70px)] flex flex-col gap-2 overflow-y-auto overflow-x-hidden p-4">
-            <h2 className="text-2xl font-bold text-theme-text text-shadow-xl themed-root pop-in">Settings</h2>
+            <h2 className="text-2xl font-bold text-theme-text text-shadow-xl themed-root slide-in-top">Settings</h2>
             <div className="flex flex-col gap-2">
                 <div className="grid grid-cols-2 gap-2">
                     <div className="col-span-1 flex flex-col gap-2">
-                        <Accordian title="LLM">
+                        <Accordian title="LLM" className="slide-in-left">
                             <LLMPanel />
                         </Accordian>
-                        <Accordian title="Stable Diffusion API">
+                        <Accordian title="Stable Diffusion API" className="slide-in-left">
                             <StableDiffusionPanel />
                         </Accordian>
                     </div>
                     <div className="col-span-1 flex flex-col gap-2">
-                        <Accordian title="Theme">
+                        <Accordian title="Theme" className="slide-in-right">
                             <div className="flex flex-col gap-2">
                                 <div className="grid grid-cols-2 gap-2">
                                     {Array.isArray(defaultThemes) && defaultThemes.map((theme, index) => {
@@ -51,7 +51,7 @@ const SettingsPage = () => {
                                 <BackgroundSelector />
                             </div>
                         </Accordian>
-                        <Accordian title="Construct Settings">
+                        <Accordian title="Construct Settings" className="slide-in-right">
                             <ConstructSettingsPanel />
                         </Accordian>
                     </div>

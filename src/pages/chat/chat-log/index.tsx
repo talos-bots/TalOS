@@ -261,9 +261,6 @@ const ChatLog = (props: ChatLogProps) => {
 		}
 		await wait(750);
 		for (let i = 0; i < chat.constructs.length; i++) {
-			let loadingMessage = await getLoadingMessage(chat.constructs[i]);
-			loadingMessage._id += "-loading";
-			setMessages(prevMessages => [...prevMessages, loadingMessage]);
 			let botMessage = await sendMessage(chat, chat.constructs[i], currentUser, doMultiline, numberOfMessagesToSend);
 			if (botMessage !== null){
 				chat.addMessage(botMessage);
@@ -275,7 +272,9 @@ const ChatLog = (props: ChatLogProps) => {
 				}
 				setMessages(prevMessages => {
 					// Remove the loadingMessage
-					const updatedMessages = prevMessages.filter(msg => msg._id !== loadingMessage._id);
+					const updatedMessages = prevMessages.filter((message) => {
+						return message._id !== botMessage?._id;
+					});
 		
 					// Add the botMessage
 					if (botMessage !== null) {
@@ -286,7 +285,7 @@ const ChatLog = (props: ChatLogProps) => {
 				});
 			}else{
 				setMessages(prevMessages => {
-					const updatedMessages = prevMessages.filter(msg => msg._id !== loadingMessage._id);
+					const updatedMessages = prevMessages;
 					return updatedMessages;
 				});
 				setError("Invalid response from LLM endpoint. Check your settings and try again.");
@@ -417,7 +416,7 @@ const ChatLog = (props: ChatLogProps) => {
 				</div>
 				<div className="h-5/6">
 					<div className="themed-message-box">
-						{Array.isArray(filteredMessages) && filteredMessages.map((message) => {
+						{Array.isArray(filteredMessages) && filteredMessages.map((message, index) => {
 							return (
 								<MessageComponent key={message._id} message={message} onDelete={deleteMessage} onEdit={editMessage} onRegenerate={onRegenerate} onSplit={splitChatLogAtMessage} onUserRegenerate={userRegenerate}/>
 							);

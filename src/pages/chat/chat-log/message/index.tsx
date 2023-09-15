@@ -14,6 +14,8 @@ interface Props {
     onRegenerate?: (messageID: string, messageText: string) => void;
     onSplit?: (messageID: string) => void;
     onUserRegenerate?: (messageID: string, messageText: string) => void;
+    style?: React.CSSProperties;
+    className?: string;
 }
 
 export function getFormattedTime(timestamp: number): string {
@@ -24,7 +26,7 @@ export function getFormattedTime(timestamp: number): string {
     return `${hours}:${minutes}:${seconds} ${date.toLocaleDateString()}`;
 }
 
-const MessageComponent = ({ message, onDelete, onEdit, onRegenerate, onSplit, onUserRegenerate }: Props) => {
+const MessageComponent = ({ message, onDelete, onEdit, onRegenerate, onSplit, onUserRegenerate, style, className }: Props) => {
     const [text, setText] = useState<string>("");
     const [user, setUser] = useState<string>("");
     const [userID, setUserID] = useState<string>("");
@@ -102,7 +104,7 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate, onSplit, on
     };
 
     return (
-        <div className="themed-message pop-in">
+        <div className={`themed-message slide-in-${message.isHuman? 'right' : 'left'}-message ${className}`}>
             <div className="flex flex-col">
                 <div className="flex flex-row items-center">
                     <div className="flex flex-row items-center w-full gap-2">

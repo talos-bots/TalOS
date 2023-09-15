@@ -259,9 +259,11 @@ ul {
 .fade-in {
   animation: fadeIn 0.5s ease-in-out;
 }
+
 .pop-in {
-  animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  animation: popIn 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
+
 @keyframes popIn {
   0% {
     opacity: 0;
@@ -280,6 +282,78 @@ ul {
   to {
     opacity: 1;
   }
+}
+
+/* Slide-in from the left */
+@keyframes slide-in-left {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Slide-in from the right */
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Slide-in from the top */
+@keyframes slide-in-top {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Slide-in from the bottom */
+@keyframes slide-in-bottom {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+
+.slide-in-left {
+  animation: slide-in-left 1s forwards;
+}
+
+.slide-in-right {
+  animation: slide-in-right 1s forwards;
+}
+
+.slide-in-top {
+  animation: slide-in-top 1s forwards;
+}
+
+.slide-in-bottom {
+  animation: slide-in-bottom 1s forwards;
+}
+
+.slide-in-right-message {
+  animation: slide-in-right 1s forwards;
+}
+.slide-in-left-message {
+  animation: slide-in-left 1s forwards;
 }
 
 .truncate {

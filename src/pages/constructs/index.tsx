@@ -78,7 +78,7 @@ const ConstructsPage = () => {
     return (
         <div className="w-full h-[calc(100vh-70px)] grid grid-rows-[auto,1fr] overflow-y-auto overflow-x-hidden p-4">
             <div className="flex flex-col gap-2">
-                <div className="themed-root pop-in">
+                <div className="themed-root slide-in-top">
                     <h2 className="text-2xl font-bold text-theme-text text-shadow-xl">Constructs</h2>
                     <div className="grid grid-cols-5 gap-1 w-15vw h-5vh mb-4">
                         <Link to="/constructs/new" className="themed-button-pos flex items-center justify-center" data-tooltip="Add New Construct" id="newConstruct">
