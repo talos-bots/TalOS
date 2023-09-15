@@ -107,7 +107,7 @@ const UserCrud = (props: UserCrudProps) => {
     }
 
     return (
-        <div className="themed-root gap-2 h-full overflow-y-auto flex flex-col">
+        <div className="themed-root gap-2 h-full overflow-y-auto flex flex-col pop-in">
             <div className="w-full h-full grid grid-cols-3 justify-start gap-2">
                 <div className="col-span-1 flex flex-col gap-2 h-full text-left">
                     <div className="flex flex-col items-center justify-center h-3/6">

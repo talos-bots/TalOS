@@ -2,7 +2,7 @@ import './loading.scss'
 const Loading = () => {
     return (
         <div id="loading">
-            <div className='themed-root flex flex-col justify-center items-center w-1/5'>
+            <div className='themed-root flex flex-col justify-center items-center w-1/5 pop-in'>
                 <div className="spinner"></div>
                 <br />
                 <div className="is-loading-text">

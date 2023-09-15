@@ -17,7 +17,7 @@ const InputGroup = (props: InputGroupProps) => {
 	};
 
 	return (
-		<div className="chat-input-bar">
+		<div className="chat-input-bar pop-in">
 			<input 
 				type="file" 
 				onChange={(event) => handleFileUpload(event)} 

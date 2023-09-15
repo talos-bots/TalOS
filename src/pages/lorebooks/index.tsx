@@ -72,7 +72,7 @@ const LorebooksPage = () => {
     return (
     <div className="w-full p-4 h-[calc(100vh-70px)] flex flex-col gap-2 grow-0 overflow-y-auto overflow-x-hidden">
         <div className="grid grid-cols-3 w-full h-full gap-2">
-            <div className="col-span-1 themed-root gap-2 h-full overflow-y-auto flex flex-col">
+            <div className="col-span-1 themed-root gap-2 h-full overflow-y-auto flex flex-col pop-in">
                 <h3 className="font-semibold">Lorebooks</h3>
                 <button className="themed-button-neg w-full h-10" onClick={importFromJJSON}>
                     Import Lorebook
@@ -86,7 +86,7 @@ const LorebooksPage = () => {
                     );
                 })}
             </div>
-            <div className="col-span-2 themed-root gap-2 h-full overflow-y-auto flex flex-col">
+            <div className="col-span-2 themed-root gap-2 h-full overflow-y-auto flex flex-col pop-in">
                 <LorebookCrud book={selectedBook} onDelete={onDelete} onEdit={onEdit} onSave={onSave}/>
             </div>
         </div>

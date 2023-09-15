@@ -51,7 +51,7 @@ const ChatInfo = (props: ChatInfoProps) => {
     }
 
     return (
-        <div className="themed-root w-full flex flex-row justify-between items-center gap-6">
+        <div className="themed-root w-full flex flex-row justify-between items-center gap-6 pop-in">
             <div className="flex flex-row gap-6">
                 <button className="message-button" onClick={() => {goBack()}} title="Return to Select">
                     <LucideArrowBigLeft size={36} className="text-theme-text"/>

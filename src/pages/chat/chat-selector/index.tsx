@@ -136,7 +136,7 @@ const ChatSelector = (props: ChatSelectorProps) => {
 
     return (
         <div className="grid grid-rows-3 w-full p-4 h-[calc(100vh-70px)] gap-2 grow-0">
-            <div className="row-span-1 themed-root grow-0 overflow-x-auto">
+            <div className="row-span-1 themed-root grow-0 overflow-x-auto pop-in">
                 <h3 className="font-semibold">Constructs</h3>
                 <div className="flex flex-row w-full max-w-full h-5/6 gap-2 overflow-x-auto grow-0">
                     {Array.isArray(constructs) && constructs.sort((a, b) => {
@@ -167,7 +167,7 @@ const ChatSelector = (props: ChatSelectorProps) => {
                 </div>
             </div>
             <div className="row-span-2 grid grid-cols-4 grow-0 gap-2">
-                <div className="col-span-2 flex flex-col themed-root overflow-y-auto">
+                <div className="col-span-2 flex flex-col themed-root overflow-y-auto pop-in">
                     <h3 className="font-semibold">Chats</h3>
                     <div className="h-11/12">
                         <div className="grid grid-cols-12 gap-1 w-full grow-0 shrink-0 mb-2">
@@ -205,13 +205,13 @@ const ChatSelector = (props: ChatSelectorProps) => {
                     </div>
                 </div>
                 <div className="col-span-2 grid grid-rows-2 gap-2">
-                    <div className="row-span-1 themed-root flex flex-col">
+                    <div className="row-span-1 themed-root flex flex-col pop-in">
                         <h3 className="font-semibold">Chatting Settings</h3>
                         <ChatSettings/>
                     </div>
-                    <div className="row-span-1 themed-root flex flex-col">
+                    <div className="row-span-1 themed-root flex flex-col pop-in">
                         <h3 className="font-semibold">Selected Chat Details</h3>
-                        
+
                     </div>
                 </div>
             </div>

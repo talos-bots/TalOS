@@ -204,7 +204,7 @@ const ConstructManagement = () => {
 		)}
         {page === 1 && (
         <div className="w-full h-[calc(100vh-70px)] overflow-y-auto overflow-x-hidden p-4 gap-2">
-            <div className="w-full h-full themed-root grid grid-rows-[auto,1fr] ">
+            <div className="w-full h-full themed-root grid grid-rows-[auto,1fr] pop-in">
                 <h2 className="text-2xl font-bold text-theme-text text-shadow-xl">Construct Editor</h2>
                 <div className="grid grid-cols-5 grid-rows-[calc, 1fr] gap-2 text-left">
                     <div className="col-span-1 items-center gap-2 h-full">
