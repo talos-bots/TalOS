@@ -32,9 +32,9 @@ const MenuThemeLoader = (props: Props) => {
             getThemes();
         }
         const getThemes = async () => {
-            let loadedTheme: UITheme = defaultThemes[0];
+            let loadedTheme: UITheme = defaultThemes[1];
             if(savedTheme !== undefined) {
-                loadedTheme = defaultThemes.find((theme) => theme._id === savedTheme) || defaultThemes[0];
+                loadedTheme = defaultThemes.find((theme) => theme._id === savedTheme) || defaultThemes[1];
             }
             setUiTheme(loadedTheme);
             setThemeLoaded(true);            

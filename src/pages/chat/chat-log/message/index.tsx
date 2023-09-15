@@ -37,6 +37,7 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate, onSplit, on
     const [attachments, setAttachments] = useState<Attachment[]>([]);
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const [isTyping, setIsTyping] = useState<boolean>(false);
+    const [isDeleted, setIsDeleted] = useState<boolean>(false);
 
     useEffect(() => {
         if(message === undefined || message === null) return;
@@ -104,7 +105,7 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate, onSplit, on
     };
 
     return (
-        <div className={`themed-message slide-in-${message.isHuman? 'right' : 'left'}-message ${className}`}>
+        <div className={`themed-message slide-in-bottom ${className} ${isDeleted && 'slide-out-left'}`}>
             <div className="flex flex-col">
                 <div className="flex flex-row items-center">
                     <div className="flex flex-row items-center w-full gap-2">
@@ -155,7 +156,9 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate, onSplit, on
                                 </button>
                                 <button className="message-button"
                                     title="Delete"
-                                    onClick={() => {
+                                    onClick={async () => {
+                                        setIsDeleted(true);
+                                        await new Promise(r => setTimeout(r, 750));
                                         if(onDelete === undefined) return;
                                         onDelete(message._id);
                                     }}

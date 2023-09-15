@@ -23,6 +23,7 @@ const ChatDetails = (props: ChatDetailsProps) => {
     const [avatars, setAvatars] = useState<string[]>([]);
     const [groupAvatar, setGroupAvatar] = useState<string>('');
     const [isEditing, setIsEditing] = useState<boolean>(false);
+    const [isDeleted, setIsDeleted] = useState<boolean>(false);
 
     const constructsRef = useRef<Construct[]>([]);  // to keep track of current state within async functions
 
@@ -142,7 +143,7 @@ const ChatDetails = (props: ChatDetailsProps) => {
     return (
         <div
             title="Double Click me to Open!"
-            className={"rounded-theme-border-radius object-cover bg-theme-box border-theme-border-width border-theme-border hover:bg-theme-hover-pos p-2 flex flex-col justify-start items-start relative cursor-pointer " + (selected ? "bg-theme-hover-pos" : "bg-theme-box")}
+            className={`rounded-theme-border-radius object-cover bg-theme-box border-theme-border-width border-theme-border hover:bg-theme-hover-pos p-2 flex flex-col justify-start items-start relative cursor-pointer ${isDeleted? 'slide-out-left': 'slide-in-left'} ` + (selected ? "bg-theme-hover-pos" : "bg-theme-box")}
             onClick={() => {if(onClick !== undefined) onClick(chat)}} 
             onDoubleClick={()=> {if(onDoubleClick !== undefined) onDoubleClick(chat)}}
         >
@@ -181,7 +182,9 @@ const ChatDetails = (props: ChatDetailsProps) => {
                 {!disabled && (
                     <>
                 <button className="message-button ml-2 cursor-pointer"
-                    onClick={() => {
+                    onClick={async () => {
+                        setIsDeleted(true);
+                        await new Promise(r => setTimeout(r, 750));
                         if(onDelete === undefined) return;
                         if(!confirm(`Are you sure you want to delete this chat? This cannot be undone.`)) return;
                         onDelete(chat);

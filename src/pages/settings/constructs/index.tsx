@@ -1,3 +1,4 @@
+import { loadModels } from "@/App";
 import { getDoCaptioning, getDoEmotions, setDoCaptioning, setDoEmotions } from "@/api/llmapi";
 import { useEffect, useState } from "react";
 import ReactSwitch from "react-switch";
@@ -27,7 +28,6 @@ const ConstructSettingsPanel = () => {
         setDoEmotions(doEmotionClassification)
         setDoCaptioning(doImageCaptioning)
     };
-
     return (
         <div className="grid grid-cols-2 w-full gap-2">
             <div className="col-span-1 flex flex-col text-left">
@@ -60,6 +60,8 @@ const ConstructSettingsPanel = () => {
                     />
                 </div>
             </div>
+            <i className="text-sm col-span-2 themed-box text-left">Clicking 'Load Models' will download all of the models now, this way you won't have to wait for them to download before chatting or using any feature requiring them. A desktop notification will be dispatched when this finishes.</i>
+            <button className="themed-button-pos col-span-2" onClick={() => loadModels()}>Load Models</button>
             <button className="themed-button-pos col-span-2" onClick={() => saveConstructSettings()}>Save</button>
         </div>
     )

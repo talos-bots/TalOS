@@ -126,6 +126,11 @@ ul {
   @apply resize-none overflow-y-auto theme-border-style shadow-md bg-theme-accent text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
 }
 
+.themed-input .themed-input{
+  background-color: var(--theme-button) !important;
+  @apply resize-none overflow-y-auto theme-border-style shadow-md text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
+}
+
 .themed-input-box {
   @apply resize-none overflow-y-auto theme-border-style shadow-md bg-theme-box text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
 }
@@ -264,6 +269,21 @@ ul {
   animation: popIn 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
+.pop-out {
+  animation: popOut .7s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popOut {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+}
+
 @keyframes popIn {
   0% {
     opacity: 0;
@@ -354,6 +374,70 @@ ul {
 }
 .slide-in-left-message {
   animation: slide-in-left 1s forwards;
+}
+
+/* Slide-out to the left */
+@keyframes slide-out-left {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+.slide-out-left {
+  animation: slide-out-left .7s ease-in-out forwards;
+}
+
+/* Slide-out to the right */
+@keyframes slide-out-right {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.slide-out-right {
+  animation: slide-out-right 1s ease-in-out forwards;
+}
+
+/* Slide-out to the top */
+@keyframes slide-out-top {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+}
+
+.slide-out-top {
+  animation: slide-out-top 1s ease-in-out forwards;
+}
+
+/* Slide-out to the bottom */
+@keyframes slide-out-bottom {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+.slide-out-bottom {
+  animation: slide-out-bottom 1s ease-in-out forwards;
 }
 
 .truncate {
@@ -523,11 +607,11 @@ ul {
 }
 
 select {
-  background-color: var(--theme-button) !important;
+  background-color: var(--theme-accent) !important;
   color: var(--theme-text) !important;
 }
 
 select option {
-  background-color: var(--theme-box) !important;
+  background-color: var(--theme-accent) !important;
   color: var(--theme-text) !important;
 }
