@@ -6095,7 +6095,7 @@ electron.app.on("activate", () => {
     allWindows[0].focus();
   } else {
     createWindow().then(() => {
-      getModels$1();
+      console.log("Window created");
     });
   }
 });
@@ -6115,6 +6115,11 @@ electron.ipcMain.handle("open-win", (_, arg) => {
   } else {
     childWindow.loadFile(indexHtml, { hash: arg });
   }
+});
+electron.ipcMain.on("load-models", async (event) => {
+  getModels$1().then((models) => {
+    event.sender.send("load-models-reply", true);
+  });
 });
 electron.ipcMain.on("open-external-url", (event, url2) => {
   electron.shell.openExternal(url2);

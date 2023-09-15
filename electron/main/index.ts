@@ -128,7 +128,7 @@ app.on("activate", () => {
     allWindows[0].focus();
   } else {
     createWindow().then(() => {
-      getModels();
+      console.log("Window created");
     });
   }
 });
@@ -151,6 +151,12 @@ ipcMain.handle("open-win", (_, arg) => {
   } else {
     childWindow.loadFile(indexHtml, { hash: arg });
   }
+});
+
+ipcMain.on("load-models", async (event) => {
+  getModels().then((models) => {
+    event.sender.send("load-models-reply", true);
+  });
 });
 
 ipcMain.on('open-external-url', (event, url: string) => {

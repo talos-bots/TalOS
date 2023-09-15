@@ -1,7 +1,7 @@
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import { DiscordListeners } from './listeners/discord-listeners';
 import { useEffect, useState } from 'react';
-import { ipcRenderer } from 'electron';
+import { ipcMain, ipcRenderer } from 'electron';
 import { Steps, Hints } from 'intro.js-react';
 import { getStorageValue, setStorageValue } from './api/dbapi';
 import { getDefaultCharactersFromPublic } from './api/extrasapi';
@@ -19,11 +19,20 @@ import ConstructManagement from './components/construct-crud';
 import ZeroPage from './pages/zero';
 import DevPanel from './components/dev-panel';
 import NavBar from './components/shared/NavBar';
+import { sendDesktopNotification } from './components/desktop-notification';
 
 export const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, url: string) => {
   e.preventDefault();
   ipcRenderer.send('open-external-url', url);
 };
+
+export const loadModels = async () => {
+  ipcRenderer.send('load-models');
+
+  ipcRenderer.once('load-models-reply', () => {
+    sendDesktopNotification('ConstructOS', 'TransformersJS Models loaded successfully.');
+  });
+}
 
 function App() {
   const [needsReload, setNeedsReload] = useState(false);
@@ -69,6 +78,7 @@ function App() {
       getDefaultCharactersFromPublic();
       setStorageValue('isFirstRun', 'false');
       setIsFirstRun(false);
+      loadModels();
     }
   }, [isFirstRun]);
 

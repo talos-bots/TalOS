@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
-import "./InputGroup.scss"; // Import the Sass file
 import { PlusCircle, SendHorizonal } from "lucide-react";
-import { Attachment } from "@/classes/Attachment";
 interface InputGroupProps {
     sendMessage: (message: string, files?: File[]) => void;
 }
@@ -19,7 +17,7 @@ const InputGroup = (props: InputGroupProps) => {
 	};
 
 	return (
-		<div className="flex items-center w-full justify-between rounded-full bg-theme-root backdrop-blur-sm box-border py-1 px-2.5 border-theme-border border-theme-border-width theme-border-style">
+		<div className="chat-input-bar">
 			<input 
 				type="file" 
 				onChange={(event) => handleFileUpload(event)} 
@@ -27,8 +25,8 @@ const InputGroup = (props: InputGroupProps) => {
 				id="file-upload" 
 				multiple
 			/>
-			<label htmlFor="file-upload" className={`flex cursor-pointer border-theme-border border-theme-border-width theme-border-style justify-center items-center p-0 relative rounded-3xl w-[35px] h-[35px] overflow-hidden shrink-0 transition-all duration-125 hover:opacity-75 bg-theme-box`}>
-				<PlusCircle size={16}/>
+			<label htmlFor="file-upload" className={`message-button`}>
+				<PlusCircle size={26}/>
 			</label>
 			<textarea
 				autoComplete="off"
@@ -49,8 +47,8 @@ const InputGroup = (props: InputGroupProps) => {
 					}
 				}}
 			/>
-			<button className={`flex cursor-pointer border-theme-border border-theme-border-width theme-border-style justify-center items-center p-0 relative rounded-3xl w-[35px] h-[35px] overflow-hidden shrink-0 transition-all duration-125 hover:opacity-75 bg-theme-box`} onClick={() => { sendMessage(message, attachments); setMessage(''); setAttachments([]); }}>
-				<SendHorizonal size={16}/>
+			<button className={`message-button`} onClick={() => { sendMessage(message, attachments); setMessage(''); setAttachments([]); }}>
+				<SendHorizonal size={26}/>
 			</button>
 		</div>
 	);
