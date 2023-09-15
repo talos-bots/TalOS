@@ -4,6 +4,7 @@ import { ipcRenderer } from 'electron';
 // @ts-ignore
 import llamaTokenizer from 'llama-tokenizer-js'
 import { encode } from 'gpt-tokenizer'
+import { Tensor } from '@xenova/transformers';
 
 // Generate Text
 export const generateText = (
@@ -213,6 +214,38 @@ export function getPalmModel(): Promise<string>{
         ipcRenderer.once('get-palm-model-reply', (event, data) => {
             if(data.error) reject(data.error);
             resolve(data);
+        });
+    });
+}
+
+export function getTextEmbedding(text: string): Promise<any>{
+    return new Promise((resolve, reject) => {
+        const uniqueEventName = "get-text-embedding-reply-" + Date.now() + "-" + Math.random();
+        ipcRenderer.send('get-text-embedding', uniqueEventName, text);
+        ipcRenderer.once(uniqueEventName, (event, data) => {
+            if(data.error) reject(data.error);
+            resolve(data);
+        });
+    });
+}
+
+export function compareStrings(string1: string, string2: string): Promise<any>{
+    return new Promise((resolve, reject) => {
+        const uniqueEventName = "get-text-similarity-reply-" + Date.now() + "-" + Math.random();
+        ipcRenderer.send('get-text-similarity', uniqueEventName, string1, string2);
+        ipcRenderer.once(uniqueEventName, (event, data) => {
+            if(data.error) reject(data.error);
+            resolve(data);
+        });
+    });
+}
+
+export const getZeroShotClassifcation = (message: string, labels: string[]): Promise<any> => {
+    return new Promise((resolve, reject) => {
+        const uniqueEventName = "get-zero-shot-classification-reply-" + Date.now() + "-" + Math.random();
+        ipcRenderer.send('get-zero-shot-classificationn', uniqueEventName, message, labels);
+        ipcRenderer.once(uniqueEventName, (event, response) => {
+            resolve(response);
         });
     });
 }

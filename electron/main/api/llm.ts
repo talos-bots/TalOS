@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Configuration, OpenAIApi } from 'openai';
 import Store from 'electron-store';
 import { instructPrompt, instructPromptWithContext, instructPromptWithExamples, instructPromptWithGuidance, instructPromptWithGuidanceAndContext, instructPromptWithGuidanceAndContextAndExamples, instructPromptWithGuidanceAndExamples } from '../types/prompts';
-import { getCaption, getClassification } from '../model-pipeline/transformers';
+import { getCaption, getClassification, getEmbedding, getEmbeddingSimilarity, getEmbeddingTensor, getQuestionAnswering, getYesNoMaybe } from '../model-pipeline/transformers';
 
 const HORDE_API_URL = 'https://aihorde.net/api';
 
@@ -691,6 +691,41 @@ export function LanguageModelAPI(){
     ipcMain.on('get-image-to-text', (event, uniqueEventName, base64) => {
         console.log('get-image-to-text');
         getCaption(base64).then((result) => {
+            event.reply(uniqueEventName, result);
+        });
+    });
+
+    ipcMain.on('get-text-embedding', (event, uniqueEventName, text) => {
+        console.log('get-text-embedding');
+        getEmbedding(text).then((result) => {
+            event.reply(uniqueEventName, result);
+        });
+    });
+
+    ipcMain.on('get-text-similarity', (event, uniqueEventName, text1, text2) => {
+        console.log('get-text-similarity');
+        getEmbeddingSimilarity(text1, text2).then((result) => {
+            event.reply(uniqueEventName, result);
+        });
+    });
+
+    ipcMain.on('get-question-answer', (event, uniqueEventName, context, question) => {
+        console.log('get-text-similarity');
+        getQuestionAnswering(context, question).then((result) => {
+            event.reply(uniqueEventName, result);
+        });
+    });
+
+    ipcMain.on('get-zero-shot-classification', (event, uniqueEventName, text, labels) => {
+        console.log('get-zero-shot-classification');
+        getQuestionAnswering(text, labels).then((result) => {
+            event.reply(uniqueEventName, result);
+        });
+    });
+
+    ipcMain.on('get-yes-no-classification', (event, uniqueEventName, text) => {
+        console.log('get-yes-no-classification');
+        getYesNoMaybe(text).then((result) => {
             event.reply(uniqueEventName, result);
         });
     });

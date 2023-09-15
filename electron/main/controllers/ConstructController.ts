@@ -6,6 +6,7 @@ import { isReady, setDiscordBotInfo } from '../api/discord';
 import { getConstruct, getLorebooks, getUser, updateChat } from '../api/pouchdb';
 import { ChatInterface, ConstructInterface, LoreEntryInterface, MessageInterface, UserInterface } from '../types/types';
 import { getRelaventMemories } from '../api/vector';
+import { detectIntent } from '../helpers/actions-helpers';
 const store = new Store({
     name: 'constructData',
 });
@@ -702,6 +703,12 @@ function constructController() {
 
     ipcMain.on('regenerate-user-message-from-chat-log', (event, chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, uniqueEventName) => {
         regenerateUserMessageFromChatLog(chatLog, messageContent, messageID, authorsNote, authorsNoteDepth).then((response) => {
+            event.reply(uniqueEventName, response);
+        });
+    });
+
+    ipcMain.on('detect-intent', async (event, uniqueEventName, message) => {
+        detectIntent(message).then((response) => {
             event.reply(uniqueEventName, response);
         });
     });

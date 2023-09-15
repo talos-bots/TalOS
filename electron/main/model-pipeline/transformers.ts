@@ -1,5 +1,7 @@
 import path from 'path';
 import { imagesPath, modelsPath, wasmPath } from '..';
+import { unlink, writeFile } from 'fs/promises';
+import { Pipeline, Tensor } from '@xenova/transformers';
 
 export const getModels = async () => {
     try{
@@ -16,12 +18,18 @@ export const getModels = async () => {
         await pipeline('feature-extraction',  'Xenova/all-MiniLM-L6-v2', { cache_dir: modelsPath, quantized: true}).then((model) => {
             console.log("Feature Extraction model loaded");
         });
+        await pipeline('question-answering', 'Xenova/distilbert-base-uncased-distilled-squad', { cache_dir: modelsPath, quantized: true}).then((model) => {
+            console.log("Question Answering model loaded");
+        });
+        await pipeline('zero-shot-classification', 'Xenova/mobilebert-uncased-mnli', { cache_dir: modelsPath, quantized: true}).then((model) => {
+            console.log("Zero Shot Classification model loaded");
+        });
     }catch(err){
         console.log(err);
     }
 }
 
-const modelPromise: Promise<any> = new Promise(async (resolve, reject) => {
+const modelPromise: Promise<Pipeline> = new Promise(async (resolve, reject) => {
     try {
         const { pipeline, env } = await import('@xenova/transformers');
 
@@ -35,7 +43,7 @@ const modelPromise: Promise<any> = new Promise(async (resolve, reject) => {
     }
 });
 
-const captionPromise: Promise<any> = new Promise(async (resolve, reject) => {
+const captionPromise: Promise<Pipeline> = new Promise(async (resolve, reject) => {
     try{
         const { pipeline, env } = await import('@xenova/transformers');
 
@@ -50,7 +58,7 @@ const captionPromise: Promise<any> = new Promise(async (resolve, reject) => {
     }
 });
 
-const embeddingPromise: Promise<any> = new Promise(async (resolve, reject) => {
+const embeddingPromise: Promise<Pipeline> = new Promise(async (resolve, reject) => {
     try{
         const { pipeline, env } = await import('@xenova/transformers');
 
@@ -65,13 +73,41 @@ const embeddingPromise: Promise<any> = new Promise(async (resolve, reject) => {
     }
 });
 
+const questionPromise: Promise<Pipeline> = new Promise(async (resolve, reject) => {
+    try{
+        const { pipeline, env } = await import('@xenova/transformers');
+
+        // Only use local models
+        env.localModelPath = modelsPath;
+        env.backends.onnx.wasm.wasmPaths = wasmPath;
+        console.log('Loading question model');
+        resolve(await pipeline('question-answering', 'Xenova/distilbert-base-uncased-distilled-squad', { cache_dir: modelsPath, quantized: true}));
+    }catch(err){
+        console.log(err);
+        reject(err);
+    }
+});
+
+const zeroShotPromise: Promise<Pipeline> = new Promise(async (resolve, reject) => {
+    try{
+        const { pipeline, env } = await import('@xenova/transformers');
+
+        // Only use local models
+        env.localModelPath = modelsPath;
+        env.backends.onnx.wasm.wasmPaths = wasmPath;
+        console.log('Loading zero shot model');
+        resolve(await pipeline('zero-shot-classification', 'Xenova/mobilebert-uncased-mnli', { cache_dir: modelsPath, quantized: true}));
+    }catch(err){
+        console.log(err);
+        reject(err);
+    }
+});
+
 async function getClassification(text: string): Promise<any> {
     const model = await modelPromise;
     const results = await model(text);
     return results[0].label;
 }
-
-import { unlink, writeFile } from 'fs/promises';
 
 async function getCaption(image: string): Promise<any> {
     console.log('Getting caption for image');
@@ -96,8 +132,47 @@ async function getEmbedding(text: string): Promise<any> {
     return results.data;
 }
 
+async function getEmbeddingTensor(text: string): Promise<any> {
+    const model = await embeddingPromise;
+    const results = await model(text, { pooling: 'mean', normalize: true });
+    return results;
+}
+
+async function getEmbeddingSimilarity(text1: string, text2: string): Promise<any> {
+    const model = await embeddingPromise;
+    const { cos_sim } = await import('@xenova/transformers');
+    const results1 = await model(text1, { pooling: 'mean', normalize: true });
+    const results2 = await model(text2, { pooling: 'mean', normalize: true });
+    const similarity = cos_sim(results1.data, results2.data);
+    return similarity;
+}
+
+async function getQuestionAnswering(context: string, question: string): Promise<any> {
+    const model = await questionPromise;
+    const results = await model(question, context);
+    return results.answer;
+}
+
+async function getZeroShotClassification(text: string, labels: string[]): Promise<any> {
+    const model = await zeroShotPromise;
+    const results = await model(text, labels);
+    return results;
+}
+
+async function getYesNoMaybe(text: string): Promise<any> {
+    const labels = ['yes', 'no', 'maybe'];
+    const model = await zeroShotPromise;
+    const results = await model(text, labels);
+    return results;
+}
+
 export {
     getClassification,
     getCaption,
-    getEmbedding
+    getEmbedding,
+    getEmbeddingTensor,
+    getEmbeddingSimilarity,
+    getQuestionAnswering,
+    getZeroShotClassification,
+    getYesNoMaybe
 };

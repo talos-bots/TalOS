@@ -2,7 +2,7 @@ import { ipcMain } from 'electron';
 import { ActivityType, Client, GatewayIntentBits, Collection, REST, Routes, Partials, TextChannel, DMChannel, NewsChannel, Snowflake, Webhook, Message, CommandInteraction, Events, PartialGroupDMChannel } from 'discord.js';
 import Store from 'electron-store';
 import { win } from '..';
-import { doImageReaction, getDoStableDiffusion, getRegisteredChannels, getUsername, handleDiscordMessage, handleRemoveMessage, handleRengenerateMessage } from '../controllers/DiscordController';
+import { doImageReaction, getDoStableDiffusion, getMessageIntent, getRegisteredChannels, getUsername, handleDiscordMessage, handleRemoveMessage, handleRengenerateMessage } from '../controllers/DiscordController';
 import { ConstructInterface, SlashCommand } from '../types/types';
 import { assembleConstructFromData, base642Buffer } from '../helpers/helpers';
 import { DefaultCommands, stableDiffusionCommands } from '../controllers/commands';
@@ -97,6 +97,10 @@ function createClient(){
             if(reaction.emoji.name === '🖼️'){
                 console.log("Creating image...");
                 await doImageReaction(message as Message);
+            }
+
+            if(reaction.emoji.name === '❓'){
+                await getMessageIntent(message as Message);
             }
             win?.webContents.send('discord-message-reaction-add', reaction, user);
         } catch (error) {

@@ -1050,6 +1050,12 @@ const getModels$1 = async () => {
     await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", { cache_dir: modelsPath, quantized: true }).then((model) => {
       console.log("Feature Extraction model loaded");
     });
+    await pipeline("question-answering", "Xenova/distilbert-base-uncased-distilled-squad", { cache_dir: modelsPath, quantized: true }).then((model) => {
+      console.log("Question Answering model loaded");
+    });
+    await pipeline("zero-shot-classification", "Xenova/mobilebert-uncased-mnli", { cache_dir: modelsPath, quantized: true }).then((model) => {
+      console.log("Zero Shot Classification model loaded");
+    });
   } catch (err) {
     console.log(err);
   }
@@ -1088,6 +1094,30 @@ const embeddingPromise = new Promise(async (resolve, reject) => {
     reject(err);
   }
 });
+const questionPromise = new Promise(async (resolve, reject) => {
+  try {
+    const { pipeline, env } = await import("@xenova/transformers");
+    env.localModelPath = modelsPath;
+    env.backends.onnx.wasm.wasmPaths = wasmPath;
+    console.log("Loading question model");
+    resolve(await pipeline("question-answering", "Xenova/distilbert-base-uncased-distilled-squad", { cache_dir: modelsPath, quantized: true }));
+  } catch (err) {
+    console.log(err);
+    reject(err);
+  }
+});
+const zeroShotPromise = new Promise(async (resolve, reject) => {
+  try {
+    const { pipeline, env } = await import("@xenova/transformers");
+    env.localModelPath = modelsPath;
+    env.backends.onnx.wasm.wasmPaths = wasmPath;
+    console.log("Loading zero shot model");
+    resolve(await pipeline("zero-shot-classification", "Xenova/mobilebert-uncased-mnli", { cache_dir: modelsPath, quantized: true }));
+  } catch (err) {
+    console.log(err);
+    reject(err);
+  }
+});
 async function getClassification(text) {
   const model = await modelPromise;
   const results = await model(text);
@@ -1111,6 +1141,25 @@ async function getEmbedding(text) {
   const model = await embeddingPromise;
   const results = await model(text, { pooling: "mean", normalize: true });
   return results.data;
+}
+async function getEmbeddingSimilarity(text1, text2) {
+  const model = await embeddingPromise;
+  const { cos_sim } = await import("@xenova/transformers");
+  const results1 = await model(text1, { pooling: "mean", normalize: true });
+  const results2 = await model(text2, { pooling: "mean", normalize: true });
+  const similarity = cos_sim(results1.data, results2.data);
+  return similarity;
+}
+async function getQuestionAnswering(context, question) {
+  const model = await questionPromise;
+  const results = await model(question, context);
+  return results.answer;
+}
+async function getYesNoMaybe(text) {
+  const labels = ["yes", "no", "maybe"];
+  const model = await zeroShotPromise;
+  const results = await model(text, labels);
+  return results;
 }
 function assembleConstructFromData(data) {
   if (data === null)
@@ -2008,6 +2057,36 @@ function LanguageModelAPI() {
       event.reply(uniqueEventName, result);
     });
   });
+  electron.ipcMain.on("get-text-embedding", (event, uniqueEventName, text) => {
+    console.log("get-text-embedding");
+    getEmbedding(text).then((result) => {
+      event.reply(uniqueEventName, result);
+    });
+  });
+  electron.ipcMain.on("get-text-similarity", (event, uniqueEventName, text1, text2) => {
+    console.log("get-text-similarity");
+    getEmbeddingSimilarity(text1, text2).then((result) => {
+      event.reply(uniqueEventName, result);
+    });
+  });
+  electron.ipcMain.on("get-question-answer", (event, uniqueEventName, context, question) => {
+    console.log("get-text-similarity");
+    getQuestionAnswering(context, question).then((result) => {
+      event.reply(uniqueEventName, result);
+    });
+  });
+  electron.ipcMain.on("get-zero-shot-classification", (event, uniqueEventName, text, labels) => {
+    console.log("get-zero-shot-classification");
+    getQuestionAnswering(text, labels).then((result) => {
+      event.reply(uniqueEventName, result);
+    });
+  });
+  electron.ipcMain.on("get-yes-no-classification", (event, uniqueEventName, text) => {
+    console.log("get-yes-no-classification");
+    getYesNoMaybe(text).then((result) => {
+      event.reply(uniqueEventName, result);
+    });
+  });
   electron.ipcMain.on("set-do-emotions", (event, newDoEmotions) => {
     setDoEmotions(newDoEmotions);
     event.reply("set-do-emotions-reply", getDoEmotions());
@@ -2133,6 +2212,192 @@ function VectorDBRoutes() {
       event.reply(uniqueReplyName, error);
     });
   });
+}
+const selfieIntentExamples = [
+  "Send me a picture of your breasts.",
+  "Send nudes. I'm horny.",
+  "Give boobs.",
+  "Show me your boobs.",
+  "Send booty pics.",
+  "send n00ds.",
+  "Selfie.",
+  "Send me a selfie.",
+  "Nude.",
+  "Send me a nude.",
+  "Boobs."
+];
+const searchIntentExamples = [
+  "Google me a picture of a cat.",
+  "Look up the weather in Berlin.",
+  "What is the capital of Germany?",
+  "Find me local restaurants.",
+  "Search for 'how to make a cake'.",
+  "How do I get to the nearest gas station?",
+  "What is the weather like in Berlin?",
+  "Look up the german word for 'cat'.",
+  "Look up",
+  "Search for",
+  "Find me",
+  "Google me",
+  "What is",
+  "Weather in",
+  "How do I get to",
+  "How to make"
+];
+const assKeywords = [
+  "ass",
+  "booty",
+  "butt",
+  "tush",
+  "trunk"
+];
+const boobKeywords = [
+  "boob",
+  "tit",
+  "tid",
+  "breast",
+  "honk",
+  "chichi",
+  "bubi",
+  "pecho",
+  "seno",
+  "jug",
+  "milk",
+  "knockers",
+  "bid"
+];
+const vaginaKeywords = [
+  "vag",
+  "puss",
+  "cunt",
+  "snatch",
+  "cooch"
+];
+const dickKeywords = [
+  "dick",
+  "penis",
+  "cock",
+  "meat",
+  "schlong",
+  "dong",
+  "pee",
+  "pp"
+];
+async function detectIntent(text) {
+  const complianceScore = await determineCompliance(text);
+  let nudeIntent = false;
+  let nudeScore = 0;
+  const threshold = 0.4;
+  let scoreArray = [];
+  for (let index = 0; index < selfieIntentExamples.length; index++) {
+    const similarity = await getEmbeddingSimilarity(text, selfieIntentExamples[index]);
+    scoreArray.push(similarity);
+  }
+  scoreArray.sort((a, b) => b - a);
+  nudeScore = scoreArray[0];
+  if (scoreArray[0] >= threshold) {
+    nudeIntent = true;
+  }
+  scoreArray = [];
+  let searchIntent = false;
+  let searchScore = 0;
+  for (let index = 0; index < searchIntentExamples.length; index++) {
+    const similarity = await getEmbeddingSimilarity(text, searchIntentExamples[index]);
+    scoreArray.push(similarity);
+  }
+  scoreArray.sort((a, b) => b - a);
+  searchScore = scoreArray[0];
+  if (scoreArray[0] >= threshold) {
+    searchIntent = true;
+  }
+  if (!searchIntent && !nudeIntent)
+    return { intent: "none", nudeScore, searchScore, subject: await getQuestionAnswering(text, "what am talk about?"), compliance: complianceScore };
+  if (searchIntent && nudeIntent) {
+    if (searchScore > nudeScore) {
+      const subject = await getQuestionAnswering(text, "What I ask for search?");
+      return { intent: "search", nudeScore, searchScore, subject, compliance: complianceScore };
+    }
+  }
+  if (nudeIntent) {
+    const subject = await getQuestionAnswering(text, "What I ask for a picture of?");
+    return { intent: scanNudeIntent(text), nudeScore, searchScore, subject, compliance: complianceScore };
+  }
+  if (searchIntent) {
+    const subject = await getQuestionAnswering(text, "What I ask for search?");
+    return { intent: "search", nudeScore, searchScore, subject, compliance: complianceScore };
+  }
+}
+async function determineCompliance(text) {
+  let compliance = false;
+  const intent = await getYesNoMaybe(text);
+  console.log(intent);
+  const yes = intent.labels.findIndex((element) => element === "yes");
+  const no = intent.labels.findIndex((element) => element === "no");
+  const maybe = intent.labels.findIndex((element) => element === "maybe");
+  console.log("Yes: " + intent.scores[yes] + " No: " + intent.scores[no] + " Maybe: " + intent.scores[maybe]);
+  if (intent.scores[yes] > intent.scores[no] && intent.scores[yes] > intent.scores[maybe]) {
+    compliance = true;
+  }
+  return compliance;
+}
+function scanNudeIntent(text) {
+  const isAss = detectAss(text);
+  if (isAss) {
+    return "ass";
+  }
+  const isDick = detectPenis(text);
+  if (isDick) {
+    return "penis";
+  }
+  const isVagina = detectVagina(text);
+  if (isVagina) {
+    return "vagina";
+  }
+  const isBreasts = detectBreasts(text);
+  if (isBreasts) {
+    return "breasts";
+  }
+  return "selfie";
+}
+function detectPenis(text) {
+  let detected = false;
+  for (let index = 0; index < dickKeywords.length; index++) {
+    if (text.toLocaleLowerCase().includes(dickKeywords[index].toLocaleLowerCase())) {
+      detected = true;
+      break;
+    }
+  }
+  return detected;
+}
+function detectVagina(text) {
+  let detected = false;
+  for (let index = 0; index < vaginaKeywords.length; index++) {
+    if (text.toLocaleLowerCase().includes(vaginaKeywords[index].toLocaleLowerCase())) {
+      detected = true;
+      break;
+    }
+  }
+  return detected;
+}
+function detectBreasts(text) {
+  let detected = false;
+  for (let index = 0; index < boobKeywords.length; index++) {
+    if (text.toLocaleLowerCase().includes(boobKeywords[index].toLocaleLowerCase())) {
+      detected = true;
+      break;
+    }
+  }
+  return detected;
+}
+function detectAss(text) {
+  let detected = false;
+  for (let index = 0; index < assKeywords.length; index++) {
+    if (text.toLocaleLowerCase().includes(assKeywords[index].toLocaleLowerCase())) {
+      detected = true;
+      break;
+    }
+  }
+  return detected;
 }
 const store$5 = new Store({
   name: "constructData"
@@ -2779,6 +3044,11 @@ function constructController() {
   });
   electron.ipcMain.on("regenerate-user-message-from-chat-log", (event, chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, uniqueEventName) => {
     regenerateUserMessageFromChatLog(chatLog, messageContent, messageID, authorsNote, authorsNoteDepth).then((response) => {
+      event.reply(uniqueEventName, response);
+    });
+  });
+  electron.ipcMain.on("detect-intent", async (event, uniqueEventName, message) => {
+    detectIntent(message).then((response) => {
       event.reply(uniqueEventName, response);
     });
   });
@@ -3745,6 +4015,38 @@ async function doImageReaction(message) {
     message.reply({ files: [attachment], embeds: [embed] });
   } else {
     message.reply({ files: [attachment] });
+  }
+}
+async function getMessageIntent(message) {
+  const text = message.cleanContent;
+  if (text.length < 1)
+    return;
+  const intent = await detectIntent(text);
+  if (intent === null)
+    return;
+  if (intent === void 0)
+    return;
+  if (intent.intent === "none") {
+    message.reply("<@" + message.author.id + `> is not asking for anything.
+Scores are the following:
+**Search:** ${intent.searchScore}
+**Nude:** ${intent.nudeScore}
+**Extracted Subject:** ${intent.subject}
+**Yes:** ${intent.compliance}`);
+  } else if (intent.intent === "search") {
+    message.reply("<@" + message.author.id + "> is asking to " + intent.intent + `.
+Scores are the following:
+**Search:** ${intent.searchScore}
+**Nude:** ${intent.nudeScore}
+**Extracted Subject:** ${intent.subject}
+**Yes:** ${intent.compliance}`);
+  } else {
+    message.reply("<@" + message.author.id + "> is asking for an image of " + intent.intent + `.
+Scores are the following:
+**Search:** ${intent.searchScore}
+**Nude:** ${intent.nudeScore}
+**Extracted Subject:** ${intent.subject}
+**Yes:** ${intent.compliance}`);
   }
 }
 function DiscordController() {
@@ -4929,6 +5231,9 @@ function createClient() {
       if (reaction.emoji.name === "🖼️") {
         console.log("Creating image...");
         await doImageReaction(message);
+      }
+      if (reaction.emoji.name === "❓") {
+        await getMessageIntent(message);
       }
       (_c = exports.win) == null ? void 0 : _c.webContents.send("discord-message-reaction-add", reaction, user);
     } catch (error) {

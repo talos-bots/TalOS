@@ -9,6 +9,7 @@ import { Alias, ChannelConfigInterface, ChatInterface, ConstructInterface } from
 import { addVectorFromMessage } from '../api/vector';
 import { getDefaultCfg, getDefaultHeight, getDefaultHighresSteps, getDefaultNegativePrompt, getDefaultPrompt, getDefaultSteps, getDefaultWidth, makeImage } from '../api/sd';
 import { win } from '..';
+import { detectIntent } from '../helpers/actions-helpers';
 
 const store = new Store({
     name: 'discordData',
@@ -726,6 +727,20 @@ export async function doImageReaction(message: Message){
     }
 }
 
+export async function getMessageIntent(message: Message){
+    const text = message.cleanContent;
+    if(text.length < 1) return;
+    const intent = await detectIntent(text);
+    if(intent === null) return;
+    if(intent === undefined) return;
+    if(intent.intent === 'none'){
+        message.reply('<@' + message.author.id + '> is not asking for anything.\n' + `Scores are the following:\n**Search:** ${intent.searchScore}\n**Nude:** ${intent.nudeScore}\n**Extracted Subject:** ${intent.subject}\n**Yes:** ${intent.compliance}`);
+    }else if(intent.intent === 'search'){
+        message.reply('<@' + message.author.id + '> is asking to ' + intent.intent + `.\nScores are the following:\n**Search:** ${intent.searchScore}\n**Nude:** ${intent.nudeScore}\n**Extracted Subject:** ${intent.subject}\n**Yes:** ${intent.compliance}`);
+    }else{
+        message.reply('<@' + message.author.id + '> is asking for an image of ' + intent.intent + `.\nScores are the following:\n**Search:** ${intent.searchScore}\n**Nude:** ${intent.nudeScore}\n**Extracted Subject:** ${intent.subject}\n**Yes:** ${intent.compliance}`);
+    }
+}
 
 function DiscordController(){
     getDiscordSettings();

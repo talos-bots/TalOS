@@ -153,3 +153,23 @@ export const generateThoughts = (construct: Construct, chatLog: Chat, currentUse
         });
     });
 }
+
+export const getIntent = (message: string): Promise<any> => {
+    return new Promise((resolve, reject) => {
+        const uniqueEventName = "detect-intent-reply-" + Date.now() + "-" + Math.random();
+        ipcRenderer.send('detect-intent', uniqueEventName, message);
+        ipcRenderer.once(uniqueEventName, (event, response) => {
+            resolve(response);
+        });
+    });
+}
+
+export const getYesNo = (message: string): Promise<any> => {
+    return new Promise((resolve, reject) => {
+        const uniqueEventName = "get-yes-no-classification-reply-" + Date.now() + "-" + Math.random();
+        ipcRenderer.send('get-yes-no-classification', uniqueEventName, message);
+        ipcRenderer.once(uniqueEventName, (event, response) => {
+            resolve(response);
+        });
+    });
+}
