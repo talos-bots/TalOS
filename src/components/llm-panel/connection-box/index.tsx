@@ -50,7 +50,7 @@ const ConnectionBox = (props: ConnectionBoxProps) => {
     }, [endpoint, endpointType, password]);
 
     return (
-        <div className="flex flex-col w-full text-left gap-4">
+        <div className="flex flex-col w-full text-left gap-2">
             <div className="flex flex-col w-full text-left">
                 <label className="text-theme-text text-shadow-xl font-semibold">Endpoint Type</label>
                 <select className="themed-input w-full"
@@ -97,7 +97,7 @@ const ConnectionBox = (props: ConnectionBoxProps) => {
             )}
             <div className="flex flex-col w-full text-left">
                 <label className="text-theme-text text-shadow-xl font-semibold">Status</label>
-                <input className="themed-input w-full"
+                <input className="themed-input w-full flex-grow"
                     value={status}
                     readOnly
                 />

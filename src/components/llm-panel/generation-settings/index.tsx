@@ -63,8 +63,8 @@ const GenerationSettings = () => {
     }
     
     return (
-        <div className="flex flex-col w-full text-left gap-4">
-            <div className="flex flex-col w-full h-30vh overflow-y-auto text-left themed-root">
+        <div className="flex flex-col w-full text-left gap-4 flex-grow">
+            <div className="flex flex-col w-full overflow-y-auto text-left themed-box flex-grow">
                 <div className="flex flex-col ">
                     <span className=" font-semibold">Max Context Length</span>
                     <div className="w-full flex flex-row">

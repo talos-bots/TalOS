@@ -164,7 +164,7 @@ const DiscordPage = () => {
                             </div>
                             <div className="col-span-1 flex flex-col text-left">
                                 <label className="text-theme-text font-semibold">Multiple Construct Mode</label>
-                                <div className="themed-input flex flex-col items-center w-full overflow-y-auto">
+                                <div className="themed-input flex flex-col items-center w-full overflow-y-auto flex-grow">
                                     <i className="text-sm">When enabled, the bot will operate as a Multi-Construct bot, and will attempt to maintain mutliple personas through one bot. Turning this off and on will require a bot restart.</i>
                                     <ReactSwitch
                                         disabled={discordCharacterMode || isBotActive}
@@ -180,7 +180,7 @@ const DiscordPage = () => {
                             </div>
                             <div className="col-span-1 flex flex-col text-left">
                                 <label className="text-theme-text font-semibold">Character Mode</label>
-                                <div className="themed-input flex flex-col items-center w-full">
+                                <div className="themed-input flex flex-col items-center w-full flex-grow">
                                     <i className="text-sm">When enabled, the bot will operate as a Character Chat bot, and will not perform Agent tasks. Turning this off and on will require a bot restart.</i>
                                     <ReactSwitch
                                         disabled={discordMultiConstructMode || isBotActive}
@@ -196,7 +196,7 @@ const DiscordPage = () => {
                             </div>
                             <div className="col-span-1 flex flex-col text-left">
                                 <label className="text-theme-text font-semibold">Multi-Character Mode</label>
-                                <div className="themed-input flex flex-col items-center w-full">
+                                <div className="themed-input flex flex-col items-center w-full flex-grow">
                                     <i className="text-sm">Can only be activated when in Character Chat Mode. This is distinct from the multi-construct mode. Turning this off and on will require a bot restart.</i>
                                     <ReactSwitch
                                         disabled={!discordCharacterMode || isBotActive}
@@ -223,7 +223,7 @@ const DiscordPage = () => {
                                 <label className="text-theme-text font-semibold">Bot Token</label>
                                 <input 
                                     type="text" 
-                                    className="themed-input" 
+                                    className="themed-input flex-grow" 
                                     aria-required
                                     value={discordBotToken}
                                     onChange={(e) => setDiscordBotToken(e.target.value)}
@@ -233,7 +233,7 @@ const DiscordPage = () => {
                                 <label className="text-theme-text font-semibold">Application ID</label>
                                 <input 
                                     type="text" 
-                                    className="themed-input" 
+                                    className="themed-input flex-grow" 
                                     aria-required
                                     value={discordApplicationID}
                                     onChange={(e) => setDiscordApplicationID(e.target.value)}
@@ -241,7 +241,7 @@ const DiscordPage = () => {
                             </div>
                             <div className="col-span-1 flex flex-col text-left">
                                 <label className="text-theme-text font-semibold">Activate Bot</label>
-                                <div className="themed-input flex flex-col items-center w-full">
+                                <div className="themed-input flex flex-col items-center w-full flex-grow">
                                     <i className="text-sm">Can only be activated when both the applicationID and auth token are set.</i>
                                     <ReactSwitch
                                         disabled={discordBotToken === "" || discordApplicationID === "" || discordBotToken === undefined || discordApplicationID === undefined}
@@ -259,14 +259,14 @@ const DiscordPage = () => {
                             </div>
                             <div className="col-span-1 flex flex-col text-left">
                                 <label className="text-theme-text font-semibold">Invite Link</label>
-                                <div className="themed-input flex flex-col items-center w-full">
+                                <div className="themed-input flex flex-col items-center w-full flex-grow">
                                     <i className="text-sm">This is the link you will use to invite the bot to your server. Only uses this after entering your applicationId and following the tutorial.</i>
                                     <a href={`https://discord.com/oauth2/authorize?client_id=${discordApplicationID}&scope=bot&permissions=41389525433936`} onClick={(e) => handleLinkClick(e, `https://discord.com/oauth2/authorize?client_id=${discordApplicationID}&scope=bot&permissions=41389525433936`)} className="themed-button-pos w-full">Invite Bot</a>
                                 </div>
                             </div>
                             <div className="col-span-1 flex flex-col text-left">
                                 <label className="text-theme-text font-semibold">Show Desktop Notifications</label>
-                                <div className="themed-input flex flex-col items-center w-full">
+                                <div className="themed-input flex flex-col items-center w-full flex-grow">
                                     <i className="text-sm">When set to on, desktop notifications will be shown for all messages received by the bot.</i>
                                     <ReactSwitch
                                         checked={discordDesktopNotifications}
@@ -292,7 +292,7 @@ const DiscordPage = () => {
                         <div className="grid grid-cols-2 gap-2">
                             <div className="col-span-1 flex flex-col text-left">
                                 <label className="text-theme-text font-semibold">Stable Diffusion Commands</label>
-                                <div className="themed-input flex flex-col items-center w-full">
+                                <div className="themed-input flex flex-col items-center w-full flex-grow">
                                     <i className="text-sm">Can only be activated in whitelisted channels. Whitelist channels inside of discord by using /sdaddchannel</i>
                                     <ReactSwitch
                                         checked={discordStableDiffusion}
@@ -309,7 +309,7 @@ const DiscordPage = () => {
                             </div>
                             <div className="col-span-1 flex flex-col text-left">
                                 <label className="text-theme-text font-semibold">Stable Diffusion Reactions</label>
-                                <div className="themed-input flex flex-col items-center w-full">
+                                <div className="themed-input flex flex-col items-center w-full flex-grow">
                                     <i className="text-sm">Can only be activated in whitelisted channels. Add a 🖼️ to message containing text and it will reply with an image of that prompt.</i>
                                     <ReactSwitch
                                         checked={discordStableReacts}
@@ -326,7 +326,7 @@ const DiscordPage = () => {
                             </div>
                             <div className="col-span-1 flex flex-col text-left">
                                 <label className="text-theme-text font-semibold">Show Diffusion Details</label>
-                                <div className="themed-input flex flex-col items-center w-full">
+                                <div className="themed-input flex flex-col items-center w-full flex-grow">
                                     <i className="text-sm">When set to on, generation details such as prompt, model, and resolution will be shown automatically by default. Hidden override will still apply for /cosimagine</i>
                                     <ReactSwitch
                                         checked={discordShowDiffusionDetails}

@@ -32,7 +32,7 @@ const ConstructSettingsPanel = () => {
         <div className="grid grid-cols-2 w-full gap-2">
             <div className="col-span-1 flex flex-col text-left">
                 <label className="text-theme-text font-semibold">Emotion Classification</label>
-                <div className="themed-input flex flex-col items-center w-full overflow-y-auto">
+                <div className="themed-input flex flex-col items-center w-full overflow-y-auto flex-grow">
                     <i className="text-sm">When enabled messages from users and constructs will be classified as one of 28 emotions. This will be used for thoughts, and other features such as sprites.<br/><b>Warning: This uses a small, but noticable amount of GPU/CPU and if you're not on a machine fast enough, this will slow down your chatting experience.</b></i>
                     <ReactSwitch
                         checked={doEmotionClassification}
@@ -47,7 +47,7 @@ const ConstructSettingsPanel = () => {
             </div>
             <div className="col-span-1 flex flex-col text-left">
                 <label className="text-theme-text font-semibold">Image Captioning</label>
-                <div className="themed-input flex flex-col items-center w-full overflow-y-auto">
+                <div className="themed-input flex flex-col items-center w-full overflow-y-auto flex-grow">
                     <i className="text-sm">When enabled images will be captioned and descriptions will be shown to the LLM.<br/><b>Warning: This uses a small, but noticable amount of GPU/CPU and if you're not on a machine fast enough, this will slow down your chatting experience.</b></i>
                     <ReactSwitch
                         checked={doImageCaptioning}

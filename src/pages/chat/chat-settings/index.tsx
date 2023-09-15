@@ -68,11 +68,11 @@ const ChatSettings = () => {
     };
 
     return (
-        <div className="grid grid-cols-2 w-full gap-1">
-            <div className="flex flex-col col-span-1 w-full h-full">
-                <div className="col-span-1 flex flex-col text-left">
+        <div className="grid grid-cols-2 w-full gap-2">
+            <div className="flex flex-col col-span-1 w-full h-full flex-grow">
+                <div className="col-span-1 flex flex-col text-left flex-grow">
                     <label className="text-theme-text font-semibold">Send Greetings</label>
-                    <div className="themed-input flex flex-col items-center w-full">
+                    <div className="themed-input flex flex-col items-center w-full flex-grow gap-2">
                         <i className="text-sm">Send greetings as the first message in a ChatLog.</i>
                         <ReactSwitch
                             checked={doGreetings}
@@ -86,10 +86,10 @@ const ChatSettings = () => {
                     </div>
                 </div>
             </div>
-            <div className="flex flex-col col-span-1 w-full h-full">
-                <div className="col-span-1 flex flex-col text-left">
+            <div className="flex flex-col col-span-1 w-full h-full flex-grow">
+                <div className="col-span-1 flex flex-col text-left flex-grow">
                     <label className="text-theme-text font-semibold">Character Mode</label>
-                    <div className="themed-input flex flex-col items-center w-full">
+                    <div className="themed-input flex flex-col items-center w-full flex-grow gap-2">
                         <i className="text-sm">Use character mode instead of Construct mode.</i>
                         <ReactSwitch
                             checked={characterMode}
@@ -103,10 +103,10 @@ const ChatSettings = () => {
                     </div>
                 </div>
             </div>
-            <div className="flex flex-col col-span-1 w-full h-full">
-                <div className="col-span-1 flex flex-col text-left">
+            <div className="flex flex-col col-span-1 w-full h-full flex-grow">
+                <div className="col-span-1 flex flex-col text-left flex-grow">
                     <label className="text-theme-text font-semibold">Multiline</label>
-                    <div className="themed-input flex flex-col items-center w-full">
+                    <div className="themed-input flex flex-col items-center w-full flex-grow gap-2">
                         <i className="text-sm">Use multiline messages instead of single line messages.</i>
                         <ReactSwitch
                             checked={doMultiline}
@@ -120,11 +120,11 @@ const ChatSettings = () => {
                     </div>
                 </div>
             </div>
-            <div className="flex flex-col col-span-1 w-full h-full">
-                <div className="col-span-1 flex flex-col text-left">
+            <div className="flex flex-col col-span-1 w-full h-full flex-grow">
+                <div className="col-span-1 flex flex-col text-left flex-grow">
                     <label className="text-theme-text font-semibold">Messages to Send</label>
-                    <div className="themed-input flex flex-col items-center w-full">
-                        <i className="text-sm">The number of messages send send in the prompt.</i>
+                    <div className="themed-input flex flex-col items-center w-full flex-grow gap-2 text-left">
+                        <i className="text-sm">The number of messages to send in the prompt.</i>
                         <input
                             className="themed-input"
                             type="number"

@@ -109,7 +109,7 @@ const PaLMPanel = (props: PaLMPanelProps) => {
     }, [selectedModel, models]);
 
     return (
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-2">
             <label className="text-theme-text text-shadow-xl font-semibold">PaLM Filters</label>
             <select value={selectedFilter} onChange={(e) => setSelectedFilter(e.target.value as keyof PaLMFilters)} className="themed-input w-full">
                 {Object.keys(filters).map((filter: string) => (
@@ -125,7 +125,7 @@ const PaLMPanel = (props: PaLMPanelProps) => {
                 <option value="BLOCK_LOW_AND_ABOVE" className='themed-input'>Block low and above</option>
                 <option value="HARM_BLOCK_THRESHOLD_UNSPECIFIED" className='themed-input'>Not specified</option>
             </select>
-            <div className="flex flex-row gap-1 w-full">
+            <div className="flex flex-row gap-2 w-full">
                 <button className="themed-button-neg w-1/2"
                     onClick={() => {
                         setFilters(defaultPaLMFilters);
@@ -141,7 +141,7 @@ const PaLMPanel = (props: PaLMPanelProps) => {
                     Save
                 </button>
             </div>
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-2">
                 <label className="text-theme-text text-shadow-xl font-semibold">PaLM Models</label>
                 {/* <select className="themed-input w-full" value={selectedModel} onChange={(e) => setSelectedModel(e.target.value)}>
                     {models.map((model) => (
