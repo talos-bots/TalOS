@@ -135,8 +135,8 @@ const ChatSelector = (props: ChatSelectorProps) => {
     if(!isLoaded) return (<Loading/>);
 
     return (
-        <div className="grid grid-rows-3 w-full p-4 h-[calc(100vh-70px)] gap-2 grow-0">
-            <div className="row-span-1 themed-root grow-0 overflow-x-auto slide-in-top">
+        <div className="grid grid-rows-3 w-full p-4 h-[calc(100vh-70px)] overflow-x-hidden gap-2 grow-0">
+            <div className="row-span-1 themed-root grow-0 overflow-x-hidden slide-in-top">
                 <h3 className="font-semibold">Constructs</h3>
                 <div className="flex flex-row w-full max-w-full h-5/6 gap-2 overflow-x-auto grow-0">
                     {Array.isArray(constructs) && constructs.sort((a, b) => {
