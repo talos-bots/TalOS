@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useLocation, NavLink } from 'react-router-dom';
 import { HashLink } from 'react-router-hash-link';
 import { HomeIcon, MessageCircle, Cog, Sparkles, Users, Bot, User, Book, File, Text } from 'lucide-react';
+import Clock from '../clock';
 
 const NavBar: React.FC = () => {
 
@@ -11,6 +12,7 @@ const NavBar: React.FC = () => {
   <nav className={`sm:px-16 px-6 w-full flex items-center justify-between py-5 fixed top-0 z-20 bg-theme-root bg-opacity-50 backdrop-blur-xl border-b-theme-border-width border-b-theme-border theme-border-style`}>
     <div className="flex items-center gap-2" id='titleBar'>
       <p className="text-theme-text text-[18px] font-bold">Construct<span className="text-theme-flavor-text">OS</span> - AI Sandbox</p>
+      <Clock/>
     </div>
     <div className="hidden md:flex gap-5">
       <NavLink to="/" title="Home" className={`p-1 transition-all duration-125 hover:opacity-50`} >
