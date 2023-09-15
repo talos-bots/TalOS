@@ -12,4 +12,5 @@
 	background-color: var(--theme-accent);
 	box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.2);
 	object-fit: cover;
+	@apply rounded-theme-border-radius object-cover bg-theme-box border-theme-border-width border-theme-border;
 }

@@ -87,7 +87,7 @@ const MenuThemeLoader = (props: Props) => {
                 if(background !== null) {
                     setStyle('background-image', `url(./backgrounds/${background})`);
                 }else{
-                    setStyle('background-image', uiTheme.themeBackground);
+                    setStyle('background-image', `url(./backgrounds/${uiTheme.themeBackground})`);
                 }
             }
             if(uiTheme.themeAccent.length > 0) {
@@ -101,6 +101,10 @@ const MenuThemeLoader = (props: Props) => {
             }
             if(uiTheme.themeFlavorText.length > 0) {
                 setStyle(kebabCase('themeFlavorText'), uiTheme.themeFlavorText);
+            }
+            if(uiTheme.themeBackgroundColor.length > 0 && uiTheme.themeBackgroundColor !== 'null') {
+                setStyle('background-color', uiTheme.themeBackgroundColor);
+                setStyle('background-image', 'none');
             }
             props.setNeedsReload(false);
         }

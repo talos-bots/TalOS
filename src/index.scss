@@ -13,8 +13,14 @@
   src: local('DejaVuSansBold'), url('./fonts/DejaVuSans-Bold.ttf') format('ttf');
 }
 
+@font-face {
+  font-family: 'RocketRinder';
+  src: local('RocketRinder'), url('./fonts/RocketRinder.ttf') format('ttf');
+}
+
 :root {
   --background-image: url('./public/backgrounds/blackdefault.svg');
+  --background-color: null;
   --theme-root: rgba(0, 0, 0, 0.5);
   --theme-box: rgba(30, 30, 30, 0.767);
   --theme-italic: rgb(197, 196, 196);
@@ -46,6 +52,7 @@
   font-weight: 400;
   color-scheme: light dark;
   color: var(--theme-text);
+  background-color: var(--background-color);
   background-image: var(--background-image);
   background-size: cover;
   font-synthesis: none;
@@ -169,11 +176,11 @@ ul {
 }
 
 .themed-message-avatar {
-  @apply w-12 h-12 rounded-full object-cover bg-theme-box border-theme-border-width border-theme-border;
+  @apply w-12 h-12 rounded-theme-border-radius object-cover bg-theme-box border-theme-border-width border-theme-border;
 }
 
 .themed-chat-avatar {
-  @apply w-16 h-16 rounded-full object-cover bg-theme-box border-theme-border-width border-theme-border;
+  @apply w-16 h-16 rounded-theme-border-radius object-cover bg-theme-box border-theme-border-width border-theme-border;
 }
 
 .construct-search-bar input{
@@ -181,15 +188,15 @@ ul {
 	margin-left: auto;
 	flex-direction: column;
 	justify-content: flex-start;
-	padding: 1rem;
 	color: var(--theme-text);
   background-color: var(--theme-button);
-  @apply border-theme-border-width border-theme-border theme-border-style rounded-theme-border-radius
+  height: 100%;
+  @apply border-theme-border-width border-theme-border theme-border-style rounded-theme-border-radius p-2
 }
 
 .construct-search-bar input:focus{
 	background-color: var(--theme-accent);
-  @apply border-theme-border-width border-theme-border theme-border-style rounded-theme-border-radius
+  @apply border-theme-border-width border-theme-border theme-border-style rounded-theme-border-radius p-2
 }
 
 .message-button {
@@ -312,7 +319,7 @@ ul {
 	overflow: hidden;
 	object-fit: cover;
 	box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.2);
-	@apply rounded-theme-border-radius;
+	@apply rounded-theme-border-radius object-cover bg-theme-box border-theme-border-width border-theme-border;
 }
 
 .user-image-default {
@@ -328,6 +335,7 @@ ul {
 	color: var(--theme-text);
 	background-color: var(--theme-accent);
 	box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.2);
+  @apply rounded-theme-border-radius object-cover bg-theme-box border-theme-border-width border-theme-border
 }
 
 .book-image {
@@ -340,7 +348,7 @@ ul {
 	overflow: hidden;
 	object-fit: cover;
 	box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.2);
-	@apply rounded-theme-border-radius;
+	@apply rounded-theme-border-radius object-cover bg-theme-box border-theme-border-width border-theme-border;
 }
 
 .book-image-default {
@@ -356,6 +364,7 @@ ul {
 	color: var(--theme-text);
 	background-color: var(--theme-accent);
 	box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.2);
+  @apply rounded-theme-border-radius object-cover bg-theme-box border-theme-border-width border-theme-border;
 }
 /* This is the container of the scrollbar */
 ::-webkit-scrollbar-track {

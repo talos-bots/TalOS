@@ -106,10 +106,10 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate, onSplit, on
             <div className="flex flex-col">
                 <div className="flex flex-row items-center">
                     <div className="flex flex-row items-center w-full gap-2">
-                        <div className="themed-message-avatar flex items-center justify-center">
-                            {(avatar.length > 0 ? <img src={avatar} alt="avatar" className="themed-message-avatar" /> : <RiQuestionMark size={30}/>)}
+                        <div className="flex items-center justify-center">
+                            {(avatar.length > 0 ? <img src={avatar} alt="avatar" className="themed-message-avatar" /> : <RiQuestionMark className="themed-message-avatar" size={30}/>)}
                         </div>
-                        <div className="themed-message-info">{user} {getFormattedTime(time)} {message?.emotion ? message.emotion : null}</div>
+                        <div className="themed-message-info text-theme-italic">{user} {getFormattedTime(time)} {message?.emotion ? `(${message.emotion})` : null}</div>
                     </div>
                     <div className="flex flex-row items-center">
                         <div className="flex flex-row text-xs top-3 absolute right-2 italic gap-1">

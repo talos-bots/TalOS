@@ -21,6 +21,7 @@ class UITheme{
         public themeBorderType: string = '',
         public themeBackground: string = '',
         public themeFlavorText: string = '',
+        public themeBackgroundColor: string = '',
         public author: string = '',
     ) {}
 

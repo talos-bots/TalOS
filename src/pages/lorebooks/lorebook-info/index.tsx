@@ -25,8 +25,8 @@ const LorebookInfo = (props: LorebookInfoProps) => {
     return (
         <div className="themed-box-no-padding w-full flex flex-row justify-start p-1 items-center gap-2" onClick={()=> {if(onClick !== undefined) onClick(book ? book : null)}}>
             <div className="grid grid-cols-3 gap-6 w-2/3 justify-start items-center">
-                <div className="themed-chat-avatar flex items-center justify-center">
-                    {book?.avatar ? (<img src={book.avatar} className="themed-chat-avatar"/>) : (<Book size={36}/>)}
+                <div className="flex items-center justify-center">
+                    {book?.avatar ? (<img src={book.avatar} className="themed-chat-avatar"/>) : (<Book size={36} className="themed-chat-avatar"/>)}
                 </div>
                 <p className="text-left">{book?.name ? book.name : 'New Lorebook'}</p>
             </div>

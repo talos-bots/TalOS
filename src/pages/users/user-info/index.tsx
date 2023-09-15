@@ -26,8 +26,8 @@ const UserInfo = (props: UserInfoProps) => {
     return (
         <div className="themed-box-no-padding w-full flex flex-row justify-start p-1 items-center gap-4" onClick={()=> {if(onClick !== undefined) onClick(user ? user : null)}}>
             <div className="grid grid-cols-3 gap-6 w-2/3 justify-start items-center">
-                <div className="themed-chat-avatar flex items-center justify-center">
-                    {user?.avatar ? (<img src={user.avatar} className="themed-chat-avatar"/>) : (<RiQuestionMark size={36}/>)}
+                <div className="flex items-center justify-center">
+                    {user?.avatar ? (<img src={user.avatar} className="themed-chat-avatar"/>) : (<RiQuestionMark size={36} className="themed-chat-avatar"/>)}
                 </div>
                 <p className="text-left">{user?.name ? user.name : 'New User'}</p>
                 <p className="text-right">{user?.nickname ? `"${user.nickname}"` : null}</p>

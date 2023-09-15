@@ -106,7 +106,7 @@ const ChatDetails = (props: ChatDetailsProps) => {
     
         if (numAvatars === 1) {
             // If only one avatar, draw it maintaining the aspect ratio
-            
+    
             const imageAspect = images[0].width / images[0].height;
             const canvasAspect = canvas.width / canvas.height;
     
@@ -126,22 +126,12 @@ const ChatDetails = (props: ChatDetailsProps) => {
             }
             
             ctx.drawImage(images[0], xOffset, yOffset, renderWidth, renderHeight);
-        } 
+        }
     
-        // Create a temporary canvas for the circle mask
-        const tmpCanvas = document.createElement('canvas');
-        tmpCanvas.width = canvas.width;
-        tmpCanvas.height = canvas.height;
-        const tmpCtx = tmpCanvas.getContext('2d');
-        if (!tmpCtx) return;
-        const radius = canvas.width / 2;
-        tmpCtx.beginPath();
-        tmpCtx.arc(radius, radius, radius, 0, 2 * Math.PI);
-        tmpCtx.clip();
-        tmpCtx.drawImage(canvas, 0, 0);
+        // Additional code to handle multiple avatars can go here
     
-        return tmpCanvas.toDataURL();
-    };     
+        return canvas.toDataURL();
+    };    
 
     const handleSave = () => {
         setIsEditing(false);
@@ -156,8 +146,8 @@ const ChatDetails = (props: ChatDetailsProps) => {
             onDoubleClick={()=> {if(onDoubleClick !== undefined) onDoubleClick(chat)}}
         >
             <div className="flex flex-row items-center justify-start">
-                <div className="themed-chat-avatar flex items-center justify-center">
-                    {avatars.length > 0 ? (<img src={groupAvatar}/>) : (<RiQuestionMark size={36}/>)}
+                <div className="flex items-center justify-center">
+                    {avatars.length > 0 ? (<img src={groupAvatar} className="themed-chat-avatar"/>) : (<RiQuestionMark className="themed-chat-avatar"size={36}/>)}
                 </div>
                 {isEditing ? (
                     <textarea 

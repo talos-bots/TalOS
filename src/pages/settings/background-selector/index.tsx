@@ -92,19 +92,19 @@ const BackgroundSelector = () => {
                     </button>
                 </div>
                 ))}
-                <div>
-                    <label htmlFor="backgroundSelector" className="flex items-center themed-root justify-center w-150px">
+                {/* <div>
+                    <label htmlFor="backgroundSelector" className="flex items-center themed-root justify-center w-150px h-150px">
                         <Image size={60}/>
                         <input
                             id="backgroundSelector"
                             type="file"
                             name="background"
                             accept=".png,.jpg,.jpeg"
-                            className="absolute inset-0 opacity-0 cursor-pointer"
+                            className="absolute inset-0 opacity-0 cursor-pointer w-150px h-150px"
                             onChange={handleBackgroundChange}
                         />
                     </label>
-                </div>
+                </div> */}
             </div>
         </div>
     );
