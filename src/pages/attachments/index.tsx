@@ -3,6 +3,7 @@ import { Attachment } from "@/classes/Attachment";
 import Loading from "@/components/loading";
 import { ArrowBigLeft, ArrowBigRight, Download, RefreshCcw, TrashIcon } from "lucide-react";
 import { useEffect, useState } from "react";
+import ImageAttachmentComponent from "./attachment";
 
 const AttachmentsPage = () => {
     const [attachments, setAttachments] = useState<Attachment[]>([]);
@@ -176,33 +177,19 @@ const AttachmentsPage = () => {
                     <button className="themed-button-pos" onClick={() => {page < numberOfPages && setPage(page + 1)}} title="Next Page"><ArrowBigRight size={26}/></button>
                 </div>
             </div>
-            <div className={`w-full h-11/12 grid grid-cols-6 gap-2`}>
+            <div className={`w-full h-11/12 grid grid-cols-6 grid-rows-[auto,2fr] gap-2`}>
                 {filteredAttachments.slice(currentAttachmentsStart, currentAttachmentsEnd).map((attachment) => {
                     if(attachment.data === undefined) return;
                     if(attachment.fileext === "png" || attachment.fileext === "jpg" || attachment.fileext === "jpeg" || attachment.fileext === "gif" || attachment.fileext === "webp" || attachment.fileext === "svg"){
                         return (
-                            <div className="col-span-1 w-full h-full themed-root flex flex-col justify-center items-center gap-2 aspect-square slide-in-right">
-                                <p className="text-center font-semibold">{attachment.name}</p>
-                                <img src={getAttachmentData(attachment)} className="w-full h-full object-contain rounded-theme-border-radius bg-theme-box border-theme-border-width border-theme-border"/>
-                                <p>
-                                    {assembleMetadata(attachment)}
-                                </p>
-                                <div className="grid grid-cols-2 gap-2 justify-center">
-                                    <button onClick={() => handleDownload(attachment)} className="themed-button-pos" title="Download">
-                                        <Download size={24} className="text-theme-text"/>
-                                    </button>
-                                    <button onClick={() => handleDelete(attachment)} className="themed-button-neg" title="Delete">
-                                        <TrashIcon size={24} className="text-theme-text"/>
-                                    </button>
-                                </div>
-                            </div>
+                            <ImageAttachmentComponent attachment={attachment} assembleMetadata={assembleMetadata} getAttachmentData={getAttachmentData} handleDelete={handleDelete} handleDownload={handleDownload}/>
                         );
                     }
                     if(attachment.fileext === "mp4" || attachment.fileext === "webm" || attachment.fileext === "ogg"){
                         return (
                             <div className="col-span-1 w-full h-full themed-root flex flex-col justify-center items-center gap-2 aspect-square pop-in">
                                 <p className="text-center font-semibold">{attachment.name}</p>
-                                <video src={getAttachmentData(attachment)} className="w-full h-full object-contain rounded-theme-border-radius object-cover bg-theme-box border-theme-border-width border-theme-border" controls/>
+                                <video src={getAttachmentData(attachment)} className="w-full h-full rounded-theme-border-radius object-cover bg-theme-box border-theme-border-width border-theme-border" controls/>
                                 <div className="grid grid-cols-2 gap-2 justify-center">
                                     <button onClick={() => handleDownload(attachment)} className="themed-button-pos" title="Download">
                                         <Download size={24} className="text-theme-text"/>
