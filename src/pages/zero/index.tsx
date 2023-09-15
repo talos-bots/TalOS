@@ -95,7 +95,7 @@ const ZeroPage = () => {
 									tokenType={modelType}
 									className="w-full themed-input flex-grow"
 								/>
-								<button className="w-full themed-button flex flex-row items-center justify-center gap-4" onClick={handleInstruct}>
+								<button className="w-full themed-button-pos flex flex-row items-center justify-center gap-4" onClick={handleInstruct}>
 									Send Instruct
 									<SendHorizonal size={26}/>
 								</button>
