@@ -4030,21 +4030,21 @@ async function getMessageIntent(message) {
     message.reply("<@" + message.author.id + `> is not asking for anything.
 Scores are the following:
 **Search:** ${intent.searchScore}
-**Nude:** ${intent.nudeScore}
+**Selfie:** ${intent.nudeScore}
 **Extracted Subject:** ${intent.subject}
 **Yes:** ${intent.compliance}`);
   } else if (intent.intent === "search") {
     message.reply("<@" + message.author.id + "> is asking to " + intent.intent + `.
 Scores are the following:
 **Search:** ${intent.searchScore}
-**Nude:** ${intent.nudeScore}
+**Selfie:** ${intent.nudeScore}
 **Extracted Subject:** ${intent.subject}
 **Yes:** ${intent.compliance}`);
   } else {
     message.reply("<@" + message.author.id + "> is asking for an image of " + intent.intent + `.
 Scores are the following:
 **Search:** ${intent.searchScore}
-**Nude:** ${intent.nudeScore}
+**Selfie:** ${intent.nudeScore}
 **Extracted Subject:** ${intent.subject}
 **Yes:** ${intent.compliance}`);
   }
