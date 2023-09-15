@@ -367,7 +367,7 @@ ul {
   @apply rounded-theme-border-radius object-cover bg-theme-box border-theme-border-width border-theme-border;
 }
 .chat-input-bar{
-  @apply backdrop-blur-theme-blur flex items-center w-full justify-between rounded-theme-border-radius bg-theme-root box-border py-1 px-2.5 border-theme-border border-theme-border-width theme-border-style
+  @apply backdrop-blur-theme-blur flex items-center w-full h-full justify-between rounded-theme-border-radius bg-theme-root box-border p-4 border-theme-border border-theme-border-width theme-border-style
 }
 /* This is the container of the scrollbar */
 ::-webkit-scrollbar-track {

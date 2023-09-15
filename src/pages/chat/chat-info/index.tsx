@@ -1,6 +1,6 @@
 import { removeAllMemories } from "@/api/vectorapi";
 import { Chat } from "@/classes/Chat";
-import { Download, Edit2Icon, LucideArrowBigLeft, X } from "lucide-react";
+import { Cog, Download, Edit2Icon, LucideArrowBigLeft, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface ChatInfoProps { 
@@ -51,16 +51,16 @@ const ChatInfo = (props: ChatInfoProps) => {
     }
 
     return (
-        <div className="themed-root w-full h-5/6 flex flex-row justify-start align-middle items-center gap-6">
-            <button className="message-button" onClick={() => {goBack()}} title="Return to Select">
-                <LucideArrowBigLeft size={36} className="text-theme-text"/>
-            </button>
-            <button className="message-button" onClick={() => handleChatDownload()} title="Download ChatLog">
-                <Download size={34} className="text-theme-text"/>
-            </button>
-            <button className="message-button" onClick={() => handleRemoveAllMessages()} title="Clear Messages">
-                <X size={36} className="text-theme-text"/>
-            </button>
+        <div className="themed-root w-full flex flex-row justify-between items-center gap-6">
+            <div className="flex flex-row gap-6">
+                <button className="message-button" onClick={() => {goBack()}} title="Return to Select">
+                    <LucideArrowBigLeft size={36} className="text-theme-text"/>
+                </button>
+                <button className="message-button" onClick={() => handleChatDownload()} title="Download ChatLog">
+                    <Download size={30} className="text-theme-text"/>
+                </button>
+            </div>
+    
             {isEditing ? (
                 <input
                     value={name}
@@ -77,11 +77,11 @@ const ChatInfo = (props: ChatInfoProps) => {
                         }
                     }}
                     autoFocus
-                    style={{ width: 'auto', minWidth: '30px', backgroundColor: 'transparent' }}
+                    className="flex-grow bg-transparent"
                 />
             ) : (
-                <div className="flex flex-row gap-2">
-                    <p>{name}</p>
+                <div className="flex flex-row items-center gap-6 flex-grow">
+                    <p className="flex-grow">{name}</p>
                     {chat._id !== "activePool" && (
                         <button onClick={() => setIsEditing(true)} className="message-button" title="Edit Chat name">
                             <Edit2Icon size={14} />
@@ -89,15 +89,24 @@ const ChatInfo = (props: ChatInfoProps) => {
                     )}
                 </div>
             )}
-            <div className="construct-search-bar">
+    
+            <div className="construct-search-bar flex-grow">
                 <input
-                type="text"
-                placeholder="Search Messages"
-                value={searchTerm}
-                onChange={(event) => {if(setSearchTerm) setSearchTerm(event.target.value)}}
+                    type="text"
+                    placeholder="Search Messages"
+                    value={searchTerm}
+                    onChange={(event) => {if(setSearchTerm) setSearchTerm(event.target.value)}}
+                    className="w-full"
                 />
             </div>
+            
+            <button className="message-button" onClick={() => handleRemoveAllMessages()} title="Clear Messages">
+                <X size={36} className="text-theme-text"/>
+            </button>
+            <button className="message-button" onClick={() => {}} title="Edit Chat Settings">
+                <Cog size={30} className="text-theme-text"/>
+            </button>
         </div>
-    );
+    );    
 }
 export default ChatInfo;
