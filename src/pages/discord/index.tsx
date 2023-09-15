@@ -114,40 +114,9 @@ const DiscordPage = () => {
         <div className="w-full h-[calc(100vh-70px)] flex flex-col gap-2 overflow-y-auto overflow-x-hidden p-4">
             <h2 className="text-2xl font-bold text-theme-text text-shadow-xl themed-root slide-in-top">Discord Configuration Panel</h2>
             <div className="grid grid-cols-2 gap-2">
-                <div className="col-span-1">
+                <div className="col-span-1 flex flex-col gap-2">
                     <Accordian title="What is this?" className="slide-in-left">
                     </Accordian>
-                </div>
-                <div className="col-span-1">
-                    <Accordian title="How do I use this?" className="slide-in-right">
-                        <div className="text-left ">
-                            <h3>Creating the Discord Bot</h3>
-                            <ol>
-                                <li>Go to <a>https://discord.com/developers/applications</a></li>
-                                <li>Click "New Application"</li>
-                                <li>Give it a name and click "Create"</li>
-                                <li>Click "Bot" on the left side</li>
-                                <li>Click "Add Bot"</li>
-                                <li>Click "Copy" under the token</li>
-                                <li>Paste the token into the "Bot Token" field in the "Bot Configuration" tab of this page.</li>
-                                <li>Click "Save"</li>
-                                <li>Return the the Discord Developer Portal</li>
-                                <li>Go to your application and find the "Application ID" field</li>
-                                <li>Copy the Application ID</li>
-                                <li>Paste the Application ID into the "Application ID" field in the "Bot Configuration" tab of this page.</li>
-                                <li>Click "Save"</li>
-                                <li>Return to the Discord Developer Portal</li>
-                                <li>Go to your application and find the "Bot" tab</li>
-                                <li>Turn on all of the "Privileged Gateway Intents"</li>
-                                <li>Click "Save Changes"</li>
-                                <li>Flip the "Activate Bot" switch in the "Bot Configuration" tab.</li>
-                            </ol>
-                        </div>
-                    </Accordian>
-                </div>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-                <div className="col-span-1">
                     <Accordian title="Construct Chat Configuration" className="slide-in-left">
                         <div className="grid grid-cols-2 gap-2">
                             <div className="col-span-1 flex flex-col text-left">
@@ -215,8 +184,91 @@ const DiscordPage = () => {
                             </div>
                         </div>
                     </Accordian>
+                    <Accordian title="Stable Diffusion Extension" className="slide-in-left">
+                        <div className="grid grid-cols-2 gap-2">
+                            <div className="col-span-1 flex flex-col text-left">
+                                <label className="text-theme-text font-semibold">Stable Diffusion Commands</label>
+                                <div className="themed-input flex flex-col items-center w-full flex-grow">
+                                    <i className="text-sm">Can only be activated in whitelisted channels. Whitelist channels inside of discord by using /sdaddchannel</i>
+                                    <ReactSwitch
+                                        checked={discordStableDiffusion}
+                                        onChange={(e) => {
+                                            setDiscordStableDiffusion(e);
+                                        }}
+                                        handleDiameter={30}
+                                        width={60}
+                                        uncheckedIcon={false}
+                                        checkedIcon={true}
+                                        id="doStableDiffusion"
+                                    />
+                                </div>
+                            </div>
+                            <div className="col-span-1 flex flex-col text-left">
+                                <label className="text-theme-text font-semibold">Stable Diffusion Reactions</label>
+                                <div className="themed-input flex flex-col items-center w-full flex-grow">
+                                    <i className="text-sm">Can only be activated in whitelisted channels. Add a 🖼️ to message containing text and it will reply with an image of that prompt.</i>
+                                    <ReactSwitch
+                                        checked={discordStableReacts}
+                                        onChange={(e) => {
+                                            setDiscordStableReacts(e);
+                                        }}
+                                        handleDiameter={30}
+                                        width={60}
+                                        uncheckedIcon={false}
+                                        checkedIcon={true}
+                                        id="doStableReacts"
+                                    />
+                                </div>
+                            </div>
+                            <div className="col-span-1 flex flex-col text-left">
+                                <label className="text-theme-text font-semibold">Show Diffusion Details</label>
+                                <div className="themed-input flex flex-col items-center w-full flex-grow">
+                                    <i className="text-sm">When set to on, generation details such as prompt, model, and resolution will be shown automatically by default. Hidden override will still apply for /cosimagine</i>
+                                    <ReactSwitch
+                                        checked={discordShowDiffusionDetails}
+                                        onChange={(e) => {
+                                            setDiscordShowDiffusionDetails(e);
+                                        }}
+                                        handleDiameter={30}
+                                        width={60}
+                                        uncheckedIcon={false}
+                                        checkedIcon={true}
+                                        id="showDiffusionDetails"
+                                    />
+                                </div>
+                            </div>
+                            <div className="col-span-2 flex flex-row text-left gap-2 mt-2">
+                                <button className="themed-button-pos w-full" onClick={() => saveDiffusionConfig()}>Save</button>
+                            </div>
+                        </div>
+                    </Accordian>
                 </div>
-                <div className="col-span-1">
+                <div className="col-span-1 gap-2 flex flex-col">
+                    <Accordian title="How do I use this?" className="slide-in-right">
+                        <div className="text-left ">
+                            <h3>Creating the Discord Bot</h3>
+                            <ol>
+                                <li>Go to <a>https://discord.com/developers/applications</a></li>
+                                <li>Click "New Application"</li>
+                                <li>Give it a name and click "Create"</li>
+                                <li>Click "Bot" on the left side</li>
+                                <li>Click "Add Bot"</li>
+                                <li>Click "Copy" under the token</li>
+                                <li>Paste the token into the "Bot Token" field in the "Bot Configuration" tab of this page.</li>
+                                <li>Click "Save"</li>
+                                <li>Return the the Discord Developer Portal</li>
+                                <li>Go to your application and find the "Application ID" field</li>
+                                <li>Copy the Application ID</li>
+                                <li>Paste the Application ID into the "Application ID" field in the "Bot Configuration" tab of this page.</li>
+                                <li>Click "Save"</li>
+                                <li>Return to the Discord Developer Portal</li>
+                                <li>Go to your application and find the "Bot" tab</li>
+                                <li>Turn on all of the "Privileged Gateway Intents"</li>
+                                <li>Click "Save Changes"</li>
+                                <li>Flip the "Activate Bot" switch in the "Bot Configuration" tab.</li>
+                            </ol>
+                        </div>
+                    </Accordian>
                     <Accordian title="Bot Configuration" className="slide-in-right">
                         <div className="grid grid-cols-2 gap-2">
                             <div className="col-span-1 flex flex-col text-left">
@@ -283,66 +335,6 @@ const DiscordPage = () => {
                             </div>
                             <div className="col-span-2 flex flex-row text-left gap-2 mt-2">
                                 <button className="themed-button-pos w-full" onClick={() => saveDiscordConfig()}>Save</button>
-                            </div>
-                        </div>
-                    </Accordian>
-                </div>
-                <div className="col-span-1">
-                    <Accordian title="Stable Diffusion Extension" className="slide-in-left">
-                        <div className="grid grid-cols-2 gap-2">
-                            <div className="col-span-1 flex flex-col text-left">
-                                <label className="text-theme-text font-semibold">Stable Diffusion Commands</label>
-                                <div className="themed-input flex flex-col items-center w-full flex-grow">
-                                    <i className="text-sm">Can only be activated in whitelisted channels. Whitelist channels inside of discord by using /sdaddchannel</i>
-                                    <ReactSwitch
-                                        checked={discordStableDiffusion}
-                                        onChange={(e) => {
-                                            setDiscordStableDiffusion(e);
-                                        }}
-                                        handleDiameter={30}
-                                        width={60}
-                                        uncheckedIcon={false}
-                                        checkedIcon={true}
-                                        id="doStableDiffusion"
-                                    />
-                                </div>
-                            </div>
-                            <div className="col-span-1 flex flex-col text-left">
-                                <label className="text-theme-text font-semibold">Stable Diffusion Reactions</label>
-                                <div className="themed-input flex flex-col items-center w-full flex-grow">
-                                    <i className="text-sm">Can only be activated in whitelisted channels. Add a 🖼️ to message containing text and it will reply with an image of that prompt.</i>
-                                    <ReactSwitch
-                                        checked={discordStableReacts}
-                                        onChange={(e) => {
-                                            setDiscordStableReacts(e);
-                                        }}
-                                        handleDiameter={30}
-                                        width={60}
-                                        uncheckedIcon={false}
-                                        checkedIcon={true}
-                                        id="doStableReacts"
-                                    />
-                                </div>
-                            </div>
-                            <div className="col-span-1 flex flex-col text-left">
-                                <label className="text-theme-text font-semibold">Show Diffusion Details</label>
-                                <div className="themed-input flex flex-col items-center w-full flex-grow">
-                                    <i className="text-sm">When set to on, generation details such as prompt, model, and resolution will be shown automatically by default. Hidden override will still apply for /cosimagine</i>
-                                    <ReactSwitch
-                                        checked={discordShowDiffusionDetails}
-                                        onChange={(e) => {
-                                            setDiscordShowDiffusionDetails(e);
-                                        }}
-                                        handleDiameter={30}
-                                        width={60}
-                                        uncheckedIcon={false}
-                                        checkedIcon={true}
-                                        id="showDiffusionDetails"
-                                    />
-                                </div>
-                            </div>
-                            <div className="col-span-2 flex flex-row text-left gap-2 mt-2">
-                                <button className="themed-button-pos w-full" onClick={() => saveDiffusionConfig()}>Save</button>
                             </div>
                         </div>
                     </Accordian>
