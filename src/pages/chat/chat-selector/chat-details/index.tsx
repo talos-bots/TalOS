@@ -13,9 +13,10 @@ interface ChatDetailsProps {
     onEdit?: (chat: Chat) => void;
     onDelete?: (chat: Chat) => void;
     disabled?: boolean;
+    selected?: boolean;
 }
 const ChatDetails = (props: ChatDetailsProps) => {
-    const { chat, onDoubleClick, onClick, onDelete, onEdit, disabled } = props;
+    const { chat, onDoubleClick, onClick, onDelete, onEdit, disabled, selected } = props;
     const [name, setName] = useState<string>("");
     const [avatar, setAvatar] = useState<string>("");
     const [constructs, setConstructs] = useState<Construct[]>([]);
@@ -137,11 +138,11 @@ const ChatDetails = (props: ChatDetailsProps) => {
         setIsEditing(false);
         saveModifiedChat();
     };
-    
+
     return (
         <div
             title="Double Click me to Open!"
-            className="themed-box-no-padding p-2 flex flex-col justify-start items-start relative cursor-pointer"  
+            className={"rounded-theme-border-radius object-cover bg-theme-box border-theme-border-width border-theme-border hover:bg-theme-hover-pos p-2 flex flex-col justify-start items-start relative cursor-pointer " + (selected ? "bg-theme-hover-pos" : "bg-theme-box")}
             onClick={() => {if(onClick !== undefined) onClick(chat)}} 
             onDoubleClick={()=> {if(onDoubleClick !== undefined) onDoubleClick(chat)}}
         >
@@ -193,7 +194,7 @@ const ChatDetails = (props: ChatDetailsProps) => {
                 )}
                 <div className="grid w-1/3 gap-4 absolute right-4" id="info-text">
                     <div className="flex flex-row justify-end text-right">
-                        <i className="w-full text-theme-italic text-right">{getFormattedTime(chat.lastMessage.timestamp)}</i>
+                        <i className={"w-full text-right" + (selected? 'text-theme-text-hover' : 'text-theme-italic')}>{getFormattedTime(chat.lastMessage.timestamp)}</i>
                     </div>
                 </div>
             </div>

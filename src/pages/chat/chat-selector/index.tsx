@@ -195,10 +195,10 @@ const ChatSelector = (props: ChatSelectorProps) => {
                             </div>
                         </div>
                         <div className="flex flex-col w-full gap-2 overflow-y-auto h-13/14 grow-0 shrink-0 ">
-                            {activeChat !== null && (<ChatDetails key={'activePool'} chat={activeChat} onDoubleClick={handleChatDoubleClick} onClick={handleChatClick} onDelete={handleChatDelete} disabled/>)}
+                            {activeChat !== null && (<ChatDetails key={'activePool'} chat={activeChat} onDoubleClick={handleChatDoubleClick} onClick={handleChatClick} onDelete={handleChatDelete} disabled selected={(activeChat?._id === selectedChat?._id)}/>)}
                             {Array.isArray(filteredChats) && filteredChats.sort((a, b) => b.lastMessageDate - a.lastMessageDate).filter((chat) => {return chat._id !== 'activePool'}).map((chat) => {
                                 return (
-                                    <ChatDetails key={chat._id} chat={chat} onDoubleClick={handleChatDoubleClick} onClick={handleChatClick} onDelete={handleChatDelete}/>
+                                    <ChatDetails key={chat._id} chat={chat} onDoubleClick={handleChatDoubleClick} onClick={handleChatClick} onDelete={handleChatDelete} selected={(chat?._id === selectedChat?._id)}/>
                                 )
                             })}
                         </div>
