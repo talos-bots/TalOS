@@ -23,7 +23,7 @@ const Accordion = (props: AccordionProps) => {
     }, [isExpanded, title]);
     
     return (
-        <div className={"themed-root w-full h-fit justify-center " +className}>
+        <div className={"pop-in themed-root w-full h-fit justify-center " +className}>
             <div className="text-2xl font-bold z-10 w-full flex justify-between items-center" onClick={() => setIsExpanded(!isExpanded)}>
                 <div className="flex flex-row w-full">
                     <div className="flex flex-col w-1/2 items-left text-left justify-start">
@@ -36,7 +36,9 @@ const Accordion = (props: AccordionProps) => {
                     </div>
                 </div>
             </div>
-            {isExpanded && <>{children}</>}
+            <div className={"overflow-y-auto transform origin-top transition-all duration-1000 ease-in-out " + (isExpanded ? "scale-y-100 max-h-[800px]" : "scale-y-0 max-h-0")}>
+                {children}
+            </div>
         </div>
     )
 

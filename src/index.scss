@@ -8,6 +8,12 @@
 /* Import the utility styles for Tailwind */
 @import 'tailwindcss/utilities';
 
+@layer utilities {
+  .scale-y-100 {
+    transform: scaleY(1);
+  }
+}
+
 @font-face {
   font-family: 'DejaVuSansBold';
   src: local('DejaVuSansBold'), url('./fonts/DejaVuSans-Bold.ttf') format('ttf');
@@ -441,6 +447,12 @@ ul {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.accordion-content {
+  overflow: hidden;
+  transition: height 0.3s ease-out;
+  height: 0;
 }
 
 /* Add this to your stylesheet */
