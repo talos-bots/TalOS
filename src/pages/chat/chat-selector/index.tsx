@@ -157,7 +157,7 @@ const ChatSelector = (props: ChatSelectorProps) => {
                         className="themed-root-no-padding w-36 h-full flex flex-col justify-center items-center cursor-pointer relative shrink-0 grow-0"
                         to={"/constructs/new"}
                     >
-                        <div className="absolute inset-0 bg-themed-root hover:bg-theme-hover-pos flex items-center justify-center">
+                        <div className="absolute inset-0 bg-themed-root hover:bg-theme-hover-pos flex items-center justify-center rounded-theme-border-radius">
                             <span className="text-theme-text text-2xl font-bold justify-center items-center align-middle flex flex-col">
                                 New Construct
                                 <br/>

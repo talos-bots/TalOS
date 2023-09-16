@@ -31,7 +31,7 @@ const ConstructProfile: React.FC<Props> = ({ character, onClick, active }) => {
             </p>
     
             {isHovered && (
-                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-theme-border-radius">
                     <span className="text-theme-text text-2xl font-bold justify-center items-center align-middle flex flex-col">
                         New Chat
                         <br/>
