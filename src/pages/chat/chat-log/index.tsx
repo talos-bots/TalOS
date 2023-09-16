@@ -13,12 +13,14 @@ import { addVectorFromMessage } from "@/api/vectorapi";
 import { getDoCaptioning, getDoEmotions, getImageCaption, getTextEmotion } from "@/api/llmapi";
 import { Attachment } from "@/classes/Attachment";
 import { ipcRenderer } from "electron";
+import ChatConfigPane from "../chat-config-pane";
 interface ChatLogProps {
 	chatLogID?: string;
 	goBack: () => void;
+	user: User | null;
 }
 const ChatLog = (props: ChatLogProps) => {
-	const { chatLogID, goBack } = props;
+	const { chatLogID, goBack, user } = props;
 	const [chatLog, setChatLog] = useState<Chat | null>(null);
 	const [messages, setMessages] = useState<Message[]>([]);
 	const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -26,7 +28,7 @@ const ChatLog = (props: ChatLogProps) => {
 	const [error, setError] = useState<string | null>(null);
 	const [isLoaded, setIsLoaded] = useState<boolean>(false);
 	const [numToDisplay, setNumToDisplay] = useState<number>(60);
-	const [currentUser, setCurrentUser] = useState<User | null>(null);
+	const [currentUser, setCurrentUser] = useState<User | null>(user);
 	const [doEmotions, setDoEmotions] = useState<boolean>(false);
 	const [doCaptioning, setDoCaptioning] = useState<boolean>(false);
 	const [doGreetings, setDoGreetings] = useState<boolean>(false);
@@ -34,8 +36,10 @@ const ChatLog = (props: ChatLogProps) => {
 	const [doMultiline, setDoMultiline] = useState<boolean>(false);
 	const [numberOfMessagesToSend, setNumberOfMessagesToSend] = useState<number>(1);
 	const [searchTerm, setSearchTerm] = useState<string>("");
+	const [openChatConfig, setOpenChatConfig] = useState<boolean>(false);
+	const [chatPaneClose, setChatPaneClose] = useState<boolean>(false);
 
-	const filteredMessages = messages.filter((message) => {
+	const filteredMessages = messages.slice(messages.length - numToDisplay).filter((message) => {
 		if(searchTerm === "") return true;
 		if(searchTerm.startsWith("from:")){
 			let user = searchTerm.split(":")[1];
@@ -82,15 +86,6 @@ const ChatLog = (props: ChatLogProps) => {
 			}).catch((err) => {
 				console.error(err);
 			});
-			let userID = JSON.parse(localStorage.getItem("currentUser")?.toString() || "{}");
-			if(userID !== null && userID !== undefined){
-				getUser(userID).then((user) => {
-					if(user === null) throw new Error("User not found");
-					setCurrentUser(user);
-				}).catch((err) => {
-					console.error(err);
-				});
-			}
 			ipcRenderer.on(`chat-message-${chatLogID}`, () => {
 				getChat(chatLogID).then((chat) => {
 					if(chat === null) return;
@@ -197,6 +192,7 @@ const ChatLog = (props: ChatLogProps) => {
 	};
 
 	const handleMessageSend = async (message: string, attachments?: File[]) => {
+		let newMessage: Message;
 		if(message.startsWith("/")){
 			await doSlashCommand(message, chatLog, currentUser, setChatLog, setMessages, updateChat, setError);
 		}
@@ -225,10 +221,7 @@ const ChatLog = (props: ChatLogProps) => {
 			newAttachments = uploadedAttachments;
 		}
 		if((message !== "" && message !== null && message !== undefined && message !== " " && message !== "\n") || (newAttachments.length > 0)){
-			let newMessage = addUserMessage(message, currentUser);
-			if(doEmotions === true){
-				newMessage.emotion = await getTextEmotion(newMessage.text);
-			}
+			newMessage = addUserMessage(message, currentUser);
 			if(newAttachments !== undefined && newAttachments.length > 0){
 				for(let i = 0; i < newAttachments.length; i++){
 					if(newAttachments[i] !== undefined && newAttachments[i] !== null){
@@ -250,14 +243,10 @@ const ChatLog = (props: ChatLogProps) => {
 				}
 			}
 			chat.addMessage(newMessage);
-			if(messages.includes(newMessage)){
-				console.log("message already exists");
-			}else{
+			if(!messages.includes(newMessage)){
 				setMessages(prevMessages => [...prevMessages, newMessage]);
-				if(chat?.doVector === true){
-					addVectorFromMessage(chat._id, newMessage);
-				}
 			}
+			handlePostUserMessage(newMessage);
 		}
 		await wait(750);
 		for (let i = 0; i < chat.constructs.length; i++) {
@@ -296,6 +285,33 @@ const ChatLog = (props: ChatLogProps) => {
 		setHasSentMessage(false);
 		setNumToDisplay(60);
 	};	
+
+	const handlePostUserMessage = async (newMessage: Message) => {
+		if(doEmotions === true){
+			newMessage.emotion = await getTextEmotion(newMessage.text);
+		}
+		if(chatLog?.doVector === true){
+			addVectorFromMessage(chatLog._id, newMessage);
+		}
+		setMessages(prevMessages => {
+			// Remove the loadingMessage
+			const updatedMessages = prevMessages.filter((message) => {
+				return message._id !== newMessage?._id;
+			});
+
+			// Add the botMessage
+			if (newMessage !== null) {
+				updatedMessages.push(newMessage);
+			}
+
+			return updatedMessages;
+		});
+		chatLog?.editMessageEmotion(newMessage._id, newMessage.emotion);
+		setChatLog(chatLog);
+		if(chatLog !== null){
+			await updateChat(chatLog);
+		}
+	};
 
 	const deleteMessage = (messageID: string) => {
 		if(chatLog === null) return;
@@ -380,41 +396,54 @@ const ChatLog = (props: ChatLogProps) => {
 		await updateChat(newChat)
 	}
 
+	const handleOpenSettings = async () => {
+		if(openChatConfig === true){
+			setChatPaneClose(true);
+			await new Promise(r => setTimeout(r, 1050));
+			setOpenChatConfig(!openChatConfig);
+			setChatPaneClose(false);
+			return;
+		}
+		setOpenChatConfig(!openChatConfig)
+	}
+
 	if(!isLoaded) return (<Loading/>);
 
 	return (
 		<>
-		{error !== null ? (
-			<Alert color="red" 
-				className="absolute top-8 right-8 w-3/12" 
-				style={{zIndex: 1000}} 
-				onClose={() => setError(null)}
-				animate={{
-					mount: { y: 0 },
-					unmount: { y: 100 },
-				}}
-				>
-				{error}
-			</Alert>
-		) : (
-			null
-		)}
-		<div className="flex flex-row w-full h-full items-center justify-center overflow-y-hidden"
-			onScroll={(e) => {
-				if(e.currentTarget.scrollTop === 0){
-					setNumToDisplay(numToDisplay + 35);
-				}
-			}}
-		>
-			<div className="box-border w-3/6 h-[calc(100vh-70px)] p-2 flex flex-col gap-2">
+			{error !== null ? (
+				<Alert color="red" 
+					className="absolute top-8 right-8 w-3/12" 
+					style={{zIndex: 1000}} 
+					onClose={() => setError(null)}
+					animate={{
+						mount: { y: 0 },
+						unmount: { y: 100 },
+					}}
+					>
+					{error}
+				</Alert>
+			) : (
+				null
+			)}
+			<div className="w-full grid grid-cols-8 justify-center">
+			<div className="col-span-2 box-border h-[calc(100vh-70px)] flex flex-col gap-2 overflow-x-hidden p-4">
+			</div>
+			<div className="col-span-4 box-border h-[calc(100vh-70px)] flex flex-col gap-2 overflow-x-hidden p-4">
 				<div className="w-full flex flex-row items-center justify-end">
 					{chatLog === null ? (
 						null
 					) : (
-						<ChatInfo chat={chatLog} onEdit={handleDetailsChange} goBack={goBack} searchTerm={searchTerm} setSearchTerm={setSearchTerm}/>
+						<ChatInfo chat={chatLog} onEdit={handleDetailsChange} goBack={goBack} searchTerm={searchTerm} setSearchTerm={setSearchTerm} openSettings={handleOpenSettings}/>
 					)}
 				</div>
-				<div className="h-5/6">
+				<div className="flex-grow overflow-y-auto"
+					onScroll={(e) => {
+						if(e.currentTarget.scrollTop === 0){
+							setNumToDisplay(numToDisplay + 35);
+						}
+					}}
+				>
 					<div className="themed-message-box">
 						{Array.isArray(filteredMessages) && filteredMessages.map((message, index) => {
 							return (
@@ -428,7 +457,12 @@ const ChatLog = (props: ChatLogProps) => {
 					<InputGroup sendMessage={handleMessageSend} />
 				</div>
 			</div>
-		</div>
+			<div className="col-span-2 box-border h-[calc(100vh-70px)] flex flex-col gap-2 overflow-x-hidden pt-4 pb-4 pr-4">
+			{openChatConfig === true && (
+				<ChatConfigPane chat={chatLog} chatPanelClose={chatPaneClose} onEdit={handleDetailsChange}/>
+			)}
+			</div>
+			</div>
 		</>
 	);
 	

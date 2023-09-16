@@ -195,7 +195,8 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate, onSplit, on
                                 <ReactMarkdown 
                                     className='message-text m-0 h-auto py-1 box-border resize-none overflow-y-auto min-w-full'
                                     components={{
-                                        em: ({ node, ...props }) => <i style={{ color: "var(--theme-text-italic)" }} {...props} />,
+                                        em: ({ node, ...props }) => <i className="text-theme-italic" {...props} />,
+                                        code: ({ node, ...props }) => <code {...props} />,
                                     }}
                                 >
                                     {message.text}

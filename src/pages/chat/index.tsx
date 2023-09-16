@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import ChatLog from "./chat-log";
 import ChatSelector from "./chat-selector";
 import { Chat } from "@/classes/Chat";
-import { getChat, saveNewChat, updateChat } from "@/api/dbapi";
+import { getChat, getUser, saveNewChat, updateChat } from "@/api/dbapi";
 import { getActiveConstructList } from "@/api/constructapi";
+import { User } from "@/classes/User";
 
 const ChatPage = () => {
     const [selectedChat, setSelectedChat] = useState<string | null>(null);
+    const [currentUser, setCurrentUser] = useState<User | null>(null);
 
     useEffect(() => {
         getChat('activePool').then((chat) => {
@@ -40,6 +42,15 @@ const ChatPage = () => {
                 console.error(err);
             });
         });
+        let userID = JSON.parse(localStorage.getItem("currentUser")?.toString() || "{}");
+        if(userID !== null && userID !== undefined){
+            getUser(userID).then((user) => {
+                if(user === null) throw new Error("User not found");
+                setCurrentUser(user);
+            }).catch((err) => {
+                console.error(err);
+            });
+        }
     }, []);
 
     const handleChatSelect = (chat: Chat) => {
@@ -52,7 +63,7 @@ const ChatPage = () => {
 
     return (
         <>
-            {selectedChat !== null ? (<ChatLog chatLogID={selectedChat} goBack={goBack}/>) : (<ChatSelector onClick={handleChatSelect}/>)}
+            {selectedChat !== null ? (<ChatLog chatLogID={selectedChat} goBack={goBack} user={currentUser}/>) : (<ChatSelector onClick={handleChatSelect}/>)}
         </>
     )
 }

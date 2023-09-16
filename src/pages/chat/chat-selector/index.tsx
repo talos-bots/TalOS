@@ -10,7 +10,8 @@ import { PlusIcon, RefreshCcw } from "lucide-react";
 import { AiOutlineUpload } from "react-icons/ai";
 import { getActiveConstructList } from "@/api/constructapi";
 import { removeAllMemories } from "@/api/vectorapi";
-import ChatSettings from "../chat-settings";
+import ChatSettings from "./chat-settings";
+import ChatConfigMain from "./chat-config-main";
 interface ChatSelectorProps {
     onClick?: (chatID: Chat) => void;
 }
@@ -135,7 +136,7 @@ const ChatSelector = (props: ChatSelectorProps) => {
     if(!isLoaded) return (<Loading/>);
 
     return (
-        <div className="grid grid-rows-3 w-full p-4 h-[calc(100vh-70px)] overflow-x-hidden gap-2 grow-0">
+        <div className="grid grid-rows-3 w-full p-4 h-[calc(100vh-70px)] gap-2 grow-0">
             <div className="row-span-1 themed-root grow-0 overflow-x-hidden slide-in-top">
                 <h3 className="font-semibold">Constructs</h3>
                 <div className="flex flex-row w-full max-w-full h-5/6 gap-2 overflow-x-auto grow-0">
@@ -204,14 +205,14 @@ const ChatSelector = (props: ChatSelectorProps) => {
                         </div>
                     </div>
                 </div>
-                <div className="col-span-2 grid grid-rows-2 gap-2">
-                    <div className="row-span-1 themed-root flex flex-col slide-in-right">
+                <div className="col-span-2 grid grid-rows-2 gap-2 max-h-full overflow-y-auto">
+                    <div className="row-span-1 themed-root flex flex-col max-h-full slide-in-right overflow-y-auto">
                         <h3 className="font-semibold">Chatting Settings</h3>
                         <ChatSettings/>
                     </div>
-                    <div className="row-span-1 themed-root flex flex-col slide-in-right">
+                    <div className="row-span-1 themed-root flex flex-col max-h-full slide-in-right overflow-y-auto">
                         <h3 className="font-semibold">Selected Chat Details</h3>
-
+                        <ChatConfigMain chat={selectedChat}/>
                     </div>
                 </div>
             </div>

@@ -185,5 +185,14 @@ export class Chat{
             console.error(`No chat config found with ID: ${configID}`);
         }
     }
+
+    editMessage(messageID: string, message: Message){
+        const index = this.messages.findIndex((m) => m._id === messageID);
+        if (index !== -1) {
+            this.messages[index] = message;
+        } else {
+            console.error(`No message found with ID: ${messageID}`);
+        }
+    }
     
 }

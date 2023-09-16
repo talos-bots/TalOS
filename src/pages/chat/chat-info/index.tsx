@@ -9,9 +9,10 @@ interface ChatInfoProps {
     onEdit?: (chat: Chat) => void;
     setSearchTerm?: (term: string) => void;
     goBack: () => void;
+    openSettings: () => void;
 }
 const ChatInfo = (props: ChatInfoProps) => {
-    const { chat, onEdit, searchTerm, setSearchTerm, goBack } = props;
+    const { chat, onEdit, searchTerm, setSearchTerm, goBack, openSettings } = props;
     const [name, setName] = useState<string>("");
     const [isEditing, setIsEditing] = useState<boolean>(false);
 
@@ -103,7 +104,7 @@ const ChatInfo = (props: ChatInfoProps) => {
             <button className="message-button" onClick={() => handleRemoveAllMessages()} title="Clear Messages">
                 <X size={36} className="text-theme-text"/>
             </button>
-            <button className="message-button" onClick={() => {}} title="Edit Chat Settings">
+            <button className="message-button" onClick={() => {openSettings()}} title="Edit Chat Settings">
                 <Cog size={30} className="text-theme-text"/>
             </button>
         </div>

@@ -183,7 +183,7 @@ ul {
 }
 
 .themed-message-text {
-  @apply text-theme-text text-left mt-1 ml-1;
+  @apply text-left mt-1 ml-1;
 }
 
 .themed-message-avatar {
@@ -624,3 +624,27 @@ select option {
   background-color: var(--theme-accent) !important;
   color: var(--theme-text) !important;
 }
+
+/* Style for inline code */
+code {
+	white-space: pre-wrap;
+	word-wrap: break-word;
+	display: inline-block;
+	max-width: 100%;
+  width: 100%;
+	background-color: #1312127c; /* Change this color to your preference */
+	padding: 2px 4px;
+	border-radius: var(--theme-border-radius);
+	font-family: 'Courier New', Courier, monospace;
+	font-size: 1em;
+}
+// pre {
+// 	white-space: pre-wrap;
+// 	word-wrap: break-word;
+// 	background-color: #1312123a; /* Change this color to your preference */
+// 	padding: 8px;
+// 	border-radius: var(--theme-border-radius);
+// 	font-family: 'Courier New', Courier, monospace;
+// 	font-size: 1em;
+// 	overflow: auto;
+// }
