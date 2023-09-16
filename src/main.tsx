@@ -23,3 +23,7 @@ function Main() {
 }
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(<Main />);
+
+window.addEventListener('resize', function() {
+  document.body.style.fontSize = window.innerWidth / 100 + 'px';
+});
