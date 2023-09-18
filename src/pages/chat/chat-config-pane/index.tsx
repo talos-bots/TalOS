@@ -1,6 +1,8 @@
 import { getConstructs, getStorageValue, setStorageValue } from "@/api/dbapi";
 import { Chat } from "@/classes/Chat";
 import { Construct, ConstructChatConfig } from "@/classes/Construct";
+import ConnectionBox from "@/components/llm-panel/connection-box";
+import GenerationSettings from "@/components/llm-panel/generation-settings";
 import { ArrowBigLeft, ArrowBigRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { RiQuestionMark } from "react-icons/ri";
@@ -106,11 +108,12 @@ const ChatConfigPane = (props: ChatConfigPaneProps) => {
     }
 
     return (
-        <div className={"overflow-y-auto w-full themed-root slide-in-right " + (chatPanelClose? 'slide-out-right' : '')}>
+        <div className={"overflow-y-auto w-full flex flex-col h-full themed-root slide-in-right " + (chatPanelClose? 'slide-out-right' : '')}>
             <button className="themed-button-pos absolute top-2 left-2" onClick={() => pageChangeLeft(page)}><ArrowBigLeft/></button>
             <button className="themed-button-pos absolute top-2 right-2" onClick={() => pageChangeRight(page)}><ArrowBigRight/></button>
-            <div className="flex flex-col w-full flex-grow gap-2 text-left">
-            <h3 className="font-bold text-center">Chat Settings</h3>
+            {page === 1 && (
+            <div className={"flex flex-col w-full flex-grow gap-2 text-left " + ((swipeDirection === "right" && " slide-out-left " || swipeDirection === "left" && " slide-out-right "))}>
+                <h3 className="font-bold text-center">Chat Settings</h3>
                 <div className="flex flex-col">
                     <label className="font-semibold">Vector Memories</label>
                     <div className="themed-input flex flex-col items-center w-full flex-grow gap-2 text-left">
@@ -179,6 +182,14 @@ const ChatConfigPane = (props: ChatConfigPaneProps) => {
                     <label className="font-semibold">Construct Chat Configs</label>
                 </div>
             </div>
+            )}
+            {page === 2 && (
+                <div className={"flex flex-col w-full flex-grow gap-2 text-left " + ((swipeDirection === "right" && " slide-out-left " || swipeDirection === "left" && " slide-out-right "))}>
+                    <h3 className="font-bold text-center">LLM Settings</h3>
+                    <ConnectionBox/>
+                    <GenerationSettings/>
+                </div>
+            )}
         </div>
     )
 }
