@@ -52,6 +52,7 @@ export async function sendMessage(chatlog: Chat, constructID: string, user: User
     newMessage.isCommand = false;
     newMessage.isPrivate = true;
     newMessage.isHuman = false;
+    newMessage.avatar = activeConstruct.avatar;
     newMessage.participants = [user?._id || 'DefaultUser', constructID];
     newMessage.userID = constructID;
     newMessage.emotion = 'neutral';
@@ -83,12 +84,22 @@ export const truncateText = (text: string, length: number) => {
     return text?.length > length ? text?.substring(0, length) + "..." : text;
 };
 
-export async function doSlashCommand(message: string, chatLog: Chat | null, currentUser: User | null, setChatLog?: Dispatch<SetStateAction<Chat | null>>, setMessages?: Dispatch<SetStateAction<Message[]>>, updateChat?: (chat: Chat) => void, setError?: Dispatch<SetStateAction<string | null>>){
+export async function doSlashCommand(message: string, chatLog: Chat | null, currentUser: User | null, setChatLog?: Dispatch<SetStateAction<Chat | null>>, setMessages?: Dispatch<SetStateAction<Message[]>>, updateChat?: (chat: Chat) => void, setError?: Dispatch<SetStateAction<string | null>>, handBotResponse?: (chat: Chat, constructID: string, currentUser: User | null) => void){
     if(!message.startsWith('/')) return false;
     let command = message.split(' ')[0].replace('/', '');
     let args = message.split(' ').slice(1);
     switch(command){
-
+        case 'sys':
+        case 'system':
+            if(!chatLog || !currentUser) return false;
+            let newMessage = createSystemMessage(args.join(' '));
+            if(!newMessage) return false;
+            setMessages && setMessages((messages) => [...messages, newMessage]);
+            chatLog.messages.push(newMessage);
+            setChatLog && setChatLog(chatLog);
+            updateChat && updateChat(chatLog);
+            handBotResponse && handBotResponse(chatLog, chatLog.constructs[0], currentUser);
+            return true;
     }
     return false;
 }

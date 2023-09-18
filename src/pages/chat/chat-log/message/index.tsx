@@ -33,7 +33,6 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate, onSplit, on
     const [isHuman, setIsHuman] = useState<boolean>(false);
     const [time, setTime] = useState<number>(0);
     const [origin, setOrigin] = useState<string>("");
-    const [avatar, setAvatar] = useState<string>("");
     const [attachments, setAttachments] = useState<Attachment[]>([]);
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const [isTyping, setIsTyping] = useState<boolean>(false);
@@ -51,16 +50,6 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate, onSplit, on
             setTime(message.timestamp);
             setOrigin(message.origin);
             setAttachments(message.attachments);
-            if(message.isHuman === false) {
-                let construct = await getConstruct(message.userID);
-                if(construct === null) return;
-                setAvatar(construct.avatar);
-            }
-            if(message.isHuman === true) {
-                if(message.avatar === undefined || message.avatar === null) return;
-                if(message.avatar.length === 0) return;
-                setAvatar(message.avatar);
-            }
         };
         init();
     }, [message]);
@@ -110,7 +99,7 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate, onSplit, on
                 <div className="flex flex-row items-center">
                     <div className="flex flex-row items-center w-full gap-2">
                         <div className="flex items-center justify-center">
-                            {(avatar.length > 0 ? <img src={avatar} alt="avatar" className="themed-message-avatar" /> : <RiQuestionMark className="themed-message-avatar" size={'2rem'}/>)}
+                            {(message.avatar.length > 0 ? <img src={message.avatar} alt="avatar" className="themed-message-avatar" /> : <RiQuestionMark className="themed-message-avatar" size={'2rem'}/>)}
                         </div>
                         <div className="themed-message-info text-theme-italic">{user} {getFormattedTime(time)} {message?.emotion ? `(${message.emotion})` : null}</div>
                         <div className="flex flex-col pt-6">

@@ -43,9 +43,6 @@ const ChatLog = (props: ChatLogProps) => {
 	const [chatPaneClose, setChatPaneClose] = useState<boolean>(false);
 
 	const filteredMessages = messages.slice(messages.length - numToDisplay).filter((message) => {
-		if(message.isCommand) return false;
-		if(message.userID === 'System') return false;
-		if(message.user === 'System') return false;
 		if(searchTerm === "") return true;
 		if(searchTerm.startsWith("from:")){
 			let user = searchTerm.split(":")[1];
@@ -162,7 +159,7 @@ const ChatLog = (props: ChatLogProps) => {
 		do {
 			lastBotMessage = chatLog.messages[chatLog.messages.length - i];
 			i++;
-		} while (lastBotMessage?.isHuman === true && lastBotMessage._id !== 'System');
+		} while (lastBotMessage?.isHuman === true && lastBotMessage.userID !== 'System' && lastBotMessage.user !== 'System');
 		setLastBotMessage(lastBotMessage);
 	}
 
@@ -214,7 +211,8 @@ const ChatLog = (props: ChatLogProps) => {
 	const handleMessageSend = async (message: string, attachments?: File[]) => {
 		let newMessage: Message;
 		if(message.startsWith("/")){
-			await doSlashCommand(message, chatLog, currentUser, setChatLog, setMessages, updateChat, setError);
+			await doSlashCommand(message, chatLog, currentUser, setChatLog, setMessages, updateChat, setError, getBotResponse);
+			return;
 		}
 		if(hasSentMessage === true) return;
 		setHasSentMessage(true);
@@ -311,6 +309,8 @@ const ChatLog = (props: ChatLogProps) => {
 			});
 			setError("Invalid response from LLM endpoint. Check your settings and try again.");
 		}
+		setChatLog(chat);
+		await updateChat(chat);
 	}
 
 	const handlePostUserMessage = async (newMessage: Message) => {
