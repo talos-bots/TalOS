@@ -1,6 +1,6 @@
 const HomePage = () => {
   return (
-    <div className="w-full h-[calc(100vh-70px)] flex flex-col gap-2 p-4 grow-0 overflow-y-auto overflow-x-hidden">
+    <div className="w-full h-[calc(100vh-70px)] flex flex-col gap-2 p-4 lg:p-6 grow-0 overflow-y-auto overflow-x-hidden">
         <div className="grid grid-cols-2 w-full h-full gap-2">
             <div className="col-span-1 themed-root gap-2 h-full overflow-y-auto flex flex-col slide-in-left">
                 <h2 id='titlePage' className="font-semibold">Welcome to ConstructOS!</h2>

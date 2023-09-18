@@ -20,7 +20,7 @@ const ImageAttachmentComponent = (props: AttachmentComponentProps) => {
             </p>
             <div className="grid grid-cols-2 gap-2 justify-center">
                 <button onClick={() => handleDownload(attachment)} className="themed-button-pos" title="Download">
-                    <Download size={24} className="text-theme-text"/>
+                    <Download size={'1.5rem'} className="text-theme-text"/>
                 </button>
                 <button 
                     onClick={async () => 
@@ -31,7 +31,7 @@ const ImageAttachmentComponent = (props: AttachmentComponentProps) => {
                     } 
                     className="themed-button-neg" title="Delete"
                     >
-                    <TrashIcon size={24} className="text-theme-text"/>
+                    <TrashIcon size={'1.5rem'} className="text-theme-text"/>
                 </button>
             </div>
         </div>

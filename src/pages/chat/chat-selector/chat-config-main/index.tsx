@@ -49,9 +49,9 @@ const ChatConfigMain = (props: ChatConfigProps) => {
     return (
         <div className="w-full gap-2 grid grid-cols-2 text-left grow-0 shrink-0">
             <div className="flex flex-col col-span-1">
-                <label className="font-semibold">Vector Memories</label>
+                <label className="text-theme-text font-semibold lg:text-xl">Vector Memories</label>
                 <div className="themed-input flex flex-col items-center w-full gap-1 text-left">
-                    <i className="text-sm">Adds messages to the persistent vector for only this chat. Only applies to all Constructs if Global is enabled.</i>
+                    <i className="text-sm lg:text-lg ">Adds messages to the persistent vector for only this chat. Only applies to all Constructs if Global is enabled.</i>
                     <ReactSwitch
                         disabled={!global}
                         checked={doVector}
@@ -63,9 +63,9 @@ const ChatConfigMain = (props: ChatConfigProps) => {
                         id="doVector"
                     />
                 </div>
-                <label className="font-semibold">Global Context</label>
+                <label className="text-theme-text font-semibold lg:text-xl">Global Context</label>
                 <div className="themed-input flex flex-col items-center w-full gap-1 text-left">
-                    <i className="text-sm">Adds messages to the persistent vector store for all Constructs inside of the chat. Only if vectors are enabled.</i>
+                    <i className="text-sm lg:text-lg ">Adds messages to the persistent vector store for all Constructs inside of the chat. Only if vectors are enabled.</i>
                     <ReactSwitch
                         disabled={isPool}
                         checked={global}
@@ -79,7 +79,7 @@ const ChatConfigMain = (props: ChatConfigProps) => {
                 </div>
             </div>
             <div className="flex flex-col col-span-1 grow-0 shrink-0">
-                <label className="font-semibold">Constructs in Chat</label>
+                <label className="text-theme-text font-semibold lg:text-xl">Constructs in Chat</label>
                 <div className="flex flex-col w-full gap-2 h-20vh overflow-y-auto">
                     {constructsList.map((construct) => {
                         const isChecked = constructs.includes(construct._id);
@@ -88,7 +88,7 @@ const ChatConfigMain = (props: ChatConfigProps) => {
                                 onClick={() => {chat?._id !== 'activePool' && setConstructs(constructs.includes(construct._id) ? constructs.filter((id) => id !== construct._id) : [...constructs, construct._id]); handleEdit();}}
                             >
                                 <div className="flex items-center justify-center">
-                                    {construct.avatar.length > 0 ? (<img src={construct.avatar} className="themed-chat-avatar"/>) : (<RiQuestionMark className="themed-chat-avatar" size={36}/>)}
+                                    {construct.avatar.length > 0 ? (<img src={construct.avatar} className="themed-chat-avatar"/>) : (<RiQuestionMark className="themed-chat-avatar" size={`4rem`}/>)}
                                 </div>
                                 <p>{construct.name}</p>
                             </div>
