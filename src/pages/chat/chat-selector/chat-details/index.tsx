@@ -149,7 +149,7 @@ const ChatDetails = (props: ChatDetailsProps) => {
         >
             <div className="flex flex-row items-center justify-start">
                 <div className="flex items-center justify-center">
-                    {avatars.length > 0 ? (<img src={groupAvatar} className="themed-chat-avatar"/>) : (<RiQuestionMark className="themed-chat-avatar" size={`4rem`}/>)}
+                    {avatars.length > 0 ? (<img src={groupAvatar} className="themed-chat-avatar"/>) : (<RiQuestionMark className="themed-chat-avatar"size={36}/>)}
                 </div>
                 {isEditing ? (
                     <textarea 
@@ -174,7 +174,7 @@ const ChatDetails = (props: ChatDetailsProps) => {
                         {!disabled &&
                         <>
                             <button onClick={() => setIsEditing(true)} className="message-button ml-2 cursor-pointer" title="Edit Chat name">
-                                <Edit2Icon size={'1rem'} />
+                                <Edit2Icon size={18} />
                             </button>
                         </>}
                     </>
@@ -191,7 +191,7 @@ const ChatDetails = (props: ChatDetailsProps) => {
                     }}
                     title="Delete Chat"
                 >
-                    <TrashIcon size={'1rem'} />
+                    <TrashIcon size={18} />
                 </button>
                     </>
                 )}

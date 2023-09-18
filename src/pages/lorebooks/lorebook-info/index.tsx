@@ -39,7 +39,7 @@ const LorebookInfo = (props: LorebookInfoProps) => {
                             exportAsJSON();
                         }}
                     >
-                        <Download size={'1rem'} />
+                        <Download size={18} />
                     </button>
                     <button className="message-button mr-4"
                         onClick={() => {
@@ -48,7 +48,7 @@ const LorebookInfo = (props: LorebookInfoProps) => {
                             onDelete(book);
                         }}
                     >
-                        <TrashIcon size={'1rem'} />
+                        <TrashIcon size={18} />
                     </button>
                 </>
                 ) : null}

@@ -136,89 +136,88 @@ const ChatSelector = (props: ChatSelectorProps) => {
     if(!isLoaded) return (<Loading/>);
 
     return (
-        <div className="grid grid-rows-3 w-full p-4 h-[calc(100vh-70px)] gap-2 grow-0 lg:gap-4 lg:p-6">
-          <div className="row-span-1 themed-root grow-0 overflow-x-hidden slide-in-top lg:flex lg:flex-col lg:space-x-4">
-            <h3 className="font-semibold lg:text-xl">Constructs</h3>
-            <div className="flex flex-row w-full max-w-full h-5/6 gap-2 overflow-x-auto grow-0 lg:space-x-4 lg:gap-4">
-              {Array.isArray(constructs) && constructs.sort((a, b) => {
-                if (a.name && b.name) {
-                  return a.name.localeCompare(b.name);
-                } else {
-                  return 0;
-                }
-              }).map((construct) => {
-                if (activeConstructs.includes(construct._id)) {
-                  return <ConstructProfile key={construct._id} character={construct} onClick={handleConstructClick} active />
-                } else {
-                  return <ConstructProfile key={construct._id} character={construct} onClick={handleConstructClick} />
-                }
-              })}
-              <Link
-                className="themed-root-no-padding w-36 h-48 flex flex-col justify-center items-center cursor-pointer relative shrink-0 grow-0 lg:w-[calc(100% - 2rem)] lg:h-[calc(100%)]"
-                to={"/constructs/new"}
-              >
-                <div className="absolute inset-0 bg-themed-root hover:bg-theme-hover-pos flex items-center justify-center rounded-theme-border-radius">
-                  <span className="text-theme-text text-2xl font-bold justify-center items-center align-middle flex flex-col lg:text-2xl">
-                    New Construct
-                    <br />
-                    <PlusIcon size={`4rem`} className="text-theme-text lg:text-4xl" />
-                  </span>
+        <div className="grid grid-rows-3 w-full p-4 h-[calc(100vh-70px)] gap-2 grow-0">
+            <div className="row-span-1 themed-root grow-0 overflow-x-hidden slide-in-top">
+                <h3 className="font-semibold">Constructs</h3>
+                <div className="flex flex-row w-full max-w-full h-5/6 gap-2 overflow-x-auto grow-0">
+                    {Array.isArray(constructs) && constructs.sort((a, b) => {
+                    if (a.name && b.name) {
+                        return a.name.localeCompare(b.name);
+                    } else {
+                        return 0;
+                    }
+                }).map((construct) => {
+                        if(activeConstructs.includes(construct._id)){
+                            return <ConstructProfile key={construct._id} character={construct} onClick={handleConstructClick} active/>
+                        }else{
+                            return <ConstructProfile key={construct._id} character={construct} onClick={handleConstructClick}/>
+                        }
+                    })}
+                    <Link
+                        className="themed-root-no-padding w-36 h-full flex flex-col justify-center items-center cursor-pointer relative shrink-0 grow-0"
+                        to={"/constructs/new"}
+                    >
+                        <div className="absolute inset-0 bg-themed-root hover:bg-theme-hover-pos flex items-center justify-center rounded-theme-border-radius">
+                            <span className="text-theme-text text-2xl font-bold justify-center items-center align-middle flex flex-col">
+                                New Construct
+                                <br/>
+                                <PlusIcon size={48} className="text-theme-text"/>
+                            </span>
+                        </div>
+                    </Link>
                 </div>
-              </Link>
             </div>
-          </div>
-          <div className="row-span-2 grid grid-cols-4 grow-0 gap-2 lg:gap-4 lg:grid-cols-6">
-            <div className="col-span-2 flex flex-col themed-root overflow-y-auto slide-in-left lg:col-span-3">
-              <h3 className="font-semibold lg:text-2xl">Chats</h3>
-              <div className="h-11/12">
-                <div className="grid grid-cols-12 gap-1 w-full grow-0 shrink-0 mb-2 lg:gap-2 lg:grid-cols-16">
-                  <label htmlFor="character-image-input" className="themed-button-pos flex items-center justify-center col-span-1" data-tooltip="Import Chat" id="importChat">
-                    <AiOutlineUpload className='absolute' size={`3rem`} />
-                  </label>
-                  <input
-                    type="file"
-                    accept="application/json"
-                    id="character-image-input"
-                    onChange={(e) => handleImportChat(e.target.files)}
-                    style={{ display: 'none' }}
-                    multiple={true}
-                  />
-                  <button className="themed-button-pos col-span-1 flex items-center justify-center" onClick={() => fetchInfo()} data-tooltip="Refresh Chats" id="refreshChats">
-                    <RefreshCcw size={`3rem`} />
-                  </button>
-                  <div className="construct-search-bar col-span-2 lg:col-span-3">
-                    <input
-                      type="text"
-                      placeholder="Search Chats"
-                      value={searchTerm}
-                      onChange={(event) => setSearchTerm(event.target.value)}
-                      className="lg:text-lg"
-                    />
-                  </div>
+            <div className="row-span-2 grid grid-cols-4 grow-0 gap-2">
+                <div className="col-span-2 flex flex-col themed-root overflow-y-auto slide-in-left">
+                    <h3 className="font-semibold">Chats</h3>
+                    <div className="h-11/12">
+                        <div className="grid grid-cols-12 gap-1 w-full grow-0 shrink-0 mb-2">
+                            <label htmlFor="character-image-input" className="themed-button-pos flex items-center justify-center col-span-1" data-tooltip="Import Chat" id="importChat">
+                                <AiOutlineUpload className='absolute'size={36}/>
+                            </label>
+                            <input
+                                type="file"
+                                accept="application/json"
+                                id="character-image-input"
+                                onChange={(e) => handleImportChat(e.target.files)}
+                                style={{ display: 'none' }}
+                                multiple={true}
+                            />
+                            <button className="themed-button-pos col-span-1 flex items-center justify-center" onClick={() => fetchInfo()} data-tooltip="Refresh Chats" id="refreshChats">
+                                <RefreshCcw size={36}/>
+                            </button>
+                            <div className="construct-search-bar col-span-2">
+                                <input
+                                type="text"
+                                placeholder="Search Chats"
+                                value={searchTerm}
+                                onChange={(event) => setSearchTerm(event.target.value)}
+                                />
+                            </div>
+                        </div>
+                        <div className="flex flex-col w-full gap-2 overflow-y-auto h-13/14 grow-0 shrink-0 ">
+                            {activeChat !== null && (<ChatDetails key={'activePool'} chat={activeChat} onDoubleClick={handleChatDoubleClick} onClick={handleChatClick} onDelete={handleChatDelete} disabled selected={(activeChat?._id === selectedChat?._id)}/>)}
+                            {Array.isArray(filteredChats) && filteredChats.sort((a, b) => b.lastMessageDate - a.lastMessageDate).filter((chat) => {return chat._id !== 'activePool'}).map((chat) => {
+                                return (
+                                    <ChatDetails key={chat._id} chat={chat} onDoubleClick={handleChatDoubleClick} onClick={handleChatClick} onDelete={handleChatDelete} selected={(chat?._id === selectedChat?._id)}/>
+                                )
+                            })}
+                        </div>
+                    </div>
                 </div>
-                <div className="flex flex-col w-full gap-2 overflow-y-auto h-13/14 grow-0 shrink-0 lg:gap-4">
-                  {activeChat !== null && (<ChatDetails key={'activePool'} chat={activeChat} onDoubleClick={handleChatDoubleClick} onClick={handleChatClick} onDelete={handleChatDelete} disabled selected={(activeChat?._id === selectedChat?._id)} />)}
-                  {Array.isArray(filteredChats) && filteredChats.sort((a, b) => b.lastMessageDate - a.lastMessageDate).filter((chat) => { return chat._id !== 'activePool' }).map((chat) => {
-                    return (
-                      <ChatDetails key={chat._id} chat={chat} onDoubleClick={handleChatDoubleClick} onClick={handleChatClick} onDelete={handleChatDelete} selected={(chat?._id === selectedChat?._id)} />
-                    )
-                  })}
+                <div className="col-span-2 grid grid-rows-2 gap-2 max-h-full overflow-y-auto overflow-x-hidden">
+                    <div className="row-span-1 themed-root flex flex-col max-h-full slide-in-right overflow-y-auto">
+                        <h3 className="font-semibold">Chatting Settings</h3>
+                        <ChatSettings/>
+                    </div>
+                    <div className="row-span-1 themed-root flex flex-col max-h-full slide-in-right overflow-y-auto">
+                        <h3 className="font-semibold">Selected Chat Details</h3>
+                        <ChatConfigMain chat={selectedChat}/>
+                    </div>
                 </div>
-              </div>
             </div>
-            <div className="col-span-2 grid grid-rows-2 gap-2 max-h-full overflow-y-auto overflow-x-hidden lg:col-span-3 lg:grid-rows-1 lg:grid-cols-2 lg:gap-4">
-              <div className="row-span-1 themed-root flex flex-col max-h-full slide-in-right overflow-y-auto lg:h-full">
-                <h3 className="font-semibold lg:text-2xl">Chatting Settings</h3>
-                <ChatSettings  />
-              </div>
-              <div className="row-span-1 themed-root flex flex-col max-h-full slide-in-right overflow-y-auto lg:h-full">
-                <h3 className="font-semibold lg:text-2xl">Selected Chat Details</h3>
-                <ChatConfigMain chat={selectedChat} />
-              </div>
-            </div>
-          </div>
         </div>
-      )      
+    )
 }
 
 export default ChatSelector;

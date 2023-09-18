@@ -110,7 +110,7 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate, onSplit, on
                 <div className="flex flex-row items-center">
                     <div className="flex flex-row items-center w-full gap-2">
                         <div className="flex items-center justify-center">
-                            {(avatar.length > 0 ? <img src={avatar} alt="avatar" className="themed-message-avatar" /> : <RiQuestionMark className="themed-message-avatar" size={'2rem'}/>)}
+                            {(avatar.length > 0 ? <img src={avatar} alt="avatar" className="themed-message-avatar" /> : <RiQuestionMark className="themed-message-avatar" size={30}/>)}
                         </div>
                         <div className="themed-message-info text-theme-italic">{user} {getFormattedTime(time)} {message?.emotion ? `(${message.emotion})` : null}</div>
                     </div>
@@ -125,7 +125,7 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate, onSplit, on
                                             if(onUserRegenerate === undefined) return;
                                             onUserRegenerate(message._id, message.text)
                                         }}>
-                                        <RefreshCw size={'1rem'} />
+                                        <RefreshCw size={14} />
                                     </button>
                                 : 
                                     <button className="message-button"
@@ -134,7 +134,7 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate, onSplit, on
                                             if(onRegenerate === undefined) return;
                                             onRegenerate(message._id, message.text)
                                         }}>
-                                        <RefreshCw size={'1rem'} />
+                                        <RefreshCw size={14} />
                                     </button>
                                 }
                                 <button className="message-button"
@@ -144,7 +144,7 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate, onSplit, on
                                         onSplit(message._id);
                                     }}
                                     >
-                                    <Split size={'1rem'} />
+                                    <Split size={14} />
                                 </button>
                                 <button className="message-button"
                                     title="Edit"
@@ -152,7 +152,7 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate, onSplit, on
                                         handleEditMessage(null)
                                     }}
                                 >
-                                    <EditIcon size={'1rem'} />
+                                    <EditIcon size={14} />
                                 </button>
                                 <button className="message-button"
                                     title="Delete"
@@ -163,7 +163,7 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate, onSplit, on
                                         onDelete(message._id);
                                     }}
                                 >
-                                    <TrashIcon size={'1rem'} />
+                                    <TrashIcon size={14} />
                                 </button>
                                 </>
                             )}
@@ -226,7 +226,7 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate, onSplit, on
                             }else{
                                 return (
                                     <div key={index}>
-                                        <a href={newData} download={attachment.name}><File size={'3rem'} />{attachment.name}</a>
+                                        <a href={newData} download={attachment.name}><File size={46} />{attachment.name}</a>
                                     </div>
                                 )
                             }

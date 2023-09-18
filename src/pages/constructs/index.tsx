@@ -76,19 +76,19 @@ const ConstructsPage = () => {
     if(!isLoaded) return (<Loading/>);
     
     return (
-        <div className="w-full h-[calc(100vh-70px)] grid grid-rows-[auto,1fr] overflow-y-auto overflow-x-hidden p-4 lg:p-6">
+        <div className="w-full h-[calc(100vh-70px)] grid grid-rows-[auto,1fr] overflow-y-auto overflow-x-hidden p-4">
             <div className="flex flex-col gap-2">
                 <div className="themed-root slide-in-top">
                     <h2 className="text-2xl font-bold text-theme-text text-shadow-xl">Constructs</h2>
                     <div className="grid grid-cols-5 gap-1 w-15vw h-5vh mb-4">
                         <Link to="/constructs/new" className="themed-button-pos flex items-center justify-center" data-tooltip="Add New Construct" id="newConstruct">
-                            <FiPlus className='absolute'size={'3.5rem'}/>
+                            <FiPlus className='absolute'size={50}/>
                         </Link>
                         <button onClick={clearActive} className="themed-button-pos flex items-center justify-center" data-tooltip="Clear Active Constructs">
-                            <FiX className='absolute'size={'3.5rem'}/>
+                            <FiX className='absolute'size={50}/>
                         </button>
                         <label htmlFor="character-image-input" className="themed-button-pos flex items-center justify-center" data-tooltip="Import Character Card" id="importCard">
-                            <AiOutlineUpload className='absolute'size={'3.5rem'}/>
+                            <AiOutlineUpload className='absolute'size={50}/>
                         </label>
                         <input
                             type="file"

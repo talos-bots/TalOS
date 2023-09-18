@@ -55,10 +55,10 @@ const ChatInfo = (props: ChatInfoProps) => {
         <div className="themed-root w-full flex flex-row justify-between items-center gap-6 slide-in-top">
             <div className="flex flex-row gap-6">
                 <button className="message-button" onClick={() => {goBack()}} title="Return to Select">
-                    <LucideArrowBigLeft size={'2rem'} className="text-theme-text"/>
+                    <LucideArrowBigLeft size={36} className="text-theme-text"/>
                 </button>
                 <button className="message-button" onClick={() => handleChatDownload()} title="Download ChatLog">
-                    <Download size={'2rem'} className="text-theme-text"/>
+                    <Download size={30} className="text-theme-text"/>
                 </button>
             </div>
     
@@ -85,7 +85,7 @@ const ChatInfo = (props: ChatInfoProps) => {
                     <p className="flex-grow">{name}</p>
                     {chat._id !== "activePool" && (
                         <button onClick={() => setIsEditing(true)} className="message-button" title="Edit Chat name">
-                            <Edit2Icon size={'1rem'} />
+                            <Edit2Icon size={14} />
                         </button>
                     )}
                 </div>
@@ -102,10 +102,10 @@ const ChatInfo = (props: ChatInfoProps) => {
             </div>
             
             <button className="message-button" onClick={() => handleRemoveAllMessages()} title="Clear Messages">
-                <X size={'2rem'} className="text-theme-text"/>
+                <X size={36} className="text-theme-text"/>
             </button>
             <button className="message-button" onClick={() => {openSettings()}} title="Edit Chat Settings">
-                <Cog size={'2rem'} className="text-theme-text"/>
+                <Cog size={30} className="text-theme-text"/>
             </button>
         </div>
     );    

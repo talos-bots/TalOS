@@ -16,34 +16,34 @@ const NavBar: React.FC = () => {
     </div>
     <div className="hidden md:flex gap-5">
       <NavLink to="/" title="Home" className={`p-1 transition-all duration-125 hover:opacity-50`} >
-        <HomeIcon style={location.pathname === "/" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }} size={'1.5rem'}/>
+        <HomeIcon style={location.pathname === "/" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }}/>
       </NavLink>
       <NavLink to="/chat" title="Chat" className={`p-1 transition-all duration-125 hover:opacity-50`} >
-        <MessageCircle style={location.pathname === "/chat" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }} size={'1.5rem'}/>
+        <MessageCircle style={location.pathname === "/chat" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }}/>
       </NavLink>
       <NavLink to="/zero" title="Zero" className={`p-1 transition-all duration-125 hover:opacity-50`}>
-        <Sparkles style={location.pathname === "/zero" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }} size={'1.5rem'}/>
+        <Sparkles style={location.pathname === "/zero" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }}/>
       </NavLink>
       {/* <NavLink to="/completions" title="Completions" className={`p-1 transition-all duration-125 hover:opacity-50`}>
         <Text style={location.pathname === "/completions" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }}/>
       </NavLink> */}
       <NavLink to="/constructs" title="Constructs" className={`p-1 transition-all duration-125 hover:opacity-50`}>
-        <Users style={location.pathname === "/constructs" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }} id='constructsPage' size={'1.5rem'}/>
+        <Users style={location.pathname === "/constructs" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }} id='constructsPage'/>
       </NavLink>
       <NavLink to="/users" title="User Profiles" className={`p-1 transition-all duration-125 hover:opacity-50`}>
-        <User style={location.pathname === "/users" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }} size={'1.5rem'}/>
+        <User style={location.pathname === "/users" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }}/>
       </NavLink>
       <NavLink to="/lorebooks" title="Lorebooks" className={`p-1 transition-all duration-125 hover:opacity-50`}>
-        <Book style={location.pathname === "/lorebooks" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }} size={'1.5rem'}/>
+        <Book style={location.pathname === "/lorebooks" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }}/>
       </NavLink>
       <NavLink to="/attachments" title="Attachments" className={`p-1 transition-all duration-125 hover:opacity-50`}>
-        <File style={location.pathname === "/attachments" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }} size={'1.5rem'}/>
+        <File style={location.pathname === "/attachments" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }}/>
       </NavLink>
       <NavLink to="/discord" title="Discord Bot" className={`p-1 transition-all duration-125 hover:opacity-50`} >
-        <Bot style={location.pathname === "/discord" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }} size={'1.5rem'}/>
-      </NavLink> 
+        <Bot style={location.pathname === "/discord" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }}/>
+      </NavLink>
       <NavLink to="/settings" title="Settings" className={`p-1 transition-all duration-125 hover:opacity-50`}>
-        <Cog style={location.pathname === "/settings" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }} size={'1.5rem'}/>
+        <Cog style={location.pathname === "/settings" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }}/>
       </NavLink>
       {/* <HashLink to="/nodes" title="Nodes" className={`p-1 transition-all duration-125 hover:opacity-25`}>
         <Sparkles style={location.hash === "/nodes" ? { color: 'white' } : { color: '#c2c2c2' }} />
