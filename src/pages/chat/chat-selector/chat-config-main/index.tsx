@@ -49,11 +49,7 @@ const ChatConfigMain = (props: ChatConfigProps) => {
     return (
         <div className="w-full gap-2 grid grid-cols-2 text-left grow-0 shrink-0">
             <div className="flex flex-col col-span-1">
-<<<<<<< Updated upstream
                 <label className="font-semibold">Vector Memories</label>
-=======
-                <label className="text-theme-text font-semibold ">Vector Memories</label>
->>>>>>> Stashed changes
                 <div className="themed-input flex flex-col items-center w-full gap-1 text-left">
                     <i className="text-sm">Adds messages to the persistent vector for only this chat. Only applies to all Constructs if Global is enabled.</i>
                     <ReactSwitch
@@ -67,11 +63,7 @@ const ChatConfigMain = (props: ChatConfigProps) => {
                         id="doVector"
                     />
                 </div>
-<<<<<<< Updated upstream
                 <label className="font-semibold">Global Context</label>
-=======
-                <label className="text-theme-text font-semibold">Global Context</label>
->>>>>>> Stashed changes
                 <div className="themed-input flex flex-col items-center w-full gap-1 text-left">
                     <i className="text-sm">Adds messages to the persistent vector store for all Constructs inside of the chat. Only if vectors are enabled.</i>
                     <ReactSwitch
@@ -87,11 +79,7 @@ const ChatConfigMain = (props: ChatConfigProps) => {
                 </div>
             </div>
             <div className="flex flex-col col-span-1 grow-0 shrink-0">
-<<<<<<< Updated upstream
                 <label className="font-semibold">Constructs in Chat</label>
-=======
-                <label className="text-theme-text font-semibold">Constructs in Chat</label>
->>>>>>> Stashed changes
                 <div className="flex flex-col w-full gap-2 h-20vh overflow-y-auto">
                     {constructsList.map((construct) => {
                         const isChecked = constructs.includes(construct._id);
