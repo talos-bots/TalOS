@@ -73,7 +73,7 @@ const UserPage = () => {
             <div className="grid grid-cols-3 w-full h-full gap-2">
                 <div className="col-span-1 themed-root gap-2 h-full overflow-y-auto flex flex-col slide-in-left">
                     <h3 className="text-xl font-semibold">User Profiles</h3>
-                    <button className="themed-button-neg w-full h-10" onClick={importFromJJSON}>
+                    <button className="themed-button-pos w-full h-10" onClick={importFromJJSON}>
                         Import User
                     </button>
                     <button className="themed-button-pos w-full h-10" onClick={() => {setSelectedUser(null)}}>
