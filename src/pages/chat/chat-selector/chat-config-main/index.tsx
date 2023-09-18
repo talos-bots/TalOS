@@ -16,7 +16,7 @@ const ChatConfigMain = (props: ChatConfigProps) => {
     const [constructs, setConstructs] = useState<string[]>([]);
     const [constructsList, setConstructsList] = useState<Construct[]>([]);
     const [chatConfigs, setChatConfigs] = useState<ConstructChatConfig[]>([]);
-    
+
     useEffect(() => {
         if(chat?._id === 'activePool'){
             setGlobal(true);
@@ -79,7 +79,7 @@ const ChatConfigMain = (props: ChatConfigProps) => {
             </div>
             <div className="flex flex-col col-span-1 grow-0 shrink-0">
                 <label className="text-theme-text font-semibold">Constructs in Chat</label>
-                <div className="flex flex-col w-full gap-2 h-20vh overflow-y-auto">
+                <div className="flex flex-col w-full gap-2 overflow-y-auto">
                     {constructsList.map((construct) => {
                         const isChecked = constructs.includes(construct._id);
                         return (

@@ -206,7 +206,7 @@ const ChatSelector = (props: ChatSelectorProps) => {
                 </div>
               </div>
             </div>
-            <div className="col-span-2 grid grid-rows-2 gap-2 max-h-full overflow-y-auto overflow-x-hidden lg:col-span-3 lg:grid-rows-1 lg:grid-cols-2 lg:gap-4">
+            <div className="col-span-3 grid grid-cols-2 gap-2 max-h-full overflow-y-auto overflow-x-hidden lg:gap-4">
               <div className="row-span-1 themed-root flex flex-col max-h-full slide-in-right overflow-y-auto lg:h-full">
                 <h3 className="font-semibold lg:text-2xl">Chatting Settings</h3>
                 <ChatSettings  />
