@@ -468,7 +468,7 @@ const ChatLog = (props: ChatLogProps) => {
 				null
 			)}
 			<div className="w-full grid grid-cols-8 justify-center">
-			<div className="col-span-2 box-border h-[calc(100vh-70px)] flex flex-col gap-2 overflow-x-hidden pt-4">
+			<div className="col-span-2 box-border h-[calc(100vh-70px)] flex flex-col gap-2 overflow-x-hidden pt-4 pr-4">
 				<SpriteDisplay constructID={lastBotMessage?.userID || (chatLog?.constructs? (chatLog?.constructs.length > 0 ? chatLog.constructs[0] : "") : "" )} emotion={lastBotMessage?.emotion || 'neutral'} sendPoke={sendPoke}/>
 			</div>
 			<div className="col-span-4 box-border h-[calc(100vh-70px)] flex flex-col gap-2 overflow-x-hidden p-4">

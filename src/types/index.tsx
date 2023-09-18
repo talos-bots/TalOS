@@ -285,10 +285,14 @@ export const emotions = [
     {
         value: 'surprise',
         label: 'Surprise'
+    },
+    {
+        value: 'excitement',
+        label: 'Excitement'
     }
 ]
 
-export type Emotion = 'surprise' | 'sadness' | 'remorse' | 'relief' | 'realization' | 'pride' | 'optimism' | 'neutral' | 'nervousness' | 'love' | 'joy' | 'grief' | 'gratitude' | 'fear' | 'embarrassment' | 'disgust' | 'disapproval' | 'disappointment' | 'desire' | 'curiosity' | 'confusion' | 'caring' | 'approval' | 'annoyance' | 'anger' | 'amusement' | 'admiration';
+export type Emotion = 'surprise' | 'sadness' | 'remorse' | 'relief' | 'realization' | 'pride' | 'optimism' | 'neutral' | 'nervousness' | 'love' | 'joy' | 'grief' | 'gratitude' | 'fear' | 'embarrassment' | 'disgust' | 'disapproval' | 'disappointment' | 'desire' | 'curiosity' | 'confusion' | 'caring' | 'approval' | 'annoyance' | 'anger' | 'amusement' | 'admiration' | 'excitement';
 
 export const spriteSetTypes = [
     {

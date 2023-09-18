@@ -35,11 +35,11 @@ const SpriteDisplay = (props: SpriteProps) => {
     }, [emotion]);
 
     return (
-        <div className="max-h-full h-full w-full">
+        <div className="flex flex-col h-screen justify-end items-end">
             {spriteData?.image64 !== "" && spriteData?.image64 && (
-                <img className="max-h-full h-full w-full object-scale-down cursor-pointer" src={spriteData?.image64} alt={spriteData?.emotion} onClick={() => sendPoke()}/>
+                <img className="object-scale-down cursor-pointer" src={spriteData?.image64} alt={spriteData?.emotion} onClick={() => sendPoke()}/>
             )}
         </div>
-    );
+    );    
 }
 export default SpriteDisplay;

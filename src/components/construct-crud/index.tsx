@@ -45,8 +45,12 @@ const commandTypes = [
         explanation: "This allows the Construct to send voice clips to the chat, this can be requested, or it can be random."
     },
 ]
-
-const ConstructManagement = () => {
+interface ConstructManagementProps {
+    passedConstruct?: string | null;
+    isModal?: boolean;
+}
+const ConstructManagement = (props: ConstructManagementProps) => {
+    const { passedConstruct, isModal } = props;
     const { id } = useParams<{ id: string }>();
     const [construct, setConstruct] = useState<Construct>(new Construct());
     const [constructState, setConstructState] = useState<Construct | null>(null);
@@ -135,10 +139,41 @@ const ConstructManagement = () => {
                 }
                 getPrimaryStatus();
                 getActiveStatus();
+            }else if(passedConstruct !== null && passedConstruct !== undefined){
+                let character = await getConstruct(passedConstruct)
+                setConstructState(character);
+                setConstructName(character.name);
+                setConstructImage(character.avatar);
+                setConstructNick(character.nickname);
+                setConstructCommands(character.commands);
+                setConstructVisualDescription(character.visualDescription);
+                setConstructPersonality(character.personality);
+                setConstructBackground(character.background);
+                setConstructRelationships(character.relationships);
+                setConstructInterests(character.interests);
+                setConstructGreetings(character.greetings);
+                setConstructFarewells(character.farewells);
+                setConstructAuthorsNote(character.authorsNote);
+                setConstructSprites(character.sprites);
+                const getActiveStatus = async () => {
+                    let status = await constructIsActive(character._id);
+                    setIsActive(status);
+                }
+                const getPrimaryStatus = async () => {
+                    let activeList = await getActiveConstructList();
+                    if(activeList.length > 0){
+                        if(activeList[0] === character._id){
+                            setIsPrimary(true);
+                        }
+                    }
+                }
+                getPrimaryStatus();
+                getActiveStatus();
             }
         }
         getPassedCharacter();
     }, [id !== undefined && id !== null && id !== 'create']);
+
     const returnToMenu = () => {
         history.back();
     }
@@ -276,7 +311,7 @@ const ConstructManagement = () => {
 		) : (
 			null
 		)}
-        <div className="w-full h-[calc(100vh-70px)] max-[h-[calc(100vh-70px)]] overflow-x-hidden p-4 gap-2">
+        <div className={"w-full h-[calc(100vh-70px)] max-[h-[calc(100vh-70px)]] overflow-x-hidden p-4 gap-2 " + (isModal ? "backdrop-blur-md z-1000" : "")}>
             <div className="w-full h-full themed-root grid grid-rows-[auto,1fr] pop-in">
                 <h2 className="text-2xl font-bold text-theme-text text-shadow-xl">Construct Editor</h2>
                 <button className="themed-button-pos absolute top-2 left-2" onClick={() => pageChangeLeft(page)}><ArrowBigLeft/></button>
