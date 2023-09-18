@@ -39,7 +39,7 @@ const ZeroPage = () => {
 	};
 
 	return (
-		<div className="w-full h-[calc(100vh-70px)] overflow-y-auto overflow-x-hidden p-4 lg:p-6">
+		<div className="w-full h-[calc(100vh-70px)] overflow-y-auto overflow-x-hidden p-4 lg:p-8">
 			<div className="grid grid-cols-10 w-full h-full gap-2">
 				<div className="col-span-2 w-full h-full themed-root gap-2 flex flex-col slide-in-left">
 					<h3 className="text-theme-text font-semibold">Zero Shot</h3>
