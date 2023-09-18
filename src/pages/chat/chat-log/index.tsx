@@ -427,9 +427,9 @@ const ChatLog = (props: ChatLogProps) => {
 				null
 			)}
 			<div className="w-full grid grid-cols-8 justify-center">
-			<div className="col-span-2 box-border h-[calc(100vh-70px)] flex flex-col gap-2 overflow-x-hidden p-4">
+			<div className="col-span-2 box-border h-[calc(100vh-70px)] flex flex-col gap-2 overflow-x-hidden p-4 lg:p-8">
 			</div>
-			<div className="col-span-4 box-border h-[calc(100vh-70px)] flex flex-col gap-2 overflow-x-hidden p-4">
+			<div className="col-span-4 box-border h-[calc(100vh-70px)] flex flex-col gap-2 overflow-x-hidden p-4 lg:p-8">
 				<div className="w-full flex flex-row items-center justify-end">
 					{chatLog === null ? (
 						null
@@ -457,7 +457,7 @@ const ChatLog = (props: ChatLogProps) => {
 					<InputGroup sendMessage={handleMessageSend} />
 				</div>
 			</div>
-			<div className="col-span-2 box-border h-[calc(100vh-70px)] flex flex-col gap-2 overflow-x-hidden pt-4 pb-4 pr-4">
+			<div className="col-span-2 box-border h-[calc(100vh-70px)] flex flex-col gap-2 overflow-x-hidden pt-4 pb-4 pr-4 lg:p-8">
 			{openChatConfig === true && (
 				<ChatConfigPane chat={chatLog} chatPanelClose={chatPaneClose} onEdit={handleDetailsChange}/>
 			)}

@@ -88,7 +88,7 @@ const BackgroundSelector = () => {
                             handleBackgroundDelete(bg);
                         }}
                     >
-                        <Trash size={12}/>
+                        <Trash size={'1rem'}/>
                     </button>
                 </div>
                 ))}
