@@ -191,7 +191,7 @@ ul {
 }
 
 .themed-chat-avatar {
-  @apply w-16 h-16 rounded-theme-border-radius object-cover bg-theme-box border-theme-border-width border-theme-border;
+  @apply w-16 h-16 rounded-theme-border-radius object-cover bg-theme-box border-theme-border-width border-theme-border ;
 }
 
 .construct-search-bar input{

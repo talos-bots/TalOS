@@ -23,7 +23,7 @@ const SettingsPage = () => {
     }, []);
 
     return (
-        <div className="w-full h-[calc(100vh-70px)] flex flex-col gap-2 overflow-y-auto overflow-x-hidden p-4">
+        <div className="w-full h-[calc(100vh-70px)] flex flex-col gap-2 overflow-y-auto overflow-x-hidden p-4 lg:p-6">
             <h2 className="text-2xl font-bold text-theme-text text-shadow-xl themed-root slide-in-top">Settings</h2>
             <div className="flex flex-col gap-2">
                 <div className="grid grid-cols-2 gap-2">

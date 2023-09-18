@@ -26,7 +26,7 @@ const InputGroup = (props: InputGroupProps) => {
 				multiple
 			/>
 			<label htmlFor="file-upload" className={`message-button`}>
-				<PlusCircle size={26}/>
+				<PlusCircle size={'1.5rem'}/>
 			</label>
 			<textarea
 				autoComplete="off"
@@ -48,7 +48,7 @@ const InputGroup = (props: InputGroupProps) => {
 				}}
 			/>
 			<button className={`message-button`} onClick={() => { sendMessage(message, attachments); setMessage(''); setAttachments([]); }}>
-				<SendHorizonal size={26}/>
+				<SendHorizonal size={'1.5rem'}/>
 			</button>
 		</div>
 	);

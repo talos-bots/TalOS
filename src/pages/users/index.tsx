@@ -69,7 +69,7 @@ const UserPage = () => {
     }
 
     return (
-        <div className="w-full p-4 h-[calc(100vh-70px)] flex flex-col gap-2 row-0 overflow-y-auto overflow-x-hidden">
+        <div className="w-full p-4 h-[calc(100vh-70px)] flex flex-col gap-2 row-0 overflow-y-auto overflow-x-hidden lg:p-8">
             <div className="grid grid-cols-3 w-full h-full gap-2">
                 <div className="col-span-1 themed-root gap-2 h-full overflow-y-auto flex flex-col slide-in-left">
                     <h3 className="text-xl font-semibold">User Profiles</h3>

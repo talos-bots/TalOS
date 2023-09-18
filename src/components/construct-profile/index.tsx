@@ -20,22 +20,22 @@ const ConstructProfile: React.FC<Props> = ({ character, onClick, active }) => {
 
     return (
         <div
-            className={"themed-root-no-padding w-36 h-full flex flex-col justify-center items-center cursor-pointer relative shrink-0 grow-0 pop-in"}
+            className="themed-root-no-padding w-36 h-full flex flex-col justify-center items-center cursor-pointer relative shrink-0 grow-0 lg:w-[calc(100% - 2rem)] lg:h-[calc(100% - 1rem)] pop-in"
             onMouseEnter={() => setIsHovered(true)} 
             onMouseLeave={() => setIsHovered(false)} 
             onClick={() => { if (onClick !== undefined) onClick(character) }}
         >
-            <img src={characterImage} alt={characterName} className="object-cover w-full h-full rounded-lg" />
-            <p className="text-xl font-bold z-999 absolute bottom-2 left-2 right-2 text-shadow-xl themed-root-no-padding overflow-y-auto">
+            <img src={characterImage} alt={characterName} className="object-cover w-full h-full rounded-theme-border-radius" />
+            <p className="text-theme-text text-lg font-bold absolute bottom-4 left-4 right-4 text-shadow-xl themed-root-no-padding overflow-y-auto lg:text-lg">
                 {characterName}
             </p>
     
             {isHovered && (
-                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-theme-border-radius">
-                    <span className="text-theme-text text-2xl font-bold justify-center items-center align-middle flex flex-col">
+                <div className="absolute inset-0 bg-themed-root hover:bg-theme-root flex items-center justify-center rounded-theme-border-radius">
+                    <span className="text-theme-text text-xl font-bold justify-center items-center align-middle flex flex-col lg:text-1xl">
                         New Chat
                         <br/>
-                        <PlusIcon size={48} className="text-theme-text"/>
+                        <PlusIcon size={`4rem`} className="text-theme-text lg:text-4xl"/>
                     </span>
                 </div>
             )}
@@ -47,7 +47,6 @@ const ConstructProfile: React.FC<Props> = ({ character, onClick, active }) => {
             )}
         </div>
     );
-    
 }
 
 export default ConstructProfile;
