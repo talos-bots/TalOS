@@ -27,7 +27,7 @@ const UserInfo = (props: UserInfoProps) => {
         <div className="themed-box-no-padding w-full flex flex-row justify-start p-1 items-center gap-4" onClick={()=> {if(onClick !== undefined) onClick(user ? user : null)}}>
             <div className="grid grid-cols-3 gap-6 w-2/3 justify-start items-center">
                 <div className="flex items-center justify-center">
-                    {user?.avatar ? (<img src={user.avatar} className="themed-chat-avatar"/>) : (<RiQuestionMark size={36} className="themed-chat-avatar"/>)}
+                    {user?.avatar ? (<img src={user.avatar} className="themed-chat-avatar"/>) : (<RiQuestionMark size={'3.5rem'} className="themed-chat-avatar"/>)}
                 </div>
                 <p className="text-left">{user?.name ? user.name : 'New User'}</p>
                 <p className="text-right">{user?.nickname ? `"${user.nickname}"` : null}</p>
@@ -41,7 +41,7 @@ const UserInfo = (props: UserInfoProps) => {
                         exportAsJSON();
                     }}
                 >
-                    <Download size={18} />
+                    <Download size={'1rem'} />
                 </button>
                 <button className="message-button mr-4"
                     onClick={() => {
@@ -50,7 +50,7 @@ const UserInfo = (props: UserInfoProps) => {
                         onDelete(user);
                     }}
                 >
-                    <TrashIcon size={18} />
+                    <TrashIcon size={'1rem'} />
                 </button>
                 </>
                 ) : null}
