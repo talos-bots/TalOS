@@ -162,7 +162,7 @@ const ChatLog = (props: ChatLogProps) => {
 		do {
 			lastBotMessage = chatLog.messages[chatLog.messages.length - i];
 			i++;
-		} while (lastBotMessage?.isHuman === true);
+		} while (lastBotMessage?.isHuman === true && lastBotMessage._id !== 'System');
 		setLastBotMessage(lastBotMessage);
 	}
 

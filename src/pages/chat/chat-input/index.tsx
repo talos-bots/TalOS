@@ -42,7 +42,7 @@ const InputGroup = (props: InputGroupProps) => {
 		<>
 		{showPicker && 
 			<div className="absolute z-100 bottom-20">
-				<Picker data={data} onSelect={addEmoji} className="" />
+				<Picker data={data} onEmojiSelect={addEmoji} className="" />
 			</div>
 		}
 		<div className="chat-input-bar slide-in-bottom">
