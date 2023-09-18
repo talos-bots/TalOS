@@ -90,6 +90,9 @@ const ChatConfigPane = (props: ChatConfigPaneProps) => {
             setPage(2);
         }
         if(page === 2) {
+            setPage(3);
+        }
+        if(page === 3) {
             setPage(1);
         }
         setSwipeDirection("none");
@@ -99,10 +102,13 @@ const ChatConfigPane = (props: ChatConfigPaneProps) => {
         setSwipeDirection("left");
         await new Promise(r => setTimeout(r, 500));
         if(page === 1) {
-            setPage(2);
+            setPage(3);
         }
         if(page === 2) {
             setPage(1);
+        }
+        if(page === 3) {
+            setPage(2);
         }
         setSwipeDirection("none");
     }
@@ -188,6 +194,11 @@ const ChatConfigPane = (props: ChatConfigPaneProps) => {
                     <h3 className="font-bold text-center">LLM Settings</h3>
                     <ConnectionBox/>
                     <GenerationSettings/>
+                </div>
+            )}
+            {page === 3 && (
+                <div className={"flex flex-col w-full flex-grow gap-2 text-left " + ((swipeDirection === "right" && " slide-out-left " || swipeDirection === "left" && " slide-out-right "))}>
+                    <h3 className="font-bold text-center">Construct Details</h3>
                 </div>
             )}
         </div>
