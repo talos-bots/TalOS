@@ -540,14 +540,14 @@ ul {
 /* This is the container of the scrollbar */
 ::-webkit-scrollbar-track {
   background: transparent; /* or the color of your container */
-  padding-right: 1rem;     /* adjust as needed */
-  padding-left: 1rem;      /* adjust as needed */
-  padding-top: 1rem;       /* adjust as needed */
+  padding-right: 1.5rem;     /* adjust as needed */
+  padding-left: 1.5rem;      /* adjust as needed */
+  padding-top: 1.5rem;       /* adjust as needed */
 }
 
 /* This is the scrollbar itself */
 ::-webkit-scrollbar-thumb {
-  background: var(--theme-hover-pos); 
+  background: var(--theme-root); 
   border-radius: var(--theme-border-radius);
 }
 
@@ -558,7 +558,7 @@ ul {
 
 /* This sets the width of the scrollbar */
 ::-webkit-scrollbar {
-  width: 12px;             /* adjust width as needed */
+  width: 8px;             /* adjust width as needed */
 }
 
 [data-tooltip] {

@@ -1,5 +1,5 @@
 import { deleteConstruct, getConstruct, saveNewConstruct, updateConstruct } from "@/api/dbapi";
-import { Construct } from "@/classes/Construct";
+import { Construct, Sprite } from "@/classes/Construct";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { RiQuestionMark } from "react-icons/ri";
@@ -10,6 +10,46 @@ import { saveTavernCardAsImage } from "@/api/extrasapi";
 import { ArrowBigLeft, ArrowBigRight, Download, RefreshCw } from "lucide-react";
 import { sendTxt2Img } from "@/api/sdapi";
 import { Alert } from "@material-tailwind/react";
+import { Emotion, emotions } from "@/types";
+import SpriteCrud from "./sprite-crud";
+
+const commandTypes = [
+    {
+        value: "selfie",
+        label: "Selfie Sending",
+        explanation: "This allows the Construct to send selfies to the chat, this can be requested, or it can be random."
+    },
+    {
+        value: "image",
+        label: "Image Generation",
+        explanation: "This allows the Construct to generate images based on a description, and send them to the chat."
+    },
+    {
+        value: "search",
+        label: "Web Search",
+        explanation: "This allows the Construct to search the web for information, and send it to the chat. Will ran"
+    },
+    {
+        value: "gif",
+        label: "GIF Sending",
+        explanation: "This allows the Construct to send GIFs to the chat, this can be requested, or it can be random."
+    },
+    {
+        value: "youtube",
+        label: "YouTube Search",
+        explanation: "This allows the Construct to search for videos on YouTube and send them to you. Will randomly send videos sometimes ToT is active."
+    },
+    {
+        value: "spotify",
+        label: "Spotify Search",
+        explanation: "This allows the Construct to search for songs on Spotify and send them to you."
+    },
+    {
+        value: "voice-clips",
+        label: "Voice Clip Sending",
+        explanation: "This allows the Construct to send voice clips to the chat, this can be requested, or it can be random."
+    },
+]
 
 const ConstructManagement = () => {
     const { id } = useParams<{ id: string }>();
@@ -27,6 +67,7 @@ const ConstructManagement = () => {
     const [constructGreetings, setConstructGreetings] = useState<string[]>([]);
     const [constructFarewells, setConstructFarewells] = useState<string[]>([]);
     const [constructAuthorsNote, setConstructAuthorsNote] = useState<string>('');
+    const [constructSprites, setConstructSprites] = useState<Sprite[]>([]);
     const [isActive, setIsActive] = useState<boolean>(false);
     const [isPrimary, setIsPrimary] = useState<boolean>(false);
     const [waitingForImage, setWaitingForImage] = useState<boolean>(false);
@@ -84,6 +125,7 @@ const ConstructManagement = () => {
                 setConstructGreetings(character.greetings);
                 setConstructFarewells(character.farewells);
                 setConstructAuthorsNote(character.authorsNote);
+                setConstructSprites(character.sprites);
                 const getActiveStatus = async () => {
                     let status = await constructIsActive(character._id);
                     setIsActive(status);
@@ -120,6 +162,7 @@ const ConstructManagement = () => {
             constructState.greetings = constructGreetings;
             constructState.farewells = constructFarewells;
             constructState.authorsNote = constructAuthorsNote;
+            constructState.sprites = constructSprites;
             await updateConstruct(constructState);
         } else {
             if(construct !== null) {
@@ -136,6 +179,7 @@ const ConstructManagement = () => {
                 newConstruct.greetings = constructGreetings;
                 newConstruct.farewells = constructFarewells;
                 newConstruct.authorsNote = constructAuthorsNote;
+                newConstruct.sprites = constructSprites;
                 await saveNewConstruct(newConstruct);
                 returnToMenu();
             }
@@ -209,6 +253,29 @@ const ConstructManagement = () => {
         setSwipeDirection("none");
     }
 
+    const addCommand = (commandValue: string) => {
+        let newCommands = constructCommands;
+        newCommands.push(commandValue);
+        setConstructCommands(newCommands);
+    }
+
+    const removeCommand = (commandValue: string) => {
+        let newCommands = constructCommands;
+        newCommands = newCommands.filter((command) => command !== commandValue);
+        setConstructCommands(newCommands);
+    }
+
+    const addSprite = (sprite: Sprite, emotion: Emotion) => {
+        let newSprites = constructSprites;
+        const index = newSprites.findIndex((sprite) => sprite.emotion === emotion);
+        if(index === -1) {
+            newSprites.push(sprite);
+        } else {
+            newSprites[index] = sprite;
+        }
+        setConstructSprites(newSprites);
+    }
+
     return (
         <>
         {error !== null ? (
@@ -226,7 +293,7 @@ const ConstructManagement = () => {
 		) : (
 			null
 		)}
-        <div className="w-full h-[calc(100vh-70px)] overflow-y-auto overflow-x-hidden p-4 gap-2">
+        <div className="w-full h-[calc(100vh-70px)] max-[h-[calc(100vh-70px)]] overflow-x-hidden p-4 gap-2">
             <div className="w-full h-full themed-root grid grid-rows-[auto,1fr] pop-in">
                 <h2 className="text-2xl font-bold text-theme-text text-shadow-xl">Construct Editor</h2>
                 <button className="themed-button-pos absolute top-2 left-2" onClick={() => pageChangeLeft(page)}><ArrowBigLeft/></button>
@@ -375,8 +442,48 @@ const ConstructManagement = () => {
                 </div>
                 )}
                 {page === 2 && (
-                <div className={"grid grid-cols-5 grid-rows-[calc, 1fr] gap-2 text-left " + ((swipeDirection === "right" && " slide-out-left " || swipeDirection === "left" && " slide-out-right "))}>
-
+                <div className={"overflow-y-auto grid grid-cols-5 grid-rows-[calc, 1fr] gap-2 max-h-full h-full text-left " + ((swipeDirection === "right" && " slide-out-left " || swipeDirection === "left" && " slide-out-right "))}>
+                    <div className="col-span-1 flex flex-col max-h-full h-full overflow-y-auto">
+                        <label htmlFor="construct-commands" className="font-semibold">Construct Actions</label>
+                        <div className="themed-input flex-grow">
+                            <i>These are abilities active Constructs can use inside of Discord, and the Chat page.</i>
+                            <div className="grid grid-cols-1 gap-1 themed-root overflow-y-auto">
+                                {commandTypes.map((command, index) => {
+                                    return (
+                                        <>
+                                            <div className="flex flex-row w-full justify-between">
+                                                <label htmlFor={command.value}>{command.label}</label>
+                                                <input type="checkbox" key={index} id={command.value} name={command.value} checked={constructCommands.includes(command.value)} onChange={(event) => {
+                                                    if(event.target.checked) {
+                                                        setConstructCommands([...constructCommands, command.value]);
+                                                    } else {
+                                                        setConstructCommands(constructCommands.filter((commandValue) => commandValue !== command.value));
+                                                    }
+                                                }}/>
+                                            </div>
+                                            <i className="text-theme-italic">{command.explanation}</i>
+                                        </>
+                                    )
+                                })}
+                            </div>
+                        </div>
+                    </div>
+                    <div className="col-span-1 flex flex-col">
+                    <label className="font-semibold">Chat Defaults</label>
+                    </div>
+                    <div className="col-span-3 flex flex-col overflow-y-auto">
+                        <label className="font-semibold">Sprites</label>
+                        <div className="grid grid-cols-4 gap-2 max-h-full w-full overflow-y-auto themed-input flex-grow">
+                            {emotions.map(emotion => {
+                                const sprite = constructSprites.find(sprite => sprite.emotion === emotion.value);
+                                return (
+                                    <>
+                                    <SpriteCrud sprite={sprite} addSprite={addSprite} emotion={emotion} key={emotion.label}/>
+                                    </>
+                                );
+                            })}
+                        </div>
+                    </div>
                 </div>
                 )}
             </div>

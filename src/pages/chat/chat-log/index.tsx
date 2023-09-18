@@ -4,7 +4,7 @@ import { Chat } from "@/classes/Chat";
 import { Message } from "@/classes/Message";
 import { getChat, getConstruct, getStorageValue, getUser, saveNewAttachment, saveNewChat, updateChat } from "@/api/dbapi";
 import MessageComponent from "@/pages/chat/chat-log/message";
-import { addUserMessage, doSlashCommand, getLoadingMessage, regenerateMessage, regenerateUserMessage, sendMessage, wait } from "../helpers";
+import { addUserMessage, createSystemMessage, doSlashCommand, getLoadingMessage, regenerateMessage, regenerateUserMessage, sendMessage, wait } from "../helpers";
 import { Alert } from "@material-tailwind/react";
 import ChatInfo from "@/pages/chat/chat-info";
 import Loading from "@/components/loading";
@@ -15,6 +15,7 @@ import { Attachment } from "@/classes/Attachment";
 import { ipcRenderer } from "electron";
 import ChatConfigPane from "../chat-config-pane";
 import { Link } from "react-router-dom";
+import SpriteDisplay from "@/components/sprite";
 interface ChatLogProps {
 	chatLogID?: string;
 	goBack: () => void;
@@ -24,6 +25,7 @@ const ChatLog = (props: ChatLogProps) => {
 	const { chatLogID, goBack, user } = props;
 	const [chatLog, setChatLog] = useState<Chat | null>(null);
 	const [messages, setMessages] = useState<Message[]>([]);
+	const [lastBotMessage, setLastBotMessage] = useState<Message | null>(null);
 	const messagesEndRef = useRef<HTMLDivElement | null>(null);
 	const [hasSentMessage, setHasSentMessage] = useState<boolean>(false);
 	const [error, setError] = useState<string | null>(null);
@@ -41,6 +43,9 @@ const ChatLog = (props: ChatLogProps) => {
 	const [chatPaneClose, setChatPaneClose] = useState<boolean>(false);
 
 	const filteredMessages = messages.slice(messages.length - numToDisplay).filter((message) => {
+		if(message.isCommand) return false;
+		if(message.userID === 'System') return false;
+		if(message.user === 'System') return false;
 		if(searchTerm === "") return true;
 		if(searchTerm.startsWith("from:")){
 			let user = searchTerm.split(":")[1];
@@ -70,7 +75,6 @@ const ChatLog = (props: ChatLogProps) => {
 		}
 		return false;
 	});
-
 
 	useEffect(() => {
 		if(chatLogID !== undefined) {
@@ -139,6 +143,7 @@ const ChatLog = (props: ChatLogProps) => {
 		}).catch((err) => {
 			// console.error(err);
 		});
+		findLastBotMessage();
 	}, [messages]);
 
 	useEffect(() => {
@@ -146,6 +151,20 @@ const ChatLog = (props: ChatLogProps) => {
 			addGreetings(chatLog);
 		}
 	}, [chatLog]);
+
+	const findLastBotMessage = () => {
+		if(chatLog === null) return;
+		let lastBotMessage = chatLog.messages[chatLog.messages.length - 1];
+		if(lastBotMessage?.isHuman === true){
+			lastBotMessage = chatLog.messages[chatLog.messages.length - 2];
+		}
+		let i = 1;
+		do {
+			lastBotMessage = chatLog.messages[chatLog.messages.length - i];
+			i++;
+		} while (lastBotMessage?.isHuman === true);
+		setLastBotMessage(lastBotMessage);
+	}
 
 	const addGreetings = async (chat: Chat) => {
 		if(chat === null) return;
@@ -251,41 +270,48 @@ const ChatLog = (props: ChatLogProps) => {
 		}
 		await wait(750);
 		for (let i = 0; i < chat.constructs.length; i++) {
-			let botMessage = await sendMessage(chat, chat.constructs[i], currentUser, doMultiline, numberOfMessagesToSend);
-			if (botMessage !== null){
-				chat.addMessage(botMessage);
-				if(doEmotions === true){
-					botMessage.emotion = await getTextEmotion(botMessage.text);
-				}
-				if(chat?.doVector === true){
-					addVectorFromMessage(chat._id, botMessage);
-				}
-				setMessages(prevMessages => {
-					// Remove the loadingMessage
-					const updatedMessages = prevMessages.filter((message) => {
-						return message._id !== botMessage?._id;
-					});
-		
-					// Add the botMessage
-					if (botMessage !== null) {
-						updatedMessages.push(botMessage);
-					}
-		
-					return updatedMessages;
-				});
-			}else{
-				setMessages(prevMessages => {
-					const updatedMessages = prevMessages;
-					return updatedMessages;
-				});
-				setError("Invalid response from LLM endpoint. Check your settings and try again.");
-			}
+			await getBotResponse(chat, chat.constructs[i], currentUser);
 		}
 		setChatLog(chat);
 		await updateChat(chat);
 		setHasSentMessage(false);
 		setNumToDisplay(60);
 	};	
+
+	const getBotResponse = async (chat: Chat, constructID: string, currentUser: User | null) => {
+		let botMessage = await sendMessage(chat, constructID, currentUser, doMultiline, numberOfMessagesToSend);
+		if (botMessage !== null){
+			chat.addMessage(botMessage);
+			if(doEmotions === true){
+				botMessage.emotion = await getTextEmotion(botMessage.text);
+			}
+			if(chat?.doVector === true){
+				addVectorFromMessage(chat._id, botMessage);
+			}
+			setMessages(prevMessages => {
+				// Remove the loadingMessage
+				const updatedMessages = prevMessages.filter((message) => {
+					return message._id !== botMessage?._id;
+				});
+	
+				// Add the botMessage
+				if (botMessage !== null) {
+					updatedMessages.push(botMessage);
+				}
+	
+				return updatedMessages;
+			});
+			if(botMessage !== null){
+				setLastBotMessage(botMessage);
+			}
+		}else{
+			setMessages(prevMessages => {
+				const updatedMessages = prevMessages;
+				return updatedMessages;
+			});
+			setError("Invalid response from LLM endpoint. Check your settings and try again.");
+		}
+	}
 
 	const handlePostUserMessage = async (newMessage: Message) => {
 		if(doEmotions === true){
@@ -408,6 +434,17 @@ const ChatLog = (props: ChatLogProps) => {
 		setOpenChatConfig(!openChatConfig)
 	}
 
+	const sendPoke = () => {
+		const sysMessage = createSystemMessage(`[${user ? (user.nickname || user.name) : 'DefaultUser'} pokes ${lastBotMessage?.user || 'ConstructOS'}'s body.]`)
+		if(messages.includes(sysMessage)) return;
+		chatLog?.addMessage(sysMessage);
+		setMessages(prevMessages => [...prevMessages, sysMessage]);
+		if(chatLog !== null && chatLog !== undefined && lastBotMessage !== null && lastBotMessage !== undefined){
+			updateChat(chatLog);
+			getBotResponse(chatLog, lastBotMessage?.userID, currentUser);
+		}
+	}
+
 	if(!isLoaded) return (<Loading/>);
 
 	return (
@@ -431,7 +468,8 @@ const ChatLog = (props: ChatLogProps) => {
 				null
 			)}
 			<div className="w-full grid grid-cols-8 justify-center">
-			<div className="col-span-2 box-border h-[calc(100vh-70px)] flex flex-col gap-2 overflow-x-hidden p-4">
+			<div className="col-span-2 box-border h-[calc(100vh-70px)] flex flex-col gap-2 overflow-x-hidden pt-4">
+				<SpriteDisplay constructID={lastBotMessage?.userID || (chatLog?.constructs? (chatLog?.constructs.length > 0 ? chatLog.constructs[0] : "") : "" )} emotion={lastBotMessage?.emotion || 'neutral'} sendPoke={sendPoke}/>
 			</div>
 			<div className="col-span-4 box-border h-[calc(100vh-70px)] flex flex-col gap-2 overflow-x-hidden p-4">
 				<div className="w-full flex flex-row items-center justify-end">

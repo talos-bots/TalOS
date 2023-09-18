@@ -1,3 +1,5 @@
+import { Emotion } from "@/types";
+
 export class Construct{
     constructor(
         public _id: string = (new Date().getTime()).toString(),
@@ -13,23 +15,7 @@ export class Construct{
         public greetings: string[] = [],
         public farewells: string[] = [],
         public authorsNote: string = '',
-        public defaultConfig: DefaultChatConfig = {
-            doInstruct: false,
-            doMemories: false,
-            doActions: false,
-            doSprites: false,
-            doVoice: false,
-            doLurk: false,
-            doRandomGreeting: false,
-            doRandomFarewell: false,
-            doRandomThought: false,
-            haveThoughts: false,
-            thinkBeforeChat: false,
-            replyToConstruct: 0.50,
-            replyToConstructMention: 0.75,
-            replyToUser: 0.50,
-            replyToUserMention: 1,
-        },
+        public defaultConfig: DefaultChatConfig = new DefaultChatConfig(),
         public thoughtPattern: string = '',
         public sprites: Sprite[] = [],
     ) {}
@@ -217,46 +203,145 @@ export class Construct{
     setAuthorsNote(authorsNote: string){
         this.authorsNote = authorsNote;
     }
+
+    addSprite(sprite: Sprite){
+        const spriteIndex = this.sprites.findIndex((s) => s.emotion === sprite.emotion);
+        if(spriteIndex === -1){
+            this.sprites.push(sprite);
+        }else{
+            this.sprites[spriteIndex] = sprite;
+        }
+    }
 }
 
-export type DefaultChatConfig = {
-    doInstruct: boolean;
-    doMemories: boolean;
-    doActions: boolean;
-    doSprites: boolean;
-    doVoice: boolean;
-    doLurk: boolean;
-    doRandomGreeting: boolean;
-    doRandomFarewell: boolean;
-    doRandomThought: boolean;
-    haveThoughts: boolean;
-    thinkBeforeChat: boolean;
-    replyToConstruct: number;
-    replyToConstructMention: number;
-    replyToUser: number;
-    replyToUserMention: number;
+export class DefaultChatConfig{
+    constructor(
+        public doInstruct: boolean = false,
+        public doMemories: boolean = false,
+        public doActions: boolean = false,
+        public doSprites: boolean = false,
+        public doVoice: boolean = false,
+        public doLurk: boolean = false,
+        public doRandomGreeting: boolean = false,
+        public doRandomFarewell: boolean = false,
+        public doRandomThought: boolean = false,
+        public haveThoughts: boolean = false,
+        public thinkBeforeChat: boolean = false,
+        public replyToConstruct: number = 0.50,
+        public replyToConstructMention: number = 0.75,
+        public replyToUser: number = 0.50,
+        public replyToUserMention: number = 1,
+    ){}
+
+    setDefaultChatConfig(doInstruct: boolean, doMemories: boolean, doActions: boolean, doSprites: boolean, doVoice: boolean, doLurk: boolean, doRandomGreeting: boolean, doRandomFarewell: boolean, doRandomThought: boolean, haveThoughts: boolean, thinkBeforeChat: boolean, replyToConstruct: number, replyToConstructMention: number, replyToUser: number, replyToUserMention: number){
+        this.doInstruct = doInstruct;
+        this.doMemories = doMemories;
+        this.doActions = doActions;
+        this.doSprites = doSprites;
+        this.doVoice = doVoice;
+        this.doLurk = doLurk;
+        this.doRandomGreeting = doRandomGreeting;
+        this.doRandomFarewell = doRandomFarewell;
+        this.doRandomThought = doRandomThought;
+        this.haveThoughts = haveThoughts;
+        this.thinkBeforeChat = thinkBeforeChat;
+        this.replyToConstruct = replyToConstruct;
+        this.replyToConstructMention = replyToConstructMention;
+        this.replyToUser = replyToUser;
+        this.replyToUserMention = replyToUserMention;
+    }
+
+    getDefaultChatConfig(){
+        return {
+            doInstruct: this.doInstruct,
+            doMemories: this.doMemories,
+            doActions: this.doActions,
+            doSprites: this.doSprites,
+            doVoice: this.doVoice,
+            doLurk: this.doLurk,
+            doRandomGreeting: this.doRandomGreeting,
+            doRandomFarewell: this.doRandomFarewell,
+            doRandomThought: this.doRandomThought,
+            haveThoughts: this.haveThoughts,
+            thinkBeforeChat: this.thinkBeforeChat,
+            replyToConstruct: this.replyToConstruct,
+            replyToConstructMention: this.replyToConstructMention,
+            replyToUser: this.replyToUser,
+            replyToUserMention: this.replyToUserMention,
+        }
+    }
 }
 
-export type ConstructChatConfig = {
-    _id: string;
-    doInstruct: boolean;
-    doMemories: boolean;
-    doActions: boolean;
-    doSprites: boolean;
-    doVoice: boolean;
-    doLurk: boolean;
-    doRandomGreeting: boolean;
-    doRandomFarewell: boolean;
-    doRandomThought: boolean;
-    haveThoughts: boolean;
-    thinkBeforeChat: boolean;
-    replyToConstruct: number;
-    replyToConstructMention: number;
-    replyToUser: number;
-    replyToUserMention: number;
-}
+export class ConstructChatConfig{
+    constructor(
+        public _id: string = '',
+        public doInstruct: boolean = false,
+        public doMemories: boolean = false,
+        public doActions: boolean = false,
+        public doSprites: boolean = false,
+        public doVoice: boolean = false,
+        public doLurk: boolean = false,
+        public doRandomGreeting: boolean = false,
+        public doRandomFarewell: boolean = false,
+        public doRandomThought: boolean = false,
+        public haveThoughts: boolean = false,
+        public thinkBeforeChat: boolean = false,
+        public replyToConstruct: number = 0.50,
+        public replyToConstructMention: number = 0.75,
+        public replyToUser: number = 0.50,
+        public replyToUserMention: number = 1,
+    ){}
 
-type Sprite = {
-    moood: string;
-    image: string;
+    createChatConfigFromDefault(defaultChatConfig: DefaultChatConfig, constructID: string){
+        this._id = constructID;
+        this.doInstruct = defaultChatConfig.doInstruct;
+        this.doMemories = defaultChatConfig.doMemories;
+        this.doActions = defaultChatConfig.doActions;
+        this.doSprites = defaultChatConfig.doSprites;
+        this.doVoice = defaultChatConfig.doVoice;
+        this.doLurk = defaultChatConfig.doLurk;
+        this.doRandomGreeting = defaultChatConfig.doRandomGreeting;
+        this.doRandomFarewell = defaultChatConfig.doRandomFarewell;
+        this.doRandomThought = defaultChatConfig.doRandomThought;
+        this.haveThoughts = defaultChatConfig.haveThoughts;
+        this.thinkBeforeChat = defaultChatConfig.thinkBeforeChat;
+        this.replyToConstruct = defaultChatConfig.replyToConstruct;
+        this.replyToConstructMention = defaultChatConfig.replyToConstructMention;
+        this.replyToUser = defaultChatConfig.replyToUser;
+        this.replyToUserMention = defaultChatConfig.replyToUserMention;
+    }
+}
+export class Sprite{
+    constructor(
+        public emotion: Emotion,
+        public image64: string = '',
+    ){}
+
+    setSprite(emotion: Emotion, image64: string){
+        this.emotion = emotion;
+        this.image64 = image64;
+    }
+
+    getSprite(){
+        return {
+            emotion: this.emotion,
+            image64: this.image64,
+        }
+    }
+    
+    getSpriteEmotion(){
+        return this.emotion;
+    }
+
+    getSpriteImage64(){
+        return this.image64;
+    }
+
+    setSpriteEmotion(emotion: Emotion){
+        this.emotion = emotion;
+    }
+
+    setSpriteImage64(image64: string){
+        this.image64 = image64;
+    }
 }

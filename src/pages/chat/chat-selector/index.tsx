@@ -136,7 +136,7 @@ const ChatSelector = (props: ChatSelectorProps) => {
     if(!isLoaded) return (<Loading/>);
 
     return (
-        <div className="grid grid-rows-3 w-full p-4 h-[calc(100vh-70px)] gap-2 grow-0 lg:gap-4 lg:p-6">
+        <div className="grid grid-rows-3 w-full p-4 h-[calc(100vh-70px)] max-[h-[calc(100vh-70px)]] gap-2 grow-0 lg:gap-4 lg:p-6">
           <div className="row-span-1 themed-root grow-0 overflow-x-hidden slide-in-top lg:flex lg:flex-col lg:space-x-4">
             <h3 className="font-semibold lg:text-xl">Constructs</h3>
             <div className="flex flex-row w-full max-w-full h-5/6 gap-2 overflow-x-auto grow-0 lg:space-x-4 lg:gap-4">

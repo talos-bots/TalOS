@@ -92,3 +92,19 @@ export async function doSlashCommand(message: string, chatLog: Chat | null, curr
     }
     return false;
 }
+
+export function createSystemMessage(action: string){
+    const newMessage = new Message();
+    newMessage.origin = 'ConstructOS';
+    newMessage.text = action;
+    newMessage.user = 'System';
+    newMessage.timestamp = new Date().getTime();
+    newMessage.isCommand = true;
+    newMessage.isPrivate = true;
+    newMessage.isHuman = false;
+    newMessage.participants = ['System'];
+    newMessage.userID = 'System';
+    newMessage.emotion = 'neutral';
+    newMessage.isThought = false;
+    return newMessage;
+}

@@ -113,6 +113,69 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate, onSplit, on
                             {(avatar.length > 0 ? <img src={avatar} alt="avatar" className="themed-message-avatar" /> : <RiQuestionMark className="themed-message-avatar" size={'2rem'}/>)}
                         </div>
                         <div className="themed-message-info text-theme-italic">{user} {getFormattedTime(time)} {message?.emotion ? `(${message.emotion})` : null}</div>
+                        <div className="flex flex-col pt-6">
+                            {isEditing ? (
+                                <TextareaAutosize
+                                    className="m-0 bg-transparent text-theme-text h-auto py-1 rounded-lg border-2 border-gray-500 box-border resize-none overflow-y-auto w-[42.5rem] min-w-full"
+                                    style={{ textShadow: '2px 2px 2px rgba(0, 0, 0, 0.411)' }}
+                                    onBlur={(e) => handleTextEdit(e.target.value)}
+                                    onKeyDown={(e) => handleMessageKeyDown(e)}
+                                    ref={editedMessageRef}
+                                    defaultValue={message.text}
+                                    onChange={(e) => setText(e.target.value)}
+                                />
+                            ) : (
+                            <div onDoubleClick={(event) => handleEditMessage(event)}>
+                                {isTyping ? (
+                                    <>
+                                        <div className="loading">
+                                            <div className="loading__letter">.</div>
+                                            <div className="loading__letter">.</div>
+                                            <div className="loading__letter">.</div>
+                                        </div>
+                                    </>
+                                    ) : (
+                                        <ReactMarkdown 
+                                            className='message-text m-0 h-auto py-1 box-border resize-none overflow-y-auto min-w-full'
+                                            components={{
+                                                em: ({ node, ...props }) => <i className="text-theme-italic" {...props} />,
+                                                code: ({ node, ...props }) => <code {...props} />,
+                                            }}
+                                        >
+                                            {message.text}
+                                        </ReactMarkdown>
+                                )}
+                            </div>)}
+                            <div className="flex flex-row gap-2">
+                                {attachments.map((attachment, index) => {
+                                    let newData = attachment.data;
+                                    if(attachment.type === "image/png") {
+                                        newData = "data:image/png;base64," + newData;
+                                    } else if(attachment.type === "image/jpeg") {
+                                        newData = "data:image/jpeg;base64," + newData;
+                                    } else if(attachment.type === "image/gif") {
+                                        newData = "data:image/gif;base64," + newData;
+                                    } else if(attachment.type === "image/webp") {
+                                        newData = "data:image/webp;base64," + newData;
+                                    }else{
+                                        newData = `data:${attachment.type};base64,` + newData;
+                                    }
+                                    if(attachment.type === "image/png" || attachment.type === "image/jpeg" || attachment.type === "image/gif" || attachment.type === "image/webp"){
+                                        return (
+                                            <div key={index}>
+                                                <img className="w-1/2 object-cover rounded-md"src={newData} alt={attachment?.metadata?.caption ? attachment?.metadata?.caption : 'A Photo'} title={attachment?.metadata?.caption ? attachment?.metadata?.caption : 'A Photo'}/>
+                                            </div>
+                                        )
+                                    }else{
+                                        return (
+                                            <div key={index}>
+                                                <a href={newData} download={attachment.name}><File size={'3rem'} />{attachment.name}</a>
+                                            </div>
+                                        )
+                                    }
+                                })}
+                            </div>
+                        </div>
                     </div>
                     <div className="flex flex-row items-center">
                         <div className="flex flex-row text-xs top-3 absolute right-2 italic gap-1">
@@ -168,69 +231,6 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate, onSplit, on
                                 </>
                             )}
                         </div>
-                    </div>
-                </div>
-                <div className="flex flex-col">
-                    {isEditing ? (
-                        <TextareaAutosize
-                            className="m-0 bg-transparent text-theme-text h-auto py-1 rounded-lg border-2 border-gray-500 box-border resize-none overflow-y-auto w-[42.5rem] min-w-full"
-                            style={{ textShadow: '2px 2px 2px rgba(0, 0, 0, 0.411)' }}
-                            onBlur={(e) => handleTextEdit(e.target.value)}
-                            onKeyDown={(e) => handleMessageKeyDown(e)}
-                            ref={editedMessageRef}
-                            defaultValue={message.text}
-                            onChange={(e) => setText(e.target.value)}
-                        />
-                    ) : (
-                    <div onDoubleClick={(event) => handleEditMessage(event)}>
-                        {isTyping ? (
-                            <>
-                                <div className="loading">
-                                    <div className="loading__letter">.</div>
-                                    <div className="loading__letter">.</div>
-                                    <div className="loading__letter">.</div>
-                                </div>
-                            </>
-                            ) : (
-                                <ReactMarkdown 
-                                    className='message-text m-0 h-auto py-1 box-border resize-none overflow-y-auto min-w-full'
-                                    components={{
-                                        em: ({ node, ...props }) => <i className="text-theme-italic" {...props} />,
-                                        code: ({ node, ...props }) => <code {...props} />,
-                                    }}
-                                >
-                                    {message.text}
-                                </ReactMarkdown>
-                        )}
-                    </div>)}
-                    <div className="flex flex-row gap-2">
-                        {attachments.map((attachment, index) => {
-                            let newData = attachment.data;
-                            if(attachment.type === "image/png") {
-                                newData = "data:image/png;base64," + newData;
-                            } else if(attachment.type === "image/jpeg") {
-                                newData = "data:image/jpeg;base64," + newData;
-                            } else if(attachment.type === "image/gif") {
-                                newData = "data:image/gif;base64," + newData;
-                            } else if(attachment.type === "image/webp") {
-                                newData = "data:image/webp;base64," + newData;
-                            }else{
-                                newData = `data:${attachment.type};base64,` + newData;
-                            }
-                            if(attachment.type === "image/png" || attachment.type === "image/jpeg" || attachment.type === "image/gif" || attachment.type === "image/webp"){
-                                return (
-                                    <div key={index}>
-                                        <img className="w-1/2 object-cover rounded-md"src={newData} alt={attachment?.metadata?.caption ? attachment?.metadata?.caption : 'A Photo'} title={attachment?.metadata?.caption ? attachment?.metadata?.caption : 'A Photo'}/>
-                                    </div>
-                                )
-                            }else{
-                                return (
-                                    <div key={index}>
-                                        <a href={newData} download={attachment.name}><File size={'3rem'} />{attachment.name}</a>
-                                    </div>
-                                )
-                            }
-                        })}
                     </div>
                 </div>
             </div>
