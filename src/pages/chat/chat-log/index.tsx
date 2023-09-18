@@ -14,6 +14,7 @@ import { getDoCaptioning, getDoEmotions, getImageCaption, getTextEmotion } from 
 import { Attachment } from "@/classes/Attachment";
 import { ipcRenderer } from "electron";
 import ChatConfigPane from "../chat-config-pane";
+import { Link } from "react-router-dom";
 interface ChatLogProps {
 	chatLogID?: string;
 	goBack: () => void;
@@ -413,7 +414,7 @@ const ChatLog = (props: ChatLogProps) => {
 		<>
 			{error !== null ? (
 				<Alert color="red" 
-					className="absolute top-8 right-8 w-3/12" 
+					className="absolute top-8 right-8 w-3/12 flex flex-col gap-8 text-left justify-start items-start" 
 					style={{zIndex: 1000}} 
 					onClose={() => setError(null)}
 					animate={{
@@ -421,7 +422,10 @@ const ChatLog = (props: ChatLogProps) => {
 						unmount: { y: 100 },
 					}}
 					>
-					{error}
+					<div>
+					<p>{error}</p>
+					</div>
+					<Link to="/settings" className="themed-button-small absolute right-10 top-10">Settings</Link>
 				</Alert>
 			) : (
 				null
@@ -457,7 +461,7 @@ const ChatLog = (props: ChatLogProps) => {
 					<InputGroup sendMessage={handleMessageSend} />
 				</div>
 			</div>
-			<div className="col-span-2 box-border h-[calc(100vh-70px)] flex flex-col gap-2 overflow-x-hidden pt-4 pb-4 pr-4 lg:p-8">
+			<div className="col-span-2 box-border h-[calc(100vh-70px)] flex flex-col gap-2 overflow-x-hidden pt-4 pb-4 pr-4">
 			{openChatConfig === true && (
 				<ChatConfigPane chat={chatLog} chatPanelClose={chatPaneClose} onEdit={handleDetailsChange}/>
 			)}

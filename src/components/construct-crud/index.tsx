@@ -3,12 +3,11 @@ import { Construct } from "@/classes/Construct";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { RiQuestionMark } from "react-icons/ri";
-import './ConstructCrud.scss'
-import StringArrayEditor from "../string-array-editor";
+import './ConstructCrud.scss';
 import { setConstructAsPrimary, addConstructToActive, constructIsActive, getActiveConstructList, removeConstructFromActive } from "@/api/constructapi";
 import StringArrayEditorCards from "../string-array-editor-cards";
 import { saveTavernCardAsImage } from "@/api/extrasapi";
-import { Download, RefreshCw } from "lucide-react";
+import { ArrowBigLeft, ArrowBigRight, Download, RefreshCw } from "lucide-react";
 import { sendTxt2Img } from "@/api/sdapi";
 import { Alert } from "@material-tailwind/react";
 
@@ -33,6 +32,7 @@ const ConstructManagement = () => {
     const [waitingForImage, setWaitingForImage] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [page, setPage] = useState<number>(1);
+    const [swipeDirection, setSwipeDirection] = useState<string>("none");
 
     const makeActive = async () => {
         if(constructState !== null) {
@@ -185,6 +185,30 @@ const ConstructManagement = () => {
         element.click();
     }
 
+    const pageChangeRight = async (page: number) => {
+        setSwipeDirection("right");
+        await new Promise(r => setTimeout(r, 500));
+        if(page === 1) {
+            setPage(2);
+        }
+        if(page === 2) {
+            setPage(1);
+        }
+        setSwipeDirection("none");
+    }
+
+    const pageChangeLeft = async (page: number) => {
+        setSwipeDirection("left");
+        await new Promise(r => setTimeout(r, 500));
+        if(page === 1) {
+            setPage(2);
+        }
+        if(page === 2) {
+            setPage(1);
+        }
+        setSwipeDirection("none");
+    }
+
     return (
         <>
         {error !== null ? (
@@ -202,11 +226,13 @@ const ConstructManagement = () => {
 		) : (
 			null
 		)}
-        {page === 1 && (
         <div className="w-full h-[calc(100vh-70px)] overflow-y-auto overflow-x-hidden p-4 gap-2">
             <div className="w-full h-full themed-root grid grid-rows-[auto,1fr] pop-in">
                 <h2 className="text-2xl font-bold text-theme-text text-shadow-xl">Construct Editor</h2>
-                <div className="grid grid-cols-5 grid-rows-[calc, 1fr] gap-2 text-left">
+                <button className="themed-button-pos absolute top-2 left-2" onClick={() => pageChangeLeft(page)}><ArrowBigLeft/></button>
+                <button className="themed-button-pos absolute top-2 right-2" onClick={() => pageChangeRight(page)}><ArrowBigRight/></button>
+                {page === 1 && (
+                <div className={"grid grid-cols-5 grid-rows-[calc, 1fr] gap-2 text-left " + ((swipeDirection === "right" && " slide-out-left " || swipeDirection === "left" && " slide-out-right "))}>
                     <div className="col-span-1 items-center gap-2 h-full">
                         <div className="w-full flex flex-col h-full items-center justify-center gap-2">
                             <div className="flex flex-col h-1/6 w-full">
@@ -347,14 +373,14 @@ const ConstructManagement = () => {
                         </div>
                     </div>
                 </div>
+                )}
+                {page === 2 && (
+                <div className={"grid grid-cols-5 grid-rows-[calc, 1fr] gap-2 text-left " + ((swipeDirection === "right" && " slide-out-left " || swipeDirection === "left" && " slide-out-right "))}>
+
+                </div>
+                )}
             </div>
         </div>
-        )}
-        {page === 2 && (
-        <div>
-
-        </div>
-        )}
         </>
     );
 };

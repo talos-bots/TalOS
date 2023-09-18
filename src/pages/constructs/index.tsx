@@ -76,7 +76,7 @@ const ConstructsPage = () => {
     if(!isLoaded) return (<Loading/>);
     
     return (
-        <div className="w-full h-[calc(100vh-70px)] grid grid-rows-[auto,1fr] overflow-y-auto overflow-x-hidden p-4 lg:p-6">
+        <div className="w-full h-[calc(100vh-70px)] grid grid-rows-[auto,1fr] overflow-y-auto overflow-x-hidden p-4 lg:p-8">
             <div className="flex flex-col gap-2">
                 <div className="themed-root slide-in-top">
                     <h2 className="text-2xl font-bold text-theme-text text-shadow-xl">Constructs</h2>
