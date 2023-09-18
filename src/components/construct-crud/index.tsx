@@ -27,7 +27,7 @@ const commandTypes = [
     {
         value: "search",
         label: "Web Search",
-        explanation: "This allows the Construct to search the web for information, and send it to the chat. Will ran"
+        explanation: "This allows the Construct to search the web for information, and send it to the chat. Will randomly send stuff."
     },
     {
         value: "gif",
