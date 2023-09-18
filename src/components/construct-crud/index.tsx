@@ -20,11 +20,6 @@ const commandTypes = [
         explanation: "This allows the Construct to send selfies to the chat, this can be requested, or it can be random."
     },
     {
-        value: "image",
-        label: "Image Generation",
-        explanation: "This allows the Construct to generate images based on a description, and send them to the chat."
-    },
-    {
         value: "search",
         label: "Web Search",
         explanation: "This allows the Construct to search the web for information, and send it to the chat. Will randomly send stuff."
@@ -445,9 +440,9 @@ const ConstructManagement = () => {
                 <div className={"overflow-y-auto grid grid-cols-5 grid-rows-[calc, 1fr] gap-2 max-h-full h-full text-left " + ((swipeDirection === "right" && " slide-out-left " || swipeDirection === "left" && " slide-out-right "))}>
                     <div className="col-span-1 flex flex-col max-h-full h-full overflow-y-auto">
                         <label htmlFor="construct-commands" className="font-semibold">Construct Actions</label>
-                        <div className="themed-input flex-grow">
+                        <div className="themed-input">
                             <i>These are abilities active Constructs can use inside of Discord, and the Chat page.</i>
-                            <div className="grid grid-cols-1 gap-1 themed-root overflow-y-auto">
+                            <div className="flex flex-col gap-1 themed-root overflow-y-auto">
                                 {commandTypes.map((command, index) => {
                                     return (
                                         <>
