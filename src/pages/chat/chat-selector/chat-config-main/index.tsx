@@ -16,7 +16,7 @@ const ChatConfigMain = (props: ChatConfigProps) => {
     const [constructs, setConstructs] = useState<string[]>([]);
     const [constructsList, setConstructsList] = useState<Construct[]>([]);
     const [chatConfigs, setChatConfigs] = useState<ConstructChatConfig[]>([]);
-
+    
     useEffect(() => {
         if(chat?._id === 'activePool'){
             setGlobal(true);
@@ -53,7 +53,6 @@ const ChatConfigMain = (props: ChatConfigProps) => {
                 <div className="themed-input flex flex-col items-center w-full gap-1 text-left">
                     <i className="text-sm">Adds messages to the persistent vector for only this chat. Only applies to all Constructs if Global is enabled.</i>
                     <ReactSwitch
-                        disabled={!global}
                         checked={doVector}
                         onChange={() => {setDoVector(!doVector); handleEdit();}}
                         handleDiameter={30}

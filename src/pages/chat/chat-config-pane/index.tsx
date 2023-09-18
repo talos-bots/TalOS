@@ -1,6 +1,7 @@
-import { getConstructs } from "@/api/dbapi";
+import { getConstructs, getStorageValue, setStorageValue } from "@/api/dbapi";
 import { Chat } from "@/classes/Chat";
 import { Construct, ConstructChatConfig } from "@/classes/Construct";
+import { ArrowBigLeft, ArrowBigRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { RiQuestionMark } from "react-icons/ri";
 import ReactSwitch from "react-switch";
@@ -18,6 +19,10 @@ const ChatConfigPane = (props: ChatConfigPaneProps) => {
     const [constructs, setConstructs] = useState<string[]>([]);
     const [constructsList, setConstructsList] = useState<Construct[]>([]);
     const [chatConfigs, setChatConfigs] = useState<ConstructChatConfig[]>([]);
+    const [doMultiline, setDoMultiline] = useState<boolean>(false);
+    const [messagesToSend, setMessagesToSend] = useState<number>(25);
+    const [page, setPage] = useState<number>(1);
+    const [swipeDirection, setSwipeDirection] = useState<string>("none");
 
     useEffect(() => {
         if(chat?._id === 'activePool'){
@@ -37,6 +42,16 @@ const ChatConfigPane = (props: ChatConfigPaneProps) => {
         }).catch((err) => {
             console.error(err);
         });
+        getStorageValue('doMultiline').then((value) => {
+            setDoMultiline(JSON.parse(value)? JSON.parse(value) : false);
+        }).catch((err) => {
+            console.error(err);
+        });
+        getStorageValue('messagesToSend').then((value) => {
+            setMessagesToSend(JSON.parse(value)? JSON.parse(value) : 25);
+        }).catch((err) => {
+            console.error(err);
+        });
     }, []);
 
     const handleEdit = () => {
@@ -48,16 +63,59 @@ const ChatConfigPane = (props: ChatConfigPaneProps) => {
         onEdit && onEdit(chat);
     }
 
+    const handleDoMultilineChange = async (newValue: boolean) => {
+        setDoMultiline(newValue);
+        try {
+            await setStorageValue('doMultiline', JSON.stringify(newValue));
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const handleMessagesToSendChange = async (newValue: number) => {
+        setMessagesToSend(newValue);
+        try {
+            await setStorageValue('messagesToSend', JSON.stringify(newValue));
+        } catch (err) {
+            console.error(err);
+        }
+    };  
+
+    const pageChangeRight = async (page: number) => {
+        setSwipeDirection("right");
+        await new Promise(r => setTimeout(r, 500));
+        if(page === 1) {
+            setPage(2);
+        }
+        if(page === 2) {
+            setPage(1);
+        }
+        setSwipeDirection("none");
+    }
+
+    const pageChangeLeft = async (page: number) => {
+        setSwipeDirection("left");
+        await new Promise(r => setTimeout(r, 500));
+        if(page === 1) {
+            setPage(2);
+        }
+        if(page === 2) {
+            setPage(1);
+        }
+        setSwipeDirection("none");
+    }
+
     return (
         <div className={"overflow-y-auto w-full themed-root slide-in-right " + (chatPanelClose? 'slide-out-right' : '')}>
-            <h3 className="font-bold text-center">Chat Settings</h3>
+            <button className="themed-button-pos absolute top-2 left-2" onClick={() => pageChangeLeft(page)}><ArrowBigLeft/></button>
+            <button className="themed-button-pos absolute top-2 right-2" onClick={() => pageChangeRight(page)}><ArrowBigRight/></button>
             <div className="flex flex-col w-full flex-grow gap-2 text-left">
+            <h3 className="font-bold text-center">Chat Settings</h3>
                 <div className="flex flex-col">
                     <label className="font-semibold">Vector Memories</label>
                     <div className="themed-input flex flex-col items-center w-full flex-grow gap-2 text-left">
                         <i className="text-sm">Adds messages to the persistent vector for only this chat. Only applies to all Constructs if Global is enabled.</i>
                         <ReactSwitch
-                            disabled={!global}
                             checked={doVector}
                             onChange={() => {setDoVector(!doVector); handleEdit();}}
                             handleDiameter={30}
@@ -81,6 +139,24 @@ const ChatConfigPane = (props: ChatConfigPaneProps) => {
                             id="global"
                         />
                     </div>
+                    <label className="font-semibold">Multiline Messages</label>
+                    <div className="themed-input flex flex-col items-center w-full flex-grow gap-2 text-left">
+                        <i className="text-sm">Allows messages to be sent in multiple lines.</i>
+                        <ReactSwitch
+                            checked={doMultiline}
+                            onChange={() => {handleDoMultilineChange(!doMultiline); handleEdit();}}
+                            handleDiameter={30}
+                            width={60}
+                            uncheckedIcon={false}
+                            checkedIcon={true}
+                            id="doMultiline"
+                        />
+                    </div>
+                    <label className="font-semibold">Messages to Send</label>
+                    <div className="themed-input flex flex-col items-center w-full flex-grow gap-2 text-left">
+                        <i className="text-sm">The number of messages to send in the prompt.</i>
+                        <input type="number" className="themed-input" value={messagesToSend} onChange={(e) => {handleMessagesToSendChange(parseInt(e.target.value)); handleEdit();}}/>
+                    </div>
                     <label className="font-semibold">Constructs in Chat</label>
                     <div className="flex flex-col items-center w-full flex-grow gap-2 text-left">
                         <div className="flex flex-col w-full gap-1 overflow-y-auto">
@@ -100,6 +176,7 @@ const ChatConfigPane = (props: ChatConfigPaneProps) => {
                             )}
                         </div>
                     </div>
+                    <label className="font-semibold">Construct Chat Configs</label>
                 </div>
             </div>
         </div>

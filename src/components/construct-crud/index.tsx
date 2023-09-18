@@ -248,18 +248,6 @@ const ConstructManagement = () => {
         setSwipeDirection("none");
     }
 
-    const addCommand = (commandValue: string) => {
-        let newCommands = constructCommands;
-        newCommands.push(commandValue);
-        setConstructCommands(newCommands);
-    }
-
-    const removeCommand = (commandValue: string) => {
-        let newCommands = constructCommands;
-        newCommands = newCommands.filter((command) => command !== commandValue);
-        setConstructCommands(newCommands);
-    }
-
     const addSprite = (sprite: Sprite, emotion: Emotion) => {
         let newSprites = constructSprites;
         const index = newSprites.findIndex((sprite) => sprite.emotion === emotion);
