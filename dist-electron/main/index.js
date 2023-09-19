@@ -2691,14 +2691,13 @@ async function generateThoughts(construct, chat, currentUser = "you", messagesTo
 `;
   prompt += `### Response:
 `;
-  prompt += `${construct.name.trim()}'s Thoughts:`;
   if (replaceUser2 === true) {
     prompt = prompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${construct.name}`);
   }
   console.log(prompt);
   const response = await generateText(prompt, currentUser);
   if (response && response.results && response.results[0]) {
-    return breakUpCommands(construct.name, response.results[0], currentUser, void 0, doMultiLine);
+    return breakUpCommands(construct.name, response.results[0].replaceAll(`${construct.name.trim()}'s Thoughts:`, ""), currentUser, void 0, doMultiLine);
   } else {
     console.log("No valid response from GenerateText:", (_i = response == null ? void 0 : response.error) == null ? void 0 : _i.toString());
     return null;

@@ -313,14 +313,13 @@ export async function generateThoughts(construct: ConstructInterface, chat: Chat
     prompt += `Use the context to decide how you are thinking. This is internal and will not be seen by the user. You are ${construct.name}.\n`;
     prompt += `${construct.thoughtPattern.trim()}\n\n`;
     prompt += `### Response:\n`;
-    prompt += `${construct.name.trim()}'s Thoughts:`;
     if(replaceUser === true){
         prompt = prompt.replaceAll('{{user}}', `${currentUser}`).replaceAll('{{char}}', `${construct.name}`);
     }
     console.log(prompt);
     const response = await generateText(prompt, currentUser);
     if (response && response.results && response.results[0]) {
-        return breakUpCommands(construct.name, response.results[0], currentUser, undefined, doMultiLine);
+        return breakUpCommands(construct.name, response.results[0].replaceAll(`${construct.name.trim()}'s Thoughts:`, ''), currentUser, undefined, doMultiLine);
     } else {
         console.log('No valid response from GenerateText:', response?.error?.toString());
         return null;
