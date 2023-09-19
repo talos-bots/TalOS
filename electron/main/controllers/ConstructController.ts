@@ -279,8 +279,18 @@ export function assembleInstructPrompt(construct: any, chatLog: ChatInterface, c
 }
 
 export async function generateThoughts(construct: ConstructInterface, chat: ChatInterface, currentUser: string = 'you', messagesToInclude: number = 25, doMultiLine?: boolean, replaceUser: boolean = true){
-    let lastTwoMessages = chat.messages.slice(-2);
-    let messagesExceptLastTwo = chat.messages.slice(0, -2);
+    let lastTwoMessages;
+    if(chat.messages.length < 2){
+        lastTwoMessages = chat.messages;
+    }else{
+        lastTwoMessages = chat.messages.slice(-2);
+    }
+    let messagesExceptLastTwo;
+    if(chat.messages.length < 2){
+        messagesExceptLastTwo = chat.messages;
+    }else{
+        messagesExceptLastTwo = chat.messages.slice(0, -2);
+    }
     messagesExceptLastTwo = messagesExceptLastTwo.slice(-messagesToInclude);
     let prompt = '';
     for(let i = 0; i < messagesExceptLastTwo.length; i++){
@@ -288,9 +298,9 @@ export async function generateThoughts(construct: ConstructInterface, chat: Chat
             prompt += messagesExceptLastTwo[i].text.trim() + '\n';
         }else{
             if(messagesExceptLastTwo[i].isThought === true){
-                prompt += `${messagesExceptLastTwo[i]?.user?.trim()}'s Thoughts: ${messagesExceptLastTwo[i].text.trim()}\n`;
+                prompt += `${messagesExceptLastTwo[i]?.user?.trim()}'s Thoughts: ${messagesExceptLastTwo[i]?.text?.trim()}\n`;
             }else{
-                prompt += `${messagesExceptLastTwo[i]?.user?.trim()}: ${messagesExceptLastTwo[i].text.trim()}\n`;
+                prompt += `${messagesExceptLastTwo[i]?.user?.trim()}: ${messagesExceptLastTwo[i]?.text?.trim()}\n`;
             }
         }
     }
@@ -303,8 +313,8 @@ export async function generateThoughts(construct: ConstructInterface, chat: Chat
     prompt += `Use the Context to decide how you are thinking. This output will be internal. You are ${construct.name}.\n`;
     prompt += `${construct.thoughtPattern.trim()}\n\n`;
     prompt += `### Context:\n`;
-    prompt += `${lastTwoMessages[0]?.user?.trim()}: ${lastTwoMessages[0].text.trim()}\n`;
-    prompt += `${lastTwoMessages[1]?.user?.trim()}: ${lastTwoMessages[1].text.trim()}\n\n`;
+    prompt += `${lastTwoMessages[0]?.user?.trim()}: ${lastTwoMessages[0]?.text?.trim()}\n`;
+    prompt += `${lastTwoMessages[1]?.user?.trim()}: ${lastTwoMessages[1]?.text?.trim()}\n\n`;
     prompt += `### Response:\n`;
     prompt += `${construct.name.trim()}'s Thoughts:`;
     if(replaceUser === true){

@@ -2649,9 +2649,19 @@ function assembleInstructPrompt(construct, chatLog, currentUser = "you", message
   return prompt.replaceAll("{{user}}", `${currentUser}`);
 }
 async function generateThoughts(construct, chat, currentUser = "you", messagesToInclude = 25, doMultiLine, replaceUser2 = true) {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _i;
-  let lastTwoMessages = chat.messages.slice(-2);
-  let messagesExceptLastTwo = chat.messages.slice(0, -2);
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q;
+  let lastTwoMessages;
+  if (chat.messages.length < 2) {
+    lastTwoMessages = chat.messages;
+  } else {
+    lastTwoMessages = chat.messages.slice(-2);
+  }
+  let messagesExceptLastTwo;
+  if (chat.messages.length < 2) {
+    messagesExceptLastTwo = chat.messages;
+  } else {
+    messagesExceptLastTwo = chat.messages.slice(0, -2);
+  }
   messagesExceptLastTwo = messagesExceptLastTwo.slice(-messagesToInclude);
   let prompt = "";
   for (let i = 0; i < messagesExceptLastTwo.length; i++) {
@@ -2659,10 +2669,10 @@ async function generateThoughts(construct, chat, currentUser = "you", messagesTo
       prompt += messagesExceptLastTwo[i].text.trim() + "\n";
     } else {
       if (messagesExceptLastTwo[i].isThought === true) {
-        prompt += `${(_b = (_a = messagesExceptLastTwo[i]) == null ? void 0 : _a.user) == null ? void 0 : _b.trim()}'s Thoughts: ${messagesExceptLastTwo[i].text.trim()}
+        prompt += `${(_b = (_a = messagesExceptLastTwo[i]) == null ? void 0 : _a.user) == null ? void 0 : _b.trim()}'s Thoughts: ${(_d = (_c = messagesExceptLastTwo[i]) == null ? void 0 : _c.text) == null ? void 0 : _d.trim()}
 `;
       } else {
-        prompt += `${(_d = (_c = messagesExceptLastTwo[i]) == null ? void 0 : _c.user) == null ? void 0 : _d.trim()}: ${messagesExceptLastTwo[i].text.trim()}
+        prompt += `${(_f = (_e = messagesExceptLastTwo[i]) == null ? void 0 : _e.user) == null ? void 0 : _f.trim()}: ${(_h = (_g = messagesExceptLastTwo[i]) == null ? void 0 : _g.text) == null ? void 0 : _h.trim()}
 `;
       }
     }
@@ -2682,9 +2692,9 @@ async function generateThoughts(construct, chat, currentUser = "you", messagesTo
 `;
   prompt += `### Context:
 `;
-  prompt += `${(_f = (_e = lastTwoMessages[0]) == null ? void 0 : _e.user) == null ? void 0 : _f.trim()}: ${lastTwoMessages[0].text.trim()}
+  prompt += `${(_j = (_i = lastTwoMessages[0]) == null ? void 0 : _i.user) == null ? void 0 : _j.trim()}: ${(_l = (_k = lastTwoMessages[0]) == null ? void 0 : _k.text) == null ? void 0 : _l.trim()}
 `;
-  prompt += `${(_h = (_g = lastTwoMessages[1]) == null ? void 0 : _g.user) == null ? void 0 : _h.trim()}: ${lastTwoMessages[1].text.trim()}
+  prompt += `${(_n = (_m = lastTwoMessages[1]) == null ? void 0 : _m.user) == null ? void 0 : _n.trim()}: ${(_p = (_o = lastTwoMessages[1]) == null ? void 0 : _o.text) == null ? void 0 : _p.trim()}
 
 `;
   prompt += `### Response:
@@ -2698,7 +2708,7 @@ async function generateThoughts(construct, chat, currentUser = "you", messagesTo
   if (response && response.results && response.results[0]) {
     return breakUpCommands(construct.name, response.results[0], currentUser, void 0, doMultiLine);
   } else {
-    console.log("No valid response from GenerateText:", (_i = response == null ? void 0 : response.error) == null ? void 0 : _i.toString());
+    console.log("No valid response from GenerateText:", (_q = response == null ? void 0 : response.error) == null ? void 0 : _q.toString());
     return null;
   }
 }
