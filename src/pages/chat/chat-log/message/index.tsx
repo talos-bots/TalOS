@@ -102,10 +102,10 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate, onSplit, on
                             {(message.avatar.length > 0 ? <img src={message.avatar} alt="avatar" className="themed-message-avatar" /> : <RiQuestionMark className="themed-message-avatar" size={'2rem'}/>)}
                         </div>
                         <div className="themed-message-info text-theme-italic">{!message.isThought? user : `${user}'s thoughts (Internal)`} {getFormattedTime(time)} {message?.emotion ? `(${message.emotion})` : null}</div>
-                        <div className="flex flex-col pt-6">
+                        <div className="flex flex-col pt-6 w-full">
                             {isEditing ? (
                                 <TextareaAutosize
-                                    className="m-0 bg-transparent text-theme-text h-auto py-1 rounded-lg border-2 border-gray-500 box-border resize-none overflow-y-auto w-[42.5rem] min-w-full"
+                                    className="m-0 bg-transparent text-theme-text h-auto py-1 rounded-lg border-2 border-gray-500 box-border resize-none overflow-y-auto w-full min-w-full"
                                     style={{ textShadow: '2px 2px 2px rgba(0, 0, 0, 0.411)' }}
                                     onBlur={(e) => handleTextEdit(e.target.value)}
                                     onKeyDown={(e) => handleMessageKeyDown(e)}
