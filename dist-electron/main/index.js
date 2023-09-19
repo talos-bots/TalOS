@@ -1681,7 +1681,7 @@ const generateText = async (prompt, configuredName = "You", stopList = null) => 
     case "Ooba":
       console.log("Ooba");
       endpointURLObject = new URL(endpoint);
-      prompt = prompt.toString().replace(/<br>/g, "").replace(/\n\n/g, "").replace(/\\/g, "\\");
+      prompt = prompt.toString().replace(/<br>/g, "").replace(/\\/g, "");
       let newPrompt = prompt.toString();
       try {
         const oobaPayload = {
@@ -2673,8 +2673,9 @@ async function generateThoughts(construct, chat, currentUser = "you", messagesTo
   }
   prompt += `
 `;
-  prompt += `### Instruction:`;
-  prompt += `Use the Context to decide how you are thinking. You are ${construct.name}.
+  prompt += `### Instruction:
+`;
+  prompt += `Use the Context to decide how you are thinking. This output will be internal. You are ${construct.name}.
 `;
   prompt += `${construct.thoughtPattern.trim()}
 
@@ -2688,9 +2689,11 @@ async function generateThoughts(construct, chat, currentUser = "you", messagesTo
 `;
   prompt += `### Response:
 `;
+  prompt += `${construct.name.trim()}'s Thoughts:`;
   if (replaceUser2 === true) {
     prompt = prompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${construct.name}`);
   }
+  console.log(prompt);
   const response = await generateText(prompt, currentUser);
   if (response && response.results && response.results[0]) {
     return breakUpCommands(construct.name, response.results[0], currentUser, void 0, doMultiLine);

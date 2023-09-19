@@ -285,7 +285,7 @@ export const generateText = async (
         case 'Ooba':
             console.log("Ooba");
             endpointURLObject = new URL(endpoint);
-            prompt = prompt.toString().replace(/<br>/g, '').replace(/\n\n/g, '').replace(/\\/g, "\\");
+            prompt = prompt.toString().replace(/<br>/g, '').replace(/\\/g, "");
             let newPrompt = prompt.toString();
             try{
                 const oobaPayload = {

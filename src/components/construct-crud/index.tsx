@@ -13,6 +13,7 @@ import { Alert } from "@material-tailwind/react";
 import { Emotion, emotions } from "@/types";
 import SpriteCrud from "./sprite-crud";
 import ConstructChatConfigPanel from "../construct-chat-config";
+import TokenTextarea from "../token-textarea";
 
 const commandTypes = [
     {
@@ -69,6 +70,7 @@ const ConstructManagement = (props: ConstructManagementProps) => {
     const [constructAuthorsNote, setConstructAuthorsNote] = useState<string>('');
     const [constructSprites, setConstructSprites] = useState<Sprite[]>([]);
     const [constructDefaultChatConfig, setConstructDefaultChatConfig] = useState<DefaultChatConfig>(new DefaultChatConfig());
+    const [constructThoughtPattern, setConstructThoughtPattern] = useState<string>('');
     const [isActive, setIsActive] = useState<boolean>(false);
     const [isPrimary, setIsPrimary] = useState<boolean>(false);
     const [waitingForImage, setWaitingForImage] = useState<boolean>(false);
@@ -128,6 +130,7 @@ const ConstructManagement = (props: ConstructManagementProps) => {
                 setConstructAuthorsNote(character.authorsNote);
                 setConstructSprites(character.sprites);
                 setConstructDefaultChatConfig(character.defaultConfig);
+                setConstructThoughtPattern(character.thoughtPattern);
                 const getActiveStatus = async () => {
                     let status = await constructIsActive(character._id);
                     setIsActive(status);
@@ -159,6 +162,7 @@ const ConstructManagement = (props: ConstructManagementProps) => {
                 setConstructAuthorsNote(character.authorsNote);
                 setConstructSprites(character.sprites);
                 setConstructDefaultChatConfig(character.defaultConfig);
+                setConstructThoughtPattern(character.thoughtPattern);
                 const getActiveStatus = async () => {
                     let status = await constructIsActive(character._id);
                     setIsActive(status);
@@ -197,6 +201,8 @@ const ConstructManagement = (props: ConstructManagementProps) => {
             constructState.farewells = constructFarewells;
             constructState.authorsNote = constructAuthorsNote;
             constructState.sprites = constructSprites;
+            constructState.defaultConfig = constructDefaultChatConfig;
+            constructState.thoughtPattern = constructThoughtPattern;
             await updateConstruct(constructState);
         } else {
             if(construct !== null) {
@@ -214,6 +220,8 @@ const ConstructManagement = (props: ConstructManagementProps) => {
                 newConstruct.farewells = constructFarewells;
                 newConstruct.authorsNote = constructAuthorsNote;
                 newConstruct.sprites = constructSprites;
+                newConstruct.defaultConfig = constructDefaultChatConfig;
+                newConstruct.thoughtPattern = constructThoughtPattern;
                 await saveNewConstruct(newConstruct);
                 returnToMenu();
             }
@@ -250,6 +258,9 @@ const ConstructManagement = (props: ConstructManagementProps) => {
             setConstructGreetings([]);
             setConstructFarewells([]);
             setConstructAuthorsNote('');
+            setConstructSprites([]);
+            setConstructDefaultChatConfig(new DefaultChatConfig());
+            setConstructThoughtPattern('');
         }
     }
 
@@ -300,6 +311,7 @@ const ConstructManagement = (props: ConstructManagementProps) => {
 
     const handleConfigEdit = (config: DefaultChatConfig | ConstructChatConfig) => {
         config = config as DefaultChatConfig;
+        console.log(config);
         setConstructDefaultChatConfig(config);
     }
     return (
@@ -498,9 +510,17 @@ const ConstructManagement = (props: ConstructManagementProps) => {
                     <label className="font-semibold">Chat Defaults</label>
                         <ConstructChatConfigPanel chatConfig={constructDefaultChatConfig} onChange={handleConfigEdit}/>
                     </div>
-                    <div className="col-span-3 flex flex-col overflow-y-auto">
+                    <div className="col-span-1 flex flex-col overflow-y-auto">
+                        <label htmlFor="construct-thought-pattern" className="font-semibold">Thought Pattern</label>
+                        <TokenTextarea
+                            className="themed-input h-full"
+                            value={constructThoughtPattern}
+                            onChange={(event) => setConstructThoughtPattern(event)}
+                        />
+                    </div>
+                    <div className="col-span-2 flex flex-col overflow-y-auto">
                         <label className="font-semibold">Sprites</label>
-                        <div className="grid grid-cols-4 gap-2 max-h-full w-full overflow-y-auto themed-input flex-grow">
+                        <div className="grid grid-cols-3 gap-2 max-h-full w-full overflow-y-auto themed-input flex-grow">
                             {emotions.map(emotion => {
                                 const sprite = constructSprites.find(sprite => sprite.emotion === emotion.value);
                                 return (

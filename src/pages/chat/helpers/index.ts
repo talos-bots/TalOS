@@ -1,4 +1,4 @@
-import { generateContinueChatLog, regenerateMessageFromChatLog, regenerateUserMessageFromChatLog } from "@/api/constructapi";
+import { generateContinueChatLog, generateThoughts, regenerateMessageFromChatLog, regenerateUserMessageFromChatLog } from "@/api/constructapi";
 import { getConstruct } from "@/api/dbapi";
 import { Attachment } from "@/classes/Attachment";
 import { Chat } from "@/classes/Chat";
@@ -57,6 +57,29 @@ export async function sendMessage(chatlog: Chat, constructID: string, user: User
     newMessage.userID = constructID;
     newMessage.emotion = 'neutral';
     newMessage.isThought = false;
+    return newMessage;
+}
+
+export async function sendThoughts(chatlog: Chat, constructID: string, user: User | null, multiline?: boolean, numberOfMessagesToSend: number = 25) {
+    let activeConstruct = await getConstruct(constructID);
+    if (!chatlog.constructs || chatlog.constructs.length === 0) return null;
+    let response = await generateThoughts(activeConstruct, chatlog, user ? (user.nickname || user.name) : 'DefaultUser', numberOfMessagesToSend);
+    if (!response) return null;
+    response = response.replace(/\*/g, '');
+    response = `*${response.trim()}*`
+    let newMessage = new Message();
+    newMessage.origin = 'ConstructOS';
+    newMessage.text = response;
+    newMessage.user = activeConstruct.name;
+    newMessage.timestamp = new Date().getTime();
+    newMessage.isCommand = false;
+    newMessage.isPrivate = true;
+    newMessage.isHuman = false;
+    newMessage.avatar = activeConstruct.avatar;
+    newMessage.participants = [user?._id || 'DefaultUser', constructID];
+    newMessage.userID = constructID;
+    newMessage.emotion = 'neutral';
+    newMessage.isThought = true;
     return newMessage;
 }
 

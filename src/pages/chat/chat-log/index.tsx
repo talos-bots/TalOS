@@ -4,7 +4,7 @@ import { Chat } from "@/classes/Chat";
 import { Message } from "@/classes/Message";
 import { getChat, getConstruct, getStorageValue, getUser, saveNewAttachment, saveNewChat, updateChat } from "@/api/dbapi";
 import MessageComponent from "@/pages/chat/chat-log/message";
-import { addUserMessage, createSystemMessage, doSlashCommand, getLoadingMessage, regenerateMessage, regenerateUserMessage, sendMessage, wait } from "../helpers";
+import { addUserMessage, createSystemMessage, doSlashCommand, getLoadingMessage, regenerateMessage, regenerateUserMessage, sendMessage, sendThoughts, wait } from "../helpers";
 import { Alert } from "@material-tailwind/react";
 import ChatInfo from "@/pages/chat/chat-info";
 import Loading from "@/components/loading";
@@ -16,6 +16,7 @@ import { ipcRenderer } from "electron";
 import ChatConfigPane from "../chat-config-pane";
 import { Link } from "react-router-dom";
 import SpriteDisplay from "@/components/sprite";
+import { send } from "process";
 interface ChatLogProps {
 	chatLogID?: string;
 	goBack: () => void;
@@ -277,7 +278,48 @@ const ChatLog = (props: ChatLogProps) => {
 	};	
 
 	const getBotResponse = async (chat: Chat, constructID: string, currentUser: User | null) => {
-		let botMessage = await sendMessage(chat, constructID, currentUser, doMultiline, numberOfMessagesToSend);
+		let botMessage: Message | null = null;
+		const activeConstruct = await getConstruct(constructID);
+		if(activeConstruct === null) return;
+		if(activeConstruct?.defaultConfig === undefined || activeConstruct?.defaultConfig === null) return;
+		if(activeConstruct?.defaultConfig?.haveThoughts !== undefined && activeConstruct?.defaultConfig?.haveThoughts !== null && activeConstruct?.defaultConfig?.haveThoughts === true){
+			let thinkMessage: Message | null = null;
+			if(activeConstruct.defaultConfig.thinkBeforeChat){
+				thinkMessage = await sendThoughts(chat, constructID, currentUser);
+			}else{
+				botMessage = await sendMessage(chat, constructID, currentUser, doMultiline, numberOfMessagesToSend);
+			}
+			if(thinkMessage !== null){
+				chat.addMessage(thinkMessage);
+				if(doEmotions === true){
+					thinkMessage.emotion = await getTextEmotion(thinkMessage.text);
+				}
+				if(chat?.doVector === true){
+					addVectorFromMessage(chat._id, thinkMessage);
+				}
+				setMessages(prevMessages => {
+					// Remove the loadingMessage
+					const updatedMessages = prevMessages.filter((message) => {
+						return message._id !== thinkMessage?._id;
+					});
+		
+					// Add the botMessage
+					if (thinkMessage !== null) {
+						updatedMessages.push(thinkMessage);
+					}
+		
+					return updatedMessages;
+				});
+				if(thinkMessage !== null){
+					setLastBotMessage(thinkMessage);
+				}
+			}
+		}else{
+			botMessage = await sendMessage(chat, constructID, currentUser, doMultiline, numberOfMessagesToSend);
+		}
+		if(botMessage === null){
+			botMessage = await sendMessage(chat, constructID, currentUser, doMultiline, numberOfMessagesToSend);
+		}
 		if (botMessage !== null){
 			chat.addMessage(botMessage);
 			if(doEmotions === true){
@@ -307,7 +349,35 @@ const ChatLog = (props: ChatLogProps) => {
 				const updatedMessages = prevMessages;
 				return updatedMessages;
 			});
-			setError("Invalid response from LLM endpoint. Check your settings and try again.");
+		}
+		if(activeConstruct?.defaultConfig?.haveThoughts !== undefined && activeConstruct?.defaultConfig?.haveThoughts !== null && activeConstruct?.defaultConfig?.haveThoughts === true && activeConstruct?.defaultConfig?.thinkBeforeChat !== undefined && activeConstruct?.defaultConfig?.thinkBeforeChat !== null && activeConstruct?.defaultConfig?.thinkBeforeChat === false){
+			let thinkMessage: Message | null = null;
+			thinkMessage = await sendThoughts(chat, constructID, currentUser);
+			if(thinkMessage !== null){
+				chat.addMessage(thinkMessage);
+				if(doEmotions === true){
+					thinkMessage.emotion = await getTextEmotion(thinkMessage.text);
+				}
+				if(chat?.doVector === true){
+					addVectorFromMessage(chat._id, thinkMessage);
+				}
+				setMessages(prevMessages => {
+					// Remove the loadingMessage
+					const updatedMessages = prevMessages.filter((message) => {
+						return message._id !== thinkMessage?._id;
+					});
+					
+					// Add the botMessage
+					if (thinkMessage !== null) {
+						updatedMessages.push(thinkMessage);
+					}
+
+					return updatedMessages;
+				});
+				if(thinkMessage !== null){
+					setLastBotMessage(thinkMessage);
+				}
+			}
 		}
 		setChatLog(chat);
 		await updateChat(chat);

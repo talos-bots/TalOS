@@ -299,16 +299,18 @@ export async function generateThoughts(construct: ConstructInterface, chat: Chat
         prompt = lorebookPrompt;
     }
     prompt += `\n`;
-    prompt += `### Instruction:`;
-    prompt += `Use the Context to decide how you are thinking. You are ${construct.name}.\n`;
+    prompt += `### Instruction:\n`;
+    prompt += `Use the Context to decide how you are thinking. This output will be internal. You are ${construct.name}.\n`;
     prompt += `${construct.thoughtPattern.trim()}\n\n`;
     prompt += `### Context:\n`;
     prompt += `${lastTwoMessages[0].user.trim()}: ${lastTwoMessages[0].text.trim()}\n`;
     prompt += `${lastTwoMessages[1].user.trim()}: ${lastTwoMessages[1].text.trim()}\n\n`;
     prompt += `### Response:\n`;
+    prompt += `${construct.name.trim()}'s Thoughts:`;
     if(replaceUser === true){
         prompt = prompt.replaceAll('{{user}}', `${currentUser}`).replaceAll('{{char}}', `${construct.name}`);
     }
+    console.log(prompt);
     const response = await generateText(prompt, currentUser);
     if (response && response.results && response.results[0]) {
         return breakUpCommands(construct.name, response.results[0], currentUser, undefined, doMultiLine);
