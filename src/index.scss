@@ -137,6 +137,11 @@ ul {
   @apply resize-none overflow-y-auto theme-border-style shadow-md text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
 }
 
+.themed-input .themed-input .themed-input{
+  background-color: var(--theme-box) !important;
+  @apply resize-none overflow-y-auto theme-border-style shadow-md text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
+}
+
 .themed-input-box {
   @apply resize-none overflow-y-auto theme-border-style shadow-md bg-theme-box text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
 }

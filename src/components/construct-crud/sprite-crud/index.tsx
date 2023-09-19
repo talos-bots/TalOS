@@ -38,7 +38,7 @@ const SpriteCrud = (props: SpriteCrudProps) => {
 
     return (
         <>
-            <div key={emotion.value} className="gap-2 themed-box flex-grow flex flex-col justify-center items-center">
+            <div key={emotion.value} className="gap-2 themed-button flex-grow flex flex-col justify-center items-center">
                 Sprite for {emotion.label}
                 <label htmlFor={`emotion-select-${emotion.value}`} className="flex w-fit h-fit cursor-pointer">
                     {spriteImage === null ?

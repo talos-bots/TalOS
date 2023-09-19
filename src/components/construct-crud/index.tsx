@@ -1,5 +1,5 @@
 import { deleteConstruct, getConstruct, saveNewConstruct, updateConstruct } from "@/api/dbapi";
-import { Construct, Sprite } from "@/classes/Construct";
+import { Construct, ConstructChatConfig, DefaultChatConfig, Sprite } from "@/classes/Construct";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { RiQuestionMark } from "react-icons/ri";
@@ -12,6 +12,7 @@ import { sendTxt2Img } from "@/api/sdapi";
 import { Alert } from "@material-tailwind/react";
 import { Emotion, emotions } from "@/types";
 import SpriteCrud from "./sprite-crud";
+import ConstructChatConfigPanel from "../construct-chat-config";
 
 const commandTypes = [
     {
@@ -67,6 +68,7 @@ const ConstructManagement = (props: ConstructManagementProps) => {
     const [constructFarewells, setConstructFarewells] = useState<string[]>([]);
     const [constructAuthorsNote, setConstructAuthorsNote] = useState<string>('');
     const [constructSprites, setConstructSprites] = useState<Sprite[]>([]);
+    const [constructDefaultChatConfig, setConstructDefaultChatConfig] = useState<DefaultChatConfig>(new DefaultChatConfig());
     const [isActive, setIsActive] = useState<boolean>(false);
     const [isPrimary, setIsPrimary] = useState<boolean>(false);
     const [waitingForImage, setWaitingForImage] = useState<boolean>(false);
@@ -125,6 +127,7 @@ const ConstructManagement = (props: ConstructManagementProps) => {
                 setConstructFarewells(character.farewells);
                 setConstructAuthorsNote(character.authorsNote);
                 setConstructSprites(character.sprites);
+                setConstructDefaultChatConfig(character.defaultConfig);
                 const getActiveStatus = async () => {
                     let status = await constructIsActive(character._id);
                     setIsActive(status);
@@ -155,6 +158,7 @@ const ConstructManagement = (props: ConstructManagementProps) => {
                 setConstructFarewells(character.farewells);
                 setConstructAuthorsNote(character.authorsNote);
                 setConstructSprites(character.sprites);
+                setConstructDefaultChatConfig(character.defaultConfig);
                 const getActiveStatus = async () => {
                     let status = await constructIsActive(character._id);
                     setIsActive(status);
@@ -294,6 +298,10 @@ const ConstructManagement = (props: ConstructManagementProps) => {
         setConstructSprites(newSprites);
     }
 
+    const handleConfigEdit = (config: DefaultChatConfig | ConstructChatConfig) => {
+        config = config as DefaultChatConfig;
+        setConstructDefaultChatConfig(config);
+    }
     return (
         <>
         {error !== null ? (
@@ -465,7 +473,7 @@ const ConstructManagement = (props: ConstructManagementProps) => {
                         <label htmlFor="construct-commands" className="font-semibold">Construct Actions</label>
                         <div className="themed-input">
                             <i>These are abilities active Constructs can use inside of Discord, and the Chat page.</i>
-                            <div className="flex flex-col gap-1 themed-root overflow-y-auto">
+                            <div className="flex flex-col gap-1 themed-button overflow-y-auto">
                                 {commandTypes.map((command, index) => {
                                     return (
                                         <>
@@ -486,8 +494,9 @@ const ConstructManagement = (props: ConstructManagementProps) => {
                             </div>
                         </div>
                     </div>
-                    <div className="col-span-1 flex flex-col">
+                    <div className="col-span-1 flex flex-col overflow-y-auto">
                     <label className="font-semibold">Chat Defaults</label>
+                        <ConstructChatConfigPanel chatConfig={constructDefaultChatConfig} onChange={handleConfigEdit}/>
                     </div>
                     <div className="col-span-3 flex flex-col overflow-y-auto">
                         <label className="font-semibold">Sprites</label>

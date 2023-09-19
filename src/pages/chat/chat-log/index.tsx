@@ -30,7 +30,7 @@ const ChatLog = (props: ChatLogProps) => {
 	const [hasSentMessage, setHasSentMessage] = useState<boolean>(false);
 	const [error, setError] = useState<string | null>(null);
 	const [isLoaded, setIsLoaded] = useState<boolean>(false);
-	const [numToDisplay, setNumToDisplay] = useState<number>(60);
+	const [numToDisplay, setNumToDisplay] = useState<number>(40);
 	const [currentUser, setCurrentUser] = useState<User | null>(user);
 	const [doEmotions, setDoEmotions] = useState<boolean>(false);
 	const [doCaptioning, setDoCaptioning] = useState<boolean>(false);
@@ -42,7 +42,7 @@ const ChatLog = (props: ChatLogProps) => {
 	const [openChatConfig, setOpenChatConfig] = useState<boolean>(false);
 	const [chatPaneClose, setChatPaneClose] = useState<boolean>(false);
 
-	const filteredMessages = messages.slice(messages.length - numToDisplay).filter((message) => {
+	const filteredMessages = messages.slice((messages.length - numToDisplay) -1).filter((message) => {
 		if(searchTerm === "") return true;
 		if(searchTerm.startsWith("from:")){
 			let user = searchTerm.split(":")[1];
@@ -479,13 +479,7 @@ const ChatLog = (props: ChatLogProps) => {
 						<ChatInfo chat={chatLog} onEdit={handleDetailsChange} goBack={goBack} searchTerm={searchTerm} setSearchTerm={setSearchTerm} openSettings={handleOpenSettings}/>
 					)}
 				</div>
-				<div className="flex-grow overflow-y-auto"
-					onScroll={(e) => {
-						if(e.currentTarget.scrollTop === 0){
-							setNumToDisplay(numToDisplay + 35);
-						}
-					}}
-				>
+				<div className="flex-grow overflow-y-auto">
 					<div className="themed-message-box">
 						{Array.isArray(filteredMessages) && filteredMessages.map((message, index) => {
 							return (
