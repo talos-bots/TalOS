@@ -242,7 +242,9 @@ const ConstructManagement = (props: ConstructManagementProps) => {
     };
 
     const deleteConstructAndReturn = async () => {
-        if(!await confirmModal(`Are you sure you want to delete this construct? This cannot be undone.`)) return;
+        if(!await confirmModal(`Are you sure you want to delete this construct? This cannot be undone.`)){
+            return;
+        }
         if(constructState !== null) {
             await deleteConstruct(constructState._id);
             returnToMenu();
