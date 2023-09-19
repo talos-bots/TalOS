@@ -4,6 +4,7 @@ import Loading from "@/components/loading";
 import { ArrowBigLeft, ArrowBigRight, Download, RefreshCcw, TrashIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import ImageAttachmentComponent from "./attachment";
+import { confirmModal } from "@/components/confirm-modal";
 
 const AttachmentsPage = () => {
     const [attachments, setAttachments] = useState<Attachment[]>([]);
@@ -148,7 +149,7 @@ const AttachmentsPage = () => {
 
     const handleDelete = (attachment: Attachment) => {
         if(attachment.data === undefined) return;
-        if(!confirm(`Are you sure you want to delete ${attachment.name}?`)) return;
+        if(!confirmModal(`Are you sure you want to delete ${attachment.name}?`)) return;
         deleteAttachment(attachment._id).then(() => {
             let newAttachments = attachments.filter((att) => {
                 return att._id !== attachment._id;

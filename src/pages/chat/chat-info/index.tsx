@@ -1,5 +1,6 @@
 import { removeAllMemories } from "@/api/vectorapi";
 import { Chat } from "@/classes/Chat";
+import { confirmModal } from "@/components/confirm-modal";
 import { Cog, Download, Edit2Icon, LucideArrowBigLeft, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -39,7 +40,7 @@ const ChatInfo = (props: ChatInfoProps) => {
 
     const handleRemoveAllMessages = () => {
         if(chat === null) return;
-        if(!confirm(`Are you sure you want to clear all messages? This cannot be undone.`)) return;
+        if(!confirmModal(`Are you sure you want to clear all messages? This cannot be undone.`)) return;
         chat.messages = [];
         if (onEdit !== undefined) onEdit(chat);
         if (chat.doVector) {

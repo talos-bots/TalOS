@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import './StringArrayEditorCards.scss'
 import { ArrowLeft, ArrowRight, Minus, Plus } from 'lucide-react';
+import { confirmModal } from '../confirm-modal';
 interface MultiInputEditorPropsBase {
     value: string[];
     className?: string;
@@ -79,7 +80,7 @@ const StringArrayEditorCards = (props: MultiInputEditorProps) => {
                         <button
                             className="themed-button-neg w-full h-1/2 flex justify-center items-center"
                             onClick={() => {
-                                if(!confirm(`Are you sure you want to delete this? This cannot be undone.`)) return;
+                                if(!confirmModal(`Are you sure you want to delete this? This cannot be undone.`)) return;
                                 if (onChange) {
                                     const newValue = [...value];
                                     newValue.splice(index, 1);

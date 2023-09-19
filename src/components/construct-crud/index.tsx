@@ -14,6 +14,7 @@ import { Emotion, emotions } from "@/types";
 import SpriteCrud from "./sprite-crud";
 import ConstructChatConfigPanel from "../construct-chat-config";
 import TokenTextarea from "../token-textarea";
+import { confirmModal } from "../confirm-modal";
 
 const commandTypes = [
     {
@@ -241,7 +242,7 @@ const ConstructManagement = (props: ConstructManagementProps) => {
     };
 
     const deleteConstructAndReturn = async () => {
-        if(!confirm(`Are you sure you want to delete this construct? This cannot be undone.`)) return;
+        if(!confirmModal(`Are you sure you want to delete this construct? This cannot be undone.`)) return;
         if(constructState !== null) {
             await deleteConstruct(constructState._id);
             returnToMenu();

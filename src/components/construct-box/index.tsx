@@ -10,6 +10,7 @@ import { setConstructAsPrimary, addConstructToActive, constructIsActive, getActi
 import StringArrayEditorCards from "../string-array-editor-cards";
 import { saveTavernCardAsImage } from "@/api/extrasapi";
 import { Download } from "lucide-react";
+import { confirmModal } from "../confirm-modal";
 interface Props {
     character: Construct;
     onCharacterDelete: (character: Construct) => void;
@@ -50,7 +51,7 @@ const ConstructBox: React.FC<Props> = ({character, onCharacterDelete}) => {
     }, [character]);
 
     const deleteConstructFrom = async () => {
-        if(!confirm(`Are you sure you want to delete this construct? This cannot be undone.`)) return;
+        if(!confirmModal(`Are you sure you want to delete this construct? This cannot be undone.`)) return;
         await deleteConstruct(character._id);
         onCharacterDelete(character);
     }

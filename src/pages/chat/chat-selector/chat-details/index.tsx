@@ -6,6 +6,7 @@ import { Edit2Icon, TrashIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { RiQuestionMark } from "react-icons/ri";
 import { truncateText } from "../../helpers";
+import { confirmModal } from "@/components/confirm-modal";
 interface ChatDetailsProps {
     chat: Chat;
     onDoubleClick?: (chat: Chat) => void;
@@ -186,7 +187,7 @@ const ChatDetails = (props: ChatDetailsProps) => {
                         setIsDeleted(true);
                         await new Promise(r => setTimeout(r, 750));
                         if(onDelete === undefined) return;
-                        if(!confirm(`Are you sure you want to delete this chat? This cannot be undone.`)) return;
+                        if(!confirmModal(`Are you sure you want to delete this chat? This cannot be undone.`)) return;
                         onDelete(chat);
                     }}
                     title="Delete Chat"
