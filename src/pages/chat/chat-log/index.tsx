@@ -186,10 +186,17 @@ const ChatLog = (props: ChatLogProps) => {
 						newMessage.userID = construct?._id;
 						newMessage.emotion = 'neutral';
 						newMessage.isThought = false;
-						setMessages(prevMessages => [...prevMessages, newMessage]);
-						chat.addMessage(newMessage);
-						await updateChat(chat);
-						setChatLog(chat);
+						if(!messages.includes(newMessage)){
+							setMessages(prevMessages => {
+								if (!prevMessages.includes(newMessage)) {
+								   return [...prevMessages, newMessage];
+								}
+								return prevMessages;
+							});
+							chat.addMessage(newMessage);
+							await updateChat(chat);
+							setChatLog(chat);
+						}
 					}
 				}
 			}
@@ -520,7 +527,7 @@ const ChatLog = (props: ChatLogProps) => {
 			   return [...prevMessages, sysMessage];
 			}
 			return prevMessages;
-		 });
+		});
 		 
 		if(chatLog !== null && chatLog !== undefined && lastBotMessage !== null && lastBotMessage !== undefined){
 			updateChat(chatLog);
