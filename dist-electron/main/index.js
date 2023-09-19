@@ -2649,12 +2649,11 @@ function assembleInstructPrompt(construct, chatLog, currentUser = "you", message
   return prompt.replaceAll("{{user}}", `${currentUser}`);
 }
 async function generateThoughts(construct, chat, currentUser = "you", messagesToInclude = 25, doMultiLine, replaceUser2 = true) {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q;
-  let lastTwoMessages;
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i;
   if (chat.messages.length < 2) {
-    lastTwoMessages = chat.messages;
+    chat.messages;
   } else {
-    lastTwoMessages = chat.messages.slice(-2);
+    chat.messages.slice(-2);
   }
   let messagesExceptLastTwo;
   if (chat.messages.length < 2) {
@@ -2685,16 +2684,9 @@ async function generateThoughts(construct, chat, currentUser = "you", messagesTo
 `;
   prompt += `### Instruction:
 `;
-  prompt += `Use the Context to decide how you are thinking. This output will be internal. You are ${construct.name}.
+  prompt += `Use the context to decide how you are thinking. This is internal and will not be seen by the user. You are ${construct.name}.
 `;
   prompt += `${construct.thoughtPattern.trim()}
-
-`;
-  prompt += `### Context:
-`;
-  prompt += `${(_j = (_i = lastTwoMessages[0]) == null ? void 0 : _i.user) == null ? void 0 : _j.trim()}: ${(_l = (_k = lastTwoMessages[0]) == null ? void 0 : _k.text) == null ? void 0 : _l.trim()}
-`;
-  prompt += `${(_n = (_m = lastTwoMessages[1]) == null ? void 0 : _m.user) == null ? void 0 : _n.trim()}: ${(_p = (_o = lastTwoMessages[1]) == null ? void 0 : _o.text) == null ? void 0 : _p.trim()}
 
 `;
   prompt += `### Response:
@@ -2708,7 +2700,7 @@ async function generateThoughts(construct, chat, currentUser = "you", messagesTo
   if (response && response.results && response.results[0]) {
     return breakUpCommands(construct.name, response.results[0], currentUser, void 0, doMultiLine);
   } else {
-    console.log("No valid response from GenerateText:", (_q = response == null ? void 0 : response.error) == null ? void 0 : _q.toString());
+    console.log("No valid response from GenerateText:", (_i = response == null ? void 0 : response.error) == null ? void 0 : _i.toString());
     return null;
   }
 }

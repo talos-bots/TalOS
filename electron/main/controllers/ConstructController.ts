@@ -310,11 +310,8 @@ export async function generateThoughts(construct: ConstructInterface, chat: Chat
     }
     prompt += `\n`;
     prompt += `### Instruction:\n`;
-    prompt += `Use the Context to decide how you are thinking. This output will be internal. You are ${construct.name}.\n`;
+    prompt += `Use the context to decide how you are thinking. This is internal and will not be seen by the user. You are ${construct.name}.\n`;
     prompt += `${construct.thoughtPattern.trim()}\n\n`;
-    prompt += `### Context:\n`;
-    prompt += `${lastTwoMessages[0]?.user?.trim()}: ${lastTwoMessages[0]?.text?.trim()}\n`;
-    prompt += `${lastTwoMessages[1]?.user?.trim()}: ${lastTwoMessages[1]?.text?.trim()}\n\n`;
     prompt += `### Response:\n`;
     prompt += `${construct.name.trim()}'s Thoughts:`;
     if(replaceUser === true){
