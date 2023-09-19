@@ -210,7 +210,7 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate, onSplit, on
                                     title="Delete"
                                     onClick={async () => {
                                         setIsDeleted(true);
-                                        await new Promise(r => setTimeout(r, 550));
+                                        await new Promise(r => setTimeout(r, 500));
                                         if(onDelete === undefined) return;
                                         onDelete(message._id);
                                     }}

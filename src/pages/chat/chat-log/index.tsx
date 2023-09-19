@@ -16,7 +16,6 @@ import { ipcRenderer } from "electron";
 import ChatConfigPane from "../chat-config-pane";
 import { Link } from "react-router-dom";
 import SpriteDisplay from "@/components/sprite";
-import { send } from "process";
 interface ChatLogProps {
 	chatLogID?: string;
 	goBack: () => void;
@@ -42,8 +41,9 @@ const ChatLog = (props: ChatLogProps) => {
 	const [searchTerm, setSearchTerm] = useState<string>("");
 	const [openChatConfig, setOpenChatConfig] = useState<boolean>(false);
 	const [chatPaneClose, setChatPaneClose] = useState<boolean>(false);
+	const [wasPoked, setWasPoked] = useState<boolean>(false);
 
-	const filteredMessages = messages.slice((messages.length - numToDisplay) -1).filter((message) => {
+	const filteredMessages = messages.filter((message) => {
 		if(searchTerm === "") return true;
 		if(searchTerm.startsWith("from:")){
 			let user = searchTerm.split(":")[1];
@@ -160,7 +160,7 @@ const ChatLog = (props: ChatLogProps) => {
 		do {
 			lastBotMessage = chatLog.messages[chatLog.messages.length - i];
 			i++;
-		} while (lastBotMessage?.isHuman === true && lastBotMessage.userID !== 'System' && lastBotMessage.user !== 'System');
+		} while (lastBotMessage?.isHuman === true && lastBotMessage.userID === 'System' && lastBotMessage.user === 'System');
 		setLastBotMessage(lastBotMessage);
 	}
 
@@ -515,7 +515,13 @@ const ChatLog = (props: ChatLogProps) => {
 		const sysMessage = createSystemMessage(`[${user ? (user.nickname || user.name) : 'DefaultUser'} pokes ${lastBotMessage?.user || 'ConstructOS'}'s body.]`)
 		if(messages.includes(sysMessage)) return;
 		chatLog?.addMessage(sysMessage);
-		setMessages(prevMessages => [...prevMessages, sysMessage]);
+		setMessages(prevMessages => {
+			if (!prevMessages.includes(sysMessage)) {
+			   return [...prevMessages, sysMessage];
+			}
+			return prevMessages;
+		 });
+		 
 		if(chatLog !== null && chatLog !== undefined && lastBotMessage !== null && lastBotMessage !== undefined){
 			updateChat(chatLog);
 			getBotResponse(chatLog, lastBotMessage?.userID, currentUser);
@@ -558,7 +564,12 @@ const ChatLog = (props: ChatLogProps) => {
 				</div>
 				<div className="flex-grow overflow-y-auto">
 					<div className="themed-message-box">
-						{Array.isArray(filteredMessages) && filteredMessages.map((message, index) => {
+						{chatLog?.messages && chatLog.messages.length > numToDisplay && (
+							<div className="w-full flex flex-row items-center justify-center">
+								<button className="themed-button-small" onClick={() => setNumToDisplay(numToDisplay + 40)}>Load More</button>
+							</div>
+						)}
+						{Array.isArray(filteredMessages) && filteredMessages.slice(-numToDisplay).map((message, index) => {
 							return (
 								<MessageComponent key={message._id} message={message} onDelete={deleteMessage} onEdit={editMessage} onRegenerate={onRegenerate} onSplit={splitChatLogAtMessage} onUserRegenerate={userRegenerate}/>
 							);
