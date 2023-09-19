@@ -135,8 +135,8 @@ export const getReplaceUser = (): boolean => {
 
 export async function getUsername(userID: string, channelID: string){
     const channels = getRegisteredChannels();
-    for(let i = 0; i < channels.length; i++){
-        if(channels[i]._id === channelID){
+    for(let i = 0; i < channels?.length; i++){
+        if(channels[i]?._id === channelID){
             if(channels[i]?.aliases === undefined) continue;
             for(let j = 0; j < channels[i].aliases.length; j++){
                 if(channels[i].aliases[j]._id === userID){
@@ -162,7 +162,7 @@ export const addAlias = (newAlias: Alias, channelID: string) => {
     const channels = getRegisteredChannels();
     for(let i = 0; i < channels.length; i++){
         if(channels[i]._id === channelID){
-            if(channels[i].aliases === undefined){
+            if(channels[i]?.aliases === undefined){
                 channels[i].aliases = [];
             }
             
@@ -176,7 +176,7 @@ export const addAlias = (newAlias: Alias, channelID: string) => {
             }
             
             if (!replaced) {
-                channels[i].aliases.push(newAlias);
+                channels[i]?.aliases.push(newAlias);
             }
         }
     }
@@ -186,7 +186,7 @@ export const addAlias = (newAlias: Alias, channelID: string) => {
 export const removeAlias = (aliasID: string, channelID: string) => {
     const channels = getRegisteredChannels();
     for(let i = 0; i < channels.length; i++){
-        if(channels[i]._id === channelID){
+        if(channels[i]?._id === channelID){
             for(let j = 0; j < channels[i].aliases.length; j++){
                 if(channels[i].aliases[j]._id === aliasID){
                     channels[i].aliases.splice(j, 1);
