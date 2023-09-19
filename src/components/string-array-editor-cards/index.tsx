@@ -79,10 +79,8 @@ const StringArrayEditorCards = (props: MultiInputEditorProps) => {
                         </button>
                         <button
                             className="themed-button-neg w-full h-1/2 flex justify-center items-center"
-                            onClick={async () => {
-                                if(!await confirmModal(`Are you sure you want to delete this? This cannot be undone.`)){
-                                    return;
-                                }
+                            onClick={() => {
+                                if(!confirmModal(`Are you sure you want to delete this? This cannot be undone.`)) return;
                                 if (onChange) {
                                     const newValue = [...value];
                                     newValue.splice(index, 1);

@@ -313,6 +313,7 @@ export async function generateThoughts(construct: ConstructInterface, chat: Chat
     prompt += `Using the context above, determine how you are thinking. Thoughts should be unqiue, and related to the last thing said. You are ${construct.name}.\n`;
     prompt += `${construct.thoughtPattern.trim()}\n\n`;
     prompt += `### Response:\n`;
+    
     if(replaceUser === true){
         prompt = prompt.replaceAll('{{user}}', `${currentUser}`).replaceAll('{{char}}', `${construct.name}`);
     }

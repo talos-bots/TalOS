@@ -384,12 +384,10 @@ const ConstructManagement = (props: ConstructManagementProps) => {
                             </div>
                             <div className="flex flex-col flex-grow-0 h-2/6 w-full">
                                 <label htmlFor="construct-note" className="font-semibold">Author's Note</label>
-                                <textarea
-                                    required={false}
-                                    id="construct-note"
+                                <TokenTextarea
                                     className="themed-input w-full h-full"
                                     value={constructAuthorsNote}
-                                    onChange={(event) => setConstructAuthorsNote(event.target.value)}
+                                    onChange={(event) => setConstructAuthorsNote(event)}
                                 />
                             </div>
                             <div className="text-left w-full">
@@ -401,31 +399,28 @@ const ConstructManagement = (props: ConstructManagementProps) => {
                         <div className="row-span-1 flex flex-col gap-2 flex-grow-0">
                         <div className="flex flex-col h-1/2 flex-grow-0">
                                 <label htmlFor="construct-background" className="font-semibold">Background</label>
-                                <textarea
-                                    id="construct-background"
+                                <TokenTextarea
                                     className="themed-input h-full"
                                     value={constructBackground}
-                                    onChange={(event) => setConstructBackground(event.target.value)}
+                                    onChange={(event) => setConstructBackground(event)}
                                 />
                             </div>
                             <div className="flex flex-col h-1/2 flex-grow-0">
                                 <label htmlFor="construct-personality" className="font-semibold">Personality</label>
-                                <textarea
-                                    id="construct-personality h-1/2"
+                                <TokenTextarea
                                     className="themed-input h-full"
                                     value={constructPersonality}
-                                    onChange={(event) => setConstructPersonality(event.target.value)}
+                                    onChange={(event) => setConstructPersonality(event)}
                                 />
                             </div>
                         </div>
                         <div className="row-span-1 flex flex-col gap-2 flex-grow-0">
                             <div className="flex flex-col h-1/2 flex-grow-0">
                                 <label htmlFor="construct-appearance" className="font-semibold">Visual Description</label>
-                                <textarea
-                                    id="construct-appearance"
+                                <TokenTextarea
                                     className="themed-input h-full"
                                     value={constructVisualDescription}
-                                    onChange={(event) => setConstructVisualDescription(event.target.value)}
+                                    onChange={(event) => setConstructVisualDescription(event)}
                                 />
                             </div>
                             <div className="flex flex-col h-1/2 overflow-y-auto flex-grow-0">
