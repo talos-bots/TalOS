@@ -160,7 +160,7 @@ const ChatLog = (props: ChatLogProps) => {
 		do {
 			lastBotMessage = chatLog.messages[chatLog.messages.length - i];
 			i++;
-		} while (lastBotMessage?.isHuman === true || (lastBotMessage.userID === 'System' && lastBotMessage.user === 'System'));
+		} while (lastBotMessage?.isHuman === true || (lastBotMessage?.userID === 'System' && lastBotMessage?.user === 'System'));
 		setLastBotMessage(lastBotMessage);
 	}
 

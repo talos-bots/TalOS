@@ -2684,7 +2684,7 @@ async function generateThoughts(construct, chat, currentUser = "you", messagesTo
 `;
   prompt += `### Instruction:
 `;
-  prompt += `Use the context to decide how you are thinking. This is internal and will not be seen by the user. You are ${construct.name}.
+  prompt += `Using the context above, determine how you are thinking. Thoughts should be unqiue, and related to the last thing said. You are ${construct.name}.
 `;
   prompt += `${construct.thoughtPattern.trim()}
 

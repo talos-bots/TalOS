@@ -310,7 +310,7 @@ export async function generateThoughts(construct: ConstructInterface, chat: Chat
     }
     prompt += `\n`;
     prompt += `### Instruction:\n`;
-    prompt += `Use the context to decide how you are thinking. This is internal and will not be seen by the user. You are ${construct.name}.\n`;
+    prompt += `Using the context above, determine how you are thinking. Thoughts should be unqiue, and related to the last thing said. You are ${construct.name}.\n`;
     prompt += `${construct.thoughtPattern.trim()}\n\n`;
     prompt += `### Response:\n`;
     if(replaceUser === true){
