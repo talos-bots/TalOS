@@ -173,7 +173,7 @@ const ChatSelector = (props: ChatSelectorProps) => {
               <div className="h-11/12">
                 <div className="grid grid-cols-12 gap-1 w-full grow-0 shrink-0 mb-2 lg:gap-2 lg:grid-cols-16">
                   <label htmlFor="character-image-input" className="themed-button-pos flex items-center justify-center col-span-1" data-tooltip="Import Chat" id="importChat">
-                    <AiOutlineUpload className='absolute' size={`3rem`} />
+                    <AiOutlineUpload className='absolute' size={`2.5rem`} />
                   </label>
                   <input
                     type="file"
@@ -184,7 +184,7 @@ const ChatSelector = (props: ChatSelectorProps) => {
                     multiple={true}
                   />
                   <button className="themed-button-pos col-span-1 flex items-center justify-center" onClick={() => fetchInfo()} data-tooltip="Refresh Chats" id="refreshChats">
-                    <RefreshCcw size={`3rem`} />
+                    <RefreshCcw size={`2.5rem`} />
                   </button>
                   <div className="construct-search-bar col-span-2 lg:col-span-3">
                     <input
