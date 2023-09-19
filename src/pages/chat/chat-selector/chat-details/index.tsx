@@ -187,7 +187,7 @@ const ChatDetails = (props: ChatDetailsProps) => {
                         setIsDeleted(true);
                         await new Promise(r => setTimeout(r, 750));
                         if(onDelete === undefined) return;
-                        if(!confirmModal(`Are you sure you want to delete this chat? This cannot be undone.`)) return;
+                        if(!await confirmModal(`Are you sure you want to delete this chat? This cannot be undone.`)) return;
                         onDelete(chat);
                     }}
                     title="Delete Chat"

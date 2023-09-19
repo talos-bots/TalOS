@@ -147,9 +147,9 @@ const AttachmentsPage = () => {
         element.click();
     }    
 
-    const handleDelete = (attachment: Attachment) => {
+    const handleDelete = async (attachment: Attachment) => {
         if(attachment.data === undefined) return;
-        if(!confirmModal(`Are you sure you want to delete ${attachment.name}?`)) return;
+        if(!await confirmModal(`Are you sure you want to delete ${attachment.name}?`)) return;
         deleteAttachment(attachment._id).then(() => {
             let newAttachments = attachments.filter((att) => {
                 return att._id !== attachment._id;
