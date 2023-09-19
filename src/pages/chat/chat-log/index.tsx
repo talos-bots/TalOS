@@ -312,6 +312,8 @@ const ChatLog = (props: ChatLogProps) => {
 				});
 				if(thinkMessage !== null){
 					setLastBotMessage(thinkMessage);
+				}else{
+					setError("No response from LLM. Check your connection settings and try again.");
 				}
 			}
 		}else{
@@ -376,8 +378,13 @@ const ChatLog = (props: ChatLogProps) => {
 				});
 				if(thinkMessage !== null){
 					setLastBotMessage(thinkMessage);
+				}else{
+					setError("No response from LLM. Check your connection settings and try again.");
 				}
 			}
+		}
+		if(botMessage === null){
+			setError("No response from LLM. Check your connection settings and try again.");
 		}
 		setChatLog(chat);
 		await updateChat(chat);

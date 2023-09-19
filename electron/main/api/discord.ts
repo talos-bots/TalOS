@@ -471,6 +471,35 @@ export async function sendMessage(channelID: Snowflake, message: string){
     }
 }
 
+export async function sendReply(message: Message | CommandInteraction, reply: string){
+    if(!isReady) return;
+    if (!disClient.user) {
+        console.error("Discord client user is not initialized.");
+        return;
+    }
+    if(reply.length < 1) return;
+    if(message instanceof Message){
+        return message.reply(reply);
+    }else if(message instanceof CommandInteraction){
+        return message.reply(reply);
+    }
+}
+
+export async function sendMessageEmbed(channelID: Snowflake, embed: any){
+    if(!isReady) return;
+    if (!disClient.user) {
+        console.error("Discord client user is not initialized.");
+        return;
+    }
+    const channel = await disClient.channels.fetch(channelID);
+    if(!channel) return;
+    if(!embed) return;
+    // Check if the channel is one of the types that can send messages
+    if (channel instanceof TextChannel || channel instanceof DMChannel || channel instanceof NewsChannel) {
+        return channel.send({embeds: [embed]});
+    }
+}
+
 export async function getWebhookForCharacter(charName: string, channelID: Snowflake): Promise<Webhook | undefined> {
     if(!isReady) return;
     const channel = disClient.channels.cache.get(channelID);
@@ -497,6 +526,22 @@ export async function sendMessageAsCharacter(char: ConstructInterface, channelID
     }
     if(message.length < 1) return;
     await webhook.send(message);
+}
+
+export async function sendEmbedAsCharacter(char: ConstructInterface, channelID: Snowflake, embed: any): Promise<void> {
+    if(!isReady) return;
+    let webhook = await getWebhookForCharacter(char.name, channelID);
+    
+    if (!webhook) {
+        webhook = await createWebhookForChannel(channelID, char);
+    }
+    if (!webhook) {
+        console.error("Failed to create webhook.");
+        sendMessage(channelID, '*Failed to create webhook. Check the number of webhooks in channel, if it is at 15, run /clearallwebhooks. Otherwise, ask your server adminstrator to give you the permissions they removed like a twat.*');
+        return;
+    }
+    if(!embed) return;
+    await webhook.send({embeds: [embed]});
 }
 
 export async function clearWebhooksFromChannel(channelID: Snowflake): Promise<void> {

@@ -288,9 +288,9 @@ export async function generateThoughts(construct: ConstructInterface, chat: Chat
             prompt += messagesExceptLastTwo[i].text.trim() + '\n';
         }else{
             if(messagesExceptLastTwo[i].isThought === true){
-                prompt += `${messagesExceptLastTwo[i].user.trim()}'s Thoughts: ${messagesExceptLastTwo[i].text.trim()}\n`;
+                prompt += `${messagesExceptLastTwo[i]?.user?.trim()}'s Thoughts: ${messagesExceptLastTwo[i].text.trim()}\n`;
             }else{
-                prompt += `${messagesExceptLastTwo[i].user.trim()}: ${messagesExceptLastTwo[i].text.trim()}\n`;
+                prompt += `${messagesExceptLastTwo[i]?.user?.trim()}: ${messagesExceptLastTwo[i].text.trim()}\n`;
             }
         }
     }
@@ -303,8 +303,8 @@ export async function generateThoughts(construct: ConstructInterface, chat: Chat
     prompt += `Use the Context to decide how you are thinking. This output will be internal. You are ${construct.name}.\n`;
     prompt += `${construct.thoughtPattern.trim()}\n\n`;
     prompt += `### Context:\n`;
-    prompt += `${lastTwoMessages[0].user.trim()}: ${lastTwoMessages[0].text.trim()}\n`;
-    prompt += `${lastTwoMessages[1].user.trim()}: ${lastTwoMessages[1].text.trim()}\n\n`;
+    prompt += `${lastTwoMessages[0]?.user?.trim()}: ${lastTwoMessages[0].text.trim()}\n`;
+    prompt += `${lastTwoMessages[1]?.user?.trim()}: ${lastTwoMessages[1].text.trim()}\n\n`;
     prompt += `### Response:\n`;
     prompt += `${construct.name.trim()}'s Thoughts:`;
     if(replaceUser === true){

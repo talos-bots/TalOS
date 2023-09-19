@@ -1,10 +1,10 @@
 import { ipcMain } from 'electron';
 import Store from 'electron-store';
-import { generateContinueChatLog, getDoMultiLine, regenerateMessageFromChatLog, removeMessagesFromChatLog, retrieveConstructs } from './ConstructController';
+import { generateContinueChatLog, generateThoughts, getDoMultiLine, regenerateMessageFromChatLog, removeMessagesFromChatLog, retrieveConstructs } from './ConstructController';
 import { addChat, getChat, getConstruct, updateChat } from '../api/pouchdb';
 import { addUserFromDiscordMessage, assembleChatFromData, assembleConstructFromData, convertDiscordMessageToMessage } from '../helpers/helpers';
 import { AttachmentBuilder, CommandInteraction, EmbedBuilder, Message } from 'discord.js';
-import { deleteMessage, disClient, editMessage, isAutoReplyMode, isMultiCharacterMode, registerCommands, sendMessage, sendMessageAsCharacter, sendTyping } from '../api/discord';
+import { deleteMessage, disClient, editMessage, isAutoReplyMode, isMultiCharacterMode, registerCommands, sendEmbedAsCharacter, sendMessage, sendMessageAsCharacter, sendMessageEmbed, sendTyping } from '../api/discord';
 import { Alias, ChannelConfigInterface, ChatInterface, ConstructInterface } from '../types/types';
 import { addVectorFromMessage } from '../api/vector';
 import { getDefaultCfg, getDefaultHeight, getDefaultHighresSteps, getDefaultNegativePrompt, getDefaultPrompt, getDefaultSteps, getDefaultWidth, makeImage } from '../api/sd';
@@ -359,6 +359,12 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
     if(alias !== null && alias !== undefined){
         username = alias;
     }
+    if(construct.defaultConfig.haveThoughts && construct.defaultConfig.thinkBeforeChat){
+        let thoughtChatLog = await doCharacterThoughts(construct, chatLog, message);
+        if(thoughtChatLog !== undefined){
+            chatLog = thoughtChatLog;
+        }
+    }
     if(message.channel === null) return;
     const result = await generateContinueChatLog(construct, chatLog, username, maxMessages, undefined, undefined, undefined, getDoMultiLine(), replaceUser);
     let reply: string;
@@ -387,6 +393,71 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
     chatLog.lastMessage = replyMessage;
     chatLog.lastMessageDate = replyMessage.timestamp;
     await sendMessage(message.channel.id, reply);
+    await updateChat(chatLog);
+    if(construct.defaultConfig.haveThoughts && !construct.defaultConfig.thinkBeforeChat){
+        let thoughtChatLog = await doCharacterThoughts(construct, chatLog, message);
+        if(thoughtChatLog !== undefined){
+            chatLog = thoughtChatLog;
+        }
+    }
+    return chatLog;
+}
+
+async function doCharacterThoughts(construct: ConstructInterface, chatLog: ChatInterface, message: Message | CommandInteraction){
+    let username: string = 'You';
+    let authorID: string = 'You';
+    let primaryConstruct = retrieveConstructs()[0];
+    if(message instanceof Message){
+        username = message.author.displayName;
+        authorID = message.author.id;
+    }
+    if(message instanceof CommandInteraction){
+        username = message.user.displayName;
+        authorID = message.user.id;
+    }
+    let alias = await getUsername(authorID, chatLog._id);
+    if(alias !== null && alias !== undefined){
+        username = alias;
+    }
+    if(message.channel === null) return;
+    const result = await generateThoughts(construct, chatLog, username, maxMessages, getDoMultiLine(), replaceUser);
+    let reply: string;
+    if (result !== null) {
+        reply = result;
+    } else {
+        sendMessage(message.channel.id, '**No response from LLM. Check your endpoint or settings and try again.**');
+        return;
+    }
+    reply = reply.replace(/\*/g, '');
+    reply = `*${reply.trim()}*`
+    const replyMessage = {
+        _id: Date.now().toString(),
+        user: construct.name,
+        avatar: construct.avatar,
+        text: reply,
+        userID: construct._id,
+        timestamp: Date.now(),
+        origin: 'Discord - ' + message.channelId,
+        isHuman: false,
+        isCommand: false,
+        isPrivate: false,
+        participants: [authorID, construct._id],
+        attachments: [],
+        isThought: true,
+    }
+    chatLog.messages.push(replyMessage);
+    chatLog.lastMessage = replyMessage;
+    chatLog.lastMessageDate = replyMessage.timestamp;
+    const newEmbed = new EmbedBuilder()
+    .setTitle('Thoughts')
+    .setDescription(reply)
+    .setFooter({text: 'Powered by ConstructOS'})
+    .setTimestamp();
+    if(primaryConstruct === construct._id){
+        await sendMessageEmbed(message.channel.id, newEmbed);
+    }else{
+        await sendEmbedAsCharacter(construct, message.channel.id, newEmbed);
+    }
     await updateChat(chatLog);
     return chatLog;
 }
@@ -436,6 +507,12 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
         let tries = 0;
         let result;
         sendTyping(message);
+        if(constructArray[i].defaultConfig.haveThoughts && constructArray[i].defaultConfig.thinkBeforeChat){
+            let thoughtChatLog = await doCharacterThoughts(constructArray[i], chatLog, message);
+            if(thoughtChatLog !== undefined){
+                chatLog = thoughtChatLog;
+            }
+        }
         do {
             result = await generateContinueChatLog(constructArray[i], chatLog, username, maxMessages, undefined, undefined, undefined, getDoMultiLine(), replaceUser);
             tries++;
@@ -480,6 +557,12 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
                 }
             }else{
                 addVectorFromMessage(chatLog._id, replyMessage);
+            }
+        }
+        if(constructArray[i].defaultConfig.haveThoughts && !constructArray[i].defaultConfig.thinkBeforeChat){
+            let thoughtChatLog = await doCharacterThoughts(constructArray[i], chatLog, message);
+            if(thoughtChatLog !== undefined){
+                chatLog = thoughtChatLog;
             }
         }
     }
