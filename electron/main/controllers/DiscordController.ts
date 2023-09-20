@@ -327,20 +327,36 @@ export async function handleDiscordMessage(message: Message) {
     const mode = getDiscordMode();
     if(mode === 'Character'){
         if(isMultiCharacterMode() && !message.channel.isDMBased()){
-            chatLog = await doRoundRobin(constructArray, chatLog, message);
-            if(chatLog !== undefined)
-            if(doAutoReply){
-                if(0.25 > Math.random()){
-                    chatLog = await doRoundRobin(constructArray, chatLog, message);
+            let lastMessageContent = chatLog.lastMessage.text;
+            let mentionedConstruct = containsName(lastMessageContent, constructArray);
+            if (mentionedConstruct) {
+                // Find the index of the mentioned construct
+                let mentionedIndex = -1;
+                for (let i = 0; i < constructArray.length; i++) {
+                    if (constructArray[i].name === mentionedConstruct) {
+                        mentionedIndex = i;
+                        break;
+                    }
+                }
+        
+                // If the mentioned construct was found in the array,
+                // rearrange the array to make it the first element
+                if (mentionedIndex !== -1) {
+                    const [mentioned] = constructArray.splice(mentionedIndex, 1);
+                    constructArray.unshift(mentioned);
                 }
             }
+            chatLog = await doRoundRobin(constructArray, chatLog, message);
         }else{
             sendTyping(message);
-            chatLog = await doCharacterReply(constructArray[0], chatLog, message);
+            if(!constructArray[0]?.defaultConfig?.doLurk === true){
+                chatLog = await doCharacterReply(constructArray[0], chatLog, message);
+            }
         }
     }else if (mode === 'Construct'){
         await sendMessage(message.channel.id, 'Construct Mode is not yet implemented.');
     }
+    if(chatLog?._id !== undefined)
     await updateChat(chatLog);
 }
 
@@ -360,7 +376,7 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
         username = alias;
     }
     if(construct.defaultConfig.haveThoughts && construct.defaultConfig.thinkBeforeChat){
-        if(construct.defaultConfig.thoughtChance > Math.random()){
+        if(construct.defaultConfig.thoughtChance >= Math.random()){
             let thoughtChatLog = await doCharacterThoughts(construct, chatLog, message);
             if(thoughtChatLog !== undefined){
                 chatLog = thoughtChatLog;
@@ -395,9 +411,8 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
     chatLog.lastMessage = replyMessage;
     chatLog.lastMessageDate = replyMessage.timestamp;
     await sendMessage(message.channel.id, reply);
-    await updateChat(chatLog);
     if(construct.defaultConfig.haveThoughts && !construct.defaultConfig.thinkBeforeChat){
-        if(construct.defaultConfig.thoughtChance > Math.random()){
+        if(construct.defaultConfig.thoughtChance >= Math.random()){
             let thoughtChatLog = await doCharacterThoughts(construct, chatLog, message);
             if(thoughtChatLog !== undefined){
                 chatLog = thoughtChatLog;
@@ -434,6 +449,7 @@ async function doCharacterThoughts(construct: ConstructInterface, chatLog: ChatI
     }
     reply = reply.replace(/\*/g, '');
     reply = `*${reply.trim()}*`
+    if(reply.trim().length <= 2) return chatLog;
     const replyMessage = {
         _id: Date.now().toString(),
         user: construct.name,
@@ -462,114 +478,44 @@ async function doCharacterThoughts(construct: ConstructInterface, chatLog: ChatI
     }else{
         await sendEmbedAsCharacter(construct, message.channel.id, newEmbed);
     }
-    await updateChat(chatLog);
     return chatLog;
 }
 
 async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatInterface, message: Message | CommandInteraction){
-    let primaryConstruct = retrieveConstructs()[0];
-    let username: string = 'You';
-    let authorID: string = 'You';
-    if(message instanceof Message){
-        username = message.author.displayName;
-        authorID = message.author.id;
-    }
-    if(message instanceof CommandInteraction){
-        username = message.user.displayName;
-        authorID = message.user.id;
-    }
-    let alias = await getUsername(authorID, chatLog._id);
-    if(alias !== null && alias !== undefined && alias){
-        username = alias;
-    }
     if(message.channel === null) return;
-    let lastMessageContent = chatLog.lastMessage.text;
-    let mentionedConstruct = containsName(lastMessageContent, constructArray);
-    if (mentionedConstruct) {
-        // Find the index of the mentioned construct
-        let mentionedIndex = -1;
-        for (let i = 0; i < constructArray.length; i++) {
-            if (constructArray[i].name === mentionedConstruct) {
-                mentionedIndex = i;
-                break;
-            }
-        }
-
-        // If the mentioned construct was found in the array,
-        // rearrange the array to make it the first element
-        if (mentionedIndex !== -1) {
-            const [mentioned] = constructArray.splice(mentionedIndex, 1);
-            constructArray.unshift(mentioned);
-        }
-    }
     for(let i = 0; i < constructArray.length; i++){
-        if (i !== 0) {
-            if (0.10 > Math.random()) {
-                continue;
-            }
-        }
-        let tries = 0;
-        let result;
-        sendTyping(message);
-        if(constructArray[i].defaultConfig.haveThoughts && constructArray[i].defaultConfig.thinkBeforeChat){
-            if(constructArray[i].defaultConfig.thoughtChance > Math.random()){
-                let thoughtChatLog = await doCharacterThoughts(constructArray[i], chatLog, message);
-                if(thoughtChatLog !== undefined){
-                    chatLog = thoughtChatLog;
+        if(constructArray[i]?.defaultConfig?.doLurk === true) continue;
+        const wasMentioned = isMentioned(chatLog.lastMessage.text, constructArray[i]);
+        const wasMentionedByHuman = chatLog.lastMessage.isHuman && wasMentioned;
+        const wasHuman = chatLog.lastMessage.isHuman;
+        if(wasMentionedByHuman){
+            if(constructArray[i].defaultConfig.replyToUserMention >= Math.random()){
+                let replyLog = await doCharacterReply(constructArray[i], chatLog, message);
+                if(replyLog !== undefined){
+                    chatLog = replyLog;
                 }
             }
-        }
-        do {
-            result = await generateContinueChatLog(constructArray[i], chatLog, username, maxMessages, undefined, undefined, undefined, getDoMultiLine(), replaceUser);
-            tries++;
-            if (tries > 10) {
-                sendMessage(message.channel.id, '**No response from LLM. Check your endpoint or settings and try again.**');
-                return;
-                break;
+        }else if(wasMentioned){
+            if(constructArray[i].defaultConfig.replyToConstructMention >= Math.random()){
+                let replyLog = await doCharacterReply(constructArray[i], chatLog, message);
+                if(replyLog !== undefined){
+                    chatLog = replyLog;
+                }
             }
-        } while (result === null);
-        
-        let reply: string = result;
-        if(reply.trim() === '') continue;
-        const replyMessage = {
-            _id: Date.now().toString(),
-            user: constructArray[i].name,
-            avatar: constructArray[i].avatar,
-            text: reply,
-            userID: constructArray[i]._id,
-            timestamp: Date.now(),
-            origin: 'Discord - ' + message.channelId,
-            isHuman: false,
-            isCommand: false,
-            isPrivate: false,
-            participants: [authorID, constructArray[i]._id],
-            attachments: [],
-            isThought: false,
-        }
-        chatLog.messages.push(replyMessage);
-        chatLog.lastMessage = replyMessage;
-        chatLog.lastMessageDate = replyMessage.timestamp;
-        await updateChat(chatLog);
-        if(primaryConstruct === constructArray[i]._id){
-            await sendMessage(message.channel.id, reply);
         }else{
-            await sendMessageAsCharacter(constructArray[i], message.channel.id, reply);
-        }
-        win?.webContents.send(`chat-message-${message.channel.id}`);
-        if(chatLog.doVector){
-            if(chatLog.global){
-                for(let i = 0; i < constructArray.length; i++){
-                    addVectorFromMessage(constructArray[i]._id, replyMessage);
+            if(wasHuman){
+                if(constructArray[i].defaultConfig.replyToUser >= Math.random()){
+                    let replyLog = await doCharacterReply(constructArray[i], chatLog, message);
+                    if(replyLog !== undefined){
+                        chatLog = replyLog;
+                    }
                 }
             }else{
-                addVectorFromMessage(chatLog._id, replyMessage);
-            }
-        }
-        if(constructArray[i].defaultConfig.haveThoughts && !constructArray[i].defaultConfig.thinkBeforeChat){
-            if(constructArray[i].defaultConfig.thoughtChance > Math.random()){
-                let thoughtChatLog = await doCharacterThoughts(constructArray[i], chatLog, message);
-                if(thoughtChatLog !== undefined){
-                    chatLog = thoughtChatLog;
+                if(constructArray[i].defaultConfig.replyToConstruct >= Math.random()){
+                    let replyLog = await doCharacterReply(constructArray[i], chatLog, message);
+                    if(replyLog !== undefined){
+                        chatLog = replyLog;
+                    }
                 }
             }
         }
@@ -698,6 +644,13 @@ function containsName(message: string, chars: ConstructInterface[]){
         if(message.toLowerCase().trim().includes(chars[i].name.toLowerCase().trim())){
             return chars[i].name;
         }
+    }
+    return false;
+}
+
+function isMentioned(message: string, char: ConstructInterface){
+    if(message.toLowerCase().trim().includes(char.name.toLowerCase().trim())){
+        return true;
     }
     return false;
 }
