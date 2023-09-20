@@ -3537,7 +3537,7 @@ const isChannelRegistered = (channel) => {
   return false;
 };
 async function handleDiscordMessage(message) {
-  var _a, _b, _c, _d, _e, _f, _g, _h;
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
   if (message.author.bot)
     return;
   if (message.content.startsWith("."))
@@ -3635,9 +3635,34 @@ async function handleDiscordMessage(message) {
         }
       }
       chatLog = await doRoundRobin(constructArray, chatLog, message);
+      if (chatLog === void 0)
+        return;
+      let hasBeenMention = true;
+      let lastMessageText = (_g = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _g.text;
+      let iterations = 0;
+      do {
+        if (((_h = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _h.text) === void 0)
+          break;
+        if (iterations > 0) {
+          if (lastMessageText === chatLog.lastMessage.text)
+            break;
+          lastMessageText = chatLog.lastMessage.text;
+        }
+        iterations++;
+        hasBeenMention = false;
+        for (let i = 0; i < constructArray.length; i++) {
+          if (isMentioned(lastMessageText, constructArray[i])) {
+            hasBeenMention = true;
+            break;
+          }
+        }
+        if (hasBeenMention) {
+          chatLog = await doRoundRobin(constructArray, chatLog, message);
+        }
+      } while (hasBeenMention);
     } else {
       sendTyping(message);
-      if (!((_h = (_g = constructArray[0]) == null ? void 0 : _g.defaultConfig) == null ? void 0 : _h.doLurk) === true) {
+      if (!((_j = (_i = constructArray[0]) == null ? void 0 : _i.defaultConfig) == null ? void 0 : _j.doLurk) === true) {
         chatLog = await doCharacterReply(constructArray[0], chatLog, message);
       }
     }
@@ -3681,7 +3706,7 @@ async function doCharacterReply(construct, chatLog, message) {
     reply = result;
   } else {
     sendMessage(message.channel.id, "**No response from LLM. Check your endpoint or settings and try again.**");
-    return;
+    return chatLog;
   }
   const replyMessage = {
     _id: Date.now().toString(),
@@ -3741,7 +3766,7 @@ async function doCharacterThoughts(construct, chatLog, message) {
     reply = result;
   } else {
     sendMessage(message.channel.id, "**No response from LLM. Check your endpoint or settings and try again.**");
-    return;
+    return chatLog;
   }
   reply = reply.replace(/\*/g, "");
   reply = `*${reply.trim()}*`;

@@ -347,6 +347,34 @@ export async function handleDiscordMessage(message: Message) {
                 }
             }
             chatLog = await doRoundRobin(constructArray, chatLog, message);
+            if (chatLog === undefined) return;
+
+            let hasBeenMention = true;
+            let lastMessageText = chatLog?.lastMessage?.text;
+            let iterations = 0;
+            
+            do {
+                if (chatLog?.lastMessage?.text === undefined) break;
+            
+                if (iterations > 0) {
+                    if (lastMessageText === chatLog.lastMessage.text) break;
+                    lastMessageText = chatLog.lastMessage.text;
+                }
+            
+                iterations++;
+                hasBeenMention = false;
+            
+                for (let i = 0; i < constructArray.length; i++) {
+                    if (isMentioned(lastMessageText, constructArray[i])) {
+                        hasBeenMention = true;
+                        break;
+                    }
+                }
+            
+                if (hasBeenMention) {
+                    chatLog = await doRoundRobin(constructArray, chatLog, message);
+                }
+            } while (hasBeenMention);            
         }else{
             sendTyping(message);
             if(!constructArray[0]?.defaultConfig?.doLurk === true){
@@ -393,7 +421,7 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
         reply = result;
     } else {
         sendMessage(message.channel.id, '**No response from LLM. Check your endpoint or settings and try again.**');
-        return;
+        return chatLog;
     }
     const replyMessage = {
         _id: Date.now().toString(),
@@ -453,7 +481,7 @@ async function doCharacterThoughts(construct: ConstructInterface, chatLog: ChatI
         reply = result;
     } else {
         sendMessage(message.channel.id, '**No response from LLM. Check your endpoint or settings and try again.**');
-        return;
+        return chatLog;
     }
     reply = reply.replace(/\*/g, '');
     reply = `*${reply.trim()}*`
