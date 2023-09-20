@@ -376,9 +376,34 @@ export async function handleDiscordMessage(message: Message) {
                 }
             } while (hasBeenMention);            
         }else{
-            sendTyping(message);
-            if(!constructArray[0]?.defaultConfig?.doLurk === true){
-                chatLog = await doCharacterReply(constructArray[0], chatLog, message);
+            let config = constructArray[0].defaultConfig;
+            if(chatLog.chatConfigs !== undefined && chatLog.chatConfigs.length > 0){
+                for(let j = 0; j < chatLog.chatConfigs.length; j++){
+                    if(chatLog.chatConfigs[j]._id === constructArray[0]._id){
+                        config = chatLog.chatConfigs[j];
+                        break;
+                    }
+                }
+            }
+            if(!config.doLurk === true){
+                let wasMentioned = isMentioned(chatLog.lastMessage.text, constructArray[0]) && chatLog.lastMessage.isHuman;
+                if(wasMentioned){
+                    if(config.replyToUserMention >= Math.random()){
+                        sendTyping(message);
+                        let replyLog = await doCharacterReply(constructArray[0], chatLog, message);
+                        if(replyLog !== undefined){
+                            chatLog = replyLog;
+                        }
+                    }
+                }else{
+                    if(config.replyToUser >= Math.random()){
+                        sendTyping(message);
+                        let replyLog = await doCharacterReply(constructArray[0], chatLog, message);
+                        if(replyLog !== undefined){
+                            chatLog = replyLog;
+                        }
+                    }
+                }
             }
         }
     }else if (mode === 'Construct'){
