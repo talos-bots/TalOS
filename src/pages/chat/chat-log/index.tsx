@@ -43,6 +43,7 @@ const ChatLog = (props: ChatLogProps) => {
 	const [openChatConfig, setOpenChatConfig] = useState<boolean>(false);
 	const [chatPaneClose, setChatPaneClose] = useState<boolean>(false);
 	const [wasPoked, setWasPoked] = useState<boolean>(false);
+	const [hasSentGreetings, setHasSentGreetings] = useState<boolean>(false);
 
 	const filteredMessages = messages.filter((message) => {
 		if(searchTerm === "") return true;
@@ -167,6 +168,7 @@ const ChatLog = (props: ChatLogProps) => {
 
 	const addGreetings = async (chat: Chat) => {
 		if(chat === null) return;
+		if(hasSentGreetings === true) return;
 		if(messages.length < 1){
 			if(chatLog !== null && chatLog !== undefined){
 				if(doGreetings){
@@ -197,6 +199,7 @@ const ChatLog = (props: ChatLogProps) => {
 							chat.addMessage(newMessage);
 							await updateChat(chat);
 							setChatLog(chat);
+							setHasSentGreetings(true);
 						}
 					}
 				}
