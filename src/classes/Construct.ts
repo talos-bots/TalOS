@@ -231,9 +231,10 @@ export class DefaultChatConfig{
         public replyToConstructMention: number = 0.75,
         public replyToUser: number = 0.50,
         public replyToUserMention: number = 1,
+        public thoughtChance: number = 0.50,
     ){}
 
-    setDefaultChatConfig(doInstruct: boolean, doMemories: boolean, doActions: boolean, doSprites: boolean, doVoice: boolean, doLurk: boolean, doRandomGreeting: boolean, doRandomFarewell: boolean, doRandomThought: boolean, haveThoughts: boolean, thinkBeforeChat: boolean, replyToConstruct: number, replyToConstructMention: number, replyToUser: number, replyToUserMention: number){
+    setDefaultChatConfig(doInstruct: boolean, doMemories: boolean, doActions: boolean, doSprites: boolean, doVoice: boolean, doLurk: boolean, doRandomGreeting: boolean, doRandomFarewell: boolean, doRandomThought: boolean, haveThoughts: boolean, thinkBeforeChat: boolean, replyToConstruct: number, replyToConstructMention: number, replyToUser: number, replyToUserMention: number, thoughtChance: number){
         this.doInstruct = doInstruct;
         this.doMemories = doMemories;
         this.doActions = doActions;
@@ -249,6 +250,8 @@ export class DefaultChatConfig{
         this.replyToConstructMention = replyToConstructMention;
         this.replyToUser = replyToUser;
         this.replyToUserMention = replyToUserMention;
+        this.thoughtChance = thoughtChance;
+
     }
 
     getDefaultChatConfig(){
@@ -268,6 +271,7 @@ export class DefaultChatConfig{
             replyToConstructMention: this.replyToConstructMention,
             replyToUser: this.replyToUser,
             replyToUserMention: this.replyToUserMention,
+            thoughtChance: this.thoughtChance,
         }
     }
 }
@@ -290,6 +294,7 @@ export class ConstructChatConfig{
         public replyToConstructMention: number = 0.75,
         public replyToUser: number = 0.50,
         public replyToUserMention: number = 1,
+        public thoughtChance: number = 0.50,
     ){}
 
     createChatConfigFromDefault(defaultChatConfig: DefaultChatConfig, constructID: string){
@@ -309,6 +314,7 @@ export class ConstructChatConfig{
         this.replyToConstructMention = defaultChatConfig.replyToConstructMention;
         this.replyToUser = defaultChatConfig.replyToUser;
         this.replyToUserMention = defaultChatConfig.replyToUserMention;
+        this.thoughtChance = defaultChatConfig.thoughtChance;
     }
 }
 export class Sprite{

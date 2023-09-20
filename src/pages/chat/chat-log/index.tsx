@@ -291,36 +291,38 @@ const ChatLog = (props: ChatLogProps) => {
 		if(activeConstruct?.defaultConfig === undefined || activeConstruct?.defaultConfig === null) return;
 		if(activeConstruct?.defaultConfig?.haveThoughts !== undefined && activeConstruct?.defaultConfig?.haveThoughts !== null && activeConstruct?.defaultConfig?.haveThoughts === true){
 			let thinkMessage: Message | null = null;
-			if(activeConstruct.defaultConfig.thinkBeforeChat){
-				thinkMessage = await sendThoughts(chat, constructID, currentUser);
-			}else{
-				botMessage = await sendMessage(chat, constructID, currentUser, doMultiline, numberOfMessagesToSend);
-			}
-			if(thinkMessage !== null){
-				chat.addMessage(thinkMessage);
-				if(doEmotions === true){
-					thinkMessage.emotion = await getTextEmotion(thinkMessage.text);
-				}
-				if(chat?.doVector === true){
-					addVectorFromMessage(chat._id, thinkMessage);
-				}
-				setMessages(prevMessages => {
-					// Remove the loadingMessage
-					const updatedMessages = prevMessages.filter((message) => {
-						return message._id !== thinkMessage?._id;
-					});
-		
-					// Add the botMessage
-					if (thinkMessage !== null) {
-						updatedMessages.push(thinkMessage);
-					}
-		
-					return updatedMessages;
-				});
-				if(thinkMessage !== null){
-					setLastBotMessage(thinkMessage);
+			if(activeConstruct.defaultConfig.thoughtChance > Math.random()){
+				if(activeConstruct.defaultConfig.thinkBeforeChat){
+					thinkMessage = await sendThoughts(chat, constructID, currentUser);
 				}else{
-					setError("No response from LLM. Check your connection settings and try again.");
+					botMessage = await sendMessage(chat, constructID, currentUser, doMultiline, numberOfMessagesToSend);
+				}
+				if(thinkMessage !== null){
+					chat.addMessage(thinkMessage);
+					if(doEmotions === true){
+						thinkMessage.emotion = await getTextEmotion(thinkMessage.text);
+					}
+					if(chat?.doVector === true){
+						addVectorFromMessage(chat._id, thinkMessage);
+					}
+					setMessages(prevMessages => {
+						// Remove the loadingMessage
+						const updatedMessages = prevMessages.filter((message) => {
+							return message._id !== thinkMessage?._id;
+						});
+			
+						// Add the botMessage
+						if (thinkMessage !== null) {
+							updatedMessages.push(thinkMessage);
+						}
+			
+						return updatedMessages;
+					});
+					if(thinkMessage !== null){
+						setLastBotMessage(thinkMessage);
+					}else{
+						setError("No response from LLM. Check your connection settings and try again.");
+					}
 				}
 			}
 		}else{
@@ -361,32 +363,34 @@ const ChatLog = (props: ChatLogProps) => {
 		}
 		if(activeConstruct?.defaultConfig?.haveThoughts !== undefined && activeConstruct?.defaultConfig?.haveThoughts !== null && activeConstruct?.defaultConfig?.haveThoughts === true && activeConstruct?.defaultConfig?.thinkBeforeChat !== undefined && activeConstruct?.defaultConfig?.thinkBeforeChat !== null && activeConstruct?.defaultConfig?.thinkBeforeChat === false){
 			let thinkMessage: Message | null = null;
-			thinkMessage = await sendThoughts(chat, constructID, currentUser);
-			if(thinkMessage !== null){
-				chat.addMessage(thinkMessage);
-				if(doEmotions === true){
-					thinkMessage.emotion = await getTextEmotion(thinkMessage.text);
-				}
-				if(chat?.doVector === true){
-					addVectorFromMessage(chat._id, thinkMessage);
-				}
-				setMessages(prevMessages => {
-					// Remove the loadingMessage
-					const updatedMessages = prevMessages.filter((message) => {
-						return message._id !== thinkMessage?._id;
-					});
-					
-					// Add the botMessage
-					if (thinkMessage !== null) {
-						updatedMessages.push(thinkMessage);
-					}
-
-					return updatedMessages;
-				});
+			if(activeConstruct.defaultConfig.thoughtChance > Math.random()){
+				thinkMessage = await sendThoughts(chat, constructID, currentUser);
 				if(thinkMessage !== null){
-					setLastBotMessage(thinkMessage);
-				}else{
-					setError("No response from LLM. Check your connection settings and try again.");
+					chat.addMessage(thinkMessage);
+					if(doEmotions === true){
+						thinkMessage.emotion = await getTextEmotion(thinkMessage.text);
+					}
+					if(chat?.doVector === true){
+						addVectorFromMessage(chat._id, thinkMessage);
+					}
+					setMessages(prevMessages => {
+						// Remove the loadingMessage
+						const updatedMessages = prevMessages.filter((message) => {
+							return message._id !== thinkMessage?._id;
+						});
+						
+						// Add the botMessage
+						if (thinkMessage !== null) {
+							updatedMessages.push(thinkMessage);
+						}
+
+						return updatedMessages;
+					});
+					if(thinkMessage !== null){
+						setLastBotMessage(thinkMessage);
+					}else{
+						setError("No response from LLM. Check your connection settings and try again.");
+					}
 				}
 			}
 		}

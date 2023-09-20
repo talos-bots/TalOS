@@ -360,9 +360,11 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
         username = alias;
     }
     if(construct.defaultConfig.haveThoughts && construct.defaultConfig.thinkBeforeChat){
-        let thoughtChatLog = await doCharacterThoughts(construct, chatLog, message);
-        if(thoughtChatLog !== undefined){
-            chatLog = thoughtChatLog;
+        if(construct.defaultConfig.thoughtChance > Math.random()){
+            let thoughtChatLog = await doCharacterThoughts(construct, chatLog, message);
+            if(thoughtChatLog !== undefined){
+                chatLog = thoughtChatLog;
+            }
         }
     }
     if(message.channel === null) return;
@@ -395,9 +397,11 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
     await sendMessage(message.channel.id, reply);
     await updateChat(chatLog);
     if(construct.defaultConfig.haveThoughts && !construct.defaultConfig.thinkBeforeChat){
-        let thoughtChatLog = await doCharacterThoughts(construct, chatLog, message);
-        if(thoughtChatLog !== undefined){
-            chatLog = thoughtChatLog;
+        if(construct.defaultConfig.thoughtChance > Math.random()){
+            let thoughtChatLog = await doCharacterThoughts(construct, chatLog, message);
+            if(thoughtChatLog !== undefined){
+                chatLog = thoughtChatLog;
+            }
         }
     }
     return chatLog;
@@ -508,9 +512,11 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
         let result;
         sendTyping(message);
         if(constructArray[i].defaultConfig.haveThoughts && constructArray[i].defaultConfig.thinkBeforeChat){
-            let thoughtChatLog = await doCharacterThoughts(constructArray[i], chatLog, message);
-            if(thoughtChatLog !== undefined){
-                chatLog = thoughtChatLog;
+            if(constructArray[i].defaultConfig.thoughtChance > Math.random()){
+                let thoughtChatLog = await doCharacterThoughts(constructArray[i], chatLog, message);
+                if(thoughtChatLog !== undefined){
+                    chatLog = thoughtChatLog;
+                }
             }
         }
         do {
@@ -560,9 +566,11 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
             }
         }
         if(constructArray[i].defaultConfig.haveThoughts && !constructArray[i].defaultConfig.thinkBeforeChat){
-            let thoughtChatLog = await doCharacterThoughts(constructArray[i], chatLog, message);
-            if(thoughtChatLog !== undefined){
-                chatLog = thoughtChatLog;
+            if(constructArray[i].defaultConfig.thoughtChance > Math.random()){
+                let thoughtChatLog = await doCharacterThoughts(constructArray[i], chatLog, message);
+                if(thoughtChatLog !== undefined){
+                    chatLog = thoughtChatLog;
+                }
             }
         }
     }

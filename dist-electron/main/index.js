@@ -3652,9 +3652,11 @@ async function doCharacterReply(construct, chatLog, message) {
     username = alias;
   }
   if (construct.defaultConfig.haveThoughts && construct.defaultConfig.thinkBeforeChat) {
-    let thoughtChatLog = await doCharacterThoughts(construct, chatLog, message);
-    if (thoughtChatLog !== void 0) {
-      chatLog = thoughtChatLog;
+    if (construct.defaultConfig.thoughtChance > Math.random()) {
+      let thoughtChatLog = await doCharacterThoughts(construct, chatLog, message);
+      if (thoughtChatLog !== void 0) {
+        chatLog = thoughtChatLog;
+      }
     }
   }
   if (message.channel === null)
@@ -3688,9 +3690,11 @@ async function doCharacterReply(construct, chatLog, message) {
   await sendMessage(message.channel.id, reply);
   await updateChat(chatLog);
   if (construct.defaultConfig.haveThoughts && !construct.defaultConfig.thinkBeforeChat) {
-    let thoughtChatLog = await doCharacterThoughts(construct, chatLog, message);
-    if (thoughtChatLog !== void 0) {
-      chatLog = thoughtChatLog;
+    if (construct.defaultConfig.thoughtChance > Math.random()) {
+      let thoughtChatLog = await doCharacterThoughts(construct, chatLog, message);
+      if (thoughtChatLog !== void 0) {
+        chatLog = thoughtChatLog;
+      }
     }
   }
   return chatLog;
@@ -3794,9 +3798,11 @@ async function doRoundRobin(constructArray, chatLog, message) {
     let result;
     sendTyping(message);
     if (constructArray[i].defaultConfig.haveThoughts && constructArray[i].defaultConfig.thinkBeforeChat) {
-      let thoughtChatLog = await doCharacterThoughts(constructArray[i], chatLog, message);
-      if (thoughtChatLog !== void 0) {
-        chatLog = thoughtChatLog;
+      if (constructArray[i].defaultConfig.thoughtChance > Math.random()) {
+        let thoughtChatLog = await doCharacterThoughts(constructArray[i], chatLog, message);
+        if (thoughtChatLog !== void 0) {
+          chatLog = thoughtChatLog;
+        }
       }
     }
     do {
@@ -3845,9 +3851,11 @@ async function doRoundRobin(constructArray, chatLog, message) {
       }
     }
     if (constructArray[i].defaultConfig.haveThoughts && !constructArray[i].defaultConfig.thinkBeforeChat) {
-      let thoughtChatLog = await doCharacterThoughts(constructArray[i], chatLog, message);
-      if (thoughtChatLog !== void 0) {
-        chatLog = thoughtChatLog;
+      if (constructArray[i].defaultConfig.thoughtChance > Math.random()) {
+        let thoughtChatLog = await doCharacterThoughts(constructArray[i], chatLog, message);
+        if (thoughtChatLog !== void 0) {
+          chatLog = thoughtChatLog;
+        }
       }
     }
   }

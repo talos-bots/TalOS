@@ -123,6 +123,7 @@ export type ConstructChatConfig = {
     replyToConstructMention: number;
     replyToUser: number;
     replyToUserMention: number;
+    thoughtChance: number;
 }
 
 export interface LorebookInterface {
@@ -173,6 +174,7 @@ export type DefaultChatConfig = {
     replyToConstructMention: number;
     replyToUser: number;
     replyToUserMention: number;
+    thoughtChance: number;
 }
 export type Sprite = {
     moood: string;

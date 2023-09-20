@@ -23,6 +23,7 @@ const ConstructChatConfigPanel = (props: ConstructChatConfigProps) => {
     const [replyToConstructMention, setReplyToConstructMention] = useState<number>(chatConfig.replyToConstructMention);
     const [replyToUser, setReplyToUser] = useState<number>(chatConfig.replyToUser);
     const [replyToUserMention, setReplyToUserMention] = useState<number>(chatConfig.replyToUserMention);
+    const [thoughtChance, setThoughtChance] = useState<number>(chatConfig.thoughtChance);
 
     const handleEdit = () => {
         chatConfig.doInstruct = doInstruct;
@@ -40,15 +41,68 @@ const ConstructChatConfigPanel = (props: ConstructChatConfigProps) => {
         chatConfig.replyToConstructMention = replyToConstructMention;
         chatConfig.replyToUser = replyToUser;
         chatConfig.replyToUserMention = replyToUserMention;
+        chatConfig.thoughtChance = thoughtChance;
         onChange(chatConfig);
     }
 
     useEffect(() => {
         handleEdit();
-    }, [doInstruct, doMemories, doActions, doSprites, doVoice, doLurk, doRandomGreeting, doRandomFarewell, doRandomThought, haveThoughts, thinkBeforeChat, replyToConstruct, replyToConstructMention, replyToUser, replyToUserMention]);
+    }, [doInstruct, doMemories, doActions, doSprites, doVoice, doLurk, doRandomGreeting, doRandomFarewell, doRandomThought, haveThoughts, thinkBeforeChat, replyToConstruct, replyToConstructMention, replyToUser, replyToUserMention, thoughtChance]);
     
     return (
         <div className="w-full h-full max-h-full max-w-full themed-input overflow-y-auto">
+            <label className="font-semibold">Random Thought</label>
+            <div className="themed-input flex flex-col items-center w-full flex-grow gap-2 text-left">
+                <i className="text-sm">Whether or not this construct will use a random thought when it is idle.</i>
+                <ReactSwitch
+                    checked={doRandomThought}
+                    onChange={() => {setDoRandomThought(!doRandomThought);}}
+                    handleDiameter={30}
+                    width={60}
+                    uncheckedIcon={false}
+                    checkedIcon={true}
+                    id="doRandomThought"
+                />
+            </div>
+            <label className="font-semibold">Thoughts</label>
+            <div className="themed-input flex flex-col items-center w-full flex-grow gap-2 text-left">
+                <i className="text-sm">Whether or not this construct will use thoughts when chatting.</i>
+                <ReactSwitch
+                    checked={haveThoughts}
+                    onChange={() => {setHaveThoughts(!haveThoughts);}}
+                    handleDiameter={30}
+                    width={60}
+                    uncheckedIcon={false}
+                    checkedIcon={true}
+                    id="haveThoughts"
+                />
+            </div>
+            <label className="font-semibold">Think Before Chatting</label>
+            <div className="themed-input flex flex-col items-center w-full flex-grow gap-2 text-left">
+                <i className="text-sm">Whether or not this construct will think before sending a chat. Increases coherrence on average.</i>
+                <ReactSwitch
+                    checked={thinkBeforeChat}
+                    onChange={() => {setThinkBeforeChat(!thinkBeforeChat);}}
+                    handleDiameter={30}
+                    width={60}
+                    uncheckedIcon={false}
+                    checkedIcon={true}
+                    id="thinkBeforeChat"
+                />
+            </div>
+            <label className="font-semibold">Thought Chance</label>
+            <div className="themed-input flex flex-col items-center w-full flex-grow gap-2 text-left">
+                <i className="text-sm">Percentage of the time this construct will think.</i>
+                <input
+                    className="themed-input"
+                    type="number"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value={thoughtChance}
+                    onChange={(e) => {setThoughtChance(Number(e.target.value));}}
+                />
+            </div>
             <label className="font-semibold">Instruct Prompting</label>
             <div className="themed-input flex flex-col items-center w-full flex-grow gap-2 text-left">
                 <i className="text-sm">Uses alpacca instruct prompting for character mode instead of traditional chat format.</i>
@@ -151,45 +205,6 @@ const ConstructChatConfigPanel = (props: ConstructChatConfigProps) => {
                     uncheckedIcon={false}
                     checkedIcon={true}
                     id="doRandomFarewell"
-                />
-            </div>
-            <label className="font-semibold">Random Thought</label>
-            <div className="themed-input flex flex-col items-center w-full flex-grow gap-2 text-left">
-                <i className="text-sm">Whether or not this construct will use a random thought when it is idle.</i>
-                <ReactSwitch
-                    checked={doRandomThought}
-                    onChange={() => {setDoRandomThought(!doRandomThought);}}
-                    handleDiameter={30}
-                    width={60}
-                    uncheckedIcon={false}
-                    checkedIcon={true}
-                    id="doRandomThought"
-                />
-            </div>
-            <label className="font-semibold">Thoughts</label>
-            <div className="themed-input flex flex-col items-center w-full flex-grow gap-2 text-left">
-                <i className="text-sm">Whether or not this construct will use thoughts when chatting.</i>
-                <ReactSwitch
-                    checked={haveThoughts}
-                    onChange={() => {setHaveThoughts(!haveThoughts);}}
-                    handleDiameter={30}
-                    width={60}
-                    uncheckedIcon={false}
-                    checkedIcon={true}
-                    id="haveThoughts"
-                />
-            </div>
-            <label className="font-semibold">Think Before Chatting</label>
-            <div className="themed-input flex flex-col items-center w-full flex-grow gap-2 text-left">
-                <i className="text-sm">Whether or not this construct will think before sending a chat. Increases coherrence on average.</i>
-                <ReactSwitch
-                    checked={thinkBeforeChat}
-                    onChange={() => {setThinkBeforeChat(!thinkBeforeChat);}}
-                    handleDiameter={30}
-                    width={60}
-                    uncheckedIcon={false}
-                    checkedIcon={true}
-                    id="thinkBeforeChat"
                 />
             </div>
             <label className="font-semibold">Reply to Construct Percentage</label>
