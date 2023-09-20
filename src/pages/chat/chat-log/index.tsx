@@ -303,12 +303,48 @@ const ChatLog = (props: ChatLogProps) => {
 			}
 		}
 		for (let i = 0; i < constructList.length; i++) {
-			await getBotResponse(chat, constructList[i], currentUser);
+			let replyChat = await getBotResponse(chat, constructList[i], currentUser);
+			if(replyChat !== undefined){
+				chat = replyChat;
+				setChatLog(chat);
+				await updateChat(chat);
+			}
 		}
-		setChatLog(chat);
-		await updateChat(chat);
+		let hasBeenMention = true;
+		let lastMessageText = chat?.lastMessage?.text;
+		let iterations = 0;
+		
+		do {
+			if (chat?.lastMessage?.text === undefined) break;
+		
+			if (iterations > 0) {
+				if (lastMessageText === chat.lastMessage.text) break;
+				lastMessageText = chat.lastMessage.text;
+			}
+		
+			iterations++;
+			hasBeenMention = false;
+		
+			for (let i = 0; i < constructList.length; i++) {
+				if (isConstructMentioned(lastMessageText, constructList[i])) {
+					hasBeenMention = true;
+					break;
+				}
+			}
+		
+			if (hasBeenMention) {
+				for (let i = 0; i < constructList.length; i++) {
+					let replyChat = await getBotResponse(chat, constructList[i], currentUser);
+					if(replyChat !== undefined){
+						chat = replyChat;
+						setChatLog(chat);
+						await updateChat(chat);
+					}
+				}
+			}
+		} while (hasBeenMention);   
 		setHasSentMessage(false);
-		setNumToDisplay(60);
+		setNumToDisplay(40);
 	};	
 
 	const getBotResponse = async (chat: Chat, activeConstruct: Construct, currentUser: User | null) => {
@@ -358,6 +394,7 @@ const ChatLog = (props: ChatLogProps) => {
 				}
 			}
 		}
+		return chat;
 	}
 
 	const handlePostUserMessage = async (newMessage: Message) => {
