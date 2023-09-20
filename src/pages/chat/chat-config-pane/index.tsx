@@ -9,18 +9,18 @@ import { RiQuestionMark } from "react-icons/ri";
 import ReactSwitch from "react-switch";
 
 interface ChatConfigPaneProps { 
-    chat: Chat | null;
+    chat: Chat;
     chatPanelClose: boolean;
     onEdit?: (chat: Chat) => void;
 }
 const ChatConfigPane = (props: ChatConfigPaneProps) => {
     const { chat, onEdit, chatPanelClose } = props;
-    const [global, setGlobal] = useState<boolean>(false);
-    const [doVector, setDoVector] = useState<boolean>(false);
+    const [global, setGlobal] = useState<boolean>(chat.global);
+    const [doVector, setDoVector] = useState<boolean>(chat.doVector);
     const [isPool, setIsPool] = useState<boolean>(false);
-    const [constructs, setConstructs] = useState<string[]>([]);
+    const [constructs, setConstructs] = useState<string[]>(chat.constructs);
     const [constructsList, setConstructsList] = useState<Construct[]>([]);
-    const [chatConfigs, setChatConfigs] = useState<ConstructChatConfig[]>([]);
+    const [chatConfigs, setChatConfigs] = useState<ConstructChatConfig[]>(chat.chatConfigs);
     const [doMultiline, setDoMultiline] = useState<boolean>(false);
     const [messagesToSend, setMessagesToSend] = useState<number>(25);
     const [page, setPage] = useState<number>(1);
@@ -31,11 +31,6 @@ const ChatConfigPane = (props: ChatConfigPaneProps) => {
             setGlobal(true);
             setIsPool(true);
         }
-        if(chat === null) return;
-        setGlobal(chat.global);
-        setDoVector(chat.doVector);
-        setConstructs(chat.constructs);
-        setChatConfigs(chat.chatConfigs);
     }, [chat]);
 
     useEffect(() => {
@@ -55,15 +50,20 @@ const ChatConfigPane = (props: ChatConfigPaneProps) => {
             console.error(err);
         });
     }, []);
-
-    const handleEdit = () => {
+    
+    const handleEdit = async () => {
         if(chat === null) return;
         chat.global = global;
         chat.doVector = doVector;
         chat.constructs = constructs;
         chat.chatConfigs = chatConfigs;
         onEdit && onEdit(chat);
-    }
+    };
+    
+    useEffect(() => {
+        if(chat === null) return;
+        handleEdit()
+    }, [chat, global, doVector, constructs, chatConfigs]);
 
     const handleDoMultilineChange = async (newValue: boolean) => {
         setDoMultiline(newValue);

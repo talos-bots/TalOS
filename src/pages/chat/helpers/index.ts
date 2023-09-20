@@ -2,6 +2,7 @@ import { generateContinueChatLog, generateThoughts, regenerateMessageFromChatLog
 import { getConstruct } from "@/api/dbapi";
 import { Attachment } from "@/classes/Attachment";
 import { Chat } from "@/classes/Chat";
+import { Construct } from "@/classes/Construct";
 import { Message } from "@/classes/Message";
 import { User } from "@/classes/User";
 import { Dispatch, SetStateAction } from "react";
@@ -39,45 +40,43 @@ export function addUserMessage(messageText: string, user: User | null, attachmen
     return newMessage;
 }
 
-export async function sendMessage(chatlog: Chat, constructID: string, user: User | null, multiline?: boolean, numberOfMessagesToSend: number = 25) {
-    let activeConstruct = await getConstruct(constructID);
+export async function sendMessage(chatlog: Chat, construct: Construct, user: User | null, multiline?: boolean, numberOfMessagesToSend: number = 25) {
     if (!chatlog.constructs || chatlog.constructs.length === 0) return null;
-    let response = await generateContinueChatLog(activeConstruct, chatlog, user ? (user.nickname || user.name) : 'DefaultUser', numberOfMessagesToSend, undefined, undefined, undefined, multiline);
+    let response = await generateContinueChatLog(construct, chatlog, user ? (user.nickname || user.name) : 'DefaultUser', numberOfMessagesToSend, undefined, undefined, undefined, multiline);
     if (!response) return null;
     let newMessage = new Message();
     newMessage.origin = 'ConstructOS';
     newMessage.text = response;
-    newMessage.user = activeConstruct.name;
+    newMessage.user = construct.name;
     newMessage.timestamp = new Date().getTime();
     newMessage.isCommand = false;
     newMessage.isPrivate = true;
     newMessage.isHuman = false;
-    newMessage.avatar = activeConstruct.avatar;
-    newMessage.participants = [user?._id || 'DefaultUser', constructID];
-    newMessage.userID = constructID;
+    newMessage.avatar = construct.avatar;
+    newMessage.participants = [user?._id || 'DefaultUser', construct._id];
+    newMessage.userID = construct._id;
     newMessage.emotion = 'neutral';
     newMessage.isThought = false;
     return newMessage;
 }
 
-export async function sendThoughts(chatlog: Chat, constructID: string, user: User | null, multiline?: boolean, numberOfMessagesToSend: number = 25) {
-    let activeConstruct = await getConstruct(constructID);
+export async function sendThoughts(chatlog: Chat, construct: Construct, user: User | null, multiline?: boolean, numberOfMessagesToSend: number = 25) {
     if (!chatlog.constructs || chatlog.constructs.length === 0) return null;
-    let response = await generateThoughts(activeConstruct, chatlog, user ? (user.nickname || user.name) : 'DefaultUser', numberOfMessagesToSend);
+    let response = await generateThoughts(construct, chatlog, user ? (user.nickname || user.name) : 'DefaultUser', numberOfMessagesToSend);
     if (!response) return null;
     response = response.replace(/\*/g, '');
     response = `*${response.trim()}*`
     let newMessage = new Message();
     newMessage.origin = 'ConstructOS';
     newMessage.text = response;
-    newMessage.user = activeConstruct.name;
+    newMessage.user = construct.name;
     newMessage.timestamp = new Date().getTime();
     newMessage.isCommand = false;
     newMessage.isPrivate = true;
     newMessage.isHuman = false;
-    newMessage.avatar = activeConstruct.avatar;
-    newMessage.participants = [user?._id || 'DefaultUser', constructID];
-    newMessage.userID = constructID;
+    newMessage.avatar = construct.avatar;
+    newMessage.participants = [user?._id || 'DefaultUser', construct._id];
+    newMessage.userID = construct._id;
     newMessage.emotion = 'neutral';
     newMessage.isThought = true;
     return newMessage;
@@ -107,22 +106,25 @@ export const truncateText = (text: string, length: number) => {
     return text?.length > length ? text?.substring(0, length) + "..." : text;
 };
 
-export async function doSlashCommand(message: string, chatLog: Chat | null, currentUser: User | null, setChatLog?: Dispatch<SetStateAction<Chat | null>>, setMessages?: Dispatch<SetStateAction<Message[]>>, updateChat?: (chat: Chat) => void, setError?: Dispatch<SetStateAction<string | null>>, handBotResponse?: (chat: Chat, constructID: string, currentUser: User | null) => void){
+export async function doSlashCommand(message: string, chatLog: Chat | null, currentUser: User | null, setChatLog?: Dispatch<SetStateAction<Chat | null>>, setMessages?: Dispatch<SetStateAction<Message[]>>, updateChat?: (chat: Chat) => void, setError?: Dispatch<SetStateAction<string | null>>, handBotResponse?: (chat: Chat, constructID: Construct, currentUser: User | null) => void){
     if(!message.startsWith('/')) return false;
     let command = message.split(' ')[0].replace('/', '');
     let args = message.split(' ').slice(1);
-    switch(command){
-        case 'sys':
-        case 'system':
-            if(!chatLog || !currentUser) return false;
-            let newMessage = createSystemMessage(args.join(' '));
-            if(!newMessage) return false;
-            setMessages && setMessages((messages) => [...messages, newMessage]);
-            chatLog.messages.push(newMessage);
-            setChatLog && setChatLog(chatLog);
-            updateChat && updateChat(chatLog);
-            handBotResponse && handBotResponse(chatLog, chatLog.constructs[0], currentUser);
-            return true;
+    if(chatLog?.constructs[0] !== undefined){
+        let activeConstruct = await getConstruct(chatLog?.constructs[0]);
+        switch(command){
+            case 'sys':
+            case 'system':
+                if(!chatLog || !currentUser) return false;
+                let newMessage = createSystemMessage(args.join(' '));
+                if(!newMessage) return false;
+                setMessages && setMessages((messages) => [...messages, newMessage]);
+                chatLog.messages.push(newMessage);
+                setChatLog && setChatLog(chatLog);
+                updateChat && updateChat(chatLog);
+                handBotResponse && handBotResponse(chatLog, activeConstruct, currentUser);
+                return true;
+        }
     }
     return false;
 }
@@ -141,4 +143,21 @@ export function createSystemMessage(action: string){
     newMessage.emotion = 'neutral';
     newMessage.isThought = false;
     return newMessage;
+}
+
+export function isConstructMentioned(message: string, char: Construct){
+    if((message.toLowerCase().trim().includes(char.name.toLowerCase().trim()) && char.name !== '') || ((message.toLowerCase().trim().includes(char.nickname.toLowerCase().trim()) && char.nickname !== ''))){
+
+        return true;
+    }
+    return false;
+}
+
+export function findFirstMention(message: string, chars: Construct[]){
+    for(let i = 0; i < chars.length; i++){
+        if(isConstructMentioned(message, chars[i])){
+            return chars[i]._id;
+        }
+    }
+    return false;
 }

@@ -402,7 +402,7 @@ export async function setOnlineMode(type: ValidStatus) {
     disClient.user.setStatus(type);
 }
 
-export async function getStopList(guildId: string){
+export async function getStopList(guildId: string, channelID: string){
     if(!disClient.user || disClient.user === null) return;
     if(!isReady) return;
     let guild = disClient.guilds.cache.get(guildId);
@@ -411,14 +411,15 @@ export async function getStopList(guildId: string){
     guild.members.cache.forEach(member => {
         if(!disClient.user) return;
         if(member.user.id !== disClient.user.id){
-            memberList.push(member.user.displayName);
+            memberList.push(member.user.id);
         }
     });
     for(let i = 0; i < memberList.length; i++){
-        let alias = cleanUsername(memberList[i]);
+        let alias = await getUsername(memberList[i], channelID);
         memberList[i] = `${alias}:`
     }
     console.log("Stop list fetched...");
+    console.log(memberList);
     return memberList;
 }
 
@@ -701,7 +702,7 @@ async function processQueue() {
     while (messageQueue.length > 0) {
         isProcessing = true;
         const currentMessage = messageQueue.shift();
-            await handleDiscordMessage(currentMessage!);
+        await handleDiscordMessage(currentMessage!);
         isProcessing = false;
     }
 }

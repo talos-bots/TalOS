@@ -10,7 +10,7 @@ export type ChatInterface = {
     firstMessageDate: number;
     constructs: string[];
     humans: string[];
-    chatConfigs: any[];
+    chatConfigs: ConstructChatConfig[];
     doVector: boolean;
     global: boolean;
 }

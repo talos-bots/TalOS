@@ -4,7 +4,7 @@ import { Chat } from "@/classes/Chat";
 import { Message } from "@/classes/Message";
 import { getChat, getConstruct, getStorageValue, getUser, saveNewAttachment, saveNewChat, updateChat } from "@/api/dbapi";
 import MessageComponent from "@/pages/chat/chat-log/message";
-import { addUserMessage, createSystemMessage, doSlashCommand, getLoadingMessage, regenerateMessage, regenerateUserMessage, sendMessage, sendThoughts, wait } from "../helpers";
+import { addUserMessage, createSystemMessage, doSlashCommand, findFirstMention, getLoadingMessage, isConstructMentioned, regenerateMessage, regenerateUserMessage, sendMessage, sendThoughts, wait } from "../helpers";
 import { Alert } from "@material-tailwind/react";
 import ChatInfo from "@/pages/chat/chat-info";
 import Loading from "@/components/loading";
@@ -16,6 +16,7 @@ import { ipcRenderer } from "electron";
 import ChatConfigPane from "../chat-config-pane";
 import { Link } from "react-router-dom";
 import SpriteDisplay from "@/components/sprite";
+import { Construct, ConstructChatConfig, DefaultChatConfig } from "@/classes/Construct";
 interface ChatLogProps {
 	chatLogID?: string;
 	goBack: () => void;
@@ -42,7 +43,9 @@ const ChatLog = (props: ChatLogProps) => {
 	const [openChatConfig, setOpenChatConfig] = useState<boolean>(false);
 	const [chatPaneClose, setChatPaneClose] = useState<boolean>(false);
 	const [wasPoked, setWasPoked] = useState<boolean>(false);
-
+	const [hasSentGreetings, setHasSentGreetings] = useState<boolean>(false);
+	const [stopList, setStopList] = useState<string[]>([]);
+	
 	const filteredMessages = messages.filter((message) => {
 		if(searchTerm === "") return true;
 		if(searchTerm.startsWith("from:")){
@@ -166,6 +169,7 @@ const ChatLog = (props: ChatLogProps) => {
 
 	const addGreetings = async (chat: Chat) => {
 		if(chat === null) return;
+		if(hasSentGreetings === true) return;
 		if(messages.length < 1){
 			if(chatLog !== null && chatLog !== undefined){
 				if(doGreetings){
@@ -196,6 +200,7 @@ const ChatLog = (props: ChatLogProps) => {
 							chat.addMessage(newMessage);
 							await updateChat(chat);
 							setChatLog(chat);
+							setHasSentGreetings(true);
 						}
 					}
 				}
@@ -275,27 +280,167 @@ const ChatLog = (props: ChatLogProps) => {
 			handlePostUserMessage(newMessage);
 		}
 		await wait(750);
-		for (let i = 0; i < chat.constructs.length; i++) {
-			await getBotResponse(chat, chat.constructs[i], currentUser);
+		let constructList: Construct[] = [];
+		if(chatLog === null) return;
+		for(let i = 0; i < chatLog.constructs.length; i++){
+			let construct = await getConstruct(chat.constructs[i]);
+			if(construct !== null){
+				constructList.push(construct);
+			}
 		}
-		setChatLog(chat);
-		await updateChat(chat);
+		if(constructList.length < 1) return;
+		let mentionedConstruct = findFirstMention(chat.lastMessage.text, constructList);
+		if (mentionedConstruct !== false) {
+			// Find the index of the mentioned construct
+			let mentionedIndex = -1;
+			for (let i = 0; i < constructList.length; i++) {
+				if (constructList[i]._id === mentionedConstruct) {
+					console.log(constructList[i].name + " was mentioned");
+					mentionedIndex = i;
+					break;
+				}
+			}
+	
+			// If the mentioned construct was found in the array,
+			// rearrange the array to make it the first element
+			if (mentionedIndex !== -1) {
+				const [mentioned] = constructList.splice(mentionedIndex, 1);
+				constructList.unshift(mentioned);
+			}
+		}
+		for (let i = 0; i < constructList.length; i++) {
+			let replyChat = await getBotResponse(chat, constructList[i], currentUser);
+			if(replyChat !== undefined){
+				chat = replyChat;
+				setChatLog(chat);
+				await updateChat(chat);
+			}
+		}
+		let hasBeenMention = true;
+		let lastMessageText = chat?.lastMessage?.text;
+		let iterations = 0;
+		
+		do {
+			if (chat?.lastMessage?.text === undefined) break;
+			
+			if (iterations > 0) {
+				if (lastMessageText === chat.lastMessage.text) break;
+				lastMessageText = chat.lastMessage.text;
+			}
+		
+			iterations++;
+			hasBeenMention = false;
+		
+			for (let i = 0; i < constructList.length; i++) {
+				if (isConstructMentioned(lastMessageText, constructList[i])) {
+					if(constructList[i]._id === chat.lastMessage.userID) break;
+					hasBeenMention = true;
+					break;
+				}
+			}
+		
+			if (hasBeenMention) {
+				for (let i = 0; i < constructList.length; i++) {
+					let replyChat = await getBotResponse(chat, constructList[i], currentUser);
+					if(replyChat !== undefined){
+						chat = replyChat;
+						setChatLog(chat);
+						await updateChat(chat);
+					}
+				}
+			}
+		} while (hasBeenMention);   
 		setHasSentMessage(false);
-		setNumToDisplay(60);
+		setNumToDisplay(40);
 	};	
 
-	const getBotResponse = async (chat: Chat, constructID: string, currentUser: User | null) => {
-		let botMessage: Message | null = null;
-		const activeConstruct = await getConstruct(constructID);
+	const getBotResponse = async (chat: Chat, activeConstruct: Construct, currentUser: User | null) => {
+		let config = activeConstruct?.defaultConfig;
+		if(config === undefined || config === null) return;
+		for(let i = 0; i < chat.chatConfigs.length; i++){
+			if(chat.chatConfigs[i]._id === currentUser?._id){
+				//@ts-ignore
+				config = chat.chatConfigs[i];
+				return;
+			}
+		}
 		if(activeConstruct === null) return;
-		if(activeConstruct?.defaultConfig === undefined || activeConstruct?.defaultConfig === null) return;
-		if(activeConstruct?.defaultConfig?.haveThoughts !== undefined && activeConstruct?.defaultConfig?.haveThoughts !== null && activeConstruct?.defaultConfig?.haveThoughts === true){
+		if(config === undefined) return;
+		if(config.doLurk === true) return;
+		let wasMentioned = isConstructMentioned(chat.lastMessage.text, activeConstruct);
+		const wasMentionedByHuman = chat.lastMessage.isHuman && wasMentioned;
+		const wasHuman = chat.lastMessage.isHuman;
+		if(wasMentionedByHuman){
+			if(config.replyToUserMention >= Math.random()){
+				let replyLog = await doBotReply(chat, activeConstruct, currentUser, config);
+				if(replyLog !== undefined){
+					chat = replyLog;
+				}
+			}
+		}else if(wasMentioned && chat.lastMessage.userID === activeConstruct._id){
+			if(config.replyToConstructMention >= Math.random()){
+				let replyLog = await doBotReply(chat, activeConstruct, currentUser, config);
+				if(replyLog !== undefined){
+					chat = replyLog;
+				}
+			}
+		}else{
+			if(wasHuman){
+				if(config.replyToUser >= Math.random()){
+					let replyLog = await doBotReply(chat, activeConstruct, currentUser, config);
+					if(replyLog !== undefined){
+						chat = replyLog;
+					}
+				}
+			}else{
+				if(config.replyToConstruct >= Math.random()){
+					let replyLog = await doBotReply(chat, activeConstruct, currentUser, config);
+					if(replyLog !== undefined){
+						chat = replyLog;
+					}
+				}
+			}
+		}
+		return chat;
+	}
+
+	const handlePostUserMessage = async (newMessage: Message) => {
+		if(doEmotions === true){
+			newMessage.emotion = await getTextEmotion(newMessage.text);
+		}
+		if(chatLog?.doVector === true){
+			addVectorFromMessage(chatLog._id, newMessage);
+		}
+		setMessages(prevMessages => {
+			// Remove the loadingMessage
+			const updatedMessages = prevMessages.filter((message) => {
+				return message._id !== newMessage?._id;
+			});
+
+			// Add the botMessage
+			if (newMessage !== null) {
+				updatedMessages.push(newMessage);
+			}
+
+			return updatedMessages;
+		});
+		chatLog?.editMessageEmotion(newMessage._id, newMessage.emotion);
+		setChatLog(chatLog);
+		if(chatLog !== null){
+			await updateChat(chatLog);
+		}
+	};
+
+	const doBotReply = async (chat: Chat, activeConstruct: Construct, currentUser: User | null, config: DefaultChatConfig | ConstructChatConfig) => {
+		let botMessage: Message | null = null;
+		if(config === undefined || config === null) return;
+		if(config.haveThoughts !== undefined && config.haveThoughts !== null && config.haveThoughts === true){
 			let thinkMessage: Message | null = null;
-			if(activeConstruct.defaultConfig.thoughtChance > Math.random()){
-				if(activeConstruct.defaultConfig.thinkBeforeChat){
-					thinkMessage = await sendThoughts(chat, constructID, currentUser);
+			if(config.thoughtChance > Math.random()){
+				if(config.thinkBeforeChat){
+					thinkMessage = await sendThoughts(chat, activeConstruct, currentUser);
 				}else{
-					botMessage = await sendMessage(chat, constructID, currentUser, doMultiline, numberOfMessagesToSend);
+					botMessage = await sendMessage(chat, activeConstruct, currentUser, doMultiline, numberOfMessagesToSend);
 				}
 				if(thinkMessage !== null){
 					chat.addMessage(thinkMessage);
@@ -326,10 +471,10 @@ const ChatLog = (props: ChatLogProps) => {
 				}
 			}
 		}else{
-			botMessage = await sendMessage(chat, constructID, currentUser, doMultiline, numberOfMessagesToSend);
+			botMessage = await sendMessage(chat, activeConstruct, currentUser, doMultiline, numberOfMessagesToSend);
 		}
 		if(botMessage === null){
-			botMessage = await sendMessage(chat, constructID, currentUser, doMultiline, numberOfMessagesToSend);
+			botMessage = await sendMessage(chat, activeConstruct, currentUser, doMultiline, numberOfMessagesToSend);
 		}
 		if (botMessage !== null){
 			chat.addMessage(botMessage);
@@ -361,10 +506,10 @@ const ChatLog = (props: ChatLogProps) => {
 				return updatedMessages;
 			});
 		}
-		if(activeConstruct?.defaultConfig?.haveThoughts !== undefined && activeConstruct?.defaultConfig?.haveThoughts !== null && activeConstruct?.defaultConfig?.haveThoughts === true && activeConstruct?.defaultConfig?.thinkBeforeChat !== undefined && activeConstruct?.defaultConfig?.thinkBeforeChat !== null && activeConstruct?.defaultConfig?.thinkBeforeChat === false){
+		if(config.haveThoughts !== undefined && config.haveThoughts !== null && config.haveThoughts === true && config.thinkBeforeChat !== undefined && config.thinkBeforeChat !== null && config.thinkBeforeChat === false){
 			let thinkMessage: Message | null = null;
-			if(activeConstruct.defaultConfig.thoughtChance > Math.random()){
-				thinkMessage = await sendThoughts(chat, constructID, currentUser);
+			if(config.thoughtChance > Math.random()){
+				thinkMessage = await sendThoughts(chat, activeConstruct, currentUser);
 				if(thinkMessage !== null){
 					chat.addMessage(thinkMessage);
 					if(doEmotions === true){
@@ -399,34 +544,8 @@ const ChatLog = (props: ChatLogProps) => {
 		}
 		setChatLog(chat);
 		await updateChat(chat);
+		return chat;
 	}
-
-	const handlePostUserMessage = async (newMessage: Message) => {
-		if(doEmotions === true){
-			newMessage.emotion = await getTextEmotion(newMessage.text);
-		}
-		if(chatLog?.doVector === true){
-			addVectorFromMessage(chatLog._id, newMessage);
-		}
-		setMessages(prevMessages => {
-			// Remove the loadingMessage
-			const updatedMessages = prevMessages.filter((message) => {
-				return message._id !== newMessage?._id;
-			});
-
-			// Add the botMessage
-			if (newMessage !== null) {
-				updatedMessages.push(newMessage);
-			}
-
-			return updatedMessages;
-		});
-		chatLog?.editMessageEmotion(newMessage._id, newMessage.emotion);
-		setChatLog(chatLog);
-		if(chatLog !== null){
-			await updateChat(chatLog);
-		}
-	};
 
 	const deleteMessage = (messageID: string) => {
 		if(chatLog === null) return;
@@ -506,6 +625,7 @@ const ChatLog = (props: ChatLogProps) => {
 	
 
 	const handleDetailsChange = async (newChat: Chat) => {
+		console.log(newChat.constructs);
 		setChatLog(newChat);
 		setMessages(newChat.messages);
 		await updateChat(newChat)
@@ -522,7 +642,7 @@ const ChatLog = (props: ChatLogProps) => {
 		setOpenChatConfig(!openChatConfig)
 	}
 
-	const sendPoke = () => {
+	const sendPoke = async () => {
 		const sysMessage = createSystemMessage(`[${user ? (user.nickname || user.name) : 'DefaultUser'} pokes ${lastBotMessage?.user || 'ConstructOS'}'s body.]`)
 		if(messages.includes(sysMessage)) return;
 		chatLog?.addMessage(sysMessage);
@@ -532,10 +652,11 @@ const ChatLog = (props: ChatLogProps) => {
 			}
 			return prevMessages;
 		});
-		 
+		if(chatLog?.constructs[0] === undefined) return;
+		let lastActiveConstruct = await getConstruct(chatLog?.constructs[0]);
 		if(chatLog !== null && chatLog !== undefined && lastBotMessage !== null && lastBotMessage !== undefined){
 			updateChat(chatLog);
-			getBotResponse(chatLog, lastBotMessage?.userID, currentUser);
+			getBotResponse(chatLog, lastActiveConstruct, currentUser);
 		}
 	}
 
@@ -563,7 +684,7 @@ const ChatLog = (props: ChatLogProps) => {
 			)}
 			<div className="w-full grid grid-cols-8 justify-center">
 			<div className="col-span-2 box-border h-[calc(100vh-70px)] flex flex-col gap-2 overflow-x-hidden pt-4 pr-4">
-				<SpriteDisplay constructID={lastBotMessage?.userID || (chatLog?.constructs? (chatLog?.constructs.length > 0 ? chatLog.constructs[0] : "") : "" )} emotion={lastBotMessage?.emotion || 'neutral'} sendPoke={sendPoke}/>
+				<SpriteDisplay constructID={lastBotMessage?.userID? lastBotMessage?.userID : "" } emotion={lastBotMessage?.emotion || 'neutral'} sendPoke={sendPoke}/>
 			</div>
 			<div className="col-span-4 box-border h-[calc(100vh-70px)] flex flex-col gap-2 overflow-x-hidden p-4">
 				<div className="w-full flex flex-row items-center justify-end">
@@ -593,7 +714,7 @@ const ChatLog = (props: ChatLogProps) => {
 				</div>
 			</div>
 			<div className="col-span-2 box-border h-[calc(100vh-70px)] flex flex-col gap-2 overflow-x-hidden pt-4 pb-4 pr-4">
-			{openChatConfig === true && (
+			{openChatConfig === true && chatLog !== null && (
 				<ChatConfigPane chat={chatLog} chatPanelClose={chatPaneClose} onEdit={handleDetailsChange}/>
 			)}
 			</div>
