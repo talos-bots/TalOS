@@ -3465,7 +3465,7 @@ async function getUsername(userID, channelID) {
   }
   try {
     let user = await disClient.users.fetch(userID);
-    let name = user.displayName !== void 0 ? user.displayName : user.username;
+    let name = (user == null ? void 0 : user.displayName) !== void 0 ? user.displayName : user.username;
     console.log(name);
     return name;
   } catch (error) {
@@ -5689,7 +5689,7 @@ async function getStopList(guildId, channelID) {
     if (!disClient.user)
       return;
     if (member.user.id !== disClient.user.id) {
-      memberList.push(member.user.displayName);
+      memberList.push(member.user.id);
     }
   });
   for (let i = 0; i < memberList.length; i++) {
@@ -5697,6 +5697,7 @@ async function getStopList(guildId, channelID) {
     memberList[i] = `${alias}:`;
   }
   console.log("Stop list fetched...");
+  console.log(memberList);
   return memberList;
 }
 function sendTyping(message) {

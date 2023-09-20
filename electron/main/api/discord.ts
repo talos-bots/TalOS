@@ -411,7 +411,7 @@ export async function getStopList(guildId: string, channelID: string){
     guild.members.cache.forEach(member => {
         if(!disClient.user) return;
         if(member.user.id !== disClient.user.id){
-            memberList.push(member.user.displayName);
+            memberList.push(member.user.id);
         }
     });
     for(let i = 0; i < memberList.length; i++){
@@ -419,6 +419,7 @@ export async function getStopList(guildId: string, channelID: string){
         memberList[i] = `${alias}:`
     }
     console.log("Stop list fetched...");
+    console.log(memberList);
     return memberList;
 }
 

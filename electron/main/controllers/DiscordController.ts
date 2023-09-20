@@ -148,7 +148,7 @@ export async function getUsername(userID: string, channelID: string){
 
     try {
         let user = await disClient.users.fetch(userID);
-        let name = user.displayName !== undefined ? user.displayName : user.username;
+        let name = user?.displayName !== undefined ? user.displayName : user.username;
         console.log(name);
         return name;
     } catch (error) {
