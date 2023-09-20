@@ -56,14 +56,14 @@ const ChatConfigPane = (props: ChatConfigPaneProps) => {
         });
     }, []);
 
-    const handleEdit = () => {
+    const handleEdit = async () => {
         if(chat === null) return;
         chat.global = global;
         chat.doVector = doVector;
         chat.constructs = constructs;
         chat.chatConfigs = chatConfigs;
         onEdit && onEdit(chat);
-    }
+    };
 
     const handleDoMultilineChange = async (newValue: boolean) => {
         setDoMultiline(newValue);

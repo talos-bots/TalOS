@@ -146,7 +146,8 @@ export function createSystemMessage(action: string){
 }
 
 export function isConstructMentioned(message: string, char: Construct){
-    if((message.toLowerCase().trim().includes(char.name.toLowerCase().trim())) || (message.toLowerCase().trim().includes(char.nickname.toLowerCase().trim()))){
+    if((message.toLowerCase().trim().includes(char.name.toLowerCase().trim()) && char.name !== '') || ((message.toLowerCase().trim().includes(char.nickname.toLowerCase().trim()) && char.nickname !== ''))){
+
         return true;
     }
     return false;

@@ -277,7 +277,8 @@ const ChatLog = (props: ChatLogProps) => {
 		}
 		await wait(750);
 		let constructList: Construct[] = [];
-		for(let i = 0; i < chat.constructs.length; i++){
+		if(chatLog === null) return;
+		for(let i = 0; i < chatLog.constructs.length; i++){
 			let construct = await getConstruct(chat.constructs[i]);
 			if(construct !== null){
 				constructList.push(construct);
@@ -285,11 +286,12 @@ const ChatLog = (props: ChatLogProps) => {
 		}
 		if(constructList.length < 1) return;
 		let mentionedConstruct = findFirstMention(chat.lastMessage.text, constructList);
-		if (mentionedConstruct) {
+		if (mentionedConstruct !== false) {
 			// Find the index of the mentioned construct
 			let mentionedIndex = -1;
 			for (let i = 0; i < constructList.length; i++) {
 				if (constructList[i]._id === mentionedConstruct) {
+					console.log(constructList[i].name + " was mentioned");
 					mentionedIndex = i;
 					break;
 				}
@@ -316,7 +318,7 @@ const ChatLog = (props: ChatLogProps) => {
 		
 		do {
 			if (chat?.lastMessage?.text === undefined) break;
-		
+			
 			if (iterations > 0) {
 				if (lastMessageText === chat.lastMessage.text) break;
 				lastMessageText = chat.lastMessage.text;
@@ -327,6 +329,7 @@ const ChatLog = (props: ChatLogProps) => {
 		
 			for (let i = 0; i < constructList.length; i++) {
 				if (isConstructMentioned(lastMessageText, constructList[i])) {
+					if(constructList[i]._id === chat.lastMessage.userID) break;
 					hasBeenMention = true;
 					break;
 				}
@@ -370,7 +373,7 @@ const ChatLog = (props: ChatLogProps) => {
 					chat = replyLog;
 				}
 			}
-		}else if(wasMentioned){
+		}else if(wasMentioned && chat.lastMessage.userID === activeConstruct._id){
 			if(config.replyToConstructMention >= Math.random()){
 				let replyLog = await doBotReply(chat, activeConstruct, currentUser, config);
 				if(replyLog !== undefined){
@@ -618,6 +621,7 @@ const ChatLog = (props: ChatLogProps) => {
 	
 
 	const handleDetailsChange = async (newChat: Chat) => {
+		console.log(newChat.constructs);
 		setChatLog(newChat);
 		setMessages(newChat.messages);
 		await updateChat(newChat)
@@ -676,7 +680,7 @@ const ChatLog = (props: ChatLogProps) => {
 			)}
 			<div className="w-full grid grid-cols-8 justify-center">
 			<div className="col-span-2 box-border h-[calc(100vh-70px)] flex flex-col gap-2 overflow-x-hidden pt-4 pr-4">
-				<SpriteDisplay constructID={lastBotMessage?.userID || (chatLog?.constructs? (chatLog?.constructs.length > 0 ? chatLog.constructs[0] : "") : "" )} emotion={lastBotMessage?.emotion || 'neutral'} sendPoke={sendPoke}/>
+				<SpriteDisplay constructID={lastBotMessage?.userID? lastBotMessage?.userID : "" } emotion={lastBotMessage?.emotion || 'neutral'} sendPoke={sendPoke}/>
 			</div>
 			<div className="col-span-4 box-border h-[calc(100vh-70px)] flex flex-col gap-2 overflow-x-hidden p-4">
 				<div className="w-full flex flex-row items-center justify-end">

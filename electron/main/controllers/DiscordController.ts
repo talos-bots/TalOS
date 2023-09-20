@@ -366,6 +366,7 @@ export async function handleDiscordMessage(message: Message) {
             
                 for (let i = 0; i < constructArray.length; i++) {
                     if (isMentioned(lastMessageText, constructArray[i])) {
+                        if(chatLog.lastMessage.isHuman && !chatLog.lastMessage.isThought && (chatLog.lastMessage.userID !== constructArray[i]._id))
                         hasBeenMention = true;
                         break;
                     }
@@ -566,7 +567,7 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
                     chatLog = replyLog;
                 }
             }
-        }else if(wasMentioned){
+        }else if(wasMentioned && chatLog.lastMessage.userID !== constructArray[i]._id){
             if(config.replyToConstructMention >= Math.random()){
                 let replyLog = await doCharacterReply(constructArray[i], chatLog, message);
                 if(replyLog !== undefined){
@@ -788,7 +789,7 @@ function containsName(message: string, chars: ConstructInterface[]){
 }
 
 function isMentioned(message: string, char: ConstructInterface){
-    if((message.toLowerCase().trim().includes(char.name.toLowerCase().trim())) || (message.toLowerCase().trim().includes(char.nickname.toLowerCase().trim()))){
+    if((message.toLowerCase().trim().includes(char.name.toLowerCase().trim()) && char.name !== '') || (message.toLowerCase().trim().includes(char.nickname.toLowerCase().trim()) && char.nickname !== '')){
         return true;
     }
     return false;

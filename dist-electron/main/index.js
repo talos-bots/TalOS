@@ -3651,7 +3651,8 @@ async function handleDiscordMessage(message) {
         hasBeenMention = false;
         for (let i = 0; i < constructArray.length; i++) {
           if (isMentioned(lastMessageText, constructArray[i])) {
-            hasBeenMention = true;
+            if (chatLog.lastMessage.isHuman && !chatLog.lastMessage.isThought && chatLog.lastMessage.userID !== constructArray[i]._id)
+              hasBeenMention = true;
             break;
           }
         }
@@ -3849,7 +3850,7 @@ async function doRoundRobin(constructArray, chatLog, message) {
           chatLog = replyLog;
         }
       }
-    } else if (wasMentioned) {
+    } else if (wasMentioned && chatLog.lastMessage.userID !== constructArray[i]._id) {
       if (config.replyToConstructMention >= Math.random()) {
         let replyLog = await doCharacterReply(constructArray[i], chatLog, message);
         if (replyLog !== void 0) {
@@ -4066,7 +4067,7 @@ function containsName(message, chars) {
   return false;
 }
 function isMentioned(message, char) {
-  if (message.toLowerCase().trim().includes(char.name.toLowerCase().trim()) || message.toLowerCase().trim().includes(char.nickname.toLowerCase().trim())) {
+  if (message.toLowerCase().trim().includes(char.name.toLowerCase().trim()) && char.name !== "" || message.toLowerCase().trim().includes(char.nickname.toLowerCase().trim()) && char.nickname !== "") {
     return true;
   }
   return false;
