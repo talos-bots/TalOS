@@ -627,22 +627,90 @@ export async function continueChatLog(interaction: CommandInteraction) {
     }
     const mode = getDiscordMode();
     if(mode === 'Character'){
-        sendTyping(interaction);
-        if(isMultiCharacterMode()){
-            chatLog = await doRoundRobin(constructArray, chatLog, interaction);
-            if(chatLog !== undefined)
-            if(doAutoReply){
-                if(0.25 > Math.random()){
-                    chatLog = await doRoundRobin(constructArray, chatLog, interaction);
+        if(isMultiCharacterMode() && !interaction.channel.isDMBased()){
+            let lastMessageContent = chatLog.lastMessage.text;
+            let mentionedConstruct = containsName(lastMessageContent, constructArray);
+            if (mentionedConstruct) {
+                // Find the index of the mentioned construct
+                let mentionedIndex = -1;
+                for (let i = 0; i < constructArray.length; i++) {
+                    if (constructArray[i].name === mentionedConstruct) {
+                        mentionedIndex = i;
+                        break;
+                    }
+                }
+        
+                // If the mentioned construct was found in the array,
+                // rearrange the array to make it the first element
+                if (mentionedIndex !== -1) {
+                    const [mentioned] = constructArray.splice(mentionedIndex, 1);
+                    constructArray.unshift(mentioned);
                 }
             }
+            chatLog = await doRoundRobin(constructArray, chatLog, interaction);
+            if (chatLog === undefined) return;
+
+            let hasBeenMention = true;
+            let lastMessageText = chatLog?.lastMessage?.text;
+            let iterations = 0;
+            
+            do {
+                if (chatLog?.lastMessage?.text === undefined) break;
+            
+                if (iterations > 0) {
+                    if (lastMessageText === chatLog.lastMessage.text) break;
+                    lastMessageText = chatLog.lastMessage.text;
+                }
+            
+                iterations++;
+                hasBeenMention = false;
+            
+                for (let i = 0; i < constructArray.length; i++) {
+                    if (isMentioned(lastMessageText, constructArray[i])) {
+                        hasBeenMention = true;
+                        break;
+                    }
+                }
+            
+                if (hasBeenMention) {
+                    chatLog = await doRoundRobin(constructArray, chatLog, interaction);
+                }
+            } while (hasBeenMention);            
         }else{
-            chatLog = await doCharacterReply(constructArray[0], chatLog, interaction);
+            let config = constructArray[0].defaultConfig;
+            if(chatLog.chatConfigs !== undefined && chatLog.chatConfigs.length > 0){
+                for(let j = 0; j < chatLog.chatConfigs.length; j++){
+                    if(chatLog.chatConfigs[j]._id === constructArray[0]._id){
+                        config = chatLog.chatConfigs[j];
+                        break;
+                    }
+                }
+            }
+            if(!config.doLurk === true){
+                let wasMentioned = isMentioned(chatLog.lastMessage.text, constructArray[0]) && chatLog.lastMessage.isHuman;
+                if(wasMentioned){
+                    if(config.replyToUserMention >= Math.random()){
+                        sendTyping(interaction);
+                        let replyLog = await doCharacterReply(constructArray[0], chatLog, interaction);
+                        if(replyLog !== undefined){
+                            chatLog = replyLog;
+                        }
+                    }
+                }else{
+                    if(config.replyToUser >= Math.random()){
+                        sendTyping(interaction);
+                        let replyLog = await doCharacterReply(constructArray[0], chatLog, interaction);
+                        if(replyLog !== undefined){
+                            chatLog = replyLog;
+                        }
+                    }
+                }
+            }
         }
     }else if (mode === 'Construct'){
         await sendMessage(interaction.channel.id, 'Construct Mode is not yet implemented.');
     }
-    if(chatLog !== undefined)
+    if(chatLog?._id !== undefined)
     await updateChat(chatLog);
 }
 
