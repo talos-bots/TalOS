@@ -402,7 +402,7 @@ export async function setOnlineMode(type: ValidStatus) {
     disClient.user.setStatus(type);
 }
 
-export async function getStopList(guildId: string){
+export async function getStopList(guildId: string, channelID: string){
     if(!disClient.user || disClient.user === null) return;
     if(!isReady) return;
     let guild = disClient.guilds.cache.get(guildId);
@@ -415,7 +415,7 @@ export async function getStopList(guildId: string){
         }
     });
     for(let i = 0; i < memberList.length; i++){
-        let alias = cleanUsername(memberList[i]);
+        let alias = await getUsername(memberList[i], channelID);
         memberList[i] = `${alias}:`
     }
     console.log("Stop list fetched...");

@@ -44,7 +44,8 @@ const ChatLog = (props: ChatLogProps) => {
 	const [chatPaneClose, setChatPaneClose] = useState<boolean>(false);
 	const [wasPoked, setWasPoked] = useState<boolean>(false);
 	const [hasSentGreetings, setHasSentGreetings] = useState<boolean>(false);
-
+	const [stopList, setStopList] = useState<string[]>([]);
+	
 	const filteredMessages = messages.filter((message) => {
 		if(searchTerm === "") return true;
 		if(searchTerm.startsWith("from:")){

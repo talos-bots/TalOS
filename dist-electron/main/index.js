@@ -3696,6 +3696,7 @@ async function handleDiscordMessage(message) {
   }
 }
 async function doCharacterReply(construct, chatLog, message) {
+  let stopList = void 0;
   let username = "You";
   let authorID = "You";
   let primaryConstruct = retrieveConstructs()[0];
@@ -3706,6 +3707,9 @@ async function doCharacterReply(construct, chatLog, message) {
   if (message instanceof discord_js.CommandInteraction) {
     username = message.user.displayName;
     authorID = message.user.id;
+  }
+  if (message.guildId !== null) {
+    stopList = await getStopList(message.guildId, message.channelId);
   }
   let alias = await getUsername(authorID, chatLog._id);
   if (alias !== null && alias !== void 0) {
@@ -3723,7 +3727,7 @@ async function doCharacterReply(construct, chatLog, message) {
   if (message.channel === null)
     return;
   sendTyping(message);
-  const result = await generateContinueChatLog(construct, chatLog, username, maxMessages, void 0, void 0, void 0, getDoMultiLine(), replaceUser);
+  const result = await generateContinueChatLog(construct, chatLog, username, maxMessages, stopList, void 0, void 0, getDoMultiLine(), replaceUser);
   let reply;
   if (result !== null) {
     reply = result;
@@ -5671,6 +5675,29 @@ async function setOnlineMode(type) {
   if (!isReady)
     return;
   disClient.user.setStatus(type);
+}
+async function getStopList(guildId, channelID) {
+  if (!disClient.user || disClient.user === null)
+    return;
+  if (!isReady)
+    return;
+  let guild = disClient.guilds.cache.get(guildId);
+  let memberList = [];
+  if (!guild)
+    return;
+  guild.members.cache.forEach((member) => {
+    if (!disClient.user)
+      return;
+    if (member.user.id !== disClient.user.id) {
+      memberList.push(member.user.displayName);
+    }
+  });
+  for (let i = 0; i < memberList.length; i++) {
+    let alias = await getUsername(memberList[i], channelID);
+    memberList[i] = `${alias}:`;
+  }
+  console.log("Stop list fetched...");
+  return memberList;
 }
 function sendTyping(message) {
   if (!disClient.user)

@@ -4,7 +4,7 @@ import { generateContinueChatLog, generateThoughts, getDoMultiLine, regenerateMe
 import { addChat, getChat, getConstruct, updateChat } from '../api/pouchdb';
 import { addUserFromDiscordMessage, assembleChatFromData, assembleConstructFromData, convertDiscordMessageToMessage } from '../helpers/helpers';
 import { AttachmentBuilder, CommandInteraction, EmbedBuilder, Message } from 'discord.js';
-import { deleteMessage, disClient, editMessage, isAutoReplyMode, isMultiCharacterMode, registerCommands, sendEmbedAsCharacter, sendMessage, sendMessageAsCharacter, sendMessageEmbed, sendTyping } from '../api/discord';
+import { deleteMessage, disClient, editMessage, getStopList, isAutoReplyMode, isMultiCharacterMode, registerCommands, sendEmbedAsCharacter, sendMessage, sendMessageAsCharacter, sendMessageEmbed, sendTyping } from '../api/discord';
 import { Alias, ChannelConfigInterface, ChatInterface, ConstructInterface } from '../types/types';
 import { addVectorFromMessage } from '../api/vector';
 import { getDefaultCfg, getDefaultHeight, getDefaultHighresSteps, getDefaultNegativePrompt, getDefaultPrompt, getDefaultSteps, getDefaultWidth, makeImage } from '../api/sd';
@@ -413,6 +413,7 @@ export async function handleDiscordMessage(message: Message) {
 }
 
 async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInterface, message: Message | CommandInteraction){
+    let stopList = undefined;
     let username: string = 'You';
     let authorID: string = 'You';
     let primaryConstruct = retrieveConstructs()[0];
@@ -423,6 +424,9 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
     if(message instanceof CommandInteraction){
         username = message.user.displayName;
         authorID = message.user.id;
+    }
+    if(message.guildId !== null){
+        stopList = await getStopList(message.guildId, message.channelId);
     }
     let alias = await getUsername(authorID, chatLog._id);
     if(alias !== null && alias !== undefined){
@@ -439,7 +443,7 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
     }
     if(message.channel === null) return;
     sendTyping(message);
-    const result = await generateContinueChatLog(construct, chatLog, username, maxMessages, undefined, undefined, undefined, getDoMultiLine(), replaceUser);
+    const result = await generateContinueChatLog(construct, chatLog, username, maxMessages, stopList, undefined, undefined, getDoMultiLine(), replaceUser);
     let reply: string;
     if (result !== null) {
         reply = result;
