@@ -363,6 +363,7 @@ export async function handleDiscordMessage(message: Message) {
 async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInterface, message: Message | CommandInteraction){
     let username: string = 'You';
     let authorID: string = 'You';
+    let primaryConstruct = retrieveConstructs()[0];
     if(message instanceof Message){
         username = message.author.displayName;
         authorID = message.author.id;
@@ -377,6 +378,7 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
     }
     if(construct.defaultConfig.haveThoughts && construct.defaultConfig.thinkBeforeChat){
         if(construct.defaultConfig.thoughtChance >= Math.random()){
+            sendTyping(message);
             let thoughtChatLog = await doCharacterThoughts(construct, chatLog, message);
             if(thoughtChatLog !== undefined){
                 chatLog = thoughtChatLog;
@@ -384,6 +386,7 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
         }
     }
     if(message.channel === null) return;
+    sendTyping(message);
     const result = await generateContinueChatLog(construct, chatLog, username, maxMessages, undefined, undefined, undefined, getDoMultiLine(), replaceUser);
     let reply: string;
     if (result !== null) {
@@ -410,9 +413,14 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
     chatLog.messages.push(replyMessage);
     chatLog.lastMessage = replyMessage;
     chatLog.lastMessageDate = replyMessage.timestamp;
-    await sendMessage(message.channel.id, reply);
+    if(primaryConstruct === construct._id){
+        await sendMessage(message.channel.id, reply);
+    }else{
+        await sendMessageAsCharacter(construct, message.channel.id, reply);
+    }
     if(construct.defaultConfig.haveThoughts && !construct.defaultConfig.thinkBeforeChat){
         if(construct.defaultConfig.thoughtChance >= Math.random()){
+            sendTyping(message);
             let thoughtChatLog = await doCharacterThoughts(construct, chatLog, message);
             if(thoughtChatLog !== undefined){
                 chatLog = thoughtChatLog;
@@ -484,19 +492,29 @@ async function doCharacterThoughts(construct: ConstructInterface, chatLog: ChatI
 async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatInterface, message: Message | CommandInteraction){
     if(message.channel === null) return;
     for(let i = 0; i < constructArray.length; i++){
-        if(constructArray[i]?.defaultConfig?.doLurk === true) continue;
-        const wasMentioned = isMentioned(chatLog.lastMessage.text, constructArray[i]);
+        let config = constructArray[i].defaultConfig;
+        if(chatLog.chatConfigs !== undefined && chatLog.chatConfigs.length > 0){
+            for(let j = 0; j < chatLog.chatConfigs.length; j++){
+                if(chatLog.chatConfigs[j]._id === constructArray[i]._id){
+                    config = chatLog.chatConfigs[j];
+                    break;
+                }
+            }
+        }
+        if(config === undefined) continue;
+        if(config.doLurk === true) continue;
+        let wasMentioned = isMentioned(chatLog.lastMessage.text, constructArray[i]);
         const wasMentionedByHuman = chatLog.lastMessage.isHuman && wasMentioned;
         const wasHuman = chatLog.lastMessage.isHuman;
         if(wasMentionedByHuman){
-            if(constructArray[i].defaultConfig.replyToUserMention >= Math.random()){
+            if(config.replyToUserMention >= Math.random()){
                 let replyLog = await doCharacterReply(constructArray[i], chatLog, message);
                 if(replyLog !== undefined){
                     chatLog = replyLog;
                 }
             }
         }else if(wasMentioned){
-            if(constructArray[i].defaultConfig.replyToConstructMention >= Math.random()){
+            if(config.replyToConstructMention >= Math.random()){
                 let replyLog = await doCharacterReply(constructArray[i], chatLog, message);
                 if(replyLog !== undefined){
                     chatLog = replyLog;
@@ -504,14 +522,14 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
             }
         }else{
             if(wasHuman){
-                if(constructArray[i].defaultConfig.replyToUser >= Math.random()){
+                if(config.replyToUser >= Math.random()){
                     let replyLog = await doCharacterReply(constructArray[i], chatLog, message);
                     if(replyLog !== undefined){
                         chatLog = replyLog;
                     }
                 }
             }else{
-                if(constructArray[i].defaultConfig.replyToConstruct >= Math.random()){
+                if(config.replyToConstruct >= Math.random()){
                     let replyLog = await doCharacterReply(constructArray[i], chatLog, message);
                     if(replyLog !== undefined){
                         chatLog = replyLog;
