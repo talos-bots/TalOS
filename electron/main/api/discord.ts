@@ -701,7 +701,7 @@ async function processQueue() {
     while (messageQueue.length > 0) {
         isProcessing = true;
         const currentMessage = messageQueue.shift();
-            await handleDiscordMessage(currentMessage!);
+        await handleDiscordMessage(currentMessage!);
         isProcessing = false;
     }
 }

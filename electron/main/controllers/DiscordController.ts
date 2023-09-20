@@ -409,8 +409,6 @@ export async function handleDiscordMessage(message: Message) {
     }else if (mode === 'Construct'){
         await sendMessage(message.channel.id, 'Construct Mode is not yet implemented.');
     }
-    if(chatLog?._id !== undefined)
-    await updateChat(chatLog);
 }
 
 async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInterface, message: Message | CommandInteraction){
@@ -480,6 +478,7 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
             }
         }
     }
+    await updateChat(chatLog);
     return chatLog;
 }
 
@@ -539,6 +538,7 @@ async function doCharacterThoughts(construct: ConstructInterface, chatLog: ChatI
     }else{
         await sendEmbedAsCharacter(construct, message.channel.id, newEmbed);
     }
+    await updateChat(chatLog);
     return chatLog;
 }
 
