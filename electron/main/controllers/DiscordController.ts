@@ -617,6 +617,7 @@ export async function continueChatLog(interaction: CommandInteraction) {
     }else if (mode === 'Construct'){
         await sendMessage(interaction.channel.id, 'Construct Mode is not yet implemented.');
     }
+    if(chatLog !== undefined)
     await updateChat(chatLog);
 }
 

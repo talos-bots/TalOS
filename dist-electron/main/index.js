@@ -2691,6 +2691,7 @@ async function generateThoughts(construct, chat, currentUser = "you", messagesTo
 `;
   prompt += `### Response:
 `;
+  prompt += `${construct.name.trim()}'s Thoughts:`;
   if (replaceUser2 === true) {
     prompt = prompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${construct.name}`);
   }
@@ -3916,7 +3917,8 @@ async function continueChatLog(interaction) {
   } else if (mode === "Construct") {
     await sendMessage(interaction.channel.id, "Construct Mode is not yet implemented.");
   }
-  await updateChat(chatLog);
+  if (chatLog !== void 0)
+    await updateChat(chatLog);
 }
 async function handleRengenerateMessage(message) {
   let registeredChannels = getRegisteredChannels();
