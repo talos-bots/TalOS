@@ -3362,7 +3362,6 @@ const store$3 = new Store({
   name: "discordData"
 });
 let maxMessages = 25;
-let doAutoReply = false;
 let doStableReactions = false;
 let showDiffusionDetails = false;
 let diffusionWhitelist = [];
@@ -3370,7 +3369,7 @@ let replaceUser = true;
 function getDiscordSettings() {
   maxMessages = getMaxMessages();
   getDoMultiLine();
-  doAutoReply = getDoAutoReply();
+  getDoAutoReply();
   getDoStableDiffusion();
   doStableReactions = getDoStableReactions();
   getDoGeneralPurpose();
@@ -3537,7 +3536,7 @@ const isChannelRegistered = (channel) => {
   return false;
 };
 async function handleDiscordMessage(message) {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
+  var _a, _b, _c, _d, _e, _f, _g, _h;
   if (message.author.bot)
     return;
   if (message.content.startsWith("."))
@@ -3661,16 +3660,39 @@ async function handleDiscordMessage(message) {
         }
       } while (hasBeenMention);
     } else {
-      sendTyping(message);
-      if (!((_j = (_i = constructArray[0]) == null ? void 0 : _i.defaultConfig) == null ? void 0 : _j.doLurk) === true) {
-        chatLog = await doCharacterReply(constructArray[0], chatLog, message);
+      let config = constructArray[0].defaultConfig;
+      if (chatLog.chatConfigs !== void 0 && chatLog.chatConfigs.length > 0) {
+        for (let j = 0; j < chatLog.chatConfigs.length; j++) {
+          if (chatLog.chatConfigs[j]._id === constructArray[0]._id) {
+            config = chatLog.chatConfigs[j];
+            break;
+          }
+        }
+      }
+      if (!config.doLurk === true) {
+        let wasMentioned = isMentioned(chatLog.lastMessage.text, constructArray[0]) && chatLog.lastMessage.isHuman;
+        if (wasMentioned) {
+          if (config.replyToUserMention >= Math.random()) {
+            sendTyping(message);
+            let replyLog = await doCharacterReply(constructArray[0], chatLog, message);
+            if (replyLog !== void 0) {
+              chatLog = replyLog;
+            }
+          }
+        } else {
+          if (config.replyToUser >= Math.random()) {
+            sendTyping(message);
+            let replyLog = await doCharacterReply(constructArray[0], chatLog, message);
+            if (replyLog !== void 0) {
+              chatLog = replyLog;
+            }
+          }
+        }
       }
     }
   } else if (mode === "Construct") {
     await sendMessage(message.channel.id, "Construct Mode is not yet implemented.");
   }
-  if ((chatLog == null ? void 0 : chatLog._id) !== void 0)
-    await updateChat(chatLog);
 }
 async function doCharacterReply(construct, chatLog, message) {
   let username = "You";
@@ -3740,6 +3762,7 @@ async function doCharacterReply(construct, chatLog, message) {
       }
     }
   }
+  await updateChat(chatLog);
   return chatLog;
 }
 async function doCharacterThoughts(construct, chatLog, message) {
@@ -3796,6 +3819,7 @@ async function doCharacterThoughts(construct, chatLog, message) {
   } else {
     await sendEmbedAsCharacter(construct, message.channel.id, newEmbed);
   }
+  await updateChat(chatLog);
   return chatLog;
 }
 async function doRoundRobin(constructArray, chatLog, message) {
@@ -3853,6 +3877,7 @@ async function doRoundRobin(constructArray, chatLog, message) {
   return chatLog;
 }
 async function continueChatLog(interaction) {
+  var _a, _b;
   let registeredChannels = getRegisteredChannels();
   let registered = false;
   if (interaction.channel === null)
@@ -3889,23 +3914,83 @@ async function continueChatLog(interaction) {
   }
   const mode = getDiscordMode();
   if (mode === "Character") {
-    sendTyping(interaction);
-    if (isMultiCharacterMode()) {
+    if (isMultiCharacterMode() && !interaction.channel.isDMBased()) {
+      let lastMessageContent = chatLog.lastMessage.text;
+      let mentionedConstruct = containsName(lastMessageContent, constructArray);
+      if (mentionedConstruct) {
+        let mentionedIndex = -1;
+        for (let i = 0; i < constructArray.length; i++) {
+          if (constructArray[i].name === mentionedConstruct) {
+            mentionedIndex = i;
+            break;
+          }
+        }
+        if (mentionedIndex !== -1) {
+          const [mentioned] = constructArray.splice(mentionedIndex, 1);
+          constructArray.unshift(mentioned);
+        }
+      }
       chatLog = await doRoundRobin(constructArray, chatLog, interaction);
-      if (chatLog !== void 0) {
-        if (doAutoReply) {
-          if (0.25 > Math.random()) {
-            chatLog = await doRoundRobin(constructArray, chatLog, interaction);
+      if (chatLog === void 0)
+        return;
+      let hasBeenMention = true;
+      let lastMessageText = (_a = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _a.text;
+      let iterations = 0;
+      do {
+        if (((_b = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _b.text) === void 0)
+          break;
+        if (iterations > 0) {
+          if (lastMessageText === chatLog.lastMessage.text)
+            break;
+          lastMessageText = chatLog.lastMessage.text;
+        }
+        iterations++;
+        hasBeenMention = false;
+        for (let i = 0; i < constructArray.length; i++) {
+          if (isMentioned(lastMessageText, constructArray[i])) {
+            hasBeenMention = true;
+            break;
+          }
+        }
+        if (hasBeenMention) {
+          chatLog = await doRoundRobin(constructArray, chatLog, interaction);
+        }
+      } while (hasBeenMention);
+    } else {
+      let config = constructArray[0].defaultConfig;
+      if (chatLog.chatConfigs !== void 0 && chatLog.chatConfigs.length > 0) {
+        for (let j = 0; j < chatLog.chatConfigs.length; j++) {
+          if (chatLog.chatConfigs[j]._id === constructArray[0]._id) {
+            config = chatLog.chatConfigs[j];
+            break;
           }
         }
       }
-    } else {
-      chatLog = await doCharacterReply(constructArray[0], chatLog, interaction);
+      if (!config.doLurk === true) {
+        let wasMentioned = isMentioned(chatLog.lastMessage.text, constructArray[0]) && chatLog.lastMessage.isHuman;
+        if (wasMentioned) {
+          if (config.replyToUserMention >= Math.random()) {
+            sendTyping(interaction);
+            let replyLog = await doCharacterReply(constructArray[0], chatLog, interaction);
+            if (replyLog !== void 0) {
+              chatLog = replyLog;
+            }
+          }
+        } else {
+          if (config.replyToUser >= Math.random()) {
+            sendTyping(interaction);
+            let replyLog = await doCharacterReply(constructArray[0], chatLog, interaction);
+            if (replyLog !== void 0) {
+              chatLog = replyLog;
+            }
+          }
+        }
+      }
     }
   } else if (mode === "Construct") {
     await sendMessage(interaction.channel.id, "Construct Mode is not yet implemented.");
   }
-  if (chatLog !== void 0)
+  if ((chatLog == null ? void 0 : chatLog._id) !== void 0)
     await updateChat(chatLog);
 }
 async function handleRengenerateMessage(message) {
@@ -3974,14 +4059,14 @@ async function handleRemoveMessage(message) {
 }
 function containsName(message, chars) {
   for (let i = 0; i < chars.length; i++) {
-    if (message.toLowerCase().trim().includes(chars[i].name.toLowerCase().trim())) {
+    if (isMentioned(message, chars[i])) {
       return chars[i].name;
     }
   }
   return false;
 }
 function isMentioned(message, char) {
-  if (message.toLowerCase().trim().includes(char.name.toLowerCase().trim())) {
+  if (message.toLowerCase().trim().includes(char.name.toLowerCase().trim()) || message.toLowerCase().trim().includes(char.nickname.toLowerCase().trim())) {
     return true;
   }
   return false;
