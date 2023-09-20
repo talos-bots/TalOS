@@ -279,19 +279,7 @@ export function assembleInstructPrompt(construct: any, chatLog: ChatInterface, c
 }
 
 export async function generateThoughts(construct: ConstructInterface, chat: ChatInterface, currentUser: string = 'you', messagesToInclude: number = 25, doMultiLine?: boolean, replaceUser: boolean = true){
-    let lastTwoMessages;
-    if(chat.messages.length < 2){
-        lastTwoMessages = chat.messages;
-    }else{
-        lastTwoMessages = chat.messages.slice(-2);
-    }
-    let messagesExceptLastTwo;
-    if(chat.messages.length < 2){
-        messagesExceptLastTwo = chat.messages;
-    }else{
-        messagesExceptLastTwo = chat.messages.slice(0, -2);
-    }
-    messagesExceptLastTwo = messagesExceptLastTwo.slice(-messagesToInclude);
+    let messagesExceptLastTwo = chat.messages.slice(-messagesToInclude);
     let prompt = '';
     for(let i = 0; i < messagesExceptLastTwo.length; i++){
         if(messagesExceptLastTwo[i].isCommand === true){
