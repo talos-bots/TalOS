@@ -710,7 +710,7 @@ const ChatLog = (props: ChatLogProps) => {
 				</div>
 			</div>
 			<div className="col-span-2 box-border h-[calc(100vh-70px)] flex flex-col gap-2 overflow-x-hidden pt-4 pb-4 pr-4">
-			{openChatConfig === true && (
+			{openChatConfig === true && chatLog !== null && (
 				<ChatConfigPane chat={chatLog} chatPanelClose={chatPaneClose} onEdit={handleDetailsChange}/>
 			)}
 			</div>
