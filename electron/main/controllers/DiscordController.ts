@@ -712,7 +712,7 @@ export async function handleRemoveMessage(message: Message){
 
 function containsName(message: string, chars: ConstructInterface[]){
     for(let i = 0; i < chars.length; i++){
-        if(message.toLowerCase().trim().includes(chars[i].name.toLowerCase().trim())){
+        if(isMentioned(message, chars[i])){
             return chars[i].name;
         }
     }
@@ -720,7 +720,7 @@ function containsName(message: string, chars: ConstructInterface[]){
 }
 
 function isMentioned(message: string, char: ConstructInterface){
-    if(message.toLowerCase().trim().includes(char.name.toLowerCase().trim())){
+    if((message.toLowerCase().trim().includes(char.name.toLowerCase().trim())) || (message.toLowerCase().trim().includes(char.nickname.toLowerCase().trim()))){
         return true;
     }
     return false;

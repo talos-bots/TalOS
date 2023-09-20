@@ -2,6 +2,7 @@ import { generateContinueChatLog, generateThoughts, regenerateMessageFromChatLog
 import { getConstruct } from "@/api/dbapi";
 import { Attachment } from "@/classes/Attachment";
 import { Chat } from "@/classes/Chat";
+import { Construct } from "@/classes/Construct";
 import { Message } from "@/classes/Message";
 import { User } from "@/classes/User";
 import { Dispatch, SetStateAction } from "react";
@@ -141,4 +142,20 @@ export function createSystemMessage(action: string){
     newMessage.emotion = 'neutral';
     newMessage.isThought = false;
     return newMessage;
+}
+
+export function isConstructMentioned(message: string, char: Construct){
+    if((message.toLowerCase().trim().includes(char.name.toLowerCase().trim())) || (message.toLowerCase().trim().includes(char.nickname.toLowerCase().trim()))){
+        return true;
+    }
+    return false;
+}
+
+export function findFirstMention(message: string, chars: Construct[]){
+    for(let i = 0; i < chars.length; i++){
+        if(isConstructMentioned(message, chars[i])){
+            return chars[i];
+        }
+    }
+    return false;
 }
