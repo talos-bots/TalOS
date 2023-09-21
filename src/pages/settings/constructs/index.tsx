@@ -1,5 +1,6 @@
 import { loadModels } from "@/App";
 import { getDoCaptioning, getDoEmotions, setDoCaptioning, setDoEmotions } from "@/api/llmapi";
+import { Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import ReactSwitch from "react-switch";
 
@@ -61,8 +62,8 @@ const ConstructSettingsPanel = () => {
                 </div>
             </div>
             <i className="text-sm col-span-2 themed-box text-left">Clicking 'Load Models' will download all of the models now, this way you won't have to wait for them to download before chatting or using any feature requiring them. A desktop notification will be dispatched when this finishes.</i>
-            <button className="themed-button-pos col-span-2" onClick={() => loadModels()}>Load Models</button>
-            <button className="themed-button-pos col-span-2" onClick={() => saveConstructSettings()}>Save</button>
+            <button className="themed-button-pos col-span-1 justify-center items-center flex" onClick={() => loadModels()}>Download Models</button>
+            <button className="themed-button-pos col-span-1 justify-center items-center flex" onClick={() => saveConstructSettings()}><Save/></button>
         </div>
     )
 };

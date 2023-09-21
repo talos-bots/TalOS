@@ -2,6 +2,7 @@ import { saveNewUser, updateUser } from "@/api/dbapi";
 import { User } from "@/classes/User";
 import Loading from "@/components/loading";
 import StringArrayEditorCards from "@/components/string-array-editor-cards";
+import { Save, Trash } from "lucide-react";
 import { useEffect, useState } from "react";
 import { RiQuestionMark } from "react-icons/ri";
 
@@ -183,8 +184,8 @@ const UserCrud = (props: UserCrudProps) => {
                     </div>
                     <div className="flex flex-col flex-grow-0 w-full h-1/4">
                         <div className="flex flex-row gap-1 h-1/2">
-                            <button className="themed-button-pos w-1/2" onClick={handleUserUpdate}>Save</button>
-                            <button className="themed-button-neg w-1/2" onClick={handleUserDelete}>{user !== null ? 'Delete' : 'Clear'}</button>
+                            <button className="themed-button-pos w-1/2 justify-center items-center flex" onClick={handleUserUpdate}><Save/></button>
+                            <button className="themed-button-neg w-1/2 justify-center items-center flex" onClick={handleUserDelete}><Trash/></button>
                         </div>
                         {currentUser !== null ? (
                             <button className="themed-button-pos w-full h-1/2" onClick={makeCurrentUser}>Set as Current User</button>

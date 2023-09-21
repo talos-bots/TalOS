@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useLocation, NavLink } from 'react-router-dom';
+import { useLocation, NavLink } from 'react-router-dom';
 import { HashLink } from 'react-router-hash-link';
 import { HomeIcon, MessageCircle, Cog, Sparkles, Users, Bot, User, Book, File, Text } from 'lucide-react';
 import Clock from '../clock';

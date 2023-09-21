@@ -1,5 +1,6 @@
 import { getPaLMFilters, getPalmModel, setPaLMFilters, setPalmModel } from "@/api/llmapi";
 import axios from "axios";
+import { Save, Trash } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export const defaultPaLMFilters: PaLMFilters = {
@@ -132,19 +133,19 @@ const PaLMPanel = (props: PaLMPanelProps) => {
                 <option value="HARM_BLOCK_THRESHOLD_UNSPECIFIED" className='themed-input'>Not specified</option>
             </select>
             <div className="flex flex-row gap-2 w-full">
-                <button className="themed-button-neg w-1/2"
+                <button className="themed-button-neg w-1/2 justify-center items-center flex"
                     onClick={() => {
                         setFilters(defaultPaLMFilters);
                     }}
                 >
-                    Reset
+                    <Trash/>
                 </button>
-                <button className="themed-button-pos w-1/2"
+                <button className="themed-button-pos w-1/2 justify-center items-center flex"
                     onClick={() => {
                         saveFilters();
                     }}
                 >
-                    Save
+                    <Save/>
                 </button>
             </div>
             <div className="flex flex-col gap-2">

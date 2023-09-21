@@ -12,6 +12,7 @@ import {
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { URL } from "url";
+import { Save } from "lucide-react";
 
 const StableDiffusionPanel = () => {
     const [sdURL, setSDURL] = useState<string>("");
@@ -130,61 +131,61 @@ const StableDiffusionPanel = () => {
                     );
                 })}
             </select>
-            <button className="themed-button-pos" onClick={() => setDefaultUpscaler(defaultUpscaler)}>Save</button>
+            <button className="themed-button-pos justify-center items-center flex" onClick={() => setDefaultUpscaler(defaultUpscaler)}><Save/></button>
         </div>
         <div className="col-span-1 flex flex-col text-left gap-1">
             <label htmlFor="default-steps" className="text-theme-text font-semibold">Default Steps</label>
             <input type="number" id="default-steps" value={defaultSteps} className="themed-input flex-grow" onChange={(e) => setDefaultStepsState(Number(e.target.value))}/>
-            <button className="themed-button-pos" onClick={() => setDefaultSteps(defaultSteps)}>Save</button>
+            <button className="themed-button-pos justify-center items-center flex" onClick={() => setDefaultSteps(defaultSteps)}><Save/></button>
         </div>
 
         <div className="col-span-1 flex flex-col text-left gap-1">
             <label htmlFor="default-cfg" className="text-theme-text font-semibold">Default Cfg Scale</label>
             <input type="text" id="default-cfg" value={defaultCfg} className="themed-input flex-grow" onChange={(e) => setDefaultCfgState(e.target.value)}/>
-            <button className="themed-button-pos" onClick={() => setDefaultCfg(defaultCfg)}>Save</button>
+            <button className="themed-button-pos justify-center items-center flex" onClick={() => setDefaultCfg(defaultCfg)}><Save/></button>
         </div>
 
         <div className="col-span-1 flex flex-col text-left gap-1">
             <label htmlFor="default-width" className="text-theme-text font-semibold">Default Width</label>
             <input type="number" id="default-width" value={defaultWidth} className="themed-input flex-grow" onChange={(e) => setDefaultWidthState(Number(e.target.value))}/>
-            <button className="themed-button-pos" onClick={() => setDefaultWidth(defaultWidth)}>Save</button>
+            <button className="themed-button-pos justify-center items-center flex" onClick={() => setDefaultWidth(defaultWidth)}><Save/></button>
         </div>
 
         <div className="col-span-1 flex flex-col text-left gap-1">
             <label htmlFor="default-height" className="text-theme-text font-semibold">Default Height</label>
             <input type="number" id="default-height" value={defaultHeight} className="themed-input flex-grow" onChange={(e) => setDefaultHeightState(Number(e.target.value))}/>
-            <button className="themed-button-pos" onClick={() => setDefaultHeight(defaultHeight)}>Save</button>
+            <button className="themed-button-pos justify-center items-center flex" onClick={() => setDefaultHeight(defaultHeight)}><Save/></button>
         </div>
 
         <div className="col-span-1 flex flex-col text-left gap-1">
             <label htmlFor="default-highres-steps" className="text-theme-text font-semibold">Default High-Res Steps</label>
             <input type="number" id="default-highres-steps" value={defaultHighresSteps} className="themed-input flex-grow" onChange={(e) => setDefaultHighresStepsState(Number(e.target.value))}/>
-            <button className="themed-button-pos" onClick={() => setDefaultHighresSteps(defaultHighresSteps)}>Save</button>
+            <button className="themed-button-pos justify-center items-center flex" onClick={() => setDefaultHighresSteps(defaultHighresSteps)}><Save/></button>
         </div>
 
         <div className="col-span-1 flex flex-col text-left gap-1">
             <label htmlFor="default-denoising-strength" className="text-theme-text font-semibold">Default Denoising Strength</label>
             <input type="number" id="default-denoising-strength" value={defaultDenoisingStrength} className="themed-input flex-grow" onChange={(e) => setDefaultDenoisingStrengthState(Number(e.target.value))}/>
-            <button className="themed-button-pos" onClick={() => setDefaultDenoisingStrength(defaultDenoisingStrength)}>Save</button>
+            <button className="themed-button-pos justify-center items-center flex" onClick={() => setDefaultDenoisingStrength(defaultDenoisingStrength)}><Save/></button>
         </div>
         
         <div className="col-span-1 flex flex-col text-left gap-1">
             <label htmlFor="default-upscaled-factor" className="text-theme-text font-semibold">Default Upscale Factor</label>
             <input type="number" id="default-upscaled-factor" value={upsaleFactor} className="themed-input flex-grow" onChange={(e) => setUpscaleFactor(Number(e.target.value))}/>
-            <button className="themed-button-pos" onClick={() => setDefaultUpscale(upsaleFactor)}>Save</button>
+            <button className="themed-button-pos justify-center items-center flex" onClick={() => setDefaultUpscale(upsaleFactor)}><Save/></button>
         </div>
 
         <div className="col-span-2 flex flex-col text-left gap-1">
             <label htmlFor="default-negative-prompt" className="text-theme-text font-semibold">Default Negative Prompt</label>
             <textarea id="default-negative-prompt" value={negativePrompt} className="themed-input flex-grow" onChange={(e) => setNegativePrompt(e.target.value)}/>
-            <button className="themed-button-pos" onClick={() => setDefaultNegativePrompt(negativePrompt)}>Save</button>
+            <button className="themed-button-pos justify-center items-center flex" onClick={() => setDefaultNegativePrompt(negativePrompt)}><Save/></button>
         </div>
         
         <div className="col-span-2 flex flex-col text-left gap-1">
             <label htmlFor="default-prompt" className="text-theme-text font-semibold">Postive Prompt Prefix</label>
             <i>Adds the following to the beginning of every prompt sent to SD. Use this to add tags like "masterpiece, best quality".</i>
             <textarea id="default-prompt" value={defaultPrompt} className="themed-input flex-grow" onChange={(e) => setDefaultPrompt(e.target.value)}/>
-            <button className="themed-button-pos" onClick={() => setSDDefaultPrompt(defaultPrompt)}>Save</button>
+            <button className="themed-button-pos justify-center items-center flex" onClick={() => setSDDefaultPrompt(defaultPrompt)}><Save/></button>
         </div>
 
     </div>

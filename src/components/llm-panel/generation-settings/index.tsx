@@ -1,5 +1,6 @@
 import { getLLMSettings, setLLMSettings } from "@/api/llmapi";
 import { EndpointType, Settings } from "@/types";
+import { Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import ReactSwitch from "react-switch";
 
@@ -179,12 +180,12 @@ const GenerationSettings = () => {
                     </div>
                 </div>
             </div>
-            <button className="themed-button-pos w-full"
+            <button className="themed-button-pos w-full justify-center items-center flex"
                 onClick={() => {
                     saveSettings();
                 }}
             >
-                Save Settings
+                <Save/>
             </button>
         </div>
     );

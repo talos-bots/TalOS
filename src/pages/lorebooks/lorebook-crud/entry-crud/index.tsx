@@ -1,5 +1,7 @@
 import { EntryPostion, LoreEntry } from "@/classes/Lorebook";
 import Accordian from "@/components/accordion";
+import { confirmModal } from "@/components/confirm-modal";
+import { Save, Trash } from "lucide-react";
 import { useEffect, useState } from "react";
 import ReactSwitch from "react-switch";
 
@@ -74,6 +76,7 @@ const EntryCrud = (props: EntryCrudProps) => {
     }
 
     const handleEntryDelete = async () => {
+        if(! await confirmModal(`Are you sure you want to delete ${entryName}?`)) return;
         if(entry) {
             if(onDelete === undefined) return;
             onDelete(entry);
@@ -189,8 +192,8 @@ const EntryCrud = (props: EntryCrudProps) => {
                             </div>
                         </div>
                         <div className="flex flex-row gap-1">
-                            <button className="themed-button-pos w-1/2" onClick={() => handleEntryUpdate()}>Save</button>
-                            <button className="themed-button-neg w-1/2" onClick={() => handleEntryDelete()}>{entry !== null ? 'Delete' : 'Clear'}</button>
+                            <button className="themed-button-pos w-1/2 justify-center items-center flex" onClick={() => handleEntryUpdate()}><Save/></button>
+                            <button className="themed-button-neg w-1/2 justify-center items-center flex" onClick={() => handleEntryDelete()}><Trash/></button>
                         </div>
                     </div>
                 </div>

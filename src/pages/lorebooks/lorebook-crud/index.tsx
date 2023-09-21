@@ -5,6 +5,7 @@ import { RiQuestionMark } from "react-icons/ri";
 import ReactSwitch from "react-switch";
 import EntryCrud from "./entry-crud";
 import { Construct } from "@/classes/Construct";
+import { Save, Trash } from "lucide-react";
 
 interface LorebookCrudProps {
     book: Lorebook | null;
@@ -222,8 +223,8 @@ const LorebookCrud = (props: LorebookCrudProps) => {
                     </div>
                     <div className="flex flex-col flex-grow-0 w-full h-1/6">
                         <div className="flex flex-row gap-1">
-                            <button className="themed-button-pos w-1/2" onClick={handleLorebookUpdate}>Save</button>
-                            <button className="themed-button-neg w-1/2" onClick={handleLorebookDelete}>{book !== null ? 'Delete' : 'Clear'}</button>
+                            <button className="themed-button-pos w-1/2 justify-center items-center flex" onClick={handleLorebookUpdate}><Save/></button>
+                            <button className="themed-button-neg w-1/2 justify-center items-center flex" onClick={handleLorebookDelete}><Trash/></button>
                         </div>
                     </div>
                 </div>

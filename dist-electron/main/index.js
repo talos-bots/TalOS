@@ -4537,7 +4537,6 @@ const ClearLogCommand = {
       return;
     } else {
       pulledChat.messages = [];
-      pulledChat.lastMessage = null;
       await updateChat(pulledChat);
     }
     deleteIndex(interaction.channelId);

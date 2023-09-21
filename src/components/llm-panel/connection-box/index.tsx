@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import HordePanel from "../horde-panel";
 import OpenAIPanel from "../openai-panel";
 import PaLMPanel, { PaLMFilterType, PaLMFilters, PaLMModel, defaultPaLMFilters } from "../palm-panel";
+import { Save, Trash } from "lucide-react";
 
 interface ConnectionBoxProps {
 };
@@ -149,12 +150,12 @@ const ConnectionBox = (props: ConnectionBoxProps) => {
         <div className="flex flex-col w-full text-left gap-2">
             <div className="flex flex-col w-full text-left gap-2">
                 <label className="text-theme-text text-shadow-xl font-semibold">Connection Preset Name</label>
-                <div className="flex flex-row w-full">
+                <div className="flex flex-row w-full gap-2">
                     <input className="themed-input w-full flex-grow"
                         value={connectionPresetName}
                         onChange={(e) => setConnectionPresetName(e.target.value)}
                     />
-                    <button className="themed-button-neg"
+                    <button className="themed-button-neg justify-center items-center flex"
                         onClick={() => {
                             setConnectionPresetName("");
                             setConnectionPreset(undefined);
@@ -162,14 +163,14 @@ const ConnectionBox = (props: ConnectionBoxProps) => {
                             setCurrentLLMConnectionPreset("");
                         }}
                     >
-                        Clear
+                        <Trash/>
                     </button>
-                    <button className="themed-button-pos"
+                    <button className="themed-button-pos justify-center items-center flex"
                         onClick={() => {
                             saveConnectionPreset();
                         }}
                     >
-                        Save
+                        <Save/>
                     </button>
                 </div>
                 <label className="text-theme-text text-shadow-xl font-semibold">Select Preset</label>
@@ -225,7 +226,7 @@ const ConnectionBox = (props: ConnectionBoxProps) => {
                     connect();
                 }}
             >
-                Connect
+                Connect and Save
             </button>
             {(endpointType === "OAI" || endpointType === "P-OAI") && (
                 <OpenAIPanel selectedModel={selectedOpenAIModel} setSelectedModel={setSelectedOpenAIModel}/>

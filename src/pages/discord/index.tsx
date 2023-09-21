@@ -6,6 +6,8 @@ import { Construct } from "@/classes/Construct";
 import Accordian from "@/components/accordion";
 import { useEffect, useState } from "react";
 import ReactSwitch from "react-switch";
+import ChannelManager from "./channel-manager";
+import { Save, Trash } from "lucide-react";
 
 const DiscordPage = () => {
     const [discordCharacterMode, setDiscordCharacterMode] = useState(false);
@@ -121,12 +123,12 @@ const DiscordPage = () => {
                         <div className="grid grid-cols-2 gap-2">
                             <div className="col-span-1 flex flex-col text-left">
                                 <label className="text-theme-text font-semibold">Active Constructs</label>
-                                <div className="themed-input flex flex-col items-center w-full h-15vh overflow-y-auto">
+                                <div className="themed-input flex flex-col items-center w-full h-15vh overflow-y-auto gap-2">
                                     {Array.isArray(discordActiveConstructs) && discordActiveConstructs.length > 0 && discordActiveConstructs.map((construct, index) => {
                                         return(
-                                            <div className="flex flex-row w-full" key={construct._id}>
-                                                <label className="text-theme-text font-semibold themed-button w-2/3">{construct.name} {index === 0 ? '(Primary)' : '(Secondary)'}</label>
-                                                <button className="themed-button-neg w-1/3" onClick={() => {removeActive(construct._id)}}>Remove</button>
+                                            <div className="flex flex-row w-full gap-2" key={construct._id}>
+                                                <span className="text-theme-text font-semibold themed-button-pos flex-grow">{construct.name} {index === 0 ? '(Primary)' : '(Secondary)'}</span>
+                                                <button className="themed-button-neg flex justify-center items-center" onClick={() => {removeActive(construct._id)}}><Trash/></button>
                                             </div>
                                     )})}
                                 </div>
@@ -180,7 +182,7 @@ const DiscordPage = () => {
                                 </div>
                             </div>
                             <div className="col-span-2 flex flex-row text-left gap-2 mt-2">
-                                <button className="themed-button-pos w-full" onClick={() => saveDiscordConfig()}>Save</button>
+                                <button className="themed-button-pos w-full justify-center items-center flex" onClick={() => saveDiscordConfig()}><Save/></button>
                             </div>
                         </div>
                     </Accordian>
@@ -238,7 +240,7 @@ const DiscordPage = () => {
                                 </div>
                             </div>
                             <div className="col-span-2 flex flex-row text-left gap-2 mt-2">
-                                <button className="themed-button-pos w-full" onClick={() => saveDiffusionConfig()}>Save</button>
+                                <button className="themed-button-pos w-full justify-center items-center flex" onClick={() => saveDiffusionConfig()}><Save/></button>
                             </div>
                         </div>
                     </Accordian>
@@ -334,11 +336,12 @@ const DiscordPage = () => {
                                 </div>
                             </div>
                             <div className="col-span-2 flex flex-row text-left gap-2 mt-2">
-                                <button className="themed-button-pos w-full" onClick={() => saveDiscordConfig()}>Save</button>
+                                <button className="themed-button-pos w-full justify-center items-center flex" onClick={() => saveDiscordConfig()}><Save/></button>
                             </div>
                         </div>
                     </Accordian>
                     <Accordian title="Registered Channels" className="slide-in-right">
+                        <ChannelManager />
                     </Accordian>
                 </div>
             </div>

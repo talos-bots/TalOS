@@ -1,4 +1,5 @@
 import { User } from "@/classes/User";
+import { confirmModal } from "@/components/confirm-modal";
 import { Download, EditIcon, TrashIcon } from "lucide-react";
 import { RiQuestionMark } from "react-icons/ri";
 
@@ -44,8 +45,9 @@ const UserInfo = (props: UserInfoProps) => {
                     <Download size={'1rem'} />
                 </button>
                 <button className="message-button mr-4"
-                    onClick={() => {
+                    onClick={async () => {
                         if(onDelete === undefined) return;
+                        if(!await confirmModal(`Are you sure you want to delete ${user.name}?`)) return;
                         if(user === null) return;
                         onDelete(user);
                     }}

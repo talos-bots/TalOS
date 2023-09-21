@@ -1,4 +1,5 @@
 import { Lorebook } from "@/classes/Lorebook";
+import { confirmModal } from "@/components/confirm-modal";
 import { Book, Download, TrashIcon } from "lucide-react";
 
 interface LorebookInfoProps {
@@ -42,9 +43,10 @@ const LorebookInfo = (props: LorebookInfoProps) => {
                         <Download size={'1rem'} />
                     </button>
                     <button className="message-button mr-4"
-                        onClick={() => {
+                        onClick={async () => {
                             if(onDelete === undefined) return;
                             if(book === null) return;
+                            if(! await confirmModal(`Are you sure you want to delete ${book.name}?`)) return;
                             onDelete(book);
                         }}
                     >

@@ -7,7 +7,7 @@ import './ConstructCrud.scss';
 import { setConstructAsPrimary, addConstructToActive, constructIsActive, getActiveConstructList, removeConstructFromActive } from "@/api/constructapi";
 import StringArrayEditorCards from "../string-array-editor-cards";
 import { saveTavernCardAsImage } from "@/api/extrasapi";
-import { ArrowBigLeft, ArrowBigRight, Download, RefreshCw } from "lucide-react";
+import { ArrowBigLeft, ArrowBigRight, Download, RefreshCw, Save, Trash } from "lucide-react";
 import { sendTxt2Img } from "@/api/sdapi";
 import { Alert } from "@material-tailwind/react";
 import { Emotion, emotions } from "@/types";
@@ -464,11 +464,11 @@ const ConstructManagement = (props: ConstructManagementProps) => {
                                         <button className="themed-button-pos w-1/4" onClick={() => makePrimary()}>Set as Primary Construct</button>
                                         <button className="themed-button-pos w-1/4" onClick={() => makeActive()}>Add as Secondary Construct</button>
                                         <button className="themed-button-neg w-1/4" onClick={() => makeInactive()}>Remove Active Construct</button>
-                                        <button className="themed-button-neg w-1/4" onClick={() => deleteConstructAndReturn()}>{constructState ? 'Delete Construct' : 'Clear Values'}</button>
+                                        <button className="themed-button-neg w-1/4 justify-center items-center flex" onClick={() => deleteConstructAndReturn()}><Trash size={36}/></button>
                                     </div>
                                     <div className="row-span-1 flex flex-row gap-1">
                                         <button type="submit" className="themed-button-neg w-1/3" onClick={returnToMenu} title="Return to Menu">Return to Menu</button>
-                                        <button className="themed-button-pos w-1/3" onClick={() => saveConstruct()} title="Save">Save</button>
+                                        <button className="themed-button-pos w-1/3 justify-center items-center flex" onClick={() => saveConstruct()} title="Save"><Save size={36}/></button>
                                         <button className="themed-button-pos w-1/3 flex flex-col items-center justify-center" onClick={() => handleConstructExport()} title="Export as V2 Card"><Download size={36}/></button>
                                     </div>
                                 </div>
