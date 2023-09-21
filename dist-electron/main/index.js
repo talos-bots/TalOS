@@ -5798,7 +5798,7 @@ async function sendMessage(channelID, message) {
   const channel = await disClient.channels.fetch(channelID);
   if (!channel)
     return;
-  if (message.length < 1)
+  if (message.trim().length < 1)
     return;
   if (channel instanceof discord_js.TextChannel || channel instanceof discord_js.DMChannel || channel instanceof discord_js.NewsChannel) {
     return channel.send(message);
@@ -5842,7 +5842,7 @@ async function sendMessageAsCharacter(char, channelID, message) {
     sendMessage(channelID, "*Failed to create webhook. Check the number of webhooks in channel, if it is at 15, run /clearallwebhooks. Otherwise, ask your server adminstrator to give you the permissions they removed like a twat.*");
     return;
   }
-  if (message.length < 1)
+  if (message.trim().length < 1)
     return;
   await webhook.send(message);
 }

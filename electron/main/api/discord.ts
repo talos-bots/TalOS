@@ -469,7 +469,7 @@ export async function sendMessage(channelID: Snowflake, message: string){
     }
     const channel = await disClient.channels.fetch(channelID);
     if(!channel) return;
-    if(message.length < 1) return;
+    if(message.trim().length < 1) return;
     // Check if the channel is one of the types that can send messages
     if (channel instanceof TextChannel || channel instanceof DMChannel || channel instanceof NewsChannel) {
         return channel.send(message);
@@ -529,7 +529,7 @@ export async function sendMessageAsCharacter(char: ConstructInterface, channelID
         sendMessage(channelID, '*Failed to create webhook. Check the number of webhooks in channel, if it is at 15, run /clearallwebhooks. Otherwise, ask your server adminstrator to give you the permissions they removed like a twat.*');
         return;
     }
-    if(message.length < 1) return;
+    if(message.trim().length < 1) return;
     await webhook.send(message);
 }
 
