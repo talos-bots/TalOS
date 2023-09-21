@@ -347,7 +347,6 @@ export async function handleDiscordMessage(message: Message) {
 
             do {
                 if(isInterrupted){
-                    isInterrupted = false;
                     break;
                 }
                 if (chatLog?.lastMessage?.text === undefined) break;
@@ -376,7 +375,6 @@ export async function handleDiscordMessage(message: Message) {
                 let shouldContinue = false; // By default, we assume we won't need another iteration
                 if(chatLog?.lastMessage.text === undefined) break;
                 if(isInterrupted){
-                    isInterrupted = false;
                     break;
                 }
                 for(let i = 0; i < shuffledConstructs.length; i++) {
@@ -442,9 +440,15 @@ export async function handleDiscordMessage(message: Message) {
     }else if (mode === 'Construct'){
         await sendMessage(message.channel.id, 'Construct Mode is not yet implemented.');
     }
+    if(isInterrupted){
+        isInterrupted = false;
+    }
 }
 
 async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInterface, message: Message | CommandInteraction){
+    if(isInterrupted){
+        return chatLog;
+    }
     let stopList = undefined;
     let username: string = 'You';
     let authorID: string = 'You';
@@ -583,7 +587,6 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
     if(message.channel === null) return;
     for(let i = 0; i < constructArray.length; i++){
         if(isInterrupted){
-            isInterrupted = false;
             break;
         }
         let config = constructArray[i].defaultConfig;

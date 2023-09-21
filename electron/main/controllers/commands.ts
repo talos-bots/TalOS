@@ -4,7 +4,7 @@ import { addAlias, addDiffusionWhitelist, addRegisteredChannel, continueChatLog,
 import { addChat, getChat, getConstruct, removeChat, updateChat } from "../api/pouchdb";
 import { assembleChatFromData, assembleConstructFromData } from "../helpers/helpers";
 import { retrieveConstructs, setDoMultiLine } from "./ConstructController";
-import { clearWebhooksFromChannel, doGlobalNicknameChange } from "../api/discord";
+import { clearMessageQueue, clearWebhooksFromChannel, doGlobalNicknameChange } from "../api/discord";
 import { doInstruct, generateText, getStatus } from "../api/llm";
 import { deleteIndex } from "../api/vector";
 import { getDefaultCfg, getDefaultHeight, getDefaultHighresSteps, getDefaultNegativePrompt, getDefaultSteps, getDefaultWidth, txt2img, getDefaultPrompt } from "../api/sd";
@@ -838,6 +838,7 @@ const stopCommand: SlashCommand = {
     execute: async (interaction: CommandInteraction) => {
         await interaction.deferReply({ephemeral: true});
         setInterrupted();
+        clearMessageQueue();
         await interaction.editReply({
             content: `*Stopping...*`,
         });

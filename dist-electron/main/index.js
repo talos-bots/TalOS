@@ -3631,7 +3631,6 @@ async function handleDiscordMessage(message) {
       let iterations = 0;
       do {
         if (isInterrupted) {
-          isInterrupted = false;
           break;
         }
         if (((_h = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _h.text) === void 0)
@@ -3658,7 +3657,6 @@ async function handleDiscordMessage(message) {
         if ((chatLog == null ? void 0 : chatLog.lastMessage.text) === void 0)
           break;
         if (isInterrupted) {
-          isInterrupted = false;
           break;
         }
         for (let i = 0; i < shuffledConstructs.length; i++) {
@@ -3722,8 +3720,14 @@ async function handleDiscordMessage(message) {
   } else if (mode === "Construct") {
     await sendMessage(message.channel.id, "Construct Mode is not yet implemented.");
   }
+  if (isInterrupted) {
+    isInterrupted = false;
+  }
 }
 async function doCharacterReply(construct, chatLog, message) {
+  if (isInterrupted) {
+    return chatLog;
+  }
   let stopList = void 0;
   let username = "You";
   let authorID = "You";
@@ -3860,7 +3864,6 @@ async function doRoundRobin(constructArray, chatLog, message) {
     return;
   for (let i = 0; i < constructArray.length; i++) {
     if (isInterrupted) {
-      isInterrupted = false;
       break;
     }
     let config = constructArray[i].defaultConfig;
@@ -5128,6 +5131,7 @@ const stopCommand = {
   execute: async (interaction) => {
     await interaction.deferReply({ ephemeral: true });
     setInterrupted();
+    clearMessageQueue();
     await interaction.editReply({
       content: `*Stopping...*`
     });
@@ -6001,6 +6005,9 @@ async function processQueue() {
     processingMessage = void 0;
     isProcessing = false;
   }
+}
+function clearMessageQueue() {
+  messageQueue = [];
 }
 function DiscordJSRoutes() {
   electron.ipcMain.on("discord-get-token", async (event) => {

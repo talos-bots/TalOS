@@ -713,6 +713,9 @@ async function processQueue() {
     }
 }
 
+export function clearMessageQueue() {
+    messageQueue = [];
+}
 export function DiscordJSRoutes(){
     ipcMain.on('discord-get-token', async (event) => {
         event.sender.send('discord-get-token-reply', token);
