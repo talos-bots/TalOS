@@ -785,6 +785,7 @@ export function DiscordJSRoutes(){
         isReady = false;
         disClient = new Client(intents);
         console.log('Logged out!');
+        messageQueue = [];
         win?.webContents.send('discord-disconnected');
         return true;
     });

@@ -346,7 +346,10 @@ export async function handleDiscordMessage(message: Message) {
             let iterations = 0;
 
             do {
-                
+                if(isInterrupted){
+                    isInterrupted = false;
+                    break;
+                }
                 if (chatLog?.lastMessage?.text === undefined) break;
                 
                 if (iterations > 0 && lastMessageText === chatLog.lastMessage.text) break;
@@ -356,7 +359,6 @@ export async function handleDiscordMessage(message: Message) {
                 
                 for (let i = 0; i < shuffledConstructs.length; i++) {
                     if(isInterrupted){
-                        isInterrupted = false;
                         break;
                     }
                     if (isMentioned(lastMessageText, shuffledConstructs[i]) && chatLog.lastMessage.isHuman && !chatLog.lastMessage.isThought && (chatLog.lastMessage.userID !== shuffledConstructs[i]._id)) {
@@ -373,9 +375,12 @@ export async function handleDiscordMessage(message: Message) {
             while (true) { // The loop to make replies continuously until no construct feels the need to reply
                 let shouldContinue = false; // By default, we assume we won't need another iteration
                 if(chatLog?.lastMessage.text === undefined) break;
+                if(isInterrupted){
+                    isInterrupted = false;
+                    break;
+                }
                 for(let i = 0; i < shuffledConstructs.length; i++) {
                     if(isInterrupted){
-                        isInterrupted = false;
                         break;
                     }
                     let config = shuffledConstructs[i].defaultConfig;

@@ -1,6 +1,6 @@
 import { AttachmentBuilder, CommandInteraction, EmbedBuilder } from "discord.js";
 import { Alias, MessageInterface, SlashCommand } from "../types/types";
-import { addAlias, addDiffusionWhitelist, addRegisteredChannel, continueChatLog, getDiffusionWhitelist, getRegisteredChannels, getShowDiffusionDetails, getUsername, removeDiffusionWhitelist, removeRegisteredChannel, setDoAutoReply, setMaxMessages, setReplaceUser } from "./DiscordController";
+import { addAlias, addDiffusionWhitelist, addRegisteredChannel, continueChatLog, getDiffusionWhitelist, getRegisteredChannels, getShowDiffusionDetails, getUsername, removeDiffusionWhitelist, removeRegisteredChannel, setDoAutoReply, setInterrupted, setMaxMessages, setReplaceUser } from "./DiscordController";
 import { addChat, getChat, getConstruct, removeChat, updateChat } from "../api/pouchdb";
 import { assembleChatFromData, assembleConstructFromData } from "../helpers/helpers";
 import { retrieveConstructs, setDoMultiLine } from "./ConstructController";
@@ -832,6 +832,18 @@ const leaveServerCommand: SlashCommand = {
     }
 };
 
+const stopCommand: SlashCommand = {
+    name: 'stop',
+    description: 'Stops the bot.',
+    execute: async (interaction: CommandInteraction) => {
+        await interaction.deferReply({ephemeral: true});
+        setInterrupted();
+        await interaction.editReply({
+            content: `*Stopping...*`,
+        });
+    }
+};
+
 export const DefaultCommands = [
     PingCommand,
     RegisterCommand,
@@ -851,7 +863,8 @@ export const DefaultCommands = [
     toggleVectorCommand,
     completeString,
     instructCommand,
-    replaceUserCommand
+    replaceUserCommand,
+    stopCommand
 ];
 
 export const constructImagine: SlashCommand = {

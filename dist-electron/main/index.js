@@ -3604,6 +3604,7 @@ async function handleDiscordMessage(message) {
       addVectorFromMessage(chatLog._id, newMessage);
     }
   }
+  await updateChat(chatLog);
   (_f = exports.win) == null ? void 0 : _f.webContents.send(`chat-message-${message.channel.id}`);
   const mode = getDiscordMode();
   if (mode === "Character") {
@@ -3629,6 +3630,10 @@ async function handleDiscordMessage(message) {
       let lastMessageText = (_g = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _g.text;
       let iterations = 0;
       do {
+        if (isInterrupted) {
+          isInterrupted = false;
+          break;
+        }
         if (((_h = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _h.text) === void 0)
           break;
         if (iterations > 0 && lastMessageText === chatLog.lastMessage.text)
@@ -3637,7 +3642,6 @@ async function handleDiscordMessage(message) {
         hasBeenMention = false;
         for (let i = 0; i < shuffledConstructs.length; i++) {
           if (isInterrupted) {
-            isInterrupted = false;
             break;
           }
           if (isMentioned(lastMessageText, shuffledConstructs[i]) && chatLog.lastMessage.isHuman && !chatLog.lastMessage.isThought && chatLog.lastMessage.userID !== shuffledConstructs[i]._id) {
@@ -3653,9 +3657,12 @@ async function handleDiscordMessage(message) {
         let shouldContinue = false;
         if ((chatLog == null ? void 0 : chatLog.lastMessage.text) === void 0)
           break;
+        if (isInterrupted) {
+          isInterrupted = false;
+          break;
+        }
         for (let i = 0; i < shuffledConstructs.length; i++) {
           if (isInterrupted) {
-            isInterrupted = false;
             break;
           }
           let config = shuffledConstructs[i].defaultConfig;
@@ -5115,6 +5122,17 @@ const replaceUserCommand = {
     });
   }
 };
+const stopCommand = {
+  name: "stop",
+  description: "Stops the bot.",
+  execute: async (interaction) => {
+    await interaction.deferReply({ ephemeral: true });
+    setInterrupted();
+    await interaction.editReply({
+      content: `*Stopping...*`
+    });
+  }
+};
 const DefaultCommands = [
   PingCommand,
   RegisterCommand,
@@ -5134,7 +5152,8 @@ const DefaultCommands = [
   toggleVectorCommand,
   completeString,
   instructCommand,
-  replaceUserCommand
+  replaceUserCommand,
+  stopCommand
 ];
 const constructImagine = {
   name: "cosimagine",
@@ -6040,6 +6059,7 @@ function DiscordJSRoutes() {
     isReady = false;
     disClient = new discord_js.Client(intents);
     console.log("Logged out!");
+    messageQueue = [];
     (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-disconnected");
     return true;
   });
