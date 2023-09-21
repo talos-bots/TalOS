@@ -3535,22 +3535,12 @@ const isChannelRegistered = (channel) => {
   }
   return false;
 };
+function setInterrupted() {
+  isInterrupted = true;
+}
+let isInterrupted = false;
 async function handleDiscordMessage(message) {
-  var _a, _b, _c, _d, _e, _f, _g, _h;
-  if (message.author.bot)
-    return;
-  if (message.content.startsWith("."))
-    return;
-  let registeredChannels = getRegisteredChannels();
-  let registered = false;
-  for (let i = 0; i < registeredChannels.length; i++) {
-    if (registeredChannels[i]._id === message.channel.id) {
-      registered = true;
-      break;
-    }
-  }
-  if (!registered && !message.channel.isDMBased())
-    return;
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i;
   const activeConstructs = retrieveConstructs();
   if (activeConstructs.length < 1)
     return;
@@ -3619,21 +3609,20 @@ async function handleDiscordMessage(message) {
   if (mode === "Character") {
     if (isMultiCharacterMode() && !message.channel.isDMBased()) {
       let lastMessageContent = chatLog.lastMessage.text;
+      let shuffledConstructs = constructArray;
+      for (let i = shuffledConstructs.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledConstructs[i], shuffledConstructs[j]] = [shuffledConstructs[j], shuffledConstructs[i]];
+      }
       let mentionedConstruct = containsName(lastMessageContent, constructArray);
       if (mentionedConstruct) {
-        let mentionedIndex = -1;
-        for (let i = 0; i < constructArray.length; i++) {
-          if (constructArray[i].name === mentionedConstruct) {
-            mentionedIndex = i;
-            break;
-          }
-        }
+        let mentionedIndex = shuffledConstructs.findIndex((construct) => construct.name === mentionedConstruct);
         if (mentionedIndex !== -1) {
-          const [mentioned] = constructArray.splice(mentionedIndex, 1);
-          constructArray.unshift(mentioned);
+          const [mentioned] = shuffledConstructs.splice(mentionedIndex, 1);
+          shuffledConstructs.unshift(mentioned);
         }
       }
-      chatLog = await doRoundRobin(constructArray, chatLog, message);
+      chatLog = await doRoundRobin(shuffledConstructs, chatLog, message);
       if (chatLog === void 0)
         return;
       let hasBeenMention = true;
@@ -3642,24 +3631,56 @@ async function handleDiscordMessage(message) {
       do {
         if (((_h = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _h.text) === void 0)
           break;
-        if (iterations > 0) {
-          if (lastMessageText === chatLog.lastMessage.text)
-            break;
-          lastMessageText = chatLog.lastMessage.text;
-        }
+        if (iterations > 0 && lastMessageText === chatLog.lastMessage.text)
+          break;
         iterations++;
         hasBeenMention = false;
-        for (let i = 0; i < constructArray.length; i++) {
-          if (isMentioned(lastMessageText, constructArray[i])) {
-            if (chatLog.lastMessage.isHuman && !chatLog.lastMessage.isThought && chatLog.lastMessage.userID !== constructArray[i]._id)
-              hasBeenMention = true;
+        for (let i = 0; i < shuffledConstructs.length; i++) {
+          if (isInterrupted) {
+            isInterrupted = false;
+            break;
+          }
+          if (isMentioned(lastMessageText, shuffledConstructs[i]) && chatLog.lastMessage.isHuman && !chatLog.lastMessage.isThought && chatLog.lastMessage.userID !== shuffledConstructs[i]._id) {
+            hasBeenMention = true;
             break;
           }
         }
         if (hasBeenMention) {
-          chatLog = await doRoundRobin(constructArray, chatLog, message);
+          chatLog = await doRoundRobin(shuffledConstructs, chatLog, message);
         }
       } while (hasBeenMention);
+      while (true) {
+        let shouldContinue = false;
+        if ((chatLog == null ? void 0 : chatLog.lastMessage.text) === void 0)
+          break;
+        for (let i = 0; i < shuffledConstructs.length; i++) {
+          if (isInterrupted) {
+            isInterrupted = false;
+            break;
+          }
+          let config = shuffledConstructs[i].defaultConfig;
+          if ((_i = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _i.isHuman) {
+            if (config.replyToUser >= Math.random()) {
+              let replyLog = await doCharacterReply(shuffledConstructs[i], chatLog, message);
+              if (replyLog !== void 0) {
+                chatLog = replyLog;
+              }
+              shouldContinue = true;
+            }
+          } else {
+            if (config.replyToConstruct >= Math.random() && chatLog.lastMessage.userID !== shuffledConstructs[i]._id) {
+              let replyLog = await doCharacterReply(shuffledConstructs[i], chatLog, message);
+              if (replyLog !== void 0) {
+                chatLog = replyLog;
+              }
+              shouldContinue = true;
+            }
+          }
+        }
+        if (!shouldContinue) {
+          break;
+        }
+      }
     } else {
       let config = constructArray[0].defaultConfig;
       if (chatLog.chatConfigs !== void 0 && chatLog.chatConfigs.length > 0) {
@@ -3831,6 +3852,10 @@ async function doRoundRobin(constructArray, chatLog, message) {
   if (message.channel === null)
     return;
   for (let i = 0; i < constructArray.length; i++) {
+    if (isInterrupted) {
+      isInterrupted = false;
+      break;
+    }
     let config = constructArray[i].defaultConfig;
     if (chatLog.chatConfigs !== void 0 && chatLog.chatConfigs.length > 0) {
       for (let j = 0; j < chatLog.chatConfigs.length; j++) {
@@ -5346,8 +5371,6 @@ function createClient() {
       return;
     if (message.webhookId)
       return;
-    messageQueue.push(message);
-    await processQueue();
     const registeredChannels = getRegisteredChannels();
     let isRegistered = false;
     for (let i = 0; i < registeredChannels.length; i++) {
@@ -5356,7 +5379,14 @@ function createClient() {
         break;
       }
     }
+    if (message.content.startsWith(".") && !message.content.startsWith("..."))
+      return;
     if (isRegistered || message.channel.isDMBased()) {
+      if (message.channelId === (processingMessage == null ? void 0 : processingMessage.channelId)) {
+        setInterrupted();
+      }
+      messageQueue.push(message);
+      await processQueue();
       (_b = exports.win) == null ? void 0 : _b.webContents.send(`chat-message-${message.channel.id}`);
       (_c = exports.win) == null ? void 0 : _c.webContents.send("discord-message", message);
     }
@@ -5935,13 +5965,16 @@ function saveDiscordData(newToken, newAppId, discordCharacterMode, discordMultiC
 }
 let messageQueue = [];
 let isProcessing = false;
+let processingMessage;
 async function processQueue() {
   if (isProcessing)
     return;
   while (messageQueue.length > 0) {
     isProcessing = true;
     const currentMessage = messageQueue.shift();
+    processingMessage = currentMessage;
     await handleDiscordMessage(currentMessage);
+    processingMessage = void 0;
     isProcessing = false;
   }
 }

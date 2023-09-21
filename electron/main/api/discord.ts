@@ -2,7 +2,7 @@ import { ipcMain } from 'electron';
 import { ActivityType, Client, GatewayIntentBits, Collection, REST, Routes, Partials, TextChannel, DMChannel, NewsChannel, Snowflake, Webhook, Message, CommandInteraction, Events, PartialGroupDMChannel } from 'discord.js';
 import Store from 'electron-store';
 import { win } from '..';
-import { doImageReaction, getDoStableDiffusion, getMessageIntent, getRegisteredChannels, getUsername, handleDiscordMessage, handleRemoveMessage, handleRengenerateMessage } from '../controllers/DiscordController';
+import { doImageReaction, getDoStableDiffusion, getMessageIntent, getRegisteredChannels, getUsername, handleDiscordMessage, handleRemoveMessage, handleRengenerateMessage, setInterrupted } from '../controllers/DiscordController';
 import { ConstructInterface, SlashCommand } from '../types/types';
 import { assembleConstructFromData, base642Buffer } from '../helpers/helpers';
 import { DefaultCommands, stableDiffusionCommands } from '../controllers/commands';
@@ -37,8 +37,6 @@ function createClient(){
     disClient.on('messageCreate', async (message) => {
         if (message.author.id === disClient.user?.id) return;
         if (message.webhookId) return;
-        messageQueue.push(message);
-        await processQueue();
         const registeredChannels = getRegisteredChannels();
         let isRegistered = false;
         for(let i = 0; i < registeredChannels.length; i++){
@@ -47,7 +45,13 @@ function createClient(){
                 break;
             }
         }
+        if(message.content.startsWith('.') && !message.content.startsWith('...')) return;
         if(isRegistered || message.channel.isDMBased()){
+            if(message.channelId === processingMessage?.channelId){
+                setInterrupted();
+            }
+            messageQueue.push(message);
+            await processQueue();
             win?.webContents.send(`chat-message-${message.channel.id}`);
             win?.webContents.send('discord-message', message);
         }
@@ -694,7 +698,7 @@ export function saveDiscordData(newToken: string, newAppId: string, discordChara
 
 let messageQueue: Message[] = [];
 let isProcessing = false;
-
+let processingMessage: Message | undefined;
 async function processQueue() {
     // If the bot is already processing a message, do not start processing this one
     if (isProcessing) return;
@@ -702,7 +706,9 @@ async function processQueue() {
     while (messageQueue.length > 0) {
         isProcessing = true;
         const currentMessage = messageQueue.shift();
+        processingMessage = currentMessage;
         await handleDiscordMessage(currentMessage!);
+        processingMessage = undefined;
         isProcessing = false;
     }
 }
