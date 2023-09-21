@@ -81,7 +81,7 @@ const InputGroup = (props: InputGroupProps) => {
 					}
 				}}
 			/>
-			<button className={`message-button`} onClick={() => { sendMessage(message, attachments); setMessage(''); setAttachments([]); }} title="Send message">
+			<button className={`message-button`} onClick={async () => { sendMessage(message, attachments); setMessage(''); setAttachments([]); }} title="Send message">
 				<SendHorizonal size={'1.5rem'}/>
 			</button>
 		</div>

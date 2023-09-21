@@ -45,7 +45,8 @@ const ChatLog = (props: ChatLogProps) => {
 	const [wasPoked, setWasPoked] = useState<boolean>(false);
 	const [hasSentGreetings, setHasSentGreetings] = useState<boolean>(false);
 	const [stopList, setStopList] = useState<string[]>([]);
-	
+	const [isInterrupted, setIsInterrupted] = useState<boolean>(false);
+
 	const filteredMessages = messages.filter((message) => {
 		if(searchTerm === "") return true;
 		if(searchTerm.startsWith("from:")){
@@ -279,6 +280,11 @@ const ChatLog = (props: ChatLogProps) => {
 			}
 			handlePostUserMessage(newMessage);
 		}
+		await updateChat(chat);
+		setChatLog(chat);
+		if(isInterrupted === true){
+			setIsInterrupted(false);
+		}
 		await wait(750);
 		let constructList: Construct[] = [];
 		if(chatLog === null) return;
@@ -309,6 +315,9 @@ const ChatLog = (props: ChatLogProps) => {
 			}
 		}
 		for (let i = 0; i < constructList.length; i++) {
+			if(isInterrupted === true){
+				setIsInterrupted(false);
+			}
 			let replyChat = await getBotResponse(chat, constructList[i], currentUser);
 			if(replyChat !== undefined){
 				chat = replyChat;
@@ -349,7 +358,41 @@ const ChatLog = (props: ChatLogProps) => {
 					}
 				}
 			}
-		} while (hasBeenMention);   
+		} while (hasBeenMention);
+
+		while (true) { // The loop to make replies continuously until no construct feels the need to reply
+			let shouldContinue = false; // By default, we assume we won't need another iteration
+			if(chat?.lastMessage.text === undefined) break;
+			for(let i = 0; i < constructList.length; i++) {
+				if(isInterrupted){
+					setIsInterrupted(false);
+					break;
+				}
+				let config = constructList[i].defaultConfig;
+				
+				if (chat?.lastMessage?.isHuman) { // Last message is from a human
+					if (config.replyToUser >= Math.random()) {
+						let replyLog = await getBotResponse(chat, constructList[i], currentUser);
+						if (replyLog !== undefined) {
+							chat = replyLog;
+						}
+						shouldContinue = true;
+					}
+				} else { // Last message is from a construct
+					if (config.replyToConstruct >= Math.random() && chat.lastMessage.userID !== constructList[i]._id) {
+						let replyLog = await getBotResponse(chat, constructList[i], currentUser);
+						if (replyLog !== undefined) {
+							chat = replyLog;
+						}
+						shouldContinue = true;
+					}
+				}
+			}
+			if (!shouldContinue) {
+				// No construct felt the need to reply, so we can break out of the loop
+				break;
+			}
+		}
 		setHasSentMessage(false);
 		setNumToDisplay(40);
 	};	
