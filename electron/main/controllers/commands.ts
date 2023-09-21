@@ -4,7 +4,7 @@ import { addAlias, addDiffusionWhitelist, addRegisteredChannel, continueChatLog,
 import { addChat, getChat, getConstruct, removeChat, updateChat } from "../api/pouchdb";
 import { assembleChatFromData, assembleConstructFromData } from "../helpers/helpers";
 import { retrieveConstructs, setDoMultiLine } from "./ConstructController";
-import { clearMessageQueue, clearWebhooksFromChannel, doGlobalNicknameChange } from "../api/discord";
+import { cleanEmotes, clearMessageQueue, clearWebhooksFromChannel, doGlobalNicknameChange } from "../api/discord";
 import { doInstruct, generateText, getStatus } from "../api/llm";
 import { deleteIndex } from "../api/vector";
 import { getDefaultCfg, getDefaultHeight, getDefaultHighresSteps, getDefaultNegativePrompt, getDefaultSteps, getDefaultWidth, txt2img, getDefaultPrompt } from "../api/sd";
@@ -582,7 +582,7 @@ export const SysCommand: SlashCommand = {
             _id: Date.now().toString(),
             user: construct.name,
             avatar: construct.avatar,
-            text: message,
+            text: cleanEmotes(message.trim()),
             userID: construct._id,
             timestamp: Date.now(),
             origin: interaction.channelId,

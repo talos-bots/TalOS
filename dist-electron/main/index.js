@@ -1295,7 +1295,7 @@ async function convertDiscordMessageToMessage(message, activeConstructs) {
     _id: message.id,
     user: username,
     avatar: message.author.avatarURL() ? message.author.avatarURL() : "",
-    text: message.content.trim(),
+    text: cleanEmotes(message.content.trim()),
     userID: message.author.id,
     timestamp: message.createdTimestamp,
     origin: "Discord - " + message.channelId,
@@ -4893,7 +4893,7 @@ const SysCommand = {
       _id: Date.now().toString(),
       user: construct.name,
       avatar: construct.avatar,
-      text: message,
+      text: cleanEmotes(message.trim()),
       userID: construct._id,
       timestamp: Date.now(),
       origin: interaction.channelId,
@@ -6013,6 +6013,11 @@ async function processQueue() {
     processingMessage = void 0;
     isProcessing = false;
   }
+}
+function cleanEmotes(text) {
+  return text.replace(/<(a?):([a-zA-Z0-9_]+):[0-9]+>/g, (_match, _animated, emoteName) => {
+    return `:${emoteName}:`;
+  });
 }
 function clearMessageQueue() {
   messageQueue = [];

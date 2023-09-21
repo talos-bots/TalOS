@@ -7,6 +7,7 @@ import { addAttachment, addUser, getUser, updateUser } from "../api/pouchdb";
 // @ts-ignore
 import { encode } from 'gpt-tokenizer'
 import { getCaption } from "../model-pipeline/transformers";
+import { cleanEmotes } from "../api/discord";
 
 export function assembleConstructFromData(data: any){
 	if(data === null) return null;
@@ -172,7 +173,7 @@ export async function convertDiscordMessageToMessage(message: Message, activeCon
 		_id: message.id,
 		user: username,
 		avatar: message.author.avatarURL() ? message.author.avatarURL() : '',
-		text: message.content.trim(),
+		text: cleanEmotes(message.content.trim()),
 		userID: message.author.id,
 		timestamp: message.createdTimestamp,
 		origin: 'Discord - ' + message.channelId,

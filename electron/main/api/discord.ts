@@ -712,7 +712,15 @@ async function processQueue() {
         isProcessing = false;
     }
 }
+export function cleanEmotes(text: string): string {
+    // Find Discord custom and animated emotes and replace them with :<emote_name>:
+    return text.replace(/<(a?):([a-zA-Z0-9_]+):[0-9]+>/g, (_match, _animated, emoteName) => {
+      return `:${emoteName}:`;
+    });
+}
+  
 
+  
 export function clearMessageQueue() {
     messageQueue = [];
 }
