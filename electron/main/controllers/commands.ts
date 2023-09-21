@@ -171,6 +171,8 @@ export const ClearLogCommand: SlashCommand = {
         }
         await removeChat(interaction.channelId);
         deleteIndex(interaction.channelId);
+        setInterrupted();
+        clearMessageQueue();
         await interaction.editReply({
             content: "Chat log cleared.",
         });
