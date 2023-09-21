@@ -316,6 +316,7 @@ export async function handleDiscordMessage(message: Message) {
             addVectorFromMessage(chatLog._id, newMessage);
         }
     }
+    await updateChat(chatLog);
     win?.webContents.send(`chat-message-${message.channel.id}`);
     const mode = getDiscordMode();
     if(mode === 'Character'){
