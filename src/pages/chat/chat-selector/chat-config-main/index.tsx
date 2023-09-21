@@ -6,16 +6,16 @@ import { RiQuestionMark } from "react-icons/ri";
 import ReactSwitch from "react-switch";
 
 interface ChatConfigProps { 
-    chat: Chat | null;
+    chat: Chat;
 }
 const ChatConfigMain = (props: ChatConfigProps) => {
     const { chat } = props;
-    const [global, setGlobal] = useState<boolean>(false);
-    const [doVector, setDoVector] = useState<boolean>(false);
+    const [global, setGlobal] = useState<boolean>(chat.global);
+    const [doVector, setDoVector] = useState<boolean>(chat.doVector);
     const [isPool, setIsPool] = useState<boolean>(false);
-    const [constructs, setConstructs] = useState<string[]>([]);
+    const [constructs, setConstructs] = useState<string[]>(chat.constructs);
     const [constructsList, setConstructsList] = useState<Construct[]>([]);
-    const [chatConfigs, setChatConfigs] = useState<ConstructChatConfig[]>([]);
+    const [chatConfigs, setChatConfigs] = useState<ConstructChatConfig[]>(chat.chatConfigs);
 
     useEffect(() => {
         if(chat?._id === 'activePool'){
@@ -45,6 +45,11 @@ const ChatConfigMain = (props: ChatConfigProps) => {
         chat.chatConfigs = chatConfigs;
         await updateChat(chat);
     }
+
+    useEffect(() => {
+        if(chat === null) return;
+        handleEdit()
+    }, [chat, global, doVector, constructs, chatConfigs]);
 
     return (
         <div className="w-full gap-2 grid grid-cols-2 text-left grow-0 shrink-0">

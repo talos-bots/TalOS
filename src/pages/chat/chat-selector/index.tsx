@@ -213,7 +213,7 @@ const ChatSelector = (props: ChatSelectorProps) => {
               </div>
               <div className="row-span-1 themed-root flex flex-col max-h-full slide-in-right overflow-y-auto lg:h-full">
                 <h3 className="font-semibold lg:text-2xl">Selected Chat Details</h3>
-                <ChatConfigMain chat={selectedChat} />
+                {selectedChat !== null && (<ChatConfigMain chat={selectedChat} />)}
               </div>
             </div>
           </div>
