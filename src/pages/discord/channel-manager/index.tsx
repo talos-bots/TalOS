@@ -29,7 +29,7 @@ const ChannelManager = () => {
             </div>
             <div className="col-span-1 flex flex-col gap-2 h-96 overflow-y-auto">
                 <label className="font-semibold">Diffusion Channels</label>
-                <div className="overflow-y-auto flex flex-col gap-2 themed-input">
+                <div className="overflow-y-auto flex flex-col gap-2 themed-input flex-grow">
                     {diffusionChannels.map((channel) => {
                         console.log(channel);
                         return (
