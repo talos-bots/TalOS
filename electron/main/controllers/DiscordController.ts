@@ -484,6 +484,9 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
     if (result !== null) {
         reply = result;
     } else {
+        if(isInterrupted){
+            return chatLog;
+        }
         sendMessage(message.channel.id, '**No response from LLM. Check your endpoint or settings and try again.**');
         return chatLog;
     }
@@ -551,6 +554,9 @@ async function doCharacterThoughts(construct: ConstructInterface, chatLog: ChatI
     if (result !== null) {
         reply = result;
     } else {
+        if(isInterrupted){
+            return chatLog;
+        }
         sendMessage(message.channel.id, '**No response from LLM. Check your endpoint or settings and try again.**');
         return chatLog;
     }
@@ -611,6 +617,9 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
         const wasHuman = chatLog.lastMessage.isHuman;
         if(wasMentionedByHuman){
             if(config.replyToUserMention >= Math.random()){
+                if(isInterrupted){
+                    return chatLog;
+                }
                 let replyLog = await doCharacterReply(constructArray[i], chatLog, message);
                 if(replyLog !== undefined){
                     chatLog = replyLog;
@@ -618,6 +627,9 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
             }
         }else if(wasMentioned && chatLog.lastMessage.userID !== constructArray[i]._id){
             if(config.replyToConstructMention >= Math.random()){
+                if(isInterrupted){
+                    return chatLog;
+                }
                 let replyLog = await doCharacterReply(constructArray[i], chatLog, message);
                 if(replyLog !== undefined){
                     chatLog = replyLog;
@@ -626,6 +638,9 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
         }else{
             if(wasHuman){
                 if(config.replyToUser >= Math.random()){
+                    if(isInterrupted){
+                        return chatLog;
+                    }
                     let replyLog = await doCharacterReply(constructArray[i], chatLog, message);
                     if(replyLog !== undefined){
                         chatLog = replyLog;
@@ -633,6 +648,9 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
                 }
             }else{
                 if(config.replyToConstruct >= Math.random()){
+                    if(isInterrupted){
+                        return chatLog;
+                    }
                     let replyLog = await doCharacterReply(constructArray[i], chatLog, message);
                     if(replyLog !== undefined){
                         chatLog = replyLog;
@@ -679,53 +697,90 @@ export async function continueChatLog(interaction: CommandInteraction) {
     if(mode === 'Character'){
         if(isMultiCharacterMode() && !interaction.channel.isDMBased()){
             let lastMessageContent = chatLog.lastMessage.text;
+            let shuffledConstructs = constructArray;
+            for (let i = shuffledConstructs.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledConstructs[i], shuffledConstructs[j]] = [shuffledConstructs[j], shuffledConstructs[i]];
+            }
+            // Logic to move the mentioned construct to the start
             let mentionedConstruct = containsName(lastMessageContent, constructArray);
             if (mentionedConstruct) {
-                // Find the index of the mentioned construct
-                let mentionedIndex = -1;
-                for (let i = 0; i < constructArray.length; i++) {
-                    if (constructArray[i].name === mentionedConstruct) {
-                        mentionedIndex = i;
-                        break;
-                    }
-                }
-        
-                // If the mentioned construct was found in the array,
-                // rearrange the array to make it the first element
+                let mentionedIndex = shuffledConstructs.findIndex(construct => construct.name === mentionedConstruct);
+                
                 if (mentionedIndex !== -1) {
-                    const [mentioned] = constructArray.splice(mentionedIndex, 1);
-                    constructArray.unshift(mentioned);
+                    const [mentioned] = shuffledConstructs.splice(mentionedIndex, 1);
+                    shuffledConstructs.unshift(mentioned);
                 }
             }
-            chatLog = await doRoundRobin(constructArray, chatLog, interaction);
+
+            chatLog = await doRoundRobin(shuffledConstructs, chatLog, interaction);
             if (chatLog === undefined) return;
 
             let hasBeenMention = true;
             let lastMessageText = chatLog?.lastMessage?.text;
             let iterations = 0;
-            
+
             do {
-                if (chatLog?.lastMessage?.text === undefined) break;
-            
-                if (iterations > 0) {
-                    if (lastMessageText === chatLog.lastMessage.text) break;
-                    lastMessageText = chatLog.lastMessage.text;
+                if(isInterrupted){
+                    break;
                 }
-            
+                if (chatLog?.lastMessage?.text === undefined) break;
+                
+                if (iterations > 0 && lastMessageText === chatLog.lastMessage.text) break;
+                
                 iterations++;
                 hasBeenMention = false;
-            
-                for (let i = 0; i < constructArray.length; i++) {
-                    if (isMentioned(lastMessageText, constructArray[i])) {
+                
+                for (let i = 0; i < shuffledConstructs.length; i++) {
+                    if(isInterrupted){
+                        break;
+                    }
+                    if (isMentioned(lastMessageText, shuffledConstructs[i]) && chatLog.lastMessage.isHuman && !chatLog.lastMessage.isThought && (chatLog.lastMessage.userID !== shuffledConstructs[i]._id)) {
                         hasBeenMention = true;
                         break;
                     }
                 }
-            
+                
                 if (hasBeenMention) {
-                    chatLog = await doRoundRobin(constructArray, chatLog, interaction);
+                    chatLog = await doRoundRobin(shuffledConstructs, chatLog, interaction);
                 }
-            } while (hasBeenMention);            
+            } while (hasBeenMention);
+
+            while (true) { // The loop to make replies continuously until no construct feels the need to reply
+                let shouldContinue = false; // By default, we assume we won't need another iteration
+                if(chatLog?.lastMessage.text === undefined) break;
+                if(isInterrupted){
+                    break;
+                }
+                for(let i = 0; i < shuffledConstructs.length; i++) {
+                    if(isInterrupted){
+                        break;
+                    }
+                    let config = shuffledConstructs[i].defaultConfig;
+                    
+                    if (chatLog?.lastMessage?.isHuman) { // Last message is from a human
+                        if (config.replyToUser >= Math.random()) {
+                            let replyLog = await doCharacterReply(shuffledConstructs[i], chatLog, interaction);
+                            if (replyLog !== undefined) {
+                                chatLog = replyLog;
+                            }
+                            shouldContinue = true;
+                        }
+                    } else { // Last message is from a construct
+                        if (config.replyToConstruct >= Math.random() && chatLog.lastMessage.userID !== shuffledConstructs[i]._id) {
+                            let replyLog = await doCharacterReply(shuffledConstructs[i], chatLog, interaction);
+                            if (replyLog !== undefined) {
+                                chatLog = replyLog;
+                            }
+                            shouldContinue = true;
+                        }
+                    }
+                }
+                if (!shouldContinue) {
+                    // No construct felt the need to reply, so we can break out of the loop
+                    break;
+                }
+            }
         }else{
             let config = constructArray[0].defaultConfig;
             if(chatLog.chatConfigs !== undefined && chatLog.chatConfigs.length > 0){
@@ -760,8 +815,9 @@ export async function continueChatLog(interaction: CommandInteraction) {
     }else if (mode === 'Construct'){
         await sendMessage(interaction.channel.id, 'Construct Mode is not yet implemented.');
     }
-    if(chatLog?._id !== undefined)
-    await updateChat(chatLog);
+    if(isInterrupted){
+        isInterrupted = false;
+    }
 }
 
 export async function handleRengenerateMessage(message: Message){
