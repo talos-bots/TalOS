@@ -559,7 +559,7 @@ export async function clearWebhooksFromChannel(channelID: Snowflake): Promise<vo
 
     const webhooks = await channel.fetchWebhooks();
     try{
-        await Promise.all(webhooks.map(webhook => webhook.delete()));
+        await Promise.all(webhooks.map(webhook => {try{webhook.delete()}catch{}}));
     }catch(error){
         console.error(error);
     }

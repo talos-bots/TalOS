@@ -5871,7 +5871,12 @@ async function clearWebhooksFromChannel(channelID) {
   }
   const webhooks = await channel.fetchWebhooks();
   try {
-    await Promise.all(webhooks.map((webhook) => webhook.delete()));
+    await Promise.all(webhooks.map((webhook) => {
+      try {
+        webhook.delete();
+      } catch {
+      }
+    }));
   } catch (error) {
     console.error(error);
   }
