@@ -540,7 +540,13 @@ async function doCharacterThoughts(construct: ConstructInterface, chatLog: ChatI
         username = alias;
     }
     if(message.channel === null) return;
+    if(isInterrupted){
+        return chatLog;
+    }
     const result = await generateThoughts(construct, chatLog, username, maxMessages, getDoMultiLine(), replaceUser);
+    if(isInterrupted){
+        return chatLog;
+    }
     let reply: string;
     if (result !== null) {
         reply = result;

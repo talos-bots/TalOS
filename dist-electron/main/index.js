@@ -3820,7 +3820,13 @@ async function doCharacterThoughts(construct, chatLog, message) {
   }
   if (message.channel === null)
     return;
+  if (isInterrupted) {
+    return chatLog;
+  }
   const result = await generateThoughts(construct, chatLog, username, maxMessages, getDoMultiLine(), replaceUser);
+  if (isInterrupted) {
+    return chatLog;
+  }
   let reply;
   if (result !== null) {
     reply = result;
