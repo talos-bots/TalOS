@@ -165,3 +165,11 @@ export const getShowDiffusionDetailsStatus = (): Promise<boolean> => {
 export const setShowDiffusionDetailsStatus = (status: boolean): Promise<boolean> => {
     return fetchFromMainWithArgs('set-show-diffusion-details', 'set-show-diffusion-details-reply', status);
 }
+
+export const getRegisteredChannelsForChat = (): Promise<Array<any>> => {
+    return fetchFromMain('get-registered-channels-for-chat', 'get-registered-channels-for-chat-reply');
+}
+
+export const getRegisteredChannelsForDiffusion = (): Promise<Array<any>> => {
+    return fetchFromMain('get-registered-channels-for-diffusion', 'get-registered-channels-for-diffusion-reply');
+}

@@ -338,6 +338,8 @@ const DiscordPage = () => {
                             </div>
                         </div>
                     </Accordian>
+                    <Accordian title="Registered Channels" className="slide-in-right">
+                    </Accordian>
                 </div>
             </div>
         </div>

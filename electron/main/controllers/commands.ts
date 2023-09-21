@@ -1,5 +1,5 @@
 import { AttachmentBuilder, CommandInteraction, EmbedBuilder } from "discord.js";
-import { Alias, MessageInterface, SlashCommand } from "../types/types";
+import { Alias, ChatInterface, MessageInterface, SlashCommand } from "../types/types";
 import { addAlias, addDiffusionWhitelist, addRegisteredChannel, continueChatLog, getDiffusionWhitelist, getRegisteredChannels, getShowDiffusionDetails, getUsername, removeDiffusionWhitelist, removeRegisteredChannel, setDoAutoReply, setInterrupted, setMaxMessages, setReplaceUser } from "./DiscordController";
 import { addChat, getChat, getConstruct, removeChat, updateChat } from "../api/pouchdb";
 import { assembleChatFromData, assembleConstructFromData } from "../helpers/helpers";
@@ -169,7 +169,17 @@ export const ClearLogCommand: SlashCommand = {
             });
             return;
         }
-        await removeChat(interaction.channelId);
+        let pulledChat = await getChat(interaction.channelId) as ChatInterface;
+        if(pulledChat === null){
+            await interaction.editReply({
+                content: "No chat log for this channel.",
+            });
+            return;
+        }else{
+            pulledChat.messages = [];
+            pulledChat.lastMessage = null;
+            await updateChat(pulledChat);
+        }
         deleteIndex(interaction.channelId);
         setInterrupted();
         clearMessageQueue();

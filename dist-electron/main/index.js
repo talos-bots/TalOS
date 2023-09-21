@@ -4367,6 +4367,12 @@ function DiscordController() {
   electron.ipcMain.on("set-show-diffusion-details", (event, arg) => {
     setShowDiffusionDetails(arg);
   });
+  electron.ipcMain.on("get-registered-channels-for-chat", (event, arg) => {
+    event.reply("get-registered-channels-for-chat-reply", getRegisteredChannels());
+  });
+  electron.ipcMain.on("get-registered-channels-for-diffusion", (event, arg) => {
+    event.reply("get-registered-channels-for-diffusion-reply", getDiffusionWhitelist());
+  });
 }
 const RegisterCommand = {
   name: "register",
@@ -4523,7 +4529,17 @@ const ClearLogCommand = {
       });
       return;
     }
-    await removeChat(interaction.channelId);
+    let pulledChat = await getChat(interaction.channelId);
+    if (pulledChat === null) {
+      await interaction.editReply({
+        content: "No chat log for this channel."
+      });
+      return;
+    } else {
+      pulledChat.messages = [];
+      pulledChat.lastMessage = null;
+      await updateChat(pulledChat);
+    }
     deleteIndex(interaction.channelId);
     setInterrupted();
     clearMessageQueue();

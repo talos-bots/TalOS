@@ -1057,6 +1057,14 @@ function DiscordController(){
     ipcMain.on('set-show-diffusion-details', (event, arg) => {
         setShowDiffusionDetails(arg);
     });
+
+    ipcMain.on('get-registered-channels-for-chat', (event, arg) => {
+        event.reply('get-registered-channels-for-chat-reply', getRegisteredChannels());
+    });
+
+    ipcMain.on('get-registered-channels-for-diffusion', (event, arg) => {
+        event.reply('get-registered-channels-for-diffusion-reply', getDiffusionWhitelist());
+    });
 }
 
 export default DiscordController;

@@ -5,7 +5,7 @@ export type ChatInterface = {
     name: string;
     type: string;
     messages: MessageInterface[];
-    lastMessage: MessageInterface;
+    lastMessage: MessageInterface | null;
     lastMessageDate: number;
     firstMessageDate: number;
     constructs: string[];
