@@ -1,9 +1,12 @@
 import { setLLMModel } from "@/api/llmapi";
 import { useState, useEffect } from "react";
-
-const HordePanel = () => {
+interface HordePanelProps {
+    selectedModel: string;
+    setSelectedModel: (model: string) => void;
+}
+const HordePanel = (props: HordePanelProps) => {
+    const { selectedModel, setSelectedModel } = props;
     const [models, setModels] = useState([]);
-    const [selectedModel, setSelectedModel] = useState('');
 
     useEffect(() => {
         fetchModels();

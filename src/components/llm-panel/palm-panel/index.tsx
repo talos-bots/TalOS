@@ -2,7 +2,7 @@ import { getPaLMFilters, getPalmModel, setPaLMFilters, setPalmModel } from "@/ap
 import axios from "axios";
 import { useEffect, useState } from "react";
 
-const defaultPaLMFilters: PaLMFilters = {
+export const defaultPaLMFilters: PaLMFilters = {
     HARM_CATEGORY_UNSPECIFIED: "BLOCK_NONE",
     HARM_CATEGORY_DEROGATORY: "BLOCK_NONE",
     HARM_CATEGORY_TOXICITY: "BLOCK_NONE",
@@ -12,7 +12,7 @@ const defaultPaLMFilters: PaLMFilters = {
     HARM_CATEGORY_DANGEROUS: "BLOCK_NONE"
 }
 
-type PaLMFilterType = 'BLOCK_NONE' | 'BLOCK_ONLY_HIGH' | 'BLOCK_MEDIUM_AND_ABOVE' | 'BLOCK_LOW_AND_ABOVE' | 'HARM_BLOCK_THRESHOLD_UNSPECIFIED';
+export type PaLMFilterType = 'BLOCK_NONE' | 'BLOCK_ONLY_HIGH' | 'BLOCK_MEDIUM_AND_ABOVE' | 'BLOCK_LOW_AND_ABOVE' | 'HARM_BLOCK_THRESHOLD_UNSPECIFIED';
 
 export interface PaLMFilters {
     HARM_CATEGORY_UNSPECIFIED: PaLMFilterType;
@@ -25,9 +25,21 @@ export interface PaLMFilters {
 }
 interface PaLMPanelProps {
     endpoint: string;
+    filters: PaLMFilters;
+    setFilters: (filters: PaLMFilters) => void;
+    selectedModel: string;
+    setSelectedModel: (model: string) => void;
+    models: PaLMModel[];
+    setModels: (models: PaLMModel[]) => void;
+    selectedModelObject: PaLMModel | null;
+    setSelectedModelObject: (model: PaLMModel | null) => void;
+    selectedFilter: keyof PaLMFilters;
+    setSelectedFilter: (filter: keyof PaLMFilters) => void;
+    selectedFilterValue: PaLMFilterType;
+    setSelectedFilterValue: (filter: PaLMFilterType) => void;
 }
 
-type PaLMModel = {
+export type PaLMModel = {
     name: string;
     displayName: string;
     inputTokenLimit: number;
@@ -41,13 +53,7 @@ type PaLMModel = {
 }
 
 const PaLMPanel = (props: PaLMPanelProps) => {
-    const { endpoint } = props;
-    const [filters, setFilters] = useState<PaLMFilters>(defaultPaLMFilters);
-    const [selectedFilter, setSelectedFilter] = useState<keyof PaLMFilters>('HARM_CATEGORY_UNSPECIFIED');
-    const [selectedFilterValue, setSelectedFilterValue] = useState<PaLMFilterType>('BLOCK_NONE');
-    const [models, setModels] = useState<PaLMModel[]>([]);
-    const [selectedModel, setSelectedModel] = useState<string>('');
-    const [selectedModelObject, setSelectedModelObject] = useState<PaLMModel | null>(null);
+    const { endpoint, filters, setFilters, selectedModel, setSelectedModel, models, setModels, selectedModelObject, setSelectedModelObject, selectedFilter, setSelectedFilter, selectedFilterValue, setSelectedFilterValue } = props;
 
     useEffect(() => {
         getPaLMFilters().then((filters) => {

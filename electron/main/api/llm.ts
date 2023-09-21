@@ -79,6 +79,18 @@ interface Settings {
     max_tokens: number;
 }
 
+interface ConnectionPreset {
+    _id: string;
+    name: string;
+    endpoint: string;
+    endpointType: EndpointType;
+    password: string;
+    palmFilters: PaLMFilters;
+    openaiModel: OAI_Model;
+    palmModel: string;
+    hordeModel: string;
+}
+
 let endpoint: string = store.get('endpoint', '') as string;
 let endpointType: EndpointType = store.get('endpointType', '') as EndpointType;
 let password: string = store.get('password', '') as string;
@@ -90,6 +102,8 @@ let palmFilters = store.get('palmFilters', defaultPaLMFilters) as PaLMFilters;
 let doEmotions = store.get('doEmotions', false) as boolean;
 let doCaption = store.get('doCaption', false) as boolean;
 let palmModel = store.get('palmModel', 'models/text-bison-001') as string;
+let connectionPresets = store.get('connectionPresets', []) as ConnectionPreset[];
+let currentConnectionPreset = store.get('currentConnectionPreset', '') as string;
 
 const getLLMConnectionInformation = () => {
     return { endpoint, endpointType, password, settings, hordeModel, stopBrackets };
@@ -161,6 +175,35 @@ export const getPaLMModel = () => {
     return palmModel;
 }
 
+export const addConnectionPreset = (newConnectionPreset: ConnectionPreset) => {
+    for (let i = 0; i < connectionPresets.length; i++) {
+        if (connectionPresets[i]._id === newConnectionPreset._id) {
+            connectionPresets[i] = newConnectionPreset;
+            store.set('connectionPresets', connectionPresets);
+            return;
+        }
+    }
+    connectionPresets.push(newConnectionPreset);
+    store.set('connectionPresets', connectionPresets);
+};
+
+export const removeConnectionPreset = (oldConnectionPreset: ConnectionPreset) => {
+    connectionPresets = connectionPresets.filter((connectionPreset) => connectionPreset !== oldConnectionPreset);
+    store.set('connectionPresets', connectionPresets);
+};
+
+export const getConnectionPresets = () => {
+    return connectionPresets;
+};
+
+export const setCurrentConnectionPreset = (newCurrentConnectionPreset: string) => {
+    store.set('currentConnectionPreset', newCurrentConnectionPreset);
+    currentConnectionPreset = newCurrentConnectionPreset;
+};
+
+export const getCurrentConnectionPreset = () => {
+    return currentConnectionPreset;
+};
 export async function getStatus(testEndpoint?: string, testEndpointType?: string){
     let endpointUrl = testEndpoint ? testEndpoint : endpoint;
     let endpointStatusType = testEndpointType ? testEndpointType : endpointType;
@@ -758,5 +801,28 @@ export function LanguageModelAPI(){
 
     ipcMain.on('get-instruct-prompt', (event, instruction, guidance, context, examples, uniqueEventName) => {
         event.reply(uniqueEventName, assembleInstructPrompt(instruction, guidance, context, examples));
+    });
+
+    ipcMain.on('add-connection-preset', (event, newConnectionPreset) => {
+        addConnectionPreset(newConnectionPreset);
+        event.reply('add-connection-preset-reply', getConnectionPresets());
+    });
+
+    ipcMain.on('remove-connection-preset', (event, oldConnectionPreset) => {
+        removeConnectionPreset(oldConnectionPreset);
+        event.reply('remove-connection-preset-reply', getConnectionPresets());
+    });
+
+    ipcMain.on('get-connection-presets', (event) => {
+        event.reply('get-connection-presets-reply', getConnectionPresets());
+    });
+
+    ipcMain.on('set-current-connection-preset', (event, newCurrentConnectionPreset) => {
+        setCurrentConnectionPreset(newCurrentConnectionPreset);
+        event.reply('set-current-connection-preset-reply', getCurrentConnectionPreset());
+    });
+
+    ipcMain.on('get-current-connection-preset', (event) => {
+        event.reply('get-current-connection-preset-reply', getCurrentConnectionPreset());
     });
 }

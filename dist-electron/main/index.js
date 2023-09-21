@@ -1506,6 +1506,8 @@ let palmFilters = store$6.get("palmFilters", defaultPaLMFilters);
 let doEmotions = store$6.get("doEmotions", false);
 let doCaption = store$6.get("doCaption", false);
 let palmModel = store$6.get("palmModel", "models/text-bison-001");
+let connectionPresets = store$6.get("connectionPresets", []);
+let currentConnectionPreset = store$6.get("currentConnectionPreset", "");
 const getLLMConnectionInformation = () => {
   return { endpoint, endpointType, password, settings, hordeModel, stopBrackets };
 };
@@ -1563,6 +1565,31 @@ const setPaLMModel = (newPaLMModel) => {
 };
 const getPaLMModel = () => {
   return palmModel;
+};
+const addConnectionPreset = (newConnectionPreset) => {
+  for (let i = 0; i < connectionPresets.length; i++) {
+    if (connectionPresets[i]._id === newConnectionPreset._id) {
+      connectionPresets[i] = newConnectionPreset;
+      store$6.set("connectionPresets", connectionPresets);
+      return;
+    }
+  }
+  connectionPresets.push(newConnectionPreset);
+  store$6.set("connectionPresets", connectionPresets);
+};
+const removeConnectionPreset = (oldConnectionPreset) => {
+  connectionPresets = connectionPresets.filter((connectionPreset) => connectionPreset !== oldConnectionPreset);
+  store$6.set("connectionPresets", connectionPresets);
+};
+const getConnectionPresets = () => {
+  return connectionPresets;
+};
+const setCurrentConnectionPreset = (newCurrentConnectionPreset) => {
+  store$6.set("currentConnectionPreset", newCurrentConnectionPreset);
+  currentConnectionPreset = newCurrentConnectionPreset;
+};
+const getCurrentConnectionPreset = () => {
+  return currentConnectionPreset;
 };
 async function getStatus(testEndpoint, testEndpointType) {
   var _a, _b, _c;
@@ -2109,6 +2136,24 @@ function LanguageModelAPI() {
   });
   electron.ipcMain.on("get-instruct-prompt", (event, instruction, guidance, context, examples, uniqueEventName) => {
     event.reply(uniqueEventName, assembleInstructPrompt$1(instruction, guidance, context, examples));
+  });
+  electron.ipcMain.on("add-connection-preset", (event, newConnectionPreset) => {
+    addConnectionPreset(newConnectionPreset);
+    event.reply("add-connection-preset-reply", getConnectionPresets());
+  });
+  electron.ipcMain.on("remove-connection-preset", (event, oldConnectionPreset) => {
+    removeConnectionPreset(oldConnectionPreset);
+    event.reply("remove-connection-preset-reply", getConnectionPresets());
+  });
+  electron.ipcMain.on("get-connection-presets", (event) => {
+    event.reply("get-connection-presets-reply", getConnectionPresets());
+  });
+  electron.ipcMain.on("set-current-connection-preset", (event, newCurrentConnectionPreset) => {
+    setCurrentConnectionPreset(newCurrentConnectionPreset);
+    event.reply("set-current-connection-preset-reply", getCurrentConnectionPreset());
+  });
+  electron.ipcMain.on("get-current-connection-preset", (event) => {
+    event.reply("get-current-connection-preset-reply", getCurrentConnectionPreset());
   });
 }
 async function getAllVectors(schemaName) {

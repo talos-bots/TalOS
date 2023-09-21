@@ -1,8 +1,11 @@
-import { getLLMOAIModel, setLLMOAIModel } from "@/api/llmapi";
+import { OAI_Model, getLLMOAIModel, setLLMOAIModel } from "@/api/llmapi";
 import { useEffect, useState } from "react";
-
-const OpenAIPanel = () => {
-    const [selectedModel, setSelectedModel] = useState('');
+interface OpenAIPanelProps {
+    selectedModel: string;
+    setSelectedModel: (model: OAI_Model) => void;
+}
+const OpenAIPanel = (props: OpenAIPanelProps) => {
+    const { selectedModel, setSelectedModel } = props;
     const models = ['gpt-3.5-turbo-16k', 'gpt-4', 'gpt-3.5-turbo', 'gpt-3.5-turbo-16k-0613', 'gpt-3.5-turbo-0613', 'gpt-3.5-turbo-0301', 'gpt-4-0314', 'gpt-4-0613']
 
     useEffect(() => {
@@ -22,7 +25,7 @@ const OpenAIPanel = () => {
     return (
         <div>
             <label className="text-theme-text text-shadow-xl font-semibold">OpenAI Model</label>
-            <select value={selectedModel} onChange={(e) => setSelectedModel(e.target.value)} className="themed-input w-full">
+            <select value={selectedModel} onChange={(e) => setSelectedModel(e.target.value as OAI_Model)} className="themed-input w-full">
                 {models.map((model: string) => (
                     <option key={model} value={model} className='themed-input'>
                         {model}

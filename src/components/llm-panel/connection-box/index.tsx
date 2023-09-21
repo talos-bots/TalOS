@@ -1,9 +1,9 @@
-import { getLLMConnectionInformation, getStatus, setLLMConnectionInformation } from "@/api/llmapi";
+import { ConnectionPreset, OAI_Model, addLLMConnectionPreset, getCurrentLLMConnectionPreset, getLLMConnectionInformation, getLLMConnectionPresets, getStatus, setCurrentLLMConnectionPreset, setLLMConnectionInformation, setPaLMFilters, setPalmModel } from "@/api/llmapi";
 import { EndpointType } from "@/types";
 import { useEffect, useState } from "react";
 import HordePanel from "../horde-panel";
 import OpenAIPanel from "../openai-panel";
-import PaLMPanel from "../palm-panel";
+import PaLMPanel, { PaLMFilterType, PaLMFilters, PaLMModel, defaultPaLMFilters } from "../palm-panel";
 
 interface ConnectionBoxProps {
 };
@@ -13,6 +13,18 @@ const ConnectionBox = (props: ConnectionBoxProps) => {
     const [password, setPassword] = useState<string>("");
     const [status, setStatus] = useState<string>("Disconnected");
     const endpointTypes = ["Kobold", "Ooba", "OAI", "P-OAI", "P-Claude", "PaLM", "Horde"]
+    const [currentConnectionPreset, setCurrentConnectionPreset] = useState<string>("");
+    const [connectionPresets, setConnectionPresets] = useState<ConnectionPreset[]>([]);
+    const [connectionPresetName, setConnectionPresetName] = useState<string>("");
+    const [connectionPreset, setConnectionPreset] = useState<ConnectionPreset>();
+    const [selectedModel, setSelectedModel] = useState('');
+    const [filters, setFilters] = useState<PaLMFilters>(defaultPaLMFilters);
+    const [selectedFilter, setSelectedFilter] = useState<keyof PaLMFilters>('HARM_CATEGORY_UNSPECIFIED');
+    const [selectedFilterValue, setSelectedFilterValue] = useState<PaLMFilterType>('BLOCK_NONE');
+    const [models, setModels] = useState<PaLMModel[]>([]);
+    const [selectedPaLMModel, setSelectedPaLMModel] = useState<string>('');
+    const [selectedModelObject, setSelectedModelObject] = useState<PaLMModel | null>(null);
+    const [selectedOpenAIModel, setSelectedOpenAIModel] = useState<OAI_Model>('gpt-3.5-turbo-16k');
 
     useEffect(() => {
         const getConnectionSettings = async () => {
@@ -27,8 +39,92 @@ const ConnectionBox = (props: ConnectionBoxProps) => {
                 setStatus(status.data);
             }
         }
+        const getPresetInformation = async () => {
+            const presets = await getLLMConnectionPresets();
+            setConnectionPresets(presets);
+            const current = await getCurrentLLMConnectionPreset();
+            setCurrentConnectionPreset(current);
+            const preset = presets.find((preset) => preset._id === current);
+            if(preset){
+                setConnectionPresetName(preset.name);
+                setConnectionPreset(preset);
+                setEndpoint(preset.endpoint);
+                setEndpointType(preset.endpointType);
+                setPassword(preset.password);
+                setPaLMFilters(preset.palmFilters);
+                setPalmModel(preset.palmModel);
+            }
+        }
+        getPresetInformation();
         getConnectionSettings();
     }, []);
+
+    const saveConnectionPreset = async () => {
+        if(connectionPreset){
+            connectionPreset.endpoint = endpoint;
+            connectionPreset.endpointType = endpointType;
+            connectionPreset.password = password;
+            connectionPreset.palmFilters = filters;
+            connectionPreset.palmModel = selectedPaLMModel;
+            connectionPreset.openaiModel = selectedOpenAIModel;
+            connectionPreset.name = connectionPresetName;
+            connectionPreset.hordeModel = selectedModel;
+            const newPresets = await addLLMConnectionPreset(connectionPreset);
+            if(newPresets){
+                setConnectionPresets(newPresets);
+            }
+        }else{
+            let newPreset: ConnectionPreset = {
+                _id: Date.now().toString(),
+                name: connectionPresetName,
+                endpoint: endpoint,
+                endpointType: endpointType,
+                password: password,
+                palmFilters: filters,
+                palmModel: selectedPaLMModel,
+                hordeModel: selectedModel,
+                openaiModel: selectedOpenAIModel,
+            }
+            const newPresets = await addLLMConnectionPreset(newPreset);
+            if(newPresets){
+                setConnectionPresets(newPresets);
+            }
+        }
+    }
+
+    useEffect(() => {
+        if(connectionPreset){
+            setConnectionPresetName(connectionPreset.name);
+            setEndpoint(connectionPreset.endpoint);
+            setEndpointType(connectionPreset.endpointType);
+            setPassword(connectionPreset.password);
+            setPaLMFilters(connectionPreset.palmFilters);
+            setPalmModel(connectionPreset.palmModel);
+            setSelectedOpenAIModel(connectionPreset.openaiModel);
+        }else{
+            setConnectionPresetName("");
+            setEndpoint("");
+            setEndpointType("Ooba");
+            setPassword("");
+            setPaLMFilters(defaultPaLMFilters);
+            setPalmModel("");
+            setSelectedOpenAIModel('gpt-3.5-turbo-16k');
+        }
+    }, [connectionPreset]);
+
+    const selectConnectionPreset = async (preset: ConnectionPreset) => {
+        setCurrentConnectionPreset(preset._id);
+        setConnectionPresetName(preset.name);
+        setConnectionPreset(preset);
+        setEndpoint(preset.endpoint);
+        setEndpointType(preset.endpointType);
+        setPassword(preset.password);
+        setPaLMFilters(preset.palmFilters);
+        setPalmModel(preset.palmModel);
+        setSelectedOpenAIModel(preset.openaiModel);
+        setCurrentLLMConnectionPreset(preset._id);
+        setLLMConnectionInformation(preset.endpoint, preset.endpointType, preset.password);
+    }
 
     const saveEndpoint = async () => {
         await setLLMConnectionInformation(endpoint, endpointType, password);
@@ -51,6 +147,51 @@ const ConnectionBox = (props: ConnectionBoxProps) => {
 
     return (
         <div className="flex flex-col w-full text-left gap-2">
+            <div className="flex flex-col w-full text-left gap-2">
+                <label className="text-theme-text text-shadow-xl font-semibold">Connection Preset Name</label>
+                <div className="flex flex-row w-full">
+                    <input className="themed-input w-full flex-grow"
+                        value={connectionPresetName}
+                        onChange={(e) => setConnectionPresetName(e.target.value)}
+                    />
+                    <button className="themed-button-neg"
+                        onClick={() => {
+                            setConnectionPresetName("");
+                            setConnectionPreset(undefined);
+                            setCurrentConnectionPreset("");
+                            setCurrentLLMConnectionPreset("");
+                        }}
+                    >
+                        Clear
+                    </button>
+                    <button className="themed-button-pos"
+                        onClick={() => {
+                            saveConnectionPreset();
+                        }}
+                    >
+                        Save
+                    </button>
+                </div>
+                <label className="text-theme-text text-shadow-xl font-semibold">Select Preset</label>
+                <select className="themed-input w-full"
+                    value={currentConnectionPreset}
+                    onChange={(e) => {
+                        if(e.target.value === ''){
+                            setConnectionPresetName("");
+                            setConnectionPreset(undefined);
+                            setCurrentConnectionPreset("");
+                            setCurrentLLMConnectionPreset("");
+                            return;
+                        }
+                        selectConnectionPreset(connectionPresets.find((preset) => preset._id === e.target.value) as ConnectionPreset);
+                    }}
+                >   
+                    <option className='themed-input' key={''} value={''}>None</option>
+                    {connectionPresets.map((preset) => {
+                        return <option className='themed-input' key={preset._id} value={preset._id}>{preset.name}</option>
+                    })}
+                </select>
+            </div>
             <div className="flex flex-col w-full text-left">
                 <label className="text-theme-text text-shadow-xl font-semibold">Endpoint Type</label>
                 <select className="themed-input w-full"
@@ -87,13 +228,13 @@ const ConnectionBox = (props: ConnectionBoxProps) => {
                 Connect
             </button>
             {(endpointType === "OAI" || endpointType === "P-OAI") && (
-                <OpenAIPanel />
+                <OpenAIPanel selectedModel={selectedOpenAIModel} setSelectedModel={setSelectedOpenAIModel}/>
             )}
             {endpointType === "Horde" && (
-                <HordePanel />
+                <HordePanel selectedModel={selectedModel} setSelectedModel={setSelectedModel}/>
             )}
             {endpointType === "PaLM" && (
-                <PaLMPanel endpoint={endpoint}/>
+                <PaLMPanel endpoint={endpoint} selectedFilter={selectedFilter} setSelectedFilter={setSelectedFilter} selectedFilterValue={selectedFilterValue} setSelectedFilterValue={setSelectedFilterValue} selectedModel={selectedPaLMModel} setSelectedModel={setSelectedPaLMModel} setFilters={setFilters} filters={filters} selectedModelObject={selectedModelObject} setSelectedModelObject={setSelectedModelObject} models={models} setModels={setModels}/>
             )}
             <div className="flex flex-col w-full text-left">
                 <label className="text-theme-text text-shadow-xl font-semibold">Status</label>

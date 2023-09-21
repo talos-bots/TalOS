@@ -4,8 +4,20 @@ import { ipcRenderer } from 'electron';
 // @ts-ignore
 import llamaTokenizer from 'llama-tokenizer-js'
 import { encode } from 'gpt-tokenizer'
-import { Tensor } from '@xenova/transformers';
 
+export interface ConnectionPreset {
+    _id: string;
+    name: string;
+    endpoint: string;
+    endpointType: EndpointType;
+    password: string;
+    palmFilters: PaLMFilters;
+    openaiModel: OAI_Model;
+    palmModel: string;
+    hordeModel: string;
+}
+
+export type OAI_Model = 'gpt-3.5-turbo-16k' | 'gpt-4' | 'gpt-3.5-turbo' | 'gpt-3.5-turbo-16k-0613' | 'gpt-3.5-turbo-0613' | 'gpt-3.5-turbo-0301' | 'gpt-4-0314' | 'gpt-4-0613';
 // Generate Text
 export const generateText = (
     prompt: string,
@@ -246,6 +258,51 @@ export const getZeroShotClassifcation = (message: string, labels: string[]): Pro
         ipcRenderer.send('get-zero-shot-classificationn', uniqueEventName, message, labels);
         ipcRenderer.once(uniqueEventName, (event, response) => {
             resolve(response);
+        });
+    });
+}
+
+export const getLLMConnectionPresets = (): Promise<ConnectionPreset[]> => {
+    return new Promise((resolve, reject) => {
+        ipcRenderer.send('get-connection-presets');
+        ipcRenderer.once('get-connection-presets-reply', (event, presets) => {
+            resolve(presets);
+        });
+    });
+}
+
+export const addLLMConnectionPreset = (preset: ConnectionPreset): Promise<ConnectionPreset[]> => {
+    return new Promise((resolve, reject) => {
+        ipcRenderer.send('add-connection-preset', preset);
+        ipcRenderer.once('add-connection-preset-reply', (event, presets) => {
+            resolve(presets);
+        });
+    });
+}
+
+export const removeLLMConnectionPreset = (preset: ConnectionPreset): Promise<ConnectionPreset[]> => {
+    return new Promise((resolve, reject) => {
+        ipcRenderer.send('remove-connection-preset', preset);
+        ipcRenderer.once('remove-connection-preset-reply', (event, presets) => {
+            resolve(presets);
+        });
+    });
+}
+
+export const getCurrentLLMConnectionPreset = (): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        ipcRenderer.send('get-current-connection-preset');
+        ipcRenderer.once('get-current-connection-preset-reply', (event, preset) => {
+            resolve(preset);
+        });
+    });
+}
+
+export const setCurrentLLMConnectionPreset = (preset: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        ipcRenderer.send('set-current-connection-preset', preset);
+        ipcRenderer.once('set-current-connection-preset-reply', (event, preset) => {
+            resolve(preset);
         });
     });
 }
