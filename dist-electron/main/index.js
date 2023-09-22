@@ -3197,85 +3197,111 @@ async function regenerateUserMessageFromChatLog(chatLog, messageContent, message
 }
 function constructController() {
   ActiveConstructs = retrieveConstructs();
-  electron.ipcMain.on("add-construct-to-active", (event, arg) => {
-    addConstruct(arg);
+  expressApp.post("/api/construct/add-to-active", (req, res) => {
+    addConstruct(req.body.construct);
     ActiveConstructs = retrieveConstructs();
-    event.reply("add-construct-to-active-reply", ActiveConstructs);
+    res.json({ activeConstructs: ActiveConstructs });
   });
-  electron.ipcMain.on("remove-construct-active", (event, arg) => {
-    removeConstruct(arg);
+  expressApp.post("/api/construct/remove-active", (req, res) => {
+    removeConstruct(req.body.construct);
     ActiveConstructs = retrieveConstructs();
-    event.reply("remove-construct-active-reply", ActiveConstructs);
+    res.json({ activeConstructs: ActiveConstructs });
   });
-  electron.ipcMain.on("get-construct-active-list", (event, arg) => {
+  expressApp.get("/api/construct/active-list", (req, res) => {
     ActiveConstructs = retrieveConstructs();
-    event.reply(arg, ActiveConstructs);
+    res.json({ activeConstructs: ActiveConstructs });
   });
-  electron.ipcMain.on("is-construct-active", (event, arg, replyName) => {
-    const isActive = isConstructActive(arg);
-    event.reply(replyName, isActive);
+  expressApp.post("/api/construct/is-active", (req, res) => {
+    const isActive = isConstructActive(req.body.construct);
+    res.json({ isActive });
   });
-  electron.ipcMain.on("remove-all-constructs-active", (event, arg) => {
+  expressApp.post("/api/construct/remove-all-active", (req, res) => {
     clearActiveConstructs();
     ActiveConstructs = retrieveConstructs();
-    event.reply("remove-all-constructs-active-reply", ActiveConstructs);
+    res.json({ activeConstructs: ActiveConstructs });
   });
-  electron.ipcMain.on("set-construct-primary", (event, arg) => {
-    setAsPrimary(arg);
-    ActiveConstructs = retrieveConstructs();
-    event.reply("set-construct-primary-reply", ActiveConstructs);
+  expressApp.post("/api/construct/set-construct-primary", (req, res) => {
+    const constructId = req.body.constructId;
+    setAsPrimary(constructId);
+    const activeConstructs = retrieveConstructs();
+    res.json({ activeConstructs });
   });
-  electron.ipcMain.on("set-do-multi-line", (event, arg, uniqueEventName) => {
-    setDoMultiLine(arg);
-    event.reply(uniqueEventName, getDoMultiLine());
+  expressApp.post("/api/construct/multi-line", (req, res) => {
+    const value = req.body.value;
+    setDoMultiLine(value);
+    const currentDoMultiLine = getDoMultiLine();
+    res.json({ doMultiLine: currentDoMultiLine });
   });
-  electron.ipcMain.on("get-do-multi-line", (event, uniqueEventName) => {
-    event.reply(uniqueEventName, getDoMultiLine());
+  expressApp.get("/api/construct/multi-line", (req, res) => {
+    const currentDoMultiLine = getDoMultiLine();
+    res.json({ doMultiLine: currentDoMultiLine });
   });
-  electron.ipcMain.on("get-character-prompt-from-construct", (event, arg, uniqueEventName) => {
-    let prompt = getCharacterPromptFromConstruct(arg);
-    event.reply(uniqueEventName, prompt);
+  expressApp.post("/api/construct/character-prompt", (req, res) => {
+    const construct = req.body.construct;
+    const prompt = getCharacterPromptFromConstruct(construct);
+    res.json({ prompt });
   });
-  electron.ipcMain.on("assemble-prompt", (event, construct, chatLog, currentUser, messagesToInclude, uniqueEventName) => {
-    let prompt = assemblePrompt(construct, chatLog, currentUser, messagesToInclude);
-    event.reply(uniqueEventName, prompt);
+  expressApp.post("/api/construct/assemble-prompt", (req, res) => {
+    const { construct, chatLog, currentUser, messagesToInclude } = req.body;
+    const prompt = assemblePrompt(construct, chatLog, currentUser, messagesToInclude);
+    res.json({ prompt });
   });
-  electron.ipcMain.on("assemble-instruct-prompt", (event, construct, chatLog, currentUser, messagesToInclude, uniqueEventName) => {
-    let prompt = assembleInstructPrompt(construct, chatLog, currentUser);
-    event.reply(uniqueEventName, prompt);
+  expressApp.post("/api/construct/assemble-instruct-prompt", (req, res) => {
+    const { construct, chatLog, currentUser, messagesToInclude } = req.body;
+    const prompt = assembleInstructPrompt(construct, chatLog, currentUser);
+    res.json({ prompt });
   });
-  electron.ipcMain.on("generate-continue-chat-log", (event, construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth, doMultiline, replaceUser2, uniqueEventName) => {
+  expressApp.post("/api/chat/continue", (req, res) => {
+    const { construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth, doMultiline, replaceUser: replaceUser2 } = req.body;
     generateContinueChatLog(construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth, doMultiline, replaceUser2).then((response) => {
-      event.reply(uniqueEventName, response);
+      res.json({ response });
+    }).catch((error) => {
+      res.status(500).json({ error: error.message });
     });
   });
-  electron.ipcMain.on("remove-messages-from-chat-log", (event, chatLog, messageContent, uniqueEventName) => {
+  expressApp.post("/api/chat/remove-messages", (req, res) => {
+    const { chatLog, messageContent } = req.body;
     removeMessagesFromChatLog(chatLog, messageContent).then((response) => {
-      event.reply(uniqueEventName, response);
+      res.json({ response });
+    }).catch((error) => {
+      res.status(500).json({ error: error.message });
     });
   });
-  electron.ipcMain.on("regenerate-message-from-chat-log", (event, chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, uniqueEventName) => {
-    regenerateMessageFromChatLog(chatLog, messageContent, messageID, authorsNote, authorsNoteDepth).then((response) => {
-      event.reply(uniqueEventName, response);
+  expressApp.post("/api/chat/regenerate-message", (req, res) => {
+    const { chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, doMultiline, replaceUser: replaceUser2 } = req.body;
+    regenerateMessageFromChatLog(chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, doMultiline).then((response) => {
+      res.json({ response });
+    }).catch((error) => {
+      res.status(500).json({ error: error.message });
     });
   });
-  electron.ipcMain.on("break-up-commands", (event, charName, commandString, user, stopList, uniqueEventName) => {
+  expressApp.post("/api/chat/regenerate-user-message", (req, res) => {
+    const { chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, doMultiline, replaceUser: replaceUser2 } = req.body;
+    regenerateUserMessageFromChatLog(chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, doMultiline).then((response) => {
+      res.json({ response });
+    }).catch((error) => {
+      res.status(500).json({ error: error.message });
+    });
+  });
+  expressApp.post("/api/chat/parse-reply", (req, res) => {
+    const { charName, commandString, user, stopList } = req.body;
     let response = breakUpCommands(charName, commandString, user, stopList);
-    event.reply(uniqueEventName, response);
+    res.json({ response });
   });
-  electron.ipcMain.on("generate-thoughts", (event, construct, chat, currentUser, messagesToInclude, uniqueEventName) => {
-    generateThoughts(construct, chat, currentUser, messagesToInclude).then((response) => {
-      event.reply(uniqueEventName, response);
+  expressApp.post("/api/construct/thoughts", (req, res) => {
+    const { construct, chatLog, currentUser, messagesToInclude } = req.body;
+    generateThoughts(construct, chatLog, currentUser, messagesToInclude).then((response) => {
+      res.json({ response });
+    }).catch((error) => {
+      res.status(500).send({ error: error.message });
     });
   });
-  electron.ipcMain.on("regenerate-user-message-from-chat-log", (event, chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, uniqueEventName) => {
-    regenerateUserMessageFromChatLog(chatLog, messageContent, messageID, authorsNote, authorsNoteDepth).then((response) => {
-      event.reply(uniqueEventName, response);
-    });
-  });
-  electron.ipcMain.on("detect-intent", async (event, uniqueEventName, message) => {
+  expressApp.post("/api/chat/intent", (req, res) => {
+    const { message } = req.body;
     detectIntent(message).then((response) => {
-      event.reply(uniqueEventName, response);
+      res.json({ response });
+    }).catch((error) => {
+      res.status(500).send({ error: error.message });
     });
   });
 }
