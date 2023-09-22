@@ -145,7 +145,7 @@ const ConstructBox: React.FC<Props> = ({character, onCharacterDelete, onCharacte
             </div>
             {isOpen && character && (
             <div className="grid grid-cols-5 gap-2">
-                <div className="col-span-1 items-start">
+                <div className="col-span-1 items-start flex flex-col text-left">
                     <Link to={`/constructs/${character._id}`}>
                         {character && (character.avatar === '' ? <RiQuestionMark className="construct-image-default"/> : <img id={character._id} src={character.avatar} alt={characterName} className="agent-image-default cursor-pointer object-fit rounded-theme-border-radius"/>)}
                     </Link>
@@ -156,7 +156,7 @@ const ConstructBox: React.FC<Props> = ({character, onCharacterDelete, onCharacte
                         <b>Construct Status:</b> {isActive ? <span className="text-theme-flavor-text font-bold">Active</span> : <span className="text-theme-hover-neg font-bold">Inactive</span>}{isActive && <span className="text-theme-flavor-text font-bold"> + {isPrimary ? 'Primary': 'Secondary'}</span>}
                     </div>
                 </div>
-                <div className="col-span-4 grid-cols-3 gap-2 grid justify-start">
+                <div className="col-span-4 grid-cols-3 gap-2 grid justify-start w-full">
                     <div className="col-span-1 flex flex-col justify-start items-start">
                         <label className="text-xl font-semibold text-left">User Actions</label>
                         <div className="w-full h-1/2 overflow-hidden">
