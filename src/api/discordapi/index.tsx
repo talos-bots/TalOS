@@ -1,125 +1,173 @@
+import { sendDesktopNotification } from '@/components/desktop-notification';
+import axios from 'axios';
 import { Snowflake, Webhook } from 'discord.js';
 import { ipcRenderer } from 'electron';
 type ValidStatus = 'online' | 'dnd' | 'idle' | 'invisible';
 
 // Discord Login
 export const loginToDiscord = async (rawToken?: string, appId?: string): Promise<boolean> => {
-    return ipcRenderer.invoke('discord-login', rawToken, appId);
+    try {
+        const response = await axios.post('/api/discord/login', {
+            rawToken: rawToken,
+            appId: appId
+        });
+        sendDesktopNotification('Discord', 'Logged in successfully.', () => {});
+        return response.data.success;
+    } catch (error) {
+        console.error('Failed to login to Discord via Axios:', error);
+        return false;
+    }
 }
 
 // Discord Logout
 export const logoutFromDiscord = async (): Promise<boolean> => {
-    return ipcRenderer.invoke('discord-logout');
-}
+    try {
+        const response = await axios.post('/api/discord/logout');
+        sendDesktopNotification('Discord', 'Logged out successfully.', () => {});
+        return response.data.success;
+    } catch (error) {
+        console.error('Failed to logout from Discord via Axios:', error);
+        return false;
+    }
+};
 
 // Set Bot Info
 export const setBotInfo = async (botName: string, base64Avatar: string): Promise<boolean> => {
-    return ipcRenderer.invoke('discord-set-bot-info', botName, base64Avatar);
+    const response = await axios.post(`/api/discord/set-bot-info`, { botName, base64Avatar });
+    return response.data.success;
 }
 
 // Set Status
 export const setStatus = async (message: string, type: string): Promise<boolean> => {
-    return ipcRenderer.invoke('discord-set-status', message, type);
+    const response = await axios.post(`/api/discord/set-status`, { message, type });
+    return response.data.success;
 }
 
 // Set Online Mode
 export const setOnlineMode = async (type: ValidStatus): Promise<boolean> => {
-    return ipcRenderer.invoke('discord-set-online-mode', type);
+    const response = await axios.post(`/api/discord/set-online-mode`, { type });
+    return response.data.success;
 }
 
 // Send Message
 export const sendMessage = async (channelID: Snowflake, message: string): Promise<boolean> => {
-    return ipcRenderer.invoke('discord-send-message', channelID, message);
+    const response = await axios.post(`/api/discord/send-message`, { channelID, message });
+    return response.data.success;
 }
 
 // Send Message As Character
 export const sendMessageAsCharacter = async (charName: string, channelID: Snowflake, message: string): Promise<boolean> => {
-    return ipcRenderer.invoke('discord-send-message-as-character', charName, channelID, message);
+    const response = await axios.post(`/api/discord/send-message-as-character`, { charName, channelID, message });
+    return response.data.success;
 }
 
 // Get Webhooks for Channel
-export const getWebhooksForChannel = (channelID: Snowflake): Promise<Webhook[]> => {
-    return new Promise((resolve) => {
-        ipcRenderer.send('discord-get-webhooks-for-channel', channelID);
-        ipcRenderer.once('discord-get-webhooks-for-channel-reply', (_, webhooks) => {
-        resolve(webhooks);
-        });
-    });
+export const getWebhooksForChannel = async (channelID: Snowflake): Promise<Webhook[]> => {
+    const response = await axios.get(`/api/discord/get-webhooks-for-channel/${channelID}`);
+    return response.data.webhooks;
 }
 
 // Get Webhook for Character
-export const getWebhookForCharacter = (charName: string, channelID: Snowflake): Promise<Webhook> => {
-    return new Promise((resolve) => {
-        ipcRenderer.send('discord-get-webhook-for-character', charName, channelID);
-        ipcRenderer.once('discord-get-webhook-for-character-reply', (_, webhook) => {
-        resolve(webhook);
-        });
-    });
+export const getWebhookForCharacter = async (charName: string, channelID: Snowflake): Promise<Webhook> => {
+    const response = await axios.get(`/api/discord/get-webhook-for-character`, { params: { charName, channelID } });
+    return response.data.webhook;
 }
 
 // Remaining User Information Routes
 export const getUserInfo = {
-    id: () => fetchUserData('discord-get-user-id', 'discord-get-user-id-reply'),
-    username: () => fetchUserData('discord-get-user-username', 'discord-get-user-username-reply'),
-    avatar: () => fetchUserData('discord-get-user-avatar', 'discord-get-user-avatar-reply'),
-    discriminator: () => fetchUserData('discord-get-user-discriminator', 'discord-get-user-discriminator-reply'),
-    tag: () => fetchUserData('discord-get-user-tag', 'discord-get-user-tag-reply'),
-    createdAt: () => fetchUserData('discord-get-user-createdAt', 'discord-get-user-createdAt-reply')
+    id: async () => await fetchUserData('/discord/user/id'),
+    username: async () => await fetchUserData('/discord/user/username'),
+    avatar: async () => await fetchUserData('/discord/user/avatar'),
+    discriminator: async () => await fetchUserData('/discord/user/discriminator'),
+    tag: async () => await fetchUserData('/discord/user/tag'),
+    createdAt: async () => await fetchUserData('/discord/user/createdAt')
 }
 
-function fetchUserData(event: string, replyEvent: string): Promise<any> {
-    return new Promise((resolve) => {
-        ipcRenderer.send(event);
-        ipcRenderer.once(replyEvent, (_, data) => {
-        resolve(data);
+async function fetchUserData(endpoint: string): Promise<any> {
+    return axios.get(`/api${endpoint}`)
+        .then(response => response.data)
+        .catch(error => {
+            console.error("Error fetching user data:", error);
+            throw error;
         });
-    });
 }
 
 // Get Bot Status
-export const getBotStatus = (): Promise<boolean> => {
-    return new Promise((resolve) => {
-        ipcRenderer.send('discord-bot-status');
-        ipcRenderer.once('discord-bot-status-reply', (_, status) => {
-        resolve(status);
-        });
-    });
-}
+export const getBotStatus = async (): Promise<boolean> => {
+    try {
+        const response = await axios.get('/api/discord/bot/status');
+        return response.data.status;
+    } catch (error) {
+        console.error('Failed to get bot status:', error);
+        return false;
+    }
+};
 
 // Get Token
-export const getToken = (): Promise<string> => {
-    return fetchFromMain('discord-get-token', 'discord-get-token-reply');
+export const getToken = async (): Promise<string> => {
+    try {
+        const response = await axios.get('/api/discord/token');
+        return response.data.token;
+    } catch (error) {
+        console.error('Failed to get token:', error);
+        return '';
+    }
 }
 
 // Get Application ID
-export const getApplicationID = (): Promise<string> => {
-    return fetchFromMain('discord-get-application-id', 'discord-get-application-id-reply');
+export const getApplicationID = async (): Promise<string> => {
+    try {
+        const response = await axios.get('/api/discord/application-id');
+        return response.data.applicationID;
+    } catch (error) {
+        console.error('Failed to get application ID:', error);
+        return '';
+    }
 }
 
 // Get Guilds
-export const getGuilds = (): Promise<Array<any>> => {
-    return new Promise((resolve) => {
-        ipcRenderer.send('discord-get-guilds');
-        ipcRenderer.once('discord-get-guilds-reply', (_, guilds) => {
-            resolve(guilds);
-        });
-    });
+export const getGuilds = async (): Promise<Array<any>> => {
+    try {
+        const response = await axios.get('/api/discord/guilds');
+        return response.data;
+    } catch (error) {
+        console.error('Failed to get guilds:', error);
+        return [];
+    }
 }
 
-export const getSavedDiscordData = (): Promise<any> => {
-    return new Promise((resolve) => {
-        ipcRenderer.send('discord-get-data');
-        ipcRenderer.once('discord-get-data-reply', (_, data) => {
-            console.log(data);
-            resolve(data);
-        });
-    });
+// Get Saved Discord Data
+export const getSavedDiscordData = async (): Promise<any> => {
+    try {
+        const response = await axios.get('/api/discord/data');
+        return response.data;
+    } catch (error) {
+        console.error('Failed to get saved discord data:', error);
+        return null;
+    }
 }
 
-export const saveDiscordData = (token : string, appID : string, discordCharacterMode: boolean, discordMultiCharacterMode: boolean, discordMultiConstructMode: boolean): Promise<boolean> => {
-    return new Promise((resolve) => {
-        ipcRenderer.send('discord-save-data', token, appID, discordCharacterMode, discordMultiCharacterMode, discordMultiConstructMode);
-    });
+// Save Discord Data
+export const saveDiscordData = async (
+    token: string,
+    appID: string,
+    discordCharacterMode: boolean,
+    discordMultiCharacterMode: boolean,
+    discordMultiConstructMode: boolean
+): Promise<boolean> => {
+    try {
+        await axios.post('/api/discord/data', {
+            newToken: token,
+            newAppId: appID,
+            discordCharacterMode,
+            discordMultiCharacterMode,
+            discordMultiConstructMode
+        });
+        return true;
+    } catch (error) {
+        console.error('Failed to save discord data:', error);
+        return false;
+    }
 }
 
 // Utility Functions

@@ -6323,31 +6323,37 @@ function clearMessageQueue() {
   messageQueue = [];
 }
 function DiscordJSRoutes() {
-  electron.ipcMain.on("discord-get-token", async (event) => {
-    event.sender.send("discord-get-token-reply", token);
+  expressApp.get("/api/discord/token", (req, res) => {
+    res.json({ token });
   });
-  electron.ipcMain.on("discord-get-data", async (event) => {
+  expressApp.get("/api/discord/data", async (req, res) => {
     let data = await getDiscordData();
-    event.sender.send("discord-get-data-reply", data);
+    res.json(data);
   });
-  electron.ipcMain.on("discord-save-data", async (event, newToken, newAppId, discordCharacterMode, discordMultiCharacterMode, discordMultiConstructMode) => {
+  expressApp.post("/api/discord/data", async (req, res) => {
+    const { newToken, newAppId, discordCharacterMode, discordMultiCharacterMode, discordMultiConstructMode } = req.body;
     saveDiscordData(newToken, newAppId, discordCharacterMode, discordMultiCharacterMode, discordMultiConstructMode);
-    event.sender.send("discord-save-data-reply", token, applicationID);
+    res.json({ token, applicationID });
   });
-  electron.ipcMain.on("discord-get-application-id", async (event) => {
-    event.sender.send("discord-get-application-id-reply", applicationID);
+  expressApp.get("/api/discord/application-id", (req, res) => {
+    res.json({ applicationID });
   });
-  electron.ipcMain.on("discord-get-guilds", async (event) => {
-    event.sender.send("discord-get-guilds-reply", await getDiscordGuilds());
+  expressApp.get("/api/discord/guilds", async (req, res) => {
+    const guilds = await getDiscordGuilds();
+    res.json(guilds);
   });
-  electron.ipcMain.handle("discord-login", async (event, rawToken, appId) => {
+  expressApp.post("/api/discord/login", async (req, res) => {
+    var _a;
     try {
+      let rawToken = req.body.rawToken;
+      let appId = req.body.appId;
       if (rawToken === "") {
         const storedToken = store$1.get("discordToken");
         if (storedToken !== void 0 && typeof storedToken === "string") {
           token = storedToken;
         } else {
-          return false;
+          res.status(400).json({ success: false, message: "Invalid token." });
+          return;
         }
       } else {
         token = rawToken;
@@ -6358,7 +6364,8 @@ function DiscordJSRoutes() {
         if (storedAppId !== void 0 && typeof storedAppId === "string") {
           applicationID = storedAppId;
         } else {
-          return false;
+          res.status(400).json({ success: false, message: "Invalid application ID." });
+          return;
         }
       } else {
         applicationID = appId;
@@ -6368,133 +6375,132 @@ function DiscordJSRoutes() {
       createClient();
       if (!disClient.user) {
         console.error("Discord client user is not initialized.");
-        return false;
+        res.status(500).json({ success: false, message: "Discord client user is not initialized." });
       } else {
-        return true;
+        (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-ready", disClient.user.tag);
+        res.json({ success: true });
       }
     } catch (error) {
       console.error("Failed to login to Discord:", error);
-      return false;
+      res.status(500).json({ success: false, message: "Failed to login to Discord." });
     }
   });
-  electron.ipcMain.handle("discord-logout", async (event) => {
+  expressApp.post("/api/discord/logout", async (req, res) => {
     var _a;
-    await disClient.destroy();
-    disClient.removeAllListeners();
-    isReady = false;
-    disClient = new discord_js.Client(intents);
-    console.log("Logged out!");
-    messageQueue = [];
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-disconnected");
-    return true;
+    try {
+      await disClient.destroy();
+      disClient.removeAllListeners();
+      isReady = false;
+      messageQueue = [];
+      disClient = new discord_js.Client(intents);
+      console.log("Logged out!");
+      (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-disconnected");
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Failed to logout from Discord:", error);
+      res.status(500).json({ success: false, error: "Failed to logout from Discord." });
+    }
   });
-  electron.ipcMain.handle("discord-set-bot-info", async (event, botName, base64Avatar) => {
+  expressApp.post("/api/discord/set-bot-info", async (req, res) => {
+    const { botName, base64Avatar } = req.body;
     if (!isReady)
-      return false;
+      return res.status(503).json({ success: false, message: "Bot not ready." });
     await setDiscordBotInfo(botName, base64Avatar);
-    return true;
+    res.json({ success: true });
   });
-  electron.ipcMain.handle("discord-set-status", async (event, message, type) => {
+  expressApp.post("/api/discord/set-status", async (req, res) => {
+    const { message, type } = req.body;
     if (!isReady)
-      return false;
+      return res.status(503).json({ success: false, message: "Bot not ready." });
     await setStatus(message, type);
-    return true;
+    res.json({ success: true });
   });
-  electron.ipcMain.handle("discord-set-online-mode", async (event, type) => {
+  expressApp.post("/api/discord/set-online-mode", async (req, res) => {
+    const { type } = req.body;
     if (!isReady)
-      return false;
+      return res.status(503).json({ success: false, message: "Bot not ready." });
     await setOnlineMode(type);
-    return true;
+    res.json({ success: true });
   });
-  electron.ipcMain.handle("discord-send-message", async (event, channelID, message) => {
+  expressApp.post("/api/discord/send-message", async (req, res) => {
+    const { channelID, message } = req.body;
     if (!isReady)
-      return false;
+      return res.status(503).json({ success: false, message: "Bot not ready." });
     await sendMessage(channelID, message);
-    return true;
+    res.json({ success: true });
   });
-  electron.ipcMain.handle("discord-send-message-as-character", async (event, char, channelID, message) => {
+  expressApp.post("/api/discord/send-message-as-character", async (req, res) => {
+    const { char, channelID, message } = req.body;
     if (!isReady)
-      return false;
+      return res.status(503).json({ success: false, message: "Bot not ready." });
     await sendMessageAsCharacter(char, channelID, message);
-    return true;
+    res.json({ success: true });
   });
-  electron.ipcMain.on("discord-get-webhooks-for-channel", async (event, channelID) => {
+  expressApp.get("/api/discord/get-webhooks-for-channel/:channelID", async (req, res) => {
+    const { channelID } = req.params;
     if (!isReady)
-      return false;
+      return res.status(503).json({ success: false, message: "Bot not ready." });
     const webhooks = await getWebhooksForChannel(channelID);
-    event.sender.send("discord-get-webhooks-for-channel-reply", webhooks);
+    res.json({ success: true, webhooks });
   });
-  electron.ipcMain.on("discord-get-webhook-for-character", async (event, charName, channelID) => {
+  expressApp.get("/api/discord/get-webhook-for-character", async (req, res) => {
+    const { charName, channelID } = req.query;
     if (!isReady)
-      return false;
+      return res.status(503).json({ success: false, message: "Bot not ready." });
     const webhook = await getWebhookForCharacter(charName, channelID);
-    event.sender.send("discord-get-webhook-for-character-reply", webhook);
+    res.json({ success: true, webhook });
   });
-  electron.ipcMain.on("discord-get-user", async (event) => {
-    if (!isReady)
-      return false;
-    if (!disClient.user) {
+  expressApp.get("/api/discord/user", (req, res) => {
+    if (!isReady || !disClient.user) {
       console.error("Discord client user is not initialized.");
-      return false;
+      return res.status(500).send({ error: "Discord client user is not initialized." });
     }
-    event.sender.send("discord-get-user-reply", disClient.user);
+    res.send(disClient.user);
   });
-  electron.ipcMain.on("discord-get-user-id", async (event) => {
-    if (!isReady)
-      return false;
-    if (!disClient.user) {
+  expressApp.get("/api/discord/user/id", (req, res) => {
+    if (!isReady || !disClient.user) {
       console.error("Discord client user is not initialized.");
-      return false;
+      return res.status(500).send({ error: "Discord client user is not initialized." });
     }
-    event.sender.send("discord-get-user-id-reply", disClient.user.id);
+    res.send({ id: disClient.user.id });
   });
-  electron.ipcMain.on("discord-get-user-username", async (event) => {
-    if (!isReady)
-      return false;
-    if (!disClient.user) {
+  expressApp.get("/api/discord/user/username", (req, res) => {
+    if (!isReady || !disClient.user) {
       console.error("Discord client user is not initialized.");
-      return false;
+      return res.status(500).send({ error: "Discord client user is not initialized." });
     }
-    event.sender.send("discord-get-user-username-reply", disClient.user.username);
+    res.send({ username: disClient.user.username });
   });
-  electron.ipcMain.on("discord-get-user-avatar", async (event) => {
-    if (!isReady)
-      return false;
-    if (!disClient.user) {
+  expressApp.get("/api/discord/user/avatar", (req, res) => {
+    if (!isReady || !disClient.user) {
       console.error("Discord client user is not initialized.");
-      return false;
+      return res.status(500).send({ error: "Discord client user is not initialized." });
     }
-    event.sender.send("discord-get-user-avatar-reply", disClient.user.avatarURL());
+    res.send({ avatarURL: disClient.user.avatarURL() });
   });
-  electron.ipcMain.on("discord-get-user-discriminator", async (event) => {
-    if (!isReady)
-      return false;
-    if (!disClient.user) {
+  expressApp.get("/api/discord/user/discriminator", (req, res) => {
+    if (!isReady || !disClient.user) {
       console.error("Discord client user is not initialized.");
-      return false;
+      return res.status(500).send({ error: "Discord client user is not initialized." });
     }
-    event.sender.send("discord-get-user-discriminator-reply", disClient.user.discriminator);
+    res.send({ discriminator: disClient.user.discriminator });
   });
-  electron.ipcMain.on("discord-get-user-tag", async (event) => {
-    if (!isReady)
-      return false;
-    if (!disClient.user) {
+  expressApp.get("/api/discord/user/tag", (req, res) => {
+    if (!isReady || !disClient.user) {
       console.error("Discord client user is not initialized.");
-      return false;
+      return res.status(500).send({ error: "Discord client user is not initialized." });
     }
-    event.sender.send("discord-get-user-tag-reply", disClient.user.tag);
+    res.send({ tag: disClient.user.tag });
   });
-  electron.ipcMain.on("discord-get-user-createdAt", async (event) => {
-    if (!isReady)
-      return false;
-    if (!disClient.user) {
+  expressApp.get("/api/discord/user/createdAt", (req, res) => {
+    if (!isReady || !disClient.user) {
       console.error("Discord client user is not initialized.");
-      return false;
+      return res.status(500).send({ error: "Discord client user is not initialized." });
     }
-    event.sender.send("discord-get-user-createdAt-reply", disClient.user.createdAt);
+    res.send({ createdAt: disClient.user.createdAt });
   });
-  electron.ipcMain.on("discord-bot-status", async (event) => {
-    event.sender.send("discord-bot-status-reply", isReady);
+  expressApp.get("/discord/bot/status", (req, res) => {
+    res.send({ status: isReady });
   });
 }
 process.env.DIST_ELECTRON = node_path.join(__dirname, "../");
