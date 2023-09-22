@@ -37,6 +37,8 @@ const promises = require("fs/promises");
 const FormData = require("form-data");
 const vectra = require("vectra");
 require("gpt-tokenizer");
+const express = require("express");
+const cors = require("cors");
 let constructDB$1;
 let chatsDB$1;
 let commandDB$1;
@@ -806,62 +808,106 @@ function PouchDBRoutes() {
   completionDB = new PouchDB("completion", { prefix: dataPath, adapter: "leveldb" });
   userDB = new PouchDB("user", { prefix: dataPath, adapter: "leveldb" });
   lorebookDB = new PouchDB("lorebook", { prefix: dataPath, adapter: "leveldb" });
-  electron.ipcMain.on("get-constructs", (event, replyName) => {
-    getAllConstructs().then((result) => {
-      event.sender.send(replyName, result);
-    });
+  expressApp.get("/api/constructs", async (req, res) => {
+    try {
+      const constructs = await getAllConstructs();
+      res.json(constructs);
+    } catch (error) {
+      res.status(500).json({ message: "An error occurred." });
+    }
   });
-  electron.ipcMain.on("get-construct", (event, arg, replyName) => {
-    getConstruct(arg).then((result) => {
-      event.sender.send(replyName, result);
-    });
+  expressApp.get("/api/construct/:id", async (req, res) => {
+    try {
+      const id = req.params.id;
+      const construct = await getConstruct(id);
+      if (construct) {
+        res.json(construct);
+      } else {
+        res.status(404).json({ message: "Construct not found." });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "An error occurred." });
+    }
   });
-  electron.ipcMain.on("add-construct", (event, arg) => {
-    addConstruct$1(arg).then((result) => {
-      event.sender.send("add-construct-reply", result);
-    });
+  expressApp.post("/api/add-construct", async (req, res) => {
+    try {
+      const construct = req.body;
+      const result = await addConstruct$1(construct);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ message: "An error occurred while adding the construct." });
+    }
   });
-  electron.ipcMain.on("update-construct", (event, arg) => {
-    updateConstruct(arg).then((result) => {
-      event.sender.send("update-construct-reply", result);
-    });
+  expressApp.put("/api/update-construct", async (req, res) => {
+    try {
+      const construct = req.body;
+      const result = await updateConstruct(construct);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ message: "An error occurred while updating the construct." });
+    }
   });
-  electron.ipcMain.on("delete-construct", (event, arg) => {
-    removeConstruct$1(arg).then((result) => {
-      event.sender.send("delete-construct-reply", result);
-    });
+  expressApp.delete("/api/delete-construct/:id", async (req, res) => {
+    try {
+      const id = req.params.id;
+      const result = await removeConstruct$1(id);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ message: "An error occurred while deleting the construct." });
+    }
   });
-  electron.ipcMain.on("get-chats", (event, replyName) => {
-    getAllChats().then((result) => {
-      event.sender.send(replyName, result);
-    });
+  expressApp.get("/api/chats", async (req, res) => {
+    try {
+      const chats = await getAllChats();
+      res.json(chats);
+    } catch (error) {
+      res.status(500).json({ message: "An error occurred." });
+    }
   });
-  electron.ipcMain.on("get-chats-by-construct", (event, arg, replyName) => {
-    getChatsByConstruct(arg).then((result) => {
-      event.sender.send(replyName, result);
-    });
+  expressApp.get("/api/chats/construct/:constructId", async (req, res) => {
+    try {
+      const constructId = req.params.constructId;
+      const chats = await getChatsByConstruct(constructId);
+      res.json(chats);
+    } catch (error) {
+      res.status(500).json({ message: "An error occurred." });
+    }
   });
-  electron.ipcMain.on("get-chat", (event, arg, replyName) => {
-    getChat(arg).then((result) => {
-      event.sender.send(replyName, result);
-    });
+  expressApp.get("/api/chat/:chatId", async (req, res) => {
+    try {
+      const chatId = req.params.chatId;
+      const chat = await getChat(chatId);
+      res.json(chat);
+    } catch (error) {
+      res.status(500).json({ message: "An error occurred." });
+    }
   });
-  electron.ipcMain.on("add-chat", (event, arg) => {
-    console.log(arg);
-    addChat(arg).then((result) => {
-      event.sender.send("add-chat-reply", result);
-      console.log(result);
-    });
+  expressApp.post("/api/chat", async (req, res) => {
+    try {
+      const chatData = req.body;
+      const chat = await addChat(chatData);
+      res.json(chat);
+    } catch (error) {
+      res.status(500).json({ message: "An error occurred." });
+    }
   });
-  electron.ipcMain.on("update-chat", (event, arg) => {
-    updateChat(arg).then((result) => {
-      event.sender.send("update-chat-reply", result);
-    });
+  expressApp.put("/api/chat", async (req, res) => {
+    try {
+      const chatData = req.body;
+      const chat = await updateChat(chatData);
+      res.json(chat);
+    } catch (error) {
+      res.status(500).json({ message: "An error occurred." });
+    }
   });
-  electron.ipcMain.on("delete-chat", (event, arg) => {
-    removeChat(arg).then((result) => {
-      event.sender.send("delete-chat-reply", result);
-    });
+  expressApp.delete("/api/chat/:chatId", async (req, res) => {
+    try {
+      const chatId = req.params.chatId;
+      const result = await removeChat(chatId);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ message: "An error occurred." });
+    }
   });
   electron.ipcMain.on("get-commands", (event, replyName) => {
     getAllCommands().then((result) => {
@@ -6429,6 +6475,17 @@ function LangChainRoutes() {
     event.sender.send("get-azure-key-reply", getAzureKey());
   });
 }
+const expressApp = express();
+const bodyParser = require("body-parser");
+const port = 3003;
+expressApp.use(express.static("public"));
+expressApp.use(express.static("dist"));
+expressApp.use(bodyParser.json({ limit: "1000mb" }));
+expressApp.use(bodyParser.urlencoded({ limit: "1000mb", extended: true }));
+expressApp.use(cors());
+expressApp.listen(port, () => {
+  console.log(`Server started on http://localhost:${port}`);
+});
 process.env.DIST_ELECTRON = node_path.join(__dirname, "../");
 process.env.DIST = node_path.join(process.env.DIST_ELECTRON, "../dist");
 process.env.VITE_PUBLIC = process.env.VITE_DEV_SERVER_URL ? node_path.join(process.env.DIST_ELECTRON, "../public") : process.env.DIST;
@@ -6535,67 +6592,65 @@ electron.ipcMain.handle("open-win", (_, arg) => {
     childWindow.loadFile(indexHtml, { hash: arg });
   }
 });
-electron.ipcMain.on("load-models", async (event) => {
-  getModels$1().then((models) => {
-    event.sender.send("load-models-reply", true);
+expressApp.post("/api/models/load", async (req, res) => {
+  getModels$1().then(() => {
+    res.send(true);
+  }).catch((err) => {
+    res.send(err);
   });
 });
-electron.ipcMain.on("open-external-url", (event, url2) => {
-  electron.shell.openExternal(url2);
+expressApp.get("/api/get-data-path", (req, res) => {
+  res.send({ dataPath });
 });
-electron.ipcMain.handle("get-data-path", () => {
-  return dataPath;
+expressApp.post("/api/set-data", (req, res) => {
+  const { key, value } = req.body;
+  store.set(key, value);
+  res.send({ status: "success" });
 });
-electron.ipcMain.on("set-data", (event, arg) => {
-  store.set(arg.key, arg.value);
+expressApp.get("/api/get-data/:key", (req, res) => {
+  const value = store.get(req.params.key);
+  res.send({ value });
 });
-electron.ipcMain.on("get-data", (event, arg, replyName) => {
-  event.sender.send(replyName, store.get(arg));
-});
-electron.ipcMain.on("save-background", (event, imageData, name, fileType) => {
+expressApp.post("/api/save-background", (req, res) => {
+  const { imageData, name, fileType } = req.body;
   const imagePath = path.join(backgroundsPath, `${name}.${fileType}`);
   const data = Buffer.from(imageData, "base64");
   fs.writeFileSync(imagePath, data);
-  event.sender.send("save-background-reply", `${name}.${fileType}`);
+  res.send({ fileName: `${name}.${fileType}` });
 });
-electron.ipcMain.on("get-backgrounds", (event) => {
+expressApp.get("/api/get-backgrounds", (req, res) => {
   fs.readdir(backgroundsPath, (err, files) => {
     if (err) {
-      event.sender.send("get-backgrounds-reply", []);
+      res.send({ files: [] });
       return;
     }
-    event.sender.send("get-backgrounds-reply", files);
+    res.send({ files });
   });
 });
-electron.ipcMain.on("delete-background", (event, name) => {
-  fs.unlink(path.join(backgroundsPath, name), (err) => {
+expressApp.delete("/api/delete-background/:name", (req, res) => {
+  fs.unlink(path.join(backgroundsPath, req.params.name), (err) => {
     if (err) {
-      event.sender.send("delete-background-reply", false);
+      res.send({ success: false });
       return;
     }
-    event.sender.send("delete-background-reply", true);
+    res.send({ success: true });
   });
 });
-electron.ipcMain.handle("get-server-port", (event) => {
+expressApp.get("/api/get-default-characters", (req, res) => {
+  const characters = [];
   try {
-    const appRoot = electron.app.getAppPath();
-    const configPath = path.join(appRoot, "backend", "config.json");
-    const rawData = fs.readFileSync(configPath, "utf8");
-    const config = JSON.parse(rawData);
-    return config.port;
-  } catch (error) {
-    console.error("Failed to get server port:", error);
-    throw error;
+    fs.readdirSync(charactersPath).forEach((file) => {
+      if (file.endsWith(".png")) {
+        characters.push(file);
+      }
+    });
+    res.send({ characters });
+  } catch (err) {
+    res.status(500).send({ error: "Failed to read the characters directory." });
   }
 });
-electron.ipcMain.on("get-default-characters", (event) => {
-  const characters = [];
-  fs.readdirSync(charactersPath).forEach((file) => {
-    if (file.endsWith(".png")) {
-      characters.push(file);
-    }
-  });
-  event.sender.send("get-default-characters-reply", characters);
+electron.ipcMain.on("open-external-url", (event, url2) => {
+  electron.shell.openExternal(url2);
 });
 async function requestFullDiskAccess() {
   if (process.platform === "darwin") {
@@ -6620,6 +6675,7 @@ async function requestFullDiskAccess() {
 exports.backgroundsPath = backgroundsPath;
 exports.charactersPath = charactersPath;
 exports.dataPath = dataPath;
+exports.expressApp = expressApp;
 exports.imagesPath = imagesPath;
 exports.isDarwin = isDarwin;
 exports.modelsPath = modelsPath;

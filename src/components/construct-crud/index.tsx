@@ -15,6 +15,7 @@ import SpriteCrud from "./sprite-crud";
 import ConstructChatConfigPanel from "../construct-chat-config";
 import TokenTextarea from "../token-textarea";
 import { confirmModal } from "../confirm-modal";
+import Loading from "../loading";
 
 const commandTypes = [
     {
@@ -78,6 +79,7 @@ const ConstructManagement = (props: ConstructManagementProps) => {
     const [error, setError] = useState<string | null>(null);
     const [page, setPage] = useState<number>(1);
     const [swipeDirection, setSwipeDirection] = useState<string>("none");
+    const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
     const makeActive = async () => {
         if(constructState !== null) {
@@ -180,7 +182,11 @@ const ConstructManagement = (props: ConstructManagementProps) => {
                 getActiveStatus();
             }
         }
-        getPassedCharacter();
+        getPassedCharacter().then(() => {
+            setIsLoaded(true);
+        }).catch((err) => {
+            console.log(err);
+        });
     }, [id !== undefined && id !== null && id !== 'create']);
 
     const returnToMenu = () => {
@@ -317,6 +323,9 @@ const ConstructManagement = (props: ConstructManagementProps) => {
         console.log(config);
         setConstructDefaultChatConfig(config);
     }
+
+    if(!isLoaded) return (<Loading/>)
+    
     return (
         <>
         {error !== null ? (

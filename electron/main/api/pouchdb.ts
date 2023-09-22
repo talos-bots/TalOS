@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron';
 import PouchDB from 'pouchdb';
-import { dataPath, isDarwin } from '../';
+import { dataPath, expressApp, isDarwin } from '../';
 import LeveldbAdapter from 'pouchdb-adapter-leveldb';
 import { addAttachmentFromEDB, addChatFromEDB, addCommandFromEDB, addCompletionFromEDB, addConstructFromEDB, addInstructFromEDB, addLorebookFromEDB, addUserFromEDB, getAttachmentFromEDB, getAttachmentsFromEDB, getChatFromEDB, getChatsByConstructFromEDB, getChatsFromEDB, getCommandFromEDB, getCommandsFromEDB, getCompletionFromEDB, getCompletionsFromEDB, getConstructFromEDB, getConstructsFromEDB, getInstructFromEDB, getInstructsFromEDB, getLorebookFromEDB, getLorebooksFromEDB, getUserFromEDB, getUsersFromEDB, removeAttachmentFromEDB, removeChatFromEDB, removeCommandFromEDB, removeCompletionFromEDB, removeConstructFromEDB, removeInstructFromEDB, removeLorebookFromEDB, removeUserFromEDB } from './electrondb';
 
@@ -563,72 +563,121 @@ export function PouchDBRoutes(){
     userDB = new PouchDB('user', {prefix: dataPath, adapter : 'leveldb'});
     lorebookDB = new PouchDB('lorebook', {prefix: dataPath, adapter : 'leveldb'});
 
-    ipcMain.on('get-constructs', (event, replyName) => {
-        getAllConstructs().then((result) => {
-            event.sender.send(replyName, result);
-        });
+    expressApp.get('/api/constructs', async (req, res) => {
+        try {
+            const constructs = await getAllConstructs();
+            res.json(constructs);
+        } catch (error) {
+            res.status(500).json({ message: "An error occurred." });
+        }
     });
 
-    ipcMain.on('get-construct', (event, arg, replyName) => {
-        getConstruct(arg).then((result) => {
-            event.sender.send(replyName, result);
-        });
+    expressApp.get('/api/construct/:id', async (req, res) => {
+        try {
+            const id = req.params.id;
+            const construct = await getConstruct(id);
+            if (construct) {
+                res.json(construct);
+            } else {
+                res.status(404).json({ message: "Construct not found." });
+            }
+        } catch (error) {
+            res.status(500).json({ message: "An error occurred." });
+        }
     });
 
-    ipcMain.on('add-construct', (event, arg) => {
-        addConstruct(arg).then((result) => {
-            event.sender.send('add-construct-reply', result);
-        });
+    expressApp.post('/api/add-construct', async (req, res) => {
+        try {
+            const construct = req.body;
+            const result = await addConstruct(construct); // Assuming addConstruct() is a function in your backend logic
+            res.json(result);
+        } catch (error) {
+            res.status(500).json({ message: "An error occurred while adding the construct." });
+        }
+    });
+    
+    expressApp.put('/api/update-construct', async (req, res) => {
+        try {
+            const construct = req.body;
+            const result = await updateConstruct(construct); // Assuming updateConstruct() is a function in your backend logic
+            res.json(result);
+        } catch (error) {
+            res.status(500).json({ message: "An error occurred while updating the construct." });
+        }
+    });
+    
+    expressApp.delete('/api/delete-construct/:id', async (req, res) => {
+        try {
+            const id = req.params.id;
+            const result = await removeConstruct(id); // Assuming removeConstruct() is a function in your backend logic
+            res.json(result);
+        } catch (error) {
+            res.status(500).json({ message: "An error occurred while deleting the construct." });
+        }
     });
 
-    ipcMain.on('update-construct', (event, arg) => {
-        updateConstruct(arg).then((result) => {
-            event.sender.send('update-construct-reply', result);
-        });
+    expressApp.get('/api/chats', async (req, res) => {
+        try {
+            const chats = await getAllChats();
+            res.json(chats);
+        } catch (error) {
+            res.status(500).json({ message: "An error occurred." });
+        }
     });
-
-    ipcMain.on('delete-construct', (event, arg) => {
-        removeConstruct(arg).then((result) => {
-            event.sender.send('delete-construct-reply', result);
-        });
+    
+    // For 'get-chats-by-construct'
+    expressApp.get('/api/chats/construct/:constructId', async (req, res) => {
+        try {
+            const constructId = req.params.constructId;
+            const chats = await getChatsByConstruct(constructId);
+            res.json(chats);
+        } catch (error) {
+            res.status(500).json({ message: "An error occurred." });
+        }
     });
-
-    ipcMain.on('get-chats', (event, replyName) => {
-        getAllChats().then((result) => {
-            event.sender.send(replyName, result);
-        });
+    
+    // For 'get-chat'
+    expressApp.get('/api/chat/:chatId', async (req, res) => {
+        try {
+            const chatId = req.params.chatId;
+            const chat = await getChat(chatId);
+            res.json(chat);
+        } catch (error) {
+            res.status(500).json({ message: "An error occurred." });
+        }
     });
-
-    ipcMain.on('get-chats-by-construct', (event, arg, replyName) => {
-        getChatsByConstruct(arg).then((result) => {
-            event.sender.send(replyName, result);
-        });
+    
+    // For 'add-chat'
+    expressApp.post('/api/chat', async (req, res) => {
+        try {
+            const chatData = req.body;
+            const chat = await addChat(chatData);
+            res.json(chat);
+        } catch (error) {
+            res.status(500).json({ message: "An error occurred." });
+        }
     });
-
-    ipcMain.on('get-chat', (event, arg, replyName) => {
-        getChat(arg).then((result) => {
-            event.sender.send(replyName, result);
-        });
+    
+    // For 'update-chat'
+    expressApp.put('/api/chat', async (req, res) => {
+        try {
+            const chatData = req.body;
+            const chat = await updateChat(chatData);
+            res.json(chat);
+        } catch (error) {
+            res.status(500).json({ message: "An error occurred." });
+        }
     });
-
-    ipcMain.on('add-chat', (event, arg) => {
-        console.log(arg);
-        addChat(arg).then((result) => {
-            event.sender.send('add-chat-reply', result);
-            console.log(result);
-        });
-    });
-
-    ipcMain.on('update-chat', (event, arg) => {
-        updateChat(arg).then((result) => {
-            event.sender.send('update-chat-reply', result);
-        });
-    });
-
-    ipcMain.on('delete-chat', (event, arg) => {
-        removeChat(arg).then((result) => {
-            event.sender.send('delete-chat-reply', result);
-        });
+    
+    // For 'delete-chat'
+    expressApp.delete('/api/chat/:chatId', async (req, res) => {
+        try {
+            const chatId = req.params.chatId;
+            const result = await removeChat(chatId);
+            res.json(result);
+        } catch (error) {
+            res.status(500).json({ message: "An error occurred." });
+        }
     });
 
     ipcMain.on('get-commands', (event, replyName) => {

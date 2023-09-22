@@ -20,6 +20,7 @@ import ZeroPage from './pages/zero';
 import DevPanel from './components/dev-panel';
 import NavBar from './components/shared/NavBar';
 import { sendDesktopNotification } from './components/desktop-notification';
+import axios from 'axios';
 
 export const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, url: string) => {
   e.preventDefault();
@@ -27,10 +28,10 @@ export const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, url: str
 };
 
 export const loadModels = async () => {
-  ipcRenderer.send('load-models');
-
-  ipcRenderer.once('load-models-reply', () => {
-    sendDesktopNotification('ConstructOS', 'TransformersJS Models loaded successfully.');
+  return axios.post('/api/models/load').then((response) => {
+    sendDesktopNotification('ConstructOS', 'Models Loaded');
+  }).catch((err) => {
+    console.error(err);
   });
 }
 

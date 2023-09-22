@@ -15,6 +15,21 @@ import { ElectronDBRoutes } from "./api/electrondb";
 import { LangChainRoutes } from "./api/langchain";
 import { VectorDBRoutes } from "./api/vector";
 import { getModels } from "./model-pipeline/transformers";
+import express, { Request, Response } from 'express';
+import cors from 'cors';
+
+export const expressApp = express();
+const bodyParser = require('body-parser');
+const port = 3003;
+
+expressApp.use(express.static('public'));
+expressApp.use(express.static('dist'));
+expressApp.use(bodyParser.json({ limit: '1000mb' }));
+expressApp.use(bodyParser.urlencoded({ limit: '1000mb', extended: true }));
+expressApp.use(cors());
+expressApp.listen(port, () => {
+  console.log(`Server started on http://localhost:${port}`);
+});
 
 // The built directory structure
 //
@@ -153,80 +168,80 @@ ipcMain.handle("open-win", (_, arg) => {
   }
 });
 
-ipcMain.on("load-models", async (event) => {
-  getModels().then((models) => {
-    event.sender.send("load-models-reply", true);
+expressApp.post("/api/models/load", async (req: Request, res: Response) => {
+  getModels().then(() => {
+    res.send(true);
+  }).catch((err) => {
+    res.send(err);
   });
+});
+
+expressApp.get('/api/get-data-path', (req, res) => {
+  res.send({ dataPath: dataPath });
+});
+
+// Route to set data
+expressApp.post('/api/set-data', (req, res) => {
+  const { key, value } = req.body;
+  store.set(key, value);
+  res.send({ status: 'success' });
+});
+
+// Route to get data
+expressApp.get('/api/get-data/:key', (req, res) => {
+  const value = store.get(req.params.key);
+  res.send({ value: value });
+});
+
+// Route to save a background
+expressApp.post('/api/save-background', (req, res) => {
+  const { imageData, name, fileType } = req.body;
+  const imagePath = path.join(backgroundsPath, `${name}.${fileType}`);
+  const data = Buffer.from(imageData, 'base64');
+  fs.writeFileSync(imagePath, data);
+  res.send({ fileName: `${name}.${fileType}` });
+});
+
+// Route to get backgrounds
+expressApp.get('/api/get-backgrounds', (req, res) => {
+  fs.readdir(backgroundsPath, (err, files) => {
+    if (err) {
+      res.send({ files: [] });
+      return;
+    }
+    res.send({ files: files });
+  });
+});
+
+// Route to delete a background
+expressApp.delete('/api/delete-background/:name', (req, res) => {
+  fs.unlink(path.join(backgroundsPath, req.params.name), (err) => {
+    if (err) {
+      res.send({ success: false });
+      return;
+    }
+    res.send({ success: true });
+  });
+});
+
+// Route to get default characters
+expressApp.get('/api/get-default-characters', (req, res) => {
+  const characters: any[] = [];
+  
+  try {
+    fs.readdirSync(charactersPath).forEach((file) => {
+      if (file.endsWith(".png")) {
+        characters.push(file);
+      }
+    });
+    res.send({ characters: characters });
+  } catch (err) {
+    res.status(500).send({ error: 'Failed to read the characters directory.' });
+  }
 });
 
 ipcMain.on('open-external-url', (event, url: string) => {
   shell.openExternal(url);
-});
-
-ipcMain.handle("get-data-path", () => {
-  return dataPath;
-});
-
-ipcMain.on("set-data", (event, arg) => {
-  store.set(arg.key, arg.value);
-});
-
-ipcMain.on("get-data", (event, arg, replyName) => {
-  event.sender.send(replyName, store.get(arg));
-});
-
-ipcMain.on('save-background', (event, imageData, name, fileType) => {
-  const imagePath = path.join(backgroundsPath, `${name}.${fileType}`);
-  const data = Buffer.from(imageData, 'base64');
-  fs.writeFileSync(imagePath, data);
-  event.sender.send('save-background-reply', `${name}.${fileType}`);
-});
-
-ipcMain.on('get-backgrounds', (event) => {
-  fs.readdir(backgroundsPath, (err, files) => {
-    if (err) {
-      event.sender.send('get-backgrounds-reply', []);
-      return;
-    }
-    event.sender.send('get-backgrounds-reply', files);
-  });
-});
-
-ipcMain.on('delete-background', (event, name) => {
-  fs.unlink(path.join(backgroundsPath, name), (err) => {
-    if (err) {
-      event.sender.send('delete-background-reply', false);
-      return;
-    }
-    event.sender.send('delete-background-reply', true);
-  });
-});
-
-ipcMain.handle("get-server-port", (event) => {
-  try {
-    // Using app.getAppPath() to get the root directory of the app
-    const appRoot = app.getAppPath();
-
-    // Construct the path to the config file
-    const configPath = path.join(appRoot, "backend", "config.json");
-
-    const rawData = fs.readFileSync(configPath, "utf8");
-    const config = JSON.parse(rawData);
-    return config.port;
-  } catch (error) {
-    console.error("Failed to get server port:", error);
-    throw error; // This will send the error back to the renderer
-  }
-});
-
-ipcMain.on("get-default-characters", (event) => {
-  const characters: string[] = [];
-  fs.readdirSync(charactersPath).forEach((file) => {
-    if(file.endsWith(".png")){
-      characters.push(file);
-    }
-  });
-  event.sender.send("get-default-characters-reply", characters);
 });
 
 async function requestFullDiskAccess() {

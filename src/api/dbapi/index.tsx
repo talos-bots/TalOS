@@ -7,83 +7,76 @@ import { removeConstructFromActive } from "../constructapi";
 import { CompletionLog } from "@/classes/CompletionLog";
 import { User } from "@/classes/User";
 import { Lorebook } from "@/classes/Lorebook";
+import axios from 'axios';
 
 export async function getConstructs(): Promise<Construct[]> {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "get-constructs-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send("get-constructs", uniqueEventName);
-        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any[]) => {
-            if (data) {
-                const constructs = data.map((doc: any) => {
-                    return new Construct(
-                        doc.doc._id,
-                        doc.doc.name,
-                        doc.doc.nickname,
-                        doc.doc.avatar,
-                        doc.doc.commands,
-                        doc.doc.visualDescription,
-                        doc.doc.personality,
-                        doc.doc.background,
-                        doc.doc.relationships,
-                        doc.doc.interests,
-                        doc.doc.greetings,
-                        doc.doc.farewells,
-                        doc.doc.authorsNote,
-                        doc.doc.defaultConfig,
-                        doc.doc.thoughtPattern,
-                        doc.doc.sprites
-                    );
-                });
-                resolve(constructs);
-            } else {
-                reject(new Error("No data received from 'constructs' event."));
-            }
+    try {
+        const response = await axios.get(`/api/constructs`);
+        const data = response.data;
+
+        return data.map((doc: any) => {
+            return new Construct(
+                doc.doc._id,
+                doc.doc.name,
+                doc.doc.nickname,
+                doc.doc.avatar,
+                doc.doc.commands,
+                doc.doc.visualDescription,
+                doc.doc.personality,
+                doc.doc.background,
+                doc.doc.relationships,
+                doc.doc.interests,
+                doc.doc.greetings,
+                doc.doc.farewells,
+                doc.doc.authorsNote,
+                doc.doc.defaultConfig,
+                doc.doc.thoughtPattern,
+                doc.doc.sprites
+            );
         });
-    });
+    } catch (error: any) {
+        throw new Error(`Failed to fetch constructs: ${error.message}`);
+    }
 }
 
 export async function getConstruct(id: string): Promise<Construct> {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "get-construct-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send("get-construct", id, uniqueEventName);
-        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any) => {
-            if (data) {
-                const construct = new Construct(
-                    data._id,
-                    data.name,
-                    data.nickname,
-                    data.avatar,
-                    data.commands,
-                    data.visualDescription,
-                    data.personality,
-                    data.background,
-                    data.relationships,
-                    data.interests,
-                    data.greetings,
-                    data.farewells,
-                    data.authorsNote,
-                    data.defaultConfig,
-                    data.thoughtPattern,
-                    data.sprites
-                );
-                resolve(construct);
-            } else {
-                reject(new Error("No data received from 'construct' event."));
-            }
-        });
-    });
+    try {
+        const response = await axios.get(`/api/construct/${id}`);
+        const data = response.data;
+
+        return new Construct(
+            data._id,
+            data.name,
+            data.nickname,
+            data.avatar,
+            data.commands,
+            data.visualDescription,
+            data.personality,
+            data.background,
+            data.relationships,
+            data.interests,
+            data.greetings,
+            data.farewells,
+            data.authorsNote,
+            data.defaultConfig,
+            data.thoughtPattern,
+            data.sprites
+        );
+    } catch (error: any) {
+        throw new Error(`Failed to fetch construct with ID ${id}: ${error.message}`);
+    }
 }
 
 export async function saveNewConstruct(construct: Construct) {
-    ipcRenderer.send('add-construct', construct);
+    await axios.post('/api/add-construct', construct);
 }
 
 export async function updateConstruct(construct: Construct) {
-    ipcRenderer.send('update-construct', construct);
+    await axios.put('/api/update-construct', construct);
 }
 
 export async function deleteConstruct(id: string) {
-    ipcRenderer.send('delete-construct', id);
+    await axios.delete(`/api/delete-construct/${id}`);
     await removeConstructFromActive(id);
 }
 
@@ -190,104 +183,95 @@ export async function deleteAttachment(id: string) {
 }
 
 export async function getChats(): Promise<Chat[]> {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "get-chats-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send("get-chats", uniqueEventName);
-
-        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any[]) => {
-            if (data) {
-                const chats = data.map((doc: any) => {
-                    return new Chat(
-                        doc.doc._id,
-                        doc.doc.name,
-                        doc.doc.type,
-                        doc.doc.messages,
-                        doc.doc.lastMessage,
-                        doc.doc.lastMessageDate,
-                        doc.doc.firstMessageDate,
-                        doc.doc.constructs,
-                        doc.doc.humans,
-                        doc.doc.chatConfigs,
-                        doc.doc.doVector,
-                        doc.doc.global
-                    );
-                });
-                resolve(chats);
-            } else {
-                reject(new Error("No data received from 'chats' event."));
-            }
-        });
-    });
+    try {
+        const response = await axios.get('/api/chats');
+        return response.data.map((doc: any) => new Chat(
+            doc.doc._id,
+            doc.doc.name,
+            doc.doc.type,
+            doc.doc.messages,
+            doc.doc.lastMessage,
+            doc.doc.lastMessageDate,
+            doc.doc.firstMessageDate,
+            doc.doc.constructs,
+            doc.doc.humans,
+            doc.doc.chatConfigs,
+            doc.doc.doVector,
+            doc.doc.global
+        ));
+    } catch (error) {
+        throw new Error("Failed to get chats from server.");
+    }
 }
 
 export async function getChatsByConstruct(constructId: string): Promise<Chat> {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "get-chats-by-construct-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send("get-chats-by-construct", constructId, uniqueEventName);
-
-        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any) => {
-            if (data) {
-                const chat = new Chat(
-                    data.doc._id,
-                    data.doc.name,
-                    data.doc.type,
-                    data.doc.messages,
-                    data.doc.lastMessage,
-                    data.doc.lastMessageDate,
-                    data.doc.firstMessageDate,
-                    data.doc.constructs,
-                    data.doc.humans,
-                    data.doc.chatConfigs,
-                    data.doc.doVector,
-                    data.doc.global
-                );
-                resolve(chat);
-            } else {
-                reject(new Error("No data received from 'chats-by-construct' event."));
-            }
-        });
-    });
+    try {
+        const response = await axios.get(`/api/chats/construct/${constructId}`);
+        const data = response.data;
+        return new Chat(
+            data.doc._id,
+            data.doc.name,
+            data.doc.type,
+            data.doc.messages,
+            data.doc.lastMessage,
+            data.doc.lastMessageDate,
+            data.doc.firstMessageDate,
+            data.doc.constructs,
+            data.doc.humans,
+            data.doc.chatConfigs,
+            data.doc.doVector,
+            data.doc.global
+        );
+    } catch (error) {
+        throw new Error("Failed to get chat by construct from server.");
+    }
 }
 
 export async function getChat(id: string): Promise<Chat> {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "get-chat-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send("get-chat", id, uniqueEventName);
-
-        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any) => {
-            if (data) {
-                const chat = new Chat(
-                    data._id,
-                    data.name,
-                    data.type,
-                    data.messages,
-                    data.lastMessage,
-                    data.lastMessageDate,
-                    data.firstMessageDate,
-                    data.constructs,
-                    data.humans,
-                    data.chatConfigs,
-                    data.doVector,
-                    data.global
-                );
-                resolve(chat);
-            } else {
-                reject(new Error("No data received from 'chat' event."));
-            }
-        });
-    });
+    try {
+        const response = await axios.get(`/api/chat/${id}`);
+        const data = response.data;
+        return new Chat(
+            data._id,
+            data.name,
+            data.type,
+            data.messages,
+            data.lastMessage,
+            data.lastMessageDate,
+            data.firstMessageDate,
+            data.constructs,
+            data.humans,
+            data.chatConfigs,
+            data.doVector,
+            data.global
+        );
+    } catch (error) {
+        throw new Error("Failed to get chat from server.");
+    }
 }
 
 export async function saveNewChat(chat: Chat) {
-    ipcRenderer.send('add-chat', chat);
+    try {
+        await axios.post('/api/chat', chat);
+    } catch (error) {
+        throw new Error("Failed to save new chat to server.");
+    }
 }
 
 export async function updateChat(chat: Chat) {
-    ipcRenderer.send('update-chat', chat);
+    try {
+        await axios.put('/api/chat', chat);
+    } catch (error) {
+        throw new Error("Failed to update chat on server.");
+    }
 }
 
 export async function deleteChat(id: string) {
-    ipcRenderer.send('delete-chat', id);
+    try {
+        await axios.delete(`/api/chat/${id}`);
+    } catch (error) {
+        throw new Error("Failed to delete chat from server.");
+    }
 }
 
 export async function getInstructs(): Promise<Instruct[]> {
@@ -342,21 +326,6 @@ export async function updateInstruct(instruct: Instruct) {
 
 export async function deleteInstruct(id: string) {
     ipcRenderer.send('delete-instruct', id);
-}
-
-export async function getStorageValue(key: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "get-data-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send("get-data", key, uniqueEventName);
-
-        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any) => {
-            if (data) {
-                resolve(data);
-            } else {
-                reject(new Error("No data received from 'data' event."));
-            }
-        });
-    });
 }
 
 export async function getCompletions(): Promise<CompletionLog[]> {
@@ -553,12 +522,28 @@ export async function deleteLorebook(id: string) {
     ipcRenderer.send('delete-lorebook', id);
 }
 
-export async function setStorageValue(key: string, value: string) {
+export async function setStorageValue(key: string, value: string): Promise<void> {
     const data = {
         key,
         value,
     };
-    ipcRenderer.send('set-data', data);
+
+    try {
+        await axios.post(`/api/set-data`, data);
+    } catch (error: any) {
+        // Handle the error, maybe by re-throwing it or logging it
+        throw new Error(`Failed to set data: ${error.message}`);
+    }
+}
+
+export async function getStorageValue(key: string): Promise<string> {
+    try {
+        const response = await axios.get(`/api/get-data/${key}`);
+        return response.data.value;
+    } catch (error: any) {
+        // Handle the error, maybe by re-throwing it or logging it
+        throw new Error(`Failed to get data for key ${key}: ${error.message}`);
+    }
 }
 
 export async function clearDBs(){

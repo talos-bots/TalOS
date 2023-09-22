@@ -48,13 +48,26 @@ export default defineConfig(({ command }) => {
       // Use Node.js API in the Renderer-process
       renderer(),
     ],
-    server: process.env.VSCODE_DEBUG && (() => {
-      const url = new URL(pkg.debug.env.VITE_DEV_SERVER_URL)
-      return {
-        host: url.hostname,
-        port: +url.port,
+    server: (() => {
+      const serverConfig: any = {};
+      // Existing VSCODE_DEBUG condition
+      if (process.env.VSCODE_DEBUG) {
+        const url = new URL(pkg.debug.env.VITE_DEV_SERVER_URL);
+        serverConfig.host = url.hostname;
+        serverConfig.port = +url.port;
       }
-    })(),
+      // Add proxy configuration
+      serverConfig.proxy = {
+        '/api': {
+          target: 'http://localhost:3003',
+          changeOrigin: true,
+          secure: false,
+          timeout: 0,
+        },
+      };
+    
+      return serverConfig;
+    })(),    
     clearScreen: false,
   }
 })
