@@ -145,14 +145,14 @@ const ConstructBox: React.FC<Props> = ({character, onCharacterDelete, onCharacte
             </div>
             {isOpen && character && (
             <div className="grid grid-cols-5 gap-2">
-                <div className="col-span-1 items-start flex flex-col text-left">
+                <div className="col-span-1 flex flex-col text-left items-center">
                     <Link to={`/constructs/${character._id}`}>
                         {character && (character.avatar === '' ? <RiQuestionMark className="construct-image-default"/> : <img id={character._id} src={character.avatar} alt={characterName} className="agent-image-default cursor-pointer object-fit rounded-theme-border-radius"/>)}
                     </Link>
-                    <i className="mt-4 font-semibold text-left">
+                    <i className="mt-4 font-semibold text-left w-full">
                         {character.nickname}
                     </i>
-                    <div className="text-left">
+                    <div className="text-left w-full">
                         <b>Construct Status:</b> {isActive ? <span className="text-theme-flavor-text font-bold">Active</span> : <span className="text-theme-hover-neg font-bold">Inactive</span>}{isActive && <span className="text-theme-flavor-text font-bold"> + {isPrimary ? 'Primary': 'Secondary'}</span>}
                     </div>
                 </div>
