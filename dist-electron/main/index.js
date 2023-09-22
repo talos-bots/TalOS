@@ -38,6 +38,7 @@ const FormData = require("form-data");
 const vectra = require("vectra");
 require("gpt-tokenizer");
 const express = require("express");
+const multer = require("multer");
 const cors = require("cors");
 let constructDB$1;
 let chatsDB$1;
@@ -6475,17 +6476,6 @@ function LangChainRoutes() {
     event.sender.send("get-azure-key-reply", getAzureKey());
   });
 }
-const expressApp = express();
-const bodyParser = require("body-parser");
-const port = 3003;
-expressApp.use(express.static("public"));
-expressApp.use(express.static("dist"));
-expressApp.use(bodyParser.json({ limit: "1000mb" }));
-expressApp.use(bodyParser.urlencoded({ limit: "1000mb", extended: true }));
-expressApp.use(cors());
-expressApp.listen(port, () => {
-  console.log(`Server started on http://localhost:${port}`);
-});
 process.env.DIST_ELECTRON = node_path.join(__dirname, "../");
 process.env.DIST = node_path.join(process.env.DIST_ELECTRON, "../dist");
 process.env.VITE_PUBLIC = process.env.VITE_DEV_SERVER_URL ? node_path.join(process.env.DIST_ELECTRON, "../public") : process.env.DIST;
@@ -6508,8 +6498,31 @@ const backgroundsPath = node_path.join(process.env.VITE_PUBLIC, "backgrounds/");
 const charactersPath = node_path.join(process.env.VITE_PUBLIC, "defaults/characters/");
 const dataPath = path.join(electron.app.getPath("userData"), "data/");
 const imagesPath = path.join(dataPath, "images/");
+const uploadsPath = path.join(dataPath, "uploads/");
 fs.mkdirSync(dataPath, { recursive: true });
 fs.mkdirSync(imagesPath, { recursive: true });
+fs.mkdirSync(uploadsPath, { recursive: true });
+const expressApp = express();
+const bodyParser = require("body-parser");
+const port = 3003;
+expressApp.use(express.static("public"));
+expressApp.use(express.static("dist"));
+expressApp.use(bodyParser.json({ limit: "1000mb" }));
+expressApp.use(bodyParser.urlencoded({ limit: "1000mb", extended: true }));
+expressApp.use(cors());
+expressApp.listen(port, () => {
+  console.log(`Server started on http://localhost:${port}`);
+});
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsPath);
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname);
+  }
+});
+const upload = multer({ storage });
+expressApp.use("/api/images", express.static(uploadsPath));
 const store = new Store();
 async function createWindow() {
   exports.win = new electron.BrowserWindow({
@@ -6649,6 +6662,12 @@ expressApp.get("/api/get-default-characters", (req, res) => {
     res.status(500).send({ error: "Failed to read the characters directory." });
   }
 });
+expressApp.post("/api/images/upload", upload.single("image"), (req, res) => {
+  if (!req.file) {
+    return res.status(400).send("No file uploaded.");
+  }
+  res.send(`File uploaded: ${req.file.originalname}`);
+});
 electron.ipcMain.on("open-external-url", (event, url2) => {
   electron.shell.openExternal(url2);
 });
@@ -6680,5 +6699,6 @@ exports.imagesPath = imagesPath;
 exports.isDarwin = isDarwin;
 exports.modelsPath = modelsPath;
 exports.store = store;
+exports.uploadsPath = uploadsPath;
 exports.wasmPath = wasmPath;
 //# sourceMappingURL=index.js.map

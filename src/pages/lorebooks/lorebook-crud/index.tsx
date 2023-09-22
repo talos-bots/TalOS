@@ -6,6 +6,7 @@ import ReactSwitch from "react-switch";
 import EntryCrud from "./entry-crud";
 import { Construct } from "@/classes/Construct";
 import { Save, Trash } from "lucide-react";
+import { uploadImage } from "@/api/baseapi";
 
 interface LorebookCrudProps {
     book: Lorebook | null;
@@ -65,12 +66,11 @@ const LorebookCrud = (props: LorebookCrudProps) => {
     const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const base64String = reader.result as string;
-                setLorebookImage(base64String);
-            };
-            reader.readAsDataURL(file);
+            const newName = Date.now().toString() + '.' + file.name.split('.').pop();
+            const formData = new FormData();
+            formData.append('image', file, newName);
+            uploadImage(formData);
+            setLorebookImage(`/api/images/${newName}`);
         }
     };
     

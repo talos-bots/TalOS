@@ -46,3 +46,17 @@ export function saveBackground(file: File): Promise<string> {
         reader.readAsDataURL(file);
     });
 }
+
+export function uploadImage(formData: FormData): void {
+    axios.post('/api/images/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+    .then(response => {
+      console.log('Upload successful:', response.data);
+    })
+    .catch(error => {
+      console.error('Error uploading:', error);
+    });
+}

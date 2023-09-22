@@ -16,21 +16,8 @@ import { LangChainRoutes } from "./api/langchain";
 import { VectorDBRoutes } from "./api/vector";
 import { getModels } from "./model-pipeline/transformers";
 import express, { Request, Response } from 'express';
+import multer from 'multer';
 import cors from 'cors';
-
-export const expressApp = express();
-const bodyParser = require('body-parser');
-const port = 3003;
-
-expressApp.use(express.static('public'));
-expressApp.use(express.static('dist'));
-expressApp.use(bodyParser.json({ limit: '1000mb' }));
-expressApp.use(bodyParser.urlencoded({ limit: '1000mb', extended: true }));
-expressApp.use(cors());
-expressApp.listen(port, () => {
-  console.log(`Server started on http://localhost:${port}`);
-});
-
 // The built directory structure
 //
 // ├─┬ dist-electron
@@ -74,8 +61,36 @@ export const backgroundsPath = join(process.env.VITE_PUBLIC, "backgrounds/");
 export const charactersPath = join(process.env.VITE_PUBLIC, "defaults/characters/");
 export const dataPath = path.join(app.getPath("userData"), "data/");
 export const imagesPath = path.join(dataPath, "images/");
+export const uploadsPath = path.join(dataPath, "uploads/");
 fs.mkdirSync(dataPath, { recursive: true });
 fs.mkdirSync(imagesPath, { recursive: true });
+fs.mkdirSync(uploadsPath, { recursive: true });
+export const expressApp = express();
+const bodyParser = require('body-parser');
+const port = 3003;
+
+expressApp.use(express.static('public'));
+expressApp.use(express.static('dist'));
+expressApp.use(bodyParser.json({ limit: '1000mb' }));
+expressApp.use(bodyParser.urlencoded({ limit: '1000mb', extended: true }));
+expressApp.use(cors());
+expressApp.listen(port, () => {
+  console.log(`Server started on http://localhost:${port}`);
+});
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsPath)
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname)
+  }
+});
+
+const upload = multer({ storage: storage });
+
+expressApp.use('/api/images', express.static(uploadsPath));
+
 export const store = new Store();
 async function createWindow() {
   win = new BrowserWindow({
@@ -238,6 +253,13 @@ expressApp.get('/api/get-default-characters', (req, res) => {
   } catch (err) {
     res.status(500).send({ error: 'Failed to read the characters directory.' });
   }
+});
+
+expressApp.post('/api/images/upload', upload.single('image'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).send('No file uploaded.');
+  }
+  res.send(`File uploaded: ${req.file.originalname}`);
 });
 
 ipcMain.on('open-external-url', (event, url: string) => {

@@ -11,73 +11,71 @@ import { encode } from 'png-chunk-text';
 import encodePng from 'png-chunks-encode';
 import { TavernCardV2 } from "@/types";
 import { ipcRenderer } from "electron";
+import { uploadImage } from "../baseapi";
 
 export const importTavernCharacter = (file: File): Promise<Construct> => {
     return new Promise((resolve, reject) => {
-        const reader = new FileReader();
+        console.log("Parsing Tavern Card");
 
-        // Create a new promise to read the file and get the base64 data
-        const readFilePromise = new Promise<string>((resolve, reject) => {
-            reader.onload = (event) => {
-                if (event.target && typeof event.target.result === 'string') {
-                    resolve(event.target.result);  // resolve the promise with the base64 string
-                } else {
-                    reject(new Error("File reading failed"));
-                }
-            };
-            reader.onerror = (error) => reject(error);
-            reader.readAsDataURL(file);
-        });
-
-        readFilePromise.then(base64Image => {
-            console.log("Parsing Tavern Card");
-            exifr.parse(file).then(async (metadata) => {
-                console.log("Tavern Card Parsed");
-                if (metadata) {
-                    const isCardV2 = metadata.chara;
-                    if (isCardV2) {
-                        console.log("New Tavern Card Detected");
-                        const decodedString = atob(metadata.chara);
-                        const cardSpec = JSON.parse(decodedString);
-                        let characterData;
-                        if (cardSpec?.data !== undefined) {
-                            characterData = cardSpec.data;
-                        } else {
-                            console.log("Old Tavern Card Detected");
-                            characterData = cardSpec;
-                        }
-                        characterData.avatar = base64Image;
-                        console.log("Image64", base64Image);
-                        console.log(characterData);
-                        const construct = await processCharacterData(characterData, base64Image);
-                        resolve(construct);
+        exifr.parse(file).then(async (metadata) => {
+            console.log("Tavern Card Parsed");
+            if (metadata) {
+                const isCardV2 = metadata.chara;
+                if (isCardV2) {
+                    console.log("New Tavern Card Detected");
+                    const decodedString = atob(metadata.chara);
+                    const cardSpec = JSON.parse(decodedString);
+                    let characterData;
+                    if (cardSpec?.data !== undefined) {
+                        characterData = cardSpec.data;
                     } else {
-                        tryParseOldCard(file, base64Image).then((construct) => {
-                            if (construct) {
-                                resolve(construct);
-                            } else {
-                                reject();
-                            }
-                        });
+                        console.log("Old Tavern Card Detected");
+                        characterData = cardSpec;
                     }
+                    const newName = Date.now().toString() + '.' + file.name.split('.').pop();
+                    const formData = new FormData();
+                    formData.append('image', file, newName);
+                    uploadImage(formData);
+                    // Here, instead of appending the base64, you append the new filename
+                    const newPath = '/api/images/' + newName;
+                    characterData.avatar = newPath;
+                    console.log("New Filename", newPath);
+                    console.log(characterData);
+                    const construct = await processCharacterData(characterData, newPath);
+                    resolve(construct);
+                } else {
+                    const newName = Date.now().toString() + '.' + file.name.split('.').pop();
+                    const formData = new FormData();
+                    formData.append('image', file, newName);
+                    uploadImage(formData);
+                    const newPath = '/api/images/' + newName;
+                    tryParseOldCard(file, newPath).then((construct) => {
+                        if (construct) {
+                            resolve(construct);
+                        } else {
+                            reject(new Error("Failed to parse old card"));
+                        }
+                    });
+                }
+            }
+        }).catch((error) => {
+            console.log("Tavern Card Parse Failed", error);
+            const newName = Date.now().toString() + '.' + file.name.split('.').pop();
+            const formData = new FormData();
+            formData.append('image', file, newName);
+            uploadImage(formData);
+            const newPath = '/api/images/' + newName;
+            tryParseOldCard(file, newPath).then((construct) => {
+                console.log("Exif parser failure. Trying old parser");
+                if (construct) {
+                    resolve(construct);
+                } else {
+                    reject(new Error("Failed to parse old card"));
                 }
             }).catch((error) => {
-                console.log("Tavern Card Parse Failed", error);
-                tryParseOldCard(file, base64Image).then((construct) => {
-                    console.log("Exif parser failure. Trying old parser");
-                    if (construct) {
-                        resolve(construct);
-                    } else {
-                        reject();
-                    }
-                }).catch((error) => {
-                    console.log("Old Tavern Card Parse Failed", error);
-                    reject();
-                });
+                console.log("Old Tavern Card Parse Failed", error);
+                reject(error);
             });
-        }).catch(error => {
-            console.log("Failed to read the file as base64", error);
-            reject(error);
         });
     });
 };
