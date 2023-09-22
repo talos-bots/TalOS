@@ -30,13 +30,13 @@ const discord_js = require("discord.js");
 const Store = require("electron-store");
 const PouchDB = require("pouchdb");
 const LeveldbAdapter = require("pouchdb-adapter-leveldb");
-const fs = require("fs");
 const axios = require("axios");
 const openai = require("openai");
 const promises = require("fs/promises");
 const FormData = require("form-data");
 const vectra = require("vectra");
 require("gpt-tokenizer");
+const fs = require("fs");
 const express = require("express");
 const multer = require("multer");
 const cors = require("cors");
@@ -1642,7 +1642,7 @@ const instructPromptWithGuidanceAndExamples = `
 ### Response:
 `;
 const HORDE_API_URL = "https://aihorde.net/api";
-const store$6 = new Store({
+const store$5 = new Store({
   name: "llmData"
 });
 const defaultSettings = {
@@ -1671,72 +1671,72 @@ const defaultPaLMFilters = {
   HARM_CATEGORY_MEDICAL: "BLOCK_NONE",
   HARM_CATEGORY_DANGEROUS: "BLOCK_NONE"
 };
-let endpoint = store$6.get("endpoint", "");
-let endpointType = store$6.get("endpointType", "");
-let password = store$6.get("password", "");
-let settings = store$6.get("settings", defaultSettings);
-let hordeModel = store$6.get("hordeModel", "");
-let stopBrackets = store$6.get("stopBrackets", true);
-let openaiModel = store$6.get("openaiModel", "gpt-3.5-turbo-16k");
-let palmFilters = store$6.get("palmFilters", defaultPaLMFilters);
-let doEmotions = store$6.get("doEmotions", false);
-let doCaption = store$6.get("doCaption", false);
-let palmModel = store$6.get("palmModel", "models/text-bison-001");
-let connectionPresets = store$6.get("connectionPresets", []);
-let currentConnectionPreset = store$6.get("currentConnectionPreset", "");
+let endpoint = store$5.get("endpoint", "");
+let endpointType = store$5.get("endpointType", "");
+let password = store$5.get("password", "");
+let settings = store$5.get("settings", defaultSettings);
+let hordeModel = store$5.get("hordeModel", "");
+let stopBrackets = store$5.get("stopBrackets", true);
+let openaiModel = store$5.get("openaiModel", "gpt-3.5-turbo-16k");
+let palmFilters = store$5.get("palmFilters", defaultPaLMFilters);
+let doEmotions = store$5.get("doEmotions", false);
+let doCaption = store$5.get("doCaption", false);
+let palmModel = store$5.get("palmModel", "models/text-bison-001");
+let connectionPresets = store$5.get("connectionPresets", []);
+let currentConnectionPreset = store$5.get("currentConnectionPreset", "");
 const getLLMConnectionInformation = () => {
   return { endpoint, endpointType, password, settings, hordeModel, stopBrackets };
 };
 const setLLMConnectionInformation = (newEndpoint, newEndpointType, newPassword, newHordeModel) => {
-  store$6.set("endpoint", newEndpoint);
-  store$6.set("endpointType", newEndpointType);
+  store$5.set("endpoint", newEndpoint);
+  store$5.set("endpointType", newEndpointType);
   if (newPassword) {
-    store$6.set("password", newPassword);
+    store$5.set("password", newPassword);
     password = newPassword;
   }
   if (newHordeModel) {
-    store$6.set("hordeModel", newHordeModel);
+    store$5.set("hordeModel", newHordeModel);
     hordeModel = newHordeModel;
   }
   endpoint = newEndpoint;
   endpointType = newEndpointType;
 };
 const setLLMSettings = (newSettings, newStopBrackts) => {
-  store$6.set("settings", newSettings);
+  store$5.set("settings", newSettings);
   if (newStopBrackts) {
-    store$6.set("stopBrackets", newStopBrackts);
+    store$5.set("stopBrackets", newStopBrackts);
     stopBrackets = newStopBrackts;
   }
   settings = newSettings;
 };
 const setLLMOpenAIModel = (newOpenAIModel) => {
-  store$6.set("openaiModel", newOpenAIModel);
+  store$5.set("openaiModel", newOpenAIModel);
   openaiModel = newOpenAIModel;
 };
 const setLLMModel = (newHordeModel) => {
-  store$6.set("hordeModel", newHordeModel);
+  store$5.set("hordeModel", newHordeModel);
   hordeModel = newHordeModel;
 };
 const setPaLMFilters = (newPaLMFilters) => {
-  store$6.set("palmFilters", newPaLMFilters);
+  store$5.set("palmFilters", newPaLMFilters);
   palmFilters = newPaLMFilters;
 };
 const setDoEmotions = (newDoEmotions) => {
-  store$6.set("doEmotions", newDoEmotions);
+  store$5.set("doEmotions", newDoEmotions);
   doEmotions = doEmotions;
 };
 const getDoEmotions = () => {
   return doEmotions;
 };
 const setDoCaption = (newDoCaption) => {
-  store$6.set("doCaption", newDoCaption);
+  store$5.set("doCaption", newDoCaption);
   doCaption = newDoCaption;
 };
 const getDoCaption = () => {
   return doCaption;
 };
 const setPaLMModel = (newPaLMModel) => {
-  store$6.set("palmModel", newPaLMModel);
+  store$5.set("palmModel", newPaLMModel);
   palmModel = newPaLMModel;
 };
 const getPaLMModel = () => {
@@ -1746,22 +1746,22 @@ const addConnectionPreset = (newConnectionPreset) => {
   for (let i = 0; i < connectionPresets.length; i++) {
     if (connectionPresets[i]._id === newConnectionPreset._id) {
       connectionPresets[i] = newConnectionPreset;
-      store$6.set("connectionPresets", connectionPresets);
+      store$5.set("connectionPresets", connectionPresets);
       return;
     }
   }
   connectionPresets.push(newConnectionPreset);
-  store$6.set("connectionPresets", connectionPresets);
+  store$5.set("connectionPresets", connectionPresets);
 };
 const removeConnectionPreset = (oldConnectionPreset) => {
   connectionPresets = connectionPresets.filter((connectionPreset) => connectionPreset !== oldConnectionPreset);
-  store$6.set("connectionPresets", connectionPresets);
+  store$5.set("connectionPresets", connectionPresets);
 };
 const getConnectionPresets = () => {
   return connectionPresets;
 };
 const setCurrentConnectionPreset = (newCurrentConnectionPreset) => {
-  store$6.set("currentConnectionPreset", newCurrentConnectionPreset);
+  store$5.set("currentConnectionPreset", newCurrentConnectionPreset);
   currentConnectionPreset = newCurrentConnectionPreset;
 };
 const getCurrentConnectionPreset = () => {
@@ -2629,37 +2629,37 @@ function detectAss(text) {
   }
   return detected;
 }
-const store$5 = new Store({
+const store$4 = new Store({
   name: "constructData"
 });
 let ActiveConstructs = [];
 const retrieveConstructs = () => {
-  return store$5.get("ids", []);
+  return store$4.get("ids", []);
 };
 const setDoMultiLine = (doMultiLine) => {
-  store$5.set("doMultiLine", doMultiLine);
+  store$4.set("doMultiLine", doMultiLine);
 };
 const getDoMultiLine = () => {
-  return store$5.get("doMultiLine", false);
+  return store$4.get("doMultiLine", false);
 };
 const addConstruct = (newId) => {
   const existingIds = retrieveConstructs();
   if (!existingIds.includes(newId)) {
     existingIds.push(newId);
-    store$5.set("ids", existingIds);
+    store$4.set("ids", existingIds);
   }
 };
 const removeConstruct = (idToRemove) => {
   const existingIds = retrieveConstructs();
   const updatedIds = existingIds.filter((id) => id !== idToRemove);
-  store$5.set("ids", updatedIds);
+  store$4.set("ids", updatedIds);
 };
 const isConstructActive = (id) => {
   const existingIds = retrieveConstructs();
   return existingIds.includes(id);
 };
 const clearActiveConstructs = () => {
-  store$5.set("ids", []);
+  store$4.set("ids", []);
 };
 const setAsPrimary = async (id) => {
   const existingIds = retrieveConstructs();
@@ -2668,7 +2668,7 @@ const setAsPrimary = async (id) => {
     existingIds.splice(index, 1);
   }
   existingIds.unshift(id);
-  store$5.set("ids", existingIds);
+  store$4.set("ids", existingIds);
   if (isReady) {
     let constructRaw = await getConstruct(id);
     let construct = assembleConstructFromData(constructRaw);
@@ -3277,74 +3277,74 @@ function constructController() {
     });
   });
 }
-const store$4 = new Store({
+const store$3 = new Store({
   name: "stableDiffusionData"
 });
 const getSDApiUrl = () => {
-  return store$4.get("apiUrl", "");
+  return store$3.get("apiUrl", "");
 };
 const setSDApiUrl = (apiUrl) => {
-  store$4.set("apiUrl", apiUrl);
+  store$3.set("apiUrl", apiUrl);
 };
 const setDefaultPrompt = (prompt) => {
-  store$4.set("defaultPrompt", prompt);
+  store$3.set("defaultPrompt", prompt);
 };
 const getDefaultPrompt = () => {
-  return store$4.get("defaultPrompt", "");
+  return store$3.get("defaultPrompt", "");
 };
 const setDefaultNegativePrompt = (prompt) => {
-  store$4.set("defaultNegativePrompt", prompt);
+  store$3.set("defaultNegativePrompt", prompt);
 };
 const getDefaultNegativePrompt = () => {
-  return store$4.get("defaultNegativePrompt", "lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry");
+  return store$3.get("defaultNegativePrompt", "lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry");
 };
 const setDefaultUpscaler = (upscaler) => {
-  store$4.set("defaultUpscaler", upscaler);
+  store$3.set("defaultUpscaler", upscaler);
 };
 const getDefaultUpscaler = () => {
-  return store$4.get("defaultUpscaler", "");
+  return store$3.get("defaultUpscaler", "");
 };
 const setDefaultSteps = (steps) => {
-  store$4.set("defaultSteps", steps);
+  store$3.set("defaultSteps", steps);
 };
 const getDefaultSteps = () => {
-  return store$4.get("defaultSteps", 25);
+  return store$3.get("defaultSteps", 25);
 };
 const setDefaultCfg = (cfg) => {
-  store$4.set("defaultCfg", cfg);
+  store$3.set("defaultCfg", cfg);
 };
 const getDefaultCfg = () => {
-  return store$4.get("defaultCfg", 7);
+  return store$3.get("defaultCfg", 7);
 };
 const setDefaultWidth = (width) => {
-  store$4.set("defaultWidth", width);
+  store$3.set("defaultWidth", width);
 };
 const getDefaultWidth = () => {
-  return store$4.get("defaultWidth", 512);
+  return store$3.get("defaultWidth", 512);
 };
 const setDefaultHeight = (height) => {
-  store$4.set("defaultHeight", height);
+  store$3.set("defaultHeight", height);
 };
 const getDefaultHeight = () => {
-  return store$4.get("defaultHeight", 512);
+  return store$3.get("defaultHeight", 512);
 };
 const setDefaultHighresSteps = (highresSteps) => {
-  store$4.set("defaultHighresSteps", highresSteps);
+  store$3.set("defaultHighresSteps", highresSteps);
 };
 const getDefaultHighresSteps = () => {
-  return store$4.get("defaultHighresSteps", 10);
+  return store$3.get("defaultHighresSteps", 10);
 };
 const setDefaultDenoisingStrength = (denoisingStrength) => {
-  store$4.set("defaultDenoisingStrength", denoisingStrength);
+  store$3.set("defaultDenoisingStrength", denoisingStrength);
 };
 const getDefaultDenoisingStrength = () => {
-  return store$4.get("defaultDenoisingStrength", 0.25);
+  return store$3.get("defaultDenoisingStrength", 0.25);
 };
 const setDefaultUpscale = (upscale) => {
-  store$4.set("defaultUpscale", upscale);
+  store$3.set("defaultUpscale", upscale);
 };
 const getDefaultUpscale = () => {
-  return store$4.get("defaultUpscale", 1.5);
+  return store$3.get("defaultUpscale", 1.5);
 };
 function SDRoutes() {
   electron.ipcMain.on("set-default-prompt", (event, prompt) => {
@@ -3588,7 +3588,7 @@ function getTimestamp() {
   const seconds = String(now.getSeconds()).padStart(2, "0");
   return `${year}${month}${day}_${hours}${minutes}${seconds}`;
 }
-const store$3 = new Store({
+const store$2 = new Store({
   name: "discordData"
 });
 let maxMessages = 25;
@@ -3608,53 +3608,53 @@ function getDiscordSettings() {
   replaceUser = getReplaceUser();
 }
 const setDiscordMode = (mode) => {
-  store$3.set("mode", mode);
-  console.log(store$3.get("mode"));
+  store$2.set("mode", mode);
+  console.log(store$2.get("mode"));
 };
 const getDiscordMode = () => {
-  console.log(store$3.get("mode"));
-  return store$3.get("mode");
+  console.log(store$2.get("mode"));
+  return store$2.get("mode");
 };
 const clearDiscordMode = () => {
-  store$3.set("mode", null);
+  store$2.set("mode", null);
 };
 const setDoAutoReply = (doAutoReply2) => {
-  store$3.set("doAutoReply", doAutoReply2);
+  store$2.set("doAutoReply", doAutoReply2);
 };
 const getDoAutoReply = () => {
-  return store$3.get("doAutoReply", false);
+  return store$2.get("doAutoReply", false);
 };
 const setDoStableDiffusion = (doStableDiffusion2) => {
-  store$3.set("doStableDiffusion", doStableDiffusion2);
+  store$2.set("doStableDiffusion", doStableDiffusion2);
   doStableDiffusion2 = doStableDiffusion2;
   registerCommands();
 };
 const getDoStableDiffusion = () => {
-  return store$3.get("doStableDiffusion", false);
+  return store$2.get("doStableDiffusion", false);
 };
 const setDoStableReactions = (doStableReactions2) => {
-  store$3.set("doStableReactions", doStableReactions2);
+  store$2.set("doStableReactions", doStableReactions2);
   doStableReactions2 = doStableReactions2;
 };
 const getDoStableReactions = () => {
-  return store$3.get("doStableReactions", false);
+  return store$2.get("doStableReactions", false);
 };
 const setDoGeneralPurpose = (doGeneralPurpose2) => {
-  store$3.set("doGeneralPurpose", doGeneralPurpose2);
+  store$2.set("doGeneralPurpose", doGeneralPurpose2);
   doGeneralPurpose2 = doGeneralPurpose2;
 };
 const getDoGeneralPurpose = () => {
-  return store$3.get("doGeneralPurpose", false);
+  return store$2.get("doGeneralPurpose", false);
 };
 const getDiffusionWhitelist = () => {
-  return store$3.get("diffusionWhitelist", []);
+  return store$2.get("diffusionWhitelist", []);
 };
 const addDiffusionWhitelist = (channelID) => {
   let whitelist = getDiffusionWhitelist();
   if (!whitelist.includes(channelID)) {
     whitelist.push(channelID);
   }
-  store$3.set("diffusionWhitelist", whitelist);
+  store$2.set("diffusionWhitelist", whitelist);
   diffusionWhitelist = whitelist;
 };
 const removeDiffusionWhitelist = (channelID) => {
@@ -3662,22 +3662,22 @@ const removeDiffusionWhitelist = (channelID) => {
   if (whitelist.includes(channelID)) {
     whitelist.splice(whitelist.indexOf(channelID), 1);
   }
-  store$3.set("diffusionWhitelist", whitelist);
+  store$2.set("diffusionWhitelist", whitelist);
   diffusionWhitelist = whitelist;
 };
 const setShowDiffusionDetails = (show) => {
-  store$3.set("showDiffusionDetails", show);
+  store$2.set("showDiffusionDetails", show);
   showDiffusionDetails = show;
 };
 const getShowDiffusionDetails = () => {
-  return store$3.get("showDiffusionDetails", false);
+  return store$2.get("showDiffusionDetails", false);
 };
 const setReplaceUser = (replace) => {
-  store$3.set("replaceUser", replace);
+  store$2.set("replaceUser", replace);
   replaceUser = replace;
 };
 const getReplaceUser = () => {
-  return store$3.get("replaceUser", false);
+  return store$2.get("replaceUser", false);
 };
 async function getUsername(userID, channelID) {
   var _a, _b;
@@ -3724,16 +3724,16 @@ const addAlias = (newAlias, channelID) => {
       }
     }
   }
-  store$3.set("channels", channels);
+  store$2.set("channels", channels);
 };
 const setMaxMessages = (max) => {
-  store$3.set("maxMessages", max);
+  store$2.set("maxMessages", max);
 };
 const getMaxMessages = () => {
-  return store$3.get("maxMessages", 25);
+  return store$2.get("maxMessages", 25);
 };
 const getRegisteredChannels = () => {
-  return store$3.get("channels", []);
+  return store$2.get("channels", []);
 };
 const addRegisteredChannel = (newChannel) => {
   const existingChannels = getRegisteredChannels();
@@ -3748,13 +3748,13 @@ const addRegisteredChannel = (newChannel) => {
     return;
   if (!existingChannels.includes(newChannel)) {
     existingChannels.push(newChannel);
-    store$3.set("channels", existingChannels);
+    store$2.set("channels", existingChannels);
   }
 };
 const removeRegisteredChannel = (channelToRemove) => {
   const existingChannels = getRegisteredChannels();
   const updatedChannels = existingChannels.filter((channel) => channel._id !== channelToRemove);
-  store$3.set("channels", updatedChannels);
+  store$2.set("channels", updatedChannels);
 };
 const isChannelRegistered = (channel) => {
   const existingChannels = getRegisteredChannels();
@@ -5685,7 +5685,7 @@ const intents = {
   ],
   partials: [discord_js.Partials.Channel, discord_js.Partials.GuildMember, discord_js.Partials.User, discord_js.Partials.Reaction, discord_js.Partials.Message, discord_js.Partials.ThreadMember, discord_js.Partials.GuildScheduledEvent]
 };
-const store$2 = new Store({
+const store$1 = new Store({
   name: "discordData"
 });
 getDiscordData();
@@ -6227,35 +6227,35 @@ async function getWebhooksForChannel(channelID) {
 }
 async function getDiscordData() {
   let savedToken;
-  const storedToken = store$2.get("discordToken");
+  const storedToken = store$1.get("discordToken");
   if (storedToken !== void 0 && typeof storedToken === "string") {
     savedToken = storedToken;
   } else {
     savedToken = "";
   }
   let appId;
-  const storedAppId = store$2.get("discordAppId");
+  const storedAppId = store$1.get("discordAppId");
   if (storedAppId !== void 0 && typeof storedAppId === "string") {
     appId = storedAppId;
   } else {
     appId = "";
   }
   let discordCharacterMode;
-  const storedDiscordCharacterMode = store$2.get("discordCharacterMode");
+  const storedDiscordCharacterMode = store$1.get("discordCharacterMode");
   if (storedDiscordCharacterMode !== void 0 && typeof storedDiscordCharacterMode === "boolean") {
     discordCharacterMode = storedDiscordCharacterMode;
   } else {
     discordCharacterMode = false;
   }
   let discordMultiCharacterMode;
-  const storedDiscordMultiCharacterMode = store$2.get("discordMultiCharacterMode");
+  const storedDiscordMultiCharacterMode = store$1.get("discordMultiCharacterMode");
   if (storedDiscordMultiCharacterMode !== void 0 && typeof storedDiscordMultiCharacterMode === "boolean") {
     discordMultiCharacterMode = storedDiscordMultiCharacterMode;
   } else {
     discordMultiCharacterMode = false;
   }
   let discordMultiConstructMode;
-  const storedDiscordMultiConstructMode = store$2.get("discordMultiConstructMode");
+  const storedDiscordMultiConstructMode = store$1.get("discordMultiConstructMode");
   if (storedDiscordMultiConstructMode !== void 0 && typeof storedDiscordMultiConstructMode === "boolean") {
     discordMultiConstructMode = storedDiscordMultiConstructMode;
   } else {
@@ -6268,7 +6268,7 @@ async function getDiscordData() {
 }
 function saveDiscordData(newToken, newAppId, discordCharacterMode, discordMultiCharacterMode, discordMultiConstructMode) {
   if (newToken === "") {
-    const storedToken = store$2.get("discordToken");
+    const storedToken = store$1.get("discordToken");
     if (storedToken !== void 0 && typeof storedToken === "string") {
       token = storedToken;
     } else {
@@ -6276,10 +6276,10 @@ function saveDiscordData(newToken, newAppId, discordCharacterMode, discordMultiC
     }
   } else {
     token = newToken;
-    store$2.set("discordToken", newToken);
+    store$1.set("discordToken", newToken);
   }
   if (newAppId === "") {
-    const storedAppId = store$2.get("discordAppId");
+    const storedAppId = store$1.get("discordAppId");
     if (storedAppId !== void 0 && typeof storedAppId === "string") {
       applicationID = storedAppId;
     } else {
@@ -6287,17 +6287,17 @@ function saveDiscordData(newToken, newAppId, discordCharacterMode, discordMultiC
     }
   } else {
     applicationID = newAppId;
-    store$2.set("discordAppId", newAppId);
+    store$1.set("discordAppId", newAppId);
   }
   multiCharacterMode = discordMultiCharacterMode;
-  store$2.set("discordCharacterMode", discordCharacterMode);
+  store$1.set("discordCharacterMode", discordCharacterMode);
   if (!discordCharacterMode) {
-    store$2.set("mode", "Construct");
+    store$1.set("mode", "Construct");
   } else {
-    store$2.set("mode", "Character");
+    store$1.set("mode", "Character");
   }
-  store$2.set("discordMultiCharacterMode", discordMultiCharacterMode);
-  store$2.set("discordMultiConstructMode", discordMultiConstructMode);
+  store$1.set("discordMultiCharacterMode", discordMultiCharacterMode);
+  store$1.set("discordMultiConstructMode", discordMultiConstructMode);
 }
 let messageQueue = [];
 let isProcessing = false;
@@ -6343,7 +6343,7 @@ function DiscordJSRoutes() {
   electron.ipcMain.handle("discord-login", async (event, rawToken, appId) => {
     try {
       if (rawToken === "") {
-        const storedToken = store$2.get("discordToken");
+        const storedToken = store$1.get("discordToken");
         if (storedToken !== void 0 && typeof storedToken === "string") {
           token = storedToken;
         } else {
@@ -6351,10 +6351,10 @@ function DiscordJSRoutes() {
         }
       } else {
         token = rawToken;
-        store$2.set("discordToken", rawToken);
+        store$1.set("discordToken", rawToken);
       }
       if (appId === "") {
-        const storedAppId = store$2.get("discordAppId");
+        const storedAppId = store$1.get("discordAppId");
         if (storedAppId !== void 0 && typeof storedAppId === "string") {
           applicationID = storedAppId;
         } else {
@@ -6362,7 +6362,7 @@ function DiscordJSRoutes() {
         }
       } else {
         applicationID = appId;
-        store$2.set("discordAppId", appId);
+        store$1.set("discordAppId", appId);
       }
       await disClient.login(token);
       createClient();
@@ -6497,123 +6497,6 @@ function DiscordJSRoutes() {
     event.sender.send("discord-bot-status-reply", isReady);
   });
 }
-function FsAPIRoutes() {
-  electron.ipcMain.handle("read-file", async (event, filePath) => {
-    try {
-      const data = await fs.promises.readFile(filePath, "utf8");
-      return data;
-    } catch (err) {
-      console.error(`Error reading file at ${filePath}:`, err);
-      throw err;
-    }
-  });
-  electron.ipcMain.handle("write-file", async (event, filePath, data) => {
-    try {
-      await fs.promises.writeFile(filePath, data, "utf8");
-      return { success: true };
-    } catch (err) {
-      console.error(`Error writing to file at ${filePath}:`, err);
-      throw err;
-    }
-  });
-  electron.ipcMain.handle("mkdir", async (event, dirPath) => {
-    try {
-      await fs.promises.mkdir(dirPath, { recursive: true });
-      return { success: true };
-    } catch (err) {
-      console.error(`Error creating directory at ${dirPath}:`, err);
-      throw err;
-    }
-  });
-  electron.ipcMain.handle("readdir", async (event, dirPath) => {
-    try {
-      const files = await fs.promises.readdir(dirPath);
-      return files;
-    } catch (err) {
-      console.error(`Error reading directory at ${dirPath}:`, err);
-      throw err;
-    }
-  });
-  electron.ipcMain.handle("rename", async (event, oldPath, newPath) => {
-    try {
-      await fs.promises.rename(oldPath, newPath);
-      return { success: true };
-    } catch (err) {
-      console.error(`Error renaming from ${oldPath} to ${newPath}:`, err);
-      throw err;
-    }
-  });
-  electron.ipcMain.handle("unlink", async (event, filePath) => {
-    try {
-      await fs.promises.unlink(filePath);
-      return { success: true };
-    } catch (err) {
-      console.error(`Error removing file at ${filePath}:`, err);
-      throw err;
-    }
-  });
-  electron.ipcMain.handle("exists", (event, path2) => {
-    return fs.existsSync(path2);
-  });
-  electron.ipcMain.handle("stat", async (event, filePath) => {
-    try {
-      const stats = await fs.promises.stat(filePath);
-      return stats;
-    } catch (err) {
-      console.error(`Error getting stats for file at ${filePath}:`, err);
-      throw err;
-    }
-  });
-  electron.ipcMain.handle("copy-file", async (event, src, dest, flags) => {
-    try {
-      await fs.promises.copyFile(src, dest, flags);
-      return { success: true };
-    } catch (err) {
-      console.error(`Error copying file from ${src} to ${dest}:`, err);
-      throw err;
-    }
-  });
-  electron.ipcMain.handle("open-file", async (event, path2, flags, mode) => {
-    try {
-      const fd = await fs.promises.open(path2, flags, mode);
-      return fd.fd;
-    } catch (err) {
-      console.error(`Error opening file at ${path2}:`, err);
-      throw err;
-    }
-  });
-}
-const store$1 = new Store({
-  name: "langChainData"
-});
-store$1.get("serpKey", "");
-store$1.get("azureKey", "");
-const setSerpKey = (key) => {
-  store$1.set("serpKey", key);
-};
-const getSerpKey = () => {
-  return store$1.get("serpKey");
-};
-const setAzureKey = (key) => {
-  store$1.set("azureKey", key);
-};
-const getAzureKey = () => {
-  return store$1.get("azureKey");
-};
-function LangChainRoutes() {
-  electron.ipcMain.on("set-serp-key", (_, arg) => {
-    setSerpKey(arg);
-  });
-  electron.ipcMain.on("set-azure-key", (_, arg) => {
-    setAzureKey(arg);
-  });
-  electron.ipcMain.on("get-serp-key", (event) => {
-    event.sender.send("get-serp-key-reply", getSerpKey());
-  });
-  electron.ipcMain.on("get-azure-key", (event) => {
-    event.sender.send("get-azure-key-reply", getAzureKey());
-  });
-}
 process.env.DIST_ELECTRON = node_path.join(__dirname, "../");
 process.env.DIST = node_path.join(process.env.DIST_ELECTRON, "../dist");
 process.env.VITE_PUBLIC = process.env.VITE_DEV_SERVER_URL ? node_path.join(process.env.DIST_ELECTRON, "../public") : process.env.DIST;
@@ -6694,13 +6577,11 @@ async function createWindow() {
   });
   DiscordJSRoutes();
   PouchDBRoutes();
-  FsAPIRoutes();
   LanguageModelAPI();
   SDRoutes();
   ElectronDBRoutes();
   constructController();
   DiscordController();
-  LangChainRoutes();
   VectorDBRoutes();
 }
 electron.app.whenReady().then(createWindow);

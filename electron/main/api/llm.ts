@@ -522,7 +522,6 @@ export const generateText = async (
             break;        
         break;
         case 'PaLM':
-            const MODEL_NAME = "models/text-bison-001";
             const PaLM_Payload = {
                 "prompt": {
                     text: `${prompt}`,

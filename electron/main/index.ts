@@ -5,14 +5,12 @@ import path from "path";
 import { DiscordJSRoutes } from "./api/discord";
 import { PouchDBRoutes } from "./api/pouchdb";
 import Store from "electron-store";
-import { FsAPIRoutes } from "./api/fsapi";
 import { LanguageModelAPI } from "./api/llm";
 import { SDRoutes } from "./api/sd";
 import constructController from "./controllers/ConstructController";
 import fs from "fs";
 import DiscordController from "./controllers/DiscordController";
 import { ElectronDBRoutes } from "./api/electrondb";
-import { LangChainRoutes } from "./api/langchain";
 import { VectorDBRoutes } from "./api/vector";
 import { getModels } from "./model-pipeline/transformers";
 import express, { Request, Response } from 'express';
@@ -126,13 +124,11 @@ async function createWindow() {
 
   DiscordJSRoutes();
   PouchDBRoutes();
-  FsAPIRoutes();
   LanguageModelAPI();
   SDRoutes();
   ElectronDBRoutes();
   constructController();
   DiscordController();
-  LangChainRoutes();
   VectorDBRoutes();
   // update(win)
 }
