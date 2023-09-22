@@ -11,7 +11,6 @@ export const loginToDiscord = async (rawToken?: string, appId?: string): Promise
             rawToken: rawToken,
             appId: appId
         });
-        sendDesktopNotification('Discord', 'Logged in successfully.', () => {});
         return response.data.success;
     } catch (error) {
         console.error('Failed to login to Discord via Axios:', error);

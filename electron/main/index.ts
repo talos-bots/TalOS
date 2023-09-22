@@ -16,16 +16,8 @@ import { getModels } from "./model-pipeline/transformers";
 import express, { Request, Response } from 'express';
 import multer from 'multer';
 import cors from 'cors';
-// The built directory structure
-//
-// ├─┬ dist-electron
-// │ ├─┬ main
-// │ │ └── index.js    > Electron-Main
-// │ └─┬ preload
-// │   └── index.js    > Preload-Scripts
-// ├─┬ dist
-// │ └── index.html    > Electron-Renderer
-//
+import { createServer } from "node:http";
+
 process.env.DIST_ELECTRON = join(__dirname, "../");
 process.env.DIST = join(process.env.DIST_ELECTRON, "../dist");
 process.env.VITE_PUBLIC = process.env.VITE_DEV_SERVER_URL
@@ -63,31 +55,6 @@ export const uploadsPath = path.join(dataPath, "uploads/");
 fs.mkdirSync(dataPath, { recursive: true });
 fs.mkdirSync(imagesPath, { recursive: true });
 fs.mkdirSync(uploadsPath, { recursive: true });
-export const expressApp = express();
-const bodyParser = require('body-parser');
-const port = 3003;
-
-expressApp.use(express.static('public'));
-expressApp.use(express.static('dist'));
-expressApp.use(bodyParser.json({ limit: '1000mb' }));
-expressApp.use(bodyParser.urlencoded({ limit: '1000mb', extended: true }));
-expressApp.use(cors());
-expressApp.listen(port, () => {
-  console.log(`Server started on http://localhost:${port}`);
-});
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadsPath)
-  },
-  filename: (req, file, cb) => {
-    cb(null, file.originalname)
-  }
-});
-
-const upload = multer({ storage: storage });
-
-expressApp.use('/api/images', express.static(uploadsPath));
 
 export const store = new Store();
 async function createWindow() {
@@ -178,6 +145,54 @@ ipcMain.handle("open-win", (_, arg) => {
     childWindow.loadFile(indexHtml, { hash: arg });
   }
 });
+
+export const expressApp = express();
+const bodyParser = require('body-parser');
+import { Server as HttpServer } from 'http';
+import { Server as SocketIOServer } from 'socket.io';
+
+const expressPort = 3003;
+const socketPort = 3004;
+
+expressApp.use(express.static('public'));
+expressApp.use(express.static('dist'));
+expressApp.use(bodyParser.json({ limit: '1000mb' }));
+expressApp.use(bodyParser.urlencoded({ limit: '1000mb', extended: true }));
+expressApp.use(cors());
+expressApp.use('/api/images', express.static(uploadsPath));
+const expressServer = new HttpServer(expressApp);
+
+expressServer.listen(expressPort, () => {
+  console.log(`Express server started on http://localhost:${expressPort}`);
+});
+
+// Socket.io server setup
+export const expressAppIO = new SocketIOServer(socketPort, {
+  cors: {
+      origin: "*",
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"]
+  }
+});
+
+expressAppIO.sockets.on('connection', (socket) => {
+  console.log('Client connected:', socket.id);
+
+  // Logging all events
+  socket.onAny((eventName, ...args) => {
+      console.log(`event: ${eventName}`, args);
+  });
+});
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsPath)
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname)
+  }
+});
+
+const upload = multer({ storage: storage });
 
 expressApp.post("/api/models/load", async (req: Request, res: Response) => {
   getModels().then(() => {

@@ -1,46 +1,10 @@
+import { socket } from "@/App";
 import { getStorageValue } from "@/api/dbapi";
 import { sendDesktopNotification } from "@/components/desktop-notification";
 import { IpcRendererEvent, ipcRenderer } from "electron";
 
-function removeAllDiscordListeners() {
-    ipcRenderer.removeAllListeners("discord-message");
-    ipcRenderer.removeAllListeners("discord-ready");
-    ipcRenderer.removeAllListeners("discord-disconnected");
-    ipcRenderer.removeAllListeners("discord-message-update");
-    ipcRenderer.removeAllListeners("discord-message-delete");
-    ipcRenderer.removeAllListeners("discord-message-reaction-add");
-    ipcRenderer.removeAllListeners("discord-message-reaction-remove");
-    ipcRenderer.removeAllListeners("discord-presence-update");
-    ipcRenderer.removeAllListeners("discord-message-reaction-remove");
-    ipcRenderer.removeAllListeners("discord-message-reaction-remove-all");
-    ipcRenderer.removeAllListeners("discord-message-reaction-remove-emoji");
-    ipcRenderer.removeAllListeners("discord-channel-create");
-    ipcRenderer.removeAllListeners("discord-channel-delete");
-    ipcRenderer.removeAllListeners("discord-channel-pins-update");
-    ipcRenderer.removeAllListeners("discord-channel-update");
-    ipcRenderer.removeAllListeners("discord-emoji-create");
-    ipcRenderer.removeAllListeners("discord-emoji-delete");
-    ipcRenderer.removeAllListeners("discord-emoji-update");
-    ipcRenderer.removeAllListeners("discord-guild-ban-add");
-    ipcRenderer.removeAllListeners("discord-guild-ban-remove");
-    ipcRenderer.removeAllListeners("discord-guild-create");
-    ipcRenderer.removeAllListeners("discord-guild-delete");
-    ipcRenderer.removeAllListeners("discord-guild-unavailable");
-    ipcRenderer.removeAllListeners("discord-guild-integrations-update");
-    ipcRenderer.removeAllListeners("discord-guild-member-add");
-    ipcRenderer.removeAllListeners("discord-guild-member-remove");
-    ipcRenderer.removeAllListeners("discord-guild-member-available");
-    ipcRenderer.removeAllListeners("discord-guild-member-update");
-    ipcRenderer.removeAllListeners("discord-guild-members-chunk");
-    ipcRenderer.removeAllListeners("discord-guild-update");
-    ipcRenderer.removeAllListeners("discord-interaction-create");
-    ipcRenderer.removeAllListeners("discord-invite-create");
-    ipcRenderer.removeAllListeners("discord-invite-delete");
-}
-
 export function DiscordListeners(){
-    removeAllDiscordListeners();
-    ipcRenderer.on("discord-message", (event: IpcRendererEvent, data: any) => {
+    socket.on("discord-message", (data: any) => {
         console.log(data);
         getStorageValue("discordNotifications").then((value: any) => {
             const isEnabled = JSON.parse(value)? true : false;

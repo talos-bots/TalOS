@@ -17,7 +17,7 @@ const MenuThemeLoader = (props: Props) => {
         const getBackground = async () => {
             const data = await getStorageValue('background');
             if(data !== null) {
-                setStyle('background-image', `url(./backgrounds/${data})`);
+                setStyle('background-image', `url(./public/backgrounds/${data})`);
                 setBackground(data);
             }
         }
@@ -85,9 +85,9 @@ const MenuThemeLoader = (props: Props) => {
             }
             if(uiTheme.themeBackground.length > 0) {
                 if(background !== null) {
-                    setStyle('background-image', `url(./backgrounds/${background})`);
+                    setStyle('background-image', `url(./public/backgrounds/${background})`);
                 }else{
-                    setStyle('background-image', `url(./backgrounds/${uiTheme.themeBackground})`);
+                    setStyle('background-image', `url(./public/backgrounds/${uiTheme.themeBackground})`);
                 }
             }
             if(uiTheme.themeAccent.length > 0) {

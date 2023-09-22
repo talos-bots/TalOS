@@ -40,6 +40,8 @@ const fs = require("fs");
 const express = require("express");
 const multer = require("multer");
 const cors = require("cors");
+const http = require("http");
+const socket_io = require("socket.io");
 let constructDB$1;
 let chatsDB$1;
 let commandDB$1;
@@ -5688,16 +5690,16 @@ const intents = {
 const store$1 = new Store({
   name: "discordData"
 });
-getDiscordData();
 let disClient = new discord_js.Client(intents);
 const commands = [...DefaultCommands];
 let isReady = false;
 let token = "";
 let applicationID = "";
 let multiCharacterMode = false;
+getDiscordData();
 function createClient() {
   disClient.on("messageCreate", async (message) => {
-    var _a, _b, _c;
+    var _a, _b;
     if (message.author.id === ((_a = disClient.user) == null ? void 0 : _a.id))
       return;
     if (message.webhookId)
@@ -5719,8 +5721,8 @@ function createClient() {
       messageQueue.push(message);
       await processQueue();
       (_b = exports.win) == null ? void 0 : _b.webContents.send(`chat-message-${message.channel.id}`);
-      (_c = exports.win) == null ? void 0 : _c.webContents.send("discord-message", message);
     }
+    expressAppIO.emit("discord-message", message);
   });
   disClient.on("messageUpdate", async (oldMessage, newMessage) => {
     var _a, _b, _c;
@@ -6343,7 +6345,6 @@ function DiscordJSRoutes() {
     res.json(guilds);
   });
   expressApp.post("/api/discord/login", async (req, res) => {
-    var _a;
     try {
       let rawToken = req.body.rawToken;
       let appId = req.body.appId;
@@ -6377,7 +6378,6 @@ function DiscordJSRoutes() {
         console.error("Discord client user is not initialized.");
         res.status(500).json({ success: false, message: "Discord client user is not initialized." });
       } else {
-        (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-ready", disClient.user.tag);
         res.json({ success: true });
       }
     } catch (error) {
@@ -6529,27 +6529,6 @@ const uploadsPath = path.join(dataPath, "uploads/");
 fs.mkdirSync(dataPath, { recursive: true });
 fs.mkdirSync(imagesPath, { recursive: true });
 fs.mkdirSync(uploadsPath, { recursive: true });
-const expressApp = express();
-const bodyParser = require("body-parser");
-const port = 3003;
-expressApp.use(express.static("public"));
-expressApp.use(express.static("dist"));
-expressApp.use(bodyParser.json({ limit: "1000mb" }));
-expressApp.use(bodyParser.urlencoded({ limit: "1000mb", extended: true }));
-expressApp.use(cors());
-expressApp.listen(port, () => {
-  console.log(`Server started on http://localhost:${port}`);
-});
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadsPath);
-  },
-  filename: (req, file, cb) => {
-    cb(null, file.originalname);
-  }
-});
-const upload = multer({ storage });
-expressApp.use("/api/images", express.static(uploadsPath));
 const store = new Store();
 async function createWindow() {
   exports.win = new electron.BrowserWindow({
@@ -6630,6 +6609,41 @@ electron.ipcMain.handle("open-win", (_, arg) => {
     childWindow.loadFile(indexHtml, { hash: arg });
   }
 });
+const expressApp = express();
+const bodyParser = require("body-parser");
+const expressPort = 3003;
+const socketPort = 3004;
+expressApp.use(express.static("public"));
+expressApp.use(express.static("dist"));
+expressApp.use(bodyParser.json({ limit: "1000mb" }));
+expressApp.use(bodyParser.urlencoded({ limit: "1000mb", extended: true }));
+expressApp.use(cors());
+expressApp.use("/api/images", express.static(uploadsPath));
+const expressServer = new http.Server(expressApp);
+expressServer.listen(expressPort, () => {
+  console.log(`Express server started on http://localhost:${expressPort}`);
+});
+const expressAppIO = new socket_io.Server(socketPort, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"]
+  }
+});
+expressAppIO.sockets.on("connection", (socket) => {
+  console.log("Client connected:", socket.id);
+  socket.onAny((eventName, ...args) => {
+    console.log(`event: ${eventName}`, args);
+  });
+});
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsPath);
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname);
+  }
+});
+const upload = multer({ storage });
 expressApp.post("/api/models/load", async (req, res) => {
   getModels$1().then(() => {
     res.send(true);
@@ -6720,6 +6734,7 @@ exports.backgroundsPath = backgroundsPath;
 exports.charactersPath = charactersPath;
 exports.dataPath = dataPath;
 exports.expressApp = expressApp;
+exports.expressAppIO = expressAppIO;
 exports.imagesPath = imagesPath;
 exports.isDarwin = isDarwin;
 exports.modelsPath = modelsPath;

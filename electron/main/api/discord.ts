@@ -1,6 +1,6 @@
 import { ActivityType, Client, GatewayIntentBits, Collection, REST, Routes, Partials, TextChannel, DMChannel, NewsChannel, Snowflake, Webhook, Message, CommandInteraction, Events, PartialGroupDMChannel } from 'discord.js';
 import Store from 'electron-store';
-import { expressApp, win } from '..';
+import { expressApp, expressAppIO, win } from '..';
 import { doImageReaction, getDoStableDiffusion, getMessageIntent, getRegisteredChannels, getUsername, handleDiscordMessage, handleRemoveMessage, handleRengenerateMessage, setInterrupted } from '../controllers/DiscordController';
 import { ConstructInterface, SlashCommand } from '../types/types';
 import { assembleConstructFromData, base642Buffer } from '../helpers/helpers';
@@ -21,8 +21,6 @@ const store = new Store({
     name: 'discordData',
 });
 
-getDiscordData();
-
 export let disClient = new Client(intents);
 const commands: SlashCommand[] = [...DefaultCommands];
 export let isReady = false;
@@ -31,6 +29,8 @@ let applicationID = '';
 let characterMode = false;
 let multiCharacterMode = false;
 let multiConstructMode = false;
+
+getDiscordData();
 
 function createClient(){
     disClient.on('messageCreate', async (message) => {
@@ -52,8 +52,8 @@ function createClient(){
             messageQueue.push(message);
             await processQueue();
             win?.webContents.send(`chat-message-${message.channel.id}`);
-            win?.webContents.send('discord-message', message);
         }
+        expressAppIO.emit('discord-message', message);
     });
 
     disClient.on('messageUpdate', async (oldMessage, newMessage) => {
@@ -792,7 +792,6 @@ export function DiscordJSRoutes(){
                 console.error("Discord client user is not initialized.");
                 res.status(500).json({ success: false, message: 'Discord client user is not initialized.' });
             } else {
-                win?.webContents.send('discord-ready', disClient.user.tag);
                 res.json({ success: true });
             }
             

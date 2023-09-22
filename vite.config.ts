@@ -63,7 +63,14 @@ export default defineConfig(({ command }) => {
           changeOrigin: true,
           secure: false,
           timeout: 0,
+          ws: true,
         },
+        '/socket': {  // New proxy for the WebSocket
+          target: 'http://localhost:3004',
+          changeOrigin: true,
+          secure: false,
+          ws: true,  // Enable WebSocket for this route
+        }
       };
     
       return serverConfig;
