@@ -7,13 +7,17 @@ import { getConstructs, saveNewConstruct } from "@/api/dbapi";
 import ConstructBox from "@/components/construct-box";
 import { importTavernCharacter } from "@/api/extrasapi";
 import { AiOutlineUpload } from "react-icons/ai";
-import { removeAllActiveConstructs } from "@/api/constructapi";
+import { getActiveConstructList, removeAllActiveConstructs } from "@/api/constructapi";
 import Loading from "@/components/loading";
+import ConstructProfile from "@/components/construct-profile";
+import ConstructEditProfile from "./construct-edit-profile";
+import { PlusIcon } from "lucide-react";
 
 const ConstructsPage = () => {
     const [characters, setCharacters] = useState<Construct[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [isLoaded, setIsLoaded] = useState<boolean>(false);
+    const [activeChars, setActiveChars] = useState<string[]>([]);
 
     const filteredCharacters = characters ? characters.filter((character) => {
         return Object.values(character).some((value) =>
@@ -56,6 +60,11 @@ const ConstructsPage = () => {
                 setCharacters([]);
             }
         }
+        getActiveConstructList().then((activeChars) => {
+            setActiveChars(activeChars);
+        }).catch((err) => {
+            console.error(err);
+        });
         retrieveCharacters().then(() => {
             setIsLoaded(true);
         }).catch((err) => {
@@ -80,10 +89,7 @@ const ConstructsPage = () => {
             <div className="flex flex-col gap-2">
                 <div className="themed-root slide-in-top">
                     <h2 className="text-2xl font-bold text-theme-text text-shadow-xl">Constructs</h2>
-                    <div className="grid grid-cols-5 gap-1 w-15vw h-5vh mb-4">
-                        <Link to="/constructs/new" className="themed-button-pos flex items-center justify-center" data-tooltip="Add New Construct" id="newConstruct">
-                            <FiPlus className='absolute'size={'3.5rem'}/>
-                        </Link>
+                    <div className="grid grid-cols-5 gap-1 w-15vw mb-4 h-14">
                         <button onClick={clearActive} className="themed-button-pos flex items-center justify-center" data-tooltip="Clear Active Constructs">
                             <FiX className='absolute'size={'3.5rem'}/>
                         </button>
@@ -109,14 +115,57 @@ const ConstructsPage = () => {
                             </div>
                         }
                     </div>
+                    <div className="flex w-full slide-in-left overflow-x-auto gap-2 h-auto">
+                        <div className="flex flex-row w-full flex-grow overflow-x-auto gap-2 h-auto">
+                            <Link
+                                className="themed-root-no-padding w-36 h-48 flex flex-col justify-center items-center cursor-pointer relative shrink-0 grow-0 lg:w-[calc(100% - 2rem)] lg:h-[calc(100%)]"
+                                to={"/constructs/new"}
+                            >
+                                <div className="absolute inset-0 bg-themed-root hover:bg-theme-hover-pos flex items-center justify-center rounded-theme-border-radius">
+                                <span className="text-theme-text text-2xl font-bold justify-center items-center align-middle flex flex-col lg:text-2xl">
+                                    New Construct
+                                    <br />
+                                    <PlusIcon size={`4rem`} className="text-theme-text lg:text-4xl" />
+                                </span>
+                                </div>
+                            </Link>
+                            {Array.isArray(filteredCharacters) && filteredCharacters.sort((a, b) => {
+                                // Check if either construct is active
+                                const aIsActive = activeChars.includes(a._id);
+                                const bIsActive = activeChars.includes(b._id);
+
+                                // If both constructs are either active or inactive, sort by name
+                                if (aIsActive === bIsActive) {
+                                    if (a.name && b.name) {
+                                        return a.name.localeCompare(b.name);
+                                    }
+                                    return 0;  // <-- Ensures a number is returned in all scenarios
+                                }
+                                // If only one of the constructs is active, prioritize it
+                                if (aIsActive) return -1;
+                                return 1;  // If only `b` is active or any other case not caught above
+                            }).map((character, index) => (
+                                <ConstructEditProfile key={index} character={character} active={activeChars.includes(character._id)} />
+                            ))}
+                        </div>
+                    </div>
                 </div>
                 <div className="flex flex-col gap-2">
                 {Array.isArray(filteredCharacters) && filteredCharacters.sort((a, b) => {
-                    if (a.name && b.name) {
-                        return a.name.localeCompare(b.name);
-                    } else {
-                        return 0;
+                    // Check if either construct is active
+                    const aIsActive = activeChars.includes(a._id);
+                    const bIsActive = activeChars.includes(b._id);
+
+                    // If both constructs are either active or inactive, sort by name
+                    if (aIsActive === bIsActive) {
+                        if (a.name && b.name) {
+                            return a.name.localeCompare(b.name);
+                        }
+                        return 0;  // <-- Ensures a number is returned in all scenarios
                     }
+                    // If only one of the constructs is active, prioritize it
+                    if (aIsActive) return -1;
+                    return 1;  // If only `b` is active or any other case not caught above
                 }).map((character, index) => (
                     <ConstructBox key={index} character={character} onCharacterDelete={removeConstruct}/>
                 ))}

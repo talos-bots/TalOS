@@ -139,20 +139,7 @@ const ChatSelector = (props: ChatSelectorProps) => {
         <div className="grid grid-rows-3 w-full p-4 h-[calc(100vh-70px)] max-[h-[calc(100vh-70px)]] gap-2 grow-0 lg:gap-4 lg:p-6">
           <div className="row-span-1 themed-root grow-0 overflow-x-hidden slide-in-top lg:flex lg:flex-col lg:space-x-4">
             <h3 className="font-semibold lg:text-xl">Constructs</h3>
-            <div className="flex flex-row w-full max-w-full h-5/6 gap-2 overflow-x-auto grow-0 lg:space-x-4 lg:gap-4">
-              {Array.isArray(constructs) && constructs.sort((a, b) => {
-                if (a.name && b.name) {
-                  return a.name.localeCompare(b.name);
-                } else {
-                  return 0;
-                }
-              }).map((construct) => {
-                if (activeConstructs.includes(construct._id)) {
-                  return <ConstructProfile key={construct._id} character={construct} onClick={handleConstructClick} active />
-                } else {
-                  return <ConstructProfile key={construct._id} character={construct} onClick={handleConstructClick} />
-                }
-              })}
+            <div className="flex flex-row w-full max-w-full h-5/6 gap-2 overflow-x-auto grow-0 lg:gap-2">
               <Link
                 className="themed-root-no-padding w-36 h-48 flex flex-col justify-center items-center cursor-pointer relative shrink-0 grow-0 lg:w-[calc(100% - 2rem)] lg:h-[calc(100%)]"
                 to={"/constructs/new"}
@@ -165,6 +152,28 @@ const ChatSelector = (props: ChatSelectorProps) => {
                   </span>
                 </div>
               </Link>
+              {Array.isArray(constructs) && constructs.sort((a, b) => {
+                // Check if either construct is active
+                const aIsActive = activeConstructs.includes(a._id);
+                const bIsActive = activeConstructs.includes(b._id);
+
+                // If both constructs are either active or inactive, sort by name
+                if (aIsActive === bIsActive) {
+                    if (a.name && b.name) {
+                        return a.name.localeCompare(b.name);
+                    }
+                    return 0;  // <-- Ensures a number is returned in all scenarios
+                }
+                // If only one of the constructs is active, prioritize it
+                if (aIsActive) return -1;
+                return 1;  // If only `b` is active or any other case not caught above
+              }).map((construct) => {
+                if (activeConstructs.includes(construct._id)) {
+                  return <ConstructProfile key={construct._id} character={construct} onClick={handleConstructClick} active />
+                } else {
+                  return <ConstructProfile key={construct._id} character={construct} onClick={handleConstructClick} />
+                }
+              })}
             </div>
           </div>
           <div className="row-span-2 grid grid-cols-4 grow-0 gap-2 lg:gap-4 lg:grid-cols-6">

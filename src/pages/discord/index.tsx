@@ -7,7 +7,7 @@ import Accordian from "@/components/accordion";
 import { useEffect, useState } from "react";
 import ReactSwitch from "react-switch";
 import ChannelManager from "./channel-manager";
-import { Save, Trash } from "lucide-react";
+import { Plus, Save, Trash } from "lucide-react";
 
 const DiscordPage = () => {
     const [discordCharacterMode, setDiscordCharacterMode] = useState(false);
@@ -124,6 +124,9 @@ const DiscordPage = () => {
                             <div className="col-span-1 flex flex-col text-left">
                                 <label className="text-theme-text font-semibold">Active Constructs</label>
                                 <div className="themed-input flex flex-col items-center w-full h-15vh overflow-y-auto gap-2">
+                                        <div className="flex flex-row w-full gap-2">
+                                            <button className="themed-button-pos flex justify-center items-center flex-grow" onClick={() => {}} title="Add Construct to Active"><Plus/></button>
+                                        </div>
                                     {Array.isArray(discordActiveConstructs) && discordActiveConstructs.length > 0 && discordActiveConstructs.map((construct, index) => {
                                         return(
                                             <div className="flex flex-row w-full gap-2" key={construct._id}>
