@@ -20,7 +20,7 @@ const ConstructEditProfile: React.FC<Props> = ({ character, active }) => {
 
     return (
         <Link to={`/constructs/${character._id}`}
-            className={"themed-root-no-padding w-36 h-full flex flex-col justify-center items-center cursor-pointer relative shrink-0 grow-0 pop-in"}
+            className={"themed-root-no-padding w-36 min-h-48 flex flex-col justify-center items-center cursor-pointer relative shrink-0 grow-0 pop-in"}
             onMouseEnter={() => setIsHovered(true)} 
             onMouseLeave={() => setIsHovered(false)}
         >
