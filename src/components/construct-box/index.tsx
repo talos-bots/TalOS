@@ -128,7 +128,7 @@ const ConstructBox: React.FC<Props> = ({character, onCharacterDelete, onCharacte
     }
 
     return (
-        <div className="themed-root h-calc(100vh/6) w-full justify-center">
+        <div className="themed-root h-calc(100vh/6) w-full justify-center pop-in">
             <div className="text-2xl font-bold z-10 flex justify-between items-center" onClick={() => setIsOpen(!isOpen)}>
                 <div className="flex flex-row gap-2 justify-center items-center">
                     {!isOpen ? (
