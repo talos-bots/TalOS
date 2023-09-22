@@ -18,23 +18,14 @@ import SettingsPage from './pages/settings';
 import ConstructManagement from './components/construct-crud';
 import ZeroPage from './pages/zero';
 import NavBar from './components/shared/NavBar';
-import { sendDesktopNotification } from './components/desktop-notification';
-import axios from 'axios';
 import { io } from 'socket.io-client';
+
 export const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, url: string) => {
   e.preventDefault();
   ipcRenderer.send('open-external-url', url);
 };
 
-export const loadModels = async () => {
-  return axios.post('/api/models/load').then((response) => {
-    sendDesktopNotification('ConstructOS', 'Models Loaded');
-  }).catch((err) => {
-    console.error(err);
-  });
-}
-
-export const socket = io('/socket');
+export const socket = io();
 
 function App() {
   const [needsReload, setNeedsReload] = useState(false);
@@ -80,7 +71,6 @@ function App() {
       getDefaultCharactersFromPublic();
       setStorageValue('isFirstRun', 'false');
       setIsFirstRun(false);
-      loadModels();
     }
   }, [isFirstRun]);
 

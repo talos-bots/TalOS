@@ -1,3 +1,4 @@
+import { sendDesktopNotification } from '@/components/desktop-notification';
 import axios from 'axios';
 
 export async function getBackgrounds(): Promise<any[]> {
@@ -58,5 +59,13 @@ export function uploadImage(formData: FormData): void {
     })
     .catch(error => {
       console.error('Error uploading:', error);
+    });
+}
+
+export async function loadModels(){
+    return axios.post('/api/models/load').then((response) => {
+      sendDesktopNotification('ConstructOS', 'Models Loaded');
+    }).catch((err) => {
+      console.error(err);
     });
 }

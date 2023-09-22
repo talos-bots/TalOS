@@ -148,11 +148,8 @@ ipcMain.handle("open-win", (_, arg) => {
 
 export const expressApp = express();
 const bodyParser = require('body-parser');
-import { Server as HttpServer } from 'http';
-import { Server as SocketIOServer } from 'socket.io';
-
-const expressPort = 3003;
-const socketPort = 3004;
+import { Server } from 'socket.io';
+const port = 3003;
 
 expressApp.use(express.static('public'));
 expressApp.use(express.static('dist'));
@@ -160,27 +157,20 @@ expressApp.use(bodyParser.json({ limit: '1000mb' }));
 expressApp.use(bodyParser.urlencoded({ limit: '1000mb', extended: true }));
 expressApp.use(cors());
 expressApp.use('/api/images', express.static(uploadsPath));
-const expressServer = new HttpServer(expressApp);
-
-expressServer.listen(expressPort, () => {
-  console.log(`Express server started on http://localhost:${expressPort}`);
-});
-
-// Socket.io server setup
-export const expressAppIO = new SocketIOServer(socketPort, {
-  cors: {
-      origin: "*",
-      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"]
-  }
-});
+const server = createServer(expressApp);
+export const expressAppIO = new Server(server);
 
 expressAppIO.sockets.on('connection', (socket) => {
   console.log('Client connected:', socket.id);
 
   // Logging all events
   socket.onAny((eventName, ...args) => {
-      console.log(`event: ${eventName}`, args);
+     console.log(`event: ${eventName}`, args);
   });
+});
+
+server.listen(port, () => {
+  console.log(`Server started on http://localhost:${port}`);
 });
 
 const storage = multer.diskStorage({

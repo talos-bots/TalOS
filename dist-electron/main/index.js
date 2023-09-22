@@ -40,7 +40,7 @@ const fs = require("fs");
 const express = require("express");
 const multer = require("multer");
 const cors = require("cors");
-const http = require("http");
+const node_http = require("node:http");
 const socket_io = require("socket.io");
 let constructDB$1;
 let chatsDB$1;
@@ -6611,29 +6611,23 @@ electron.ipcMain.handle("open-win", (_, arg) => {
 });
 const expressApp = express();
 const bodyParser = require("body-parser");
-const expressPort = 3003;
-const socketPort = 3004;
+const port = 3003;
 expressApp.use(express.static("public"));
 expressApp.use(express.static("dist"));
 expressApp.use(bodyParser.json({ limit: "1000mb" }));
 expressApp.use(bodyParser.urlencoded({ limit: "1000mb", extended: true }));
 expressApp.use(cors());
 expressApp.use("/api/images", express.static(uploadsPath));
-const expressServer = new http.Server(expressApp);
-expressServer.listen(expressPort, () => {
-  console.log(`Express server started on http://localhost:${expressPort}`);
-});
-const expressAppIO = new socket_io.Server(socketPort, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"]
-  }
-});
+const server = node_http.createServer(expressApp);
+const expressAppIO = new socket_io.Server(server);
 expressAppIO.sockets.on("connection", (socket) => {
   console.log("Client connected:", socket.id);
   socket.onAny((eventName, ...args) => {
     console.log(`event: ${eventName}`, args);
   });
+});
+server.listen(port, () => {
+  console.log(`Server started on http://localhost:${port}`);
 });
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
