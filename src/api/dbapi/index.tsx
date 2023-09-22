@@ -1,7 +1,6 @@
 import { Construct } from "@/classes/Construct";
 import { Attachment } from "@/classes/Attachment";
 import { Chat } from "@/classes/Chat";
-import { IpcRendererEvent, ipcRenderer } from "electron";
 import { Instruct } from "@/classes/Instruct";
 import { removeConstructFromActive } from "../constructapi";
 import { CompletionLog } from "@/classes/CompletionLog";

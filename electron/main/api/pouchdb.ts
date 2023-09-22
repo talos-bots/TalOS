@@ -1,4 +1,3 @@
-import { ipcMain } from 'electron';
 import PouchDB from 'pouchdb';
 import { dataPath, expressApp, isDarwin } from '../';
 import LeveldbAdapter from 'pouchdb-adapter-leveldb';

@@ -2398,40 +2398,49 @@ async function deleteIndex(schemaName) {
   }
 }
 function VectorDBRoutes() {
-  electron.ipcMain.on("get-all-vectors", async (event, schemaName, uniqueReplyName) => {
-    getAllVectors(schemaName).then((vectors) => {
-      event.reply(uniqueReplyName, vectors);
-    }).catch((error) => {
-      event.reply(uniqueReplyName, error);
-    });
+  expressApp.get("/api/vectors/:schemaName", async (req, res) => {
+    try {
+      const vectors = await getAllVectors(req.params.schemaName);
+      res.json(vectors);
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.on("get-relavent-memories", async (event, schemaName, text, uniqueReplyName) => {
-    getRelaventMemories(schemaName, text).then((memories) => {
-      event.reply(uniqueReplyName, memories);
-    }).catch((error) => {
-      event.reply(uniqueReplyName, error);
-    });
+  expressApp.get("/api/memories/:schemaName", async (req, res) => {
+    try {
+      const memories = await getRelaventMemories(req.params.schemaName, req.query.text);
+      res.json(memories);
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.on("add-vector-from-message", async (event, schemaName, message, uniqueReplyName) => {
-    addVectorFromMessage(schemaName, message).then(() => {
-      event.reply(uniqueReplyName, true);
-    }).catch((error) => {
-      event.reply(uniqueReplyName, error);
-    });
+  expressApp.post("/api/vector/:schemaName", async (req, res) => {
+    try {
+      await addVectorFromMessage(req.params.schemaName, req.body);
+      res.sendStatus(201);
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.on("get-vector", async (event, text, uniqueReplyName) => {
-    getVector(text).then((vector) => {
-      event.reply(uniqueReplyName, vector);
-    }).catch((error) => {
-      event.reply(uniqueReplyName, error);
-    });
+  expressApp.get("/api/vector", async (req, res) => {
+    try {
+      const vector = await getVector(req.query.text);
+      if (vector) {
+        res.json(vector);
+      } else {
+        res.status(404).send({ error: "Vector not found" });
+      }
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.on("delete-index", async (event, schemaName, uniqueReplyName) => {
-    deleteIndex(schemaName).then(() => {
-      event.reply(uniqueReplyName, true);
-    }).catch((error) => {
-      event.reply(uniqueReplyName, error);
-    });
+  expressApp.delete("/api/index/:schemaName", async (req, res) => {
+    try {
+      await deleteIndex(req.params.schemaName);
+      res.sendStatus(204);
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
 }
 const selfieIntentExamples = [

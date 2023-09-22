@@ -1,72 +1,47 @@
 import { Message } from "@/classes/Message";
-import { IpcRendererEvent, ipcRenderer } from "electron";
+import axios from "axios";
 
 export async function getVector(text: string): Promise<any[]> {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "get-vector-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send("get-vector", text, uniqueEventName);
-        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any[]) => {
-            if (data) {
-                resolve(data);
-            } else {
-                reject(new Error("No data received from 'vector' event."));
-            }
-        });
-    });
+    try {
+        const response = await axios.get(`/api/vector`, { params: { text } });
+        return response.data;
+    } catch (error: any) {
+        throw new Error(error.response?.data?.error || 'Failed to get vector.');
+    }
 }
 
-export async function getAllVectors(schemaName: string){
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "get-all-vectors-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send("get-all-vectors", schemaName, uniqueEventName);
-        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any[]) => {
-            if (data) {
-                resolve(data);
-            } else {
-                reject(new Error("No data received from 'get-all-vectors' event."));
-            }
-        });
-    });
+export async function getAllVectors(schemaName: string) {
+    try {
+        const response = await axios.get(`/api/vectors/${schemaName}`);
+        return response.data;
+    } catch (error: any) {
+        throw new Error(error.response?.data?.error || 'Failed to get all vectors.');
+    }
 }
 
-export async function getRelaventMemories(schemaName: string, text: string){
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "get-relavent-memories-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send("get-relavent-memories", schemaName, text, uniqueEventName);
-        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any[]) => {
-            if (data) {
-                resolve(data);
-            } else {
-                reject(new Error("No data received from 'get-relavent-memories' event."));
-            }
-        });
-    });
+export async function getRelaventMemories(schemaName: string, text: string) {
+    try {
+        const response = await axios.get(`/api/memories/${schemaName}`, { params: { text } });
+        return response.data;
+    } catch (error: any) {
+        throw new Error(error.response?.data?.error || 'Failed to get relevant memories.');
+    }
 }
 
-export async function addVectorFromMessage(schemaName: string, message: Message){
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "add-vector-from-message-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send("add-vector-from-message", schemaName, message, uniqueEventName);
-        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any[]) => {
-            if (data) {
-                resolve(data);
-            } else {
-                reject(new Error("No data received from 'add-vector-from-message' event."));
-            }
-        });
-    });
+export async function addVectorFromMessage(schemaName: string, message: Message) {
+    try {
+        const response = await axios.post(`/api/vector/${schemaName}`, message);
+        return response.data;
+    } catch (error: any) {
+        throw new Error(error.response?.data?.error || 'Failed to add vector from message.');
+    }
 }
 
-export function removeAllMemories(schemaName: string){
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "delete-index-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send("delete-index", schemaName, uniqueEventName);
-        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any[]) => {
-            if (data) {
-                resolve(data);
-            } else {
-                reject(new Error("No data received from 'delete-index' event."));
-            }
-        });
-    });
+export async function removeAllMemories(schemaName: string) {
+    try {
+        const response = await axios.delete(`/api/index/${schemaName}`);
+        return response.data;
+    } catch (error: any) {
+        throw new Error(error.response?.data?.error || 'Failed to remove all memories.');
+    }
 }
