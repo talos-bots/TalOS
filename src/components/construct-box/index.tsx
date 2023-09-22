@@ -9,13 +9,15 @@ import RouteButton from "../route-button";
 import { setConstructAsPrimary, addConstructToActive, constructIsActive, getActiveConstructList, removeConstructFromActive } from "@/api/constructapi";
 import StringArrayEditorCards from "../string-array-editor-cards";
 import { saveTavernCardAsImage } from "@/api/extrasapi";
-import { Download, Trash } from "lucide-react";
+import { Download, Edit, Trash } from "lucide-react";
 import { confirmModal } from "../confirm-modal";
+import QuickChatCongfig from "./construct-quick-chat-config";
 interface Props {
     character: Construct;
     onCharacterDelete: (character: Construct) => void;
+    onCharacterEdit: (character: Construct) => void;
 }
-const ConstructBox: React.FC<Props> = ({character, onCharacterDelete}) => {
+const ConstructBox: React.FC<Props> = ({character, onCharacterDelete, onCharacterEdit}) => {
     const [characterName, setCharacterName] = useState<string>(character.name);
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const [isActive, setIsActive] = useState<boolean>(false);
@@ -136,21 +138,20 @@ const ConstructBox: React.FC<Props> = ({character, onCharacterDelete}) => {
                                     <button className="themed-button-neg w-1/3" onClick={() => makeInactive()}>Remove Active Construct</button>
                                 </div>
                                 <div className="row-span-1 flex flex-row gap-1">
-                                    <RouteButton to={`/constructs/${character._id}`} text="Edit" className="w-1/3"/>
+                                    <Link to={`/constructs/${character._id}`} className="w-1/3 themed-button-pos flex justify-center items-center" title="Edit">
+                                        <Edit size={36}/>
+                                    </Link>
                                     <button className="themed-button-neg w-1/3 flex justify-center items-center" onClick={() => deleteConstructFrom()}><Trash size={36}/></button>
                                     <button title="Export as V2 Card" className="themed-button-pos w-1/3 flex flex-col items-center justify-center" onClick={() => handleConstructExport()}><Download size={36}/></button>
                                 </div>
                             </div>
                         </div>
-                        <label className="text-xl font-semibold text-left">Commands</label>
+                        <label className="text-xl font-semibold text-left">Quick Config</label>
                         <div className="w-full h-1/2 overflow-hidden themed-input">
-                            {character.commands.map((command, index) => {
-                                return (
-                                    <div key={index} className="text-left themed-input">
-                                        {command}
-                                    </div>
-                                )
-                            })}
+                            <QuickChatCongfig
+                                construct={character}
+                                onEdit={(construct: Construct) => {onCharacterEdit(construct)}}
+                            />
                         </div>
                     </div>
                     <div className="col-span-1 flex flex-col justify-start items-start">

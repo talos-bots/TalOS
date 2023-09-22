@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { FiPlus, FiX } from "react-icons/fi";
 import { Construct } from "@/classes/Construct";
-import { getConstructs, saveNewConstruct } from "@/api/dbapi";
+import { getConstructs, saveNewConstruct, updateConstruct } from "@/api/dbapi";
 import ConstructBox from "@/components/construct-box";
 import { importTavernCharacter } from "@/api/extrasapi";
 import { AiOutlineUpload } from "react-icons/ai";
@@ -82,6 +82,16 @@ const ConstructsPage = () => {
         setCharacters(newConstructs);
     }
 
+    const editConstruct = async (construct: Construct) => {
+        const newConstructs = characters.map((char) => {
+            if(char._id === construct._id){
+                return construct;
+            }
+            return char;
+        });
+        setCharacters(newConstructs);
+        await updateConstruct(construct);
+    }
     if(!isLoaded) return (<Loading/>);
     
     return (
@@ -167,7 +177,7 @@ const ConstructsPage = () => {
                     if (aIsActive) return -1;
                     return 1;  // If only `b` is active or any other case not caught above
                 }).map((character, index) => (
-                    <ConstructBox key={index} character={character} onCharacterDelete={removeConstruct}/>
+                    <ConstructBox key={index} character={character} onCharacterDelete={removeConstruct} onCharacterEdit={editConstruct}/>
                 ))}
                 </div>
             </div>
