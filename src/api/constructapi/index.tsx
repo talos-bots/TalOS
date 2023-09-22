@@ -203,12 +203,13 @@ export const getIntent = async (message: string): Promise<any> => {
     }
 }
 
-export const getYesNo = (message: string): Promise<any> => {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "get-yes-no-classification-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send('get-yes-no-classification', uniqueEventName, message);
-        ipcRenderer.once(uniqueEventName, (event, response) => {
-            resolve(response);
+export const getYesNo = async (message: string): Promise<any> => {
+    try {
+        const response = await axios.post('/api/classify/yesno', {
+            message
         });
-    });
+        return response.data.result;
+    } catch (error: any) {
+        throw new Error(error.response.data.error);
+    }
 }

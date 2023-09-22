@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Configuration, OpenAIApi } from 'openai';
 import Store from 'electron-store';
 import { instructPrompt, instructPromptWithContext, instructPromptWithExamples, instructPromptWithGuidance, instructPromptWithGuidanceAndContext, instructPromptWithGuidanceAndContextAndExamples, instructPromptWithGuidanceAndExamples } from '../types/prompts';
-import { getCaption, getClassification, getEmbedding, getEmbeddingSimilarity, getEmbeddingTensor, getQuestionAnswering, getYesNoMaybe } from '../model-pipeline/transformers';
+import { getCaption, getClassification, getEmbedding, getEmbeddingSimilarity,  getQuestionAnswering } from '../model-pipeline/transformers';
 
 const HORDE_API_URL = 'https://aihorde.net/api';
 
@@ -761,13 +761,6 @@ export function LanguageModelAPI(){
     ipcMain.on('get-zero-shot-classification', (event, uniqueEventName, text, labels) => {
         console.log('get-zero-shot-classification');
         getQuestionAnswering(text, labels).then((result) => {
-            event.reply(uniqueEventName, result);
-        });
-    });
-
-    ipcMain.on('get-yes-no-classification', (event, uniqueEventName, text) => {
-        console.log('get-yes-no-classification');
-        getYesNoMaybe(text).then((result) => {
             event.reply(uniqueEventName, result);
         });
     });

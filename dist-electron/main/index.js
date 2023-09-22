@@ -2286,12 +2286,6 @@ function LanguageModelAPI() {
       event.reply(uniqueEventName, result);
     });
   });
-  electron.ipcMain.on("get-yes-no-classification", (event, uniqueEventName, text) => {
-    console.log("get-yes-no-classification");
-    getYesNoMaybe(text).then((result) => {
-      event.reply(uniqueEventName, result);
-    });
-  });
   electron.ipcMain.on("set-do-emotions", (event, newDoEmotions) => {
     setDoEmotions(newDoEmotions);
     event.reply("set-do-emotions-reply", getDoEmotions());
@@ -3300,6 +3294,14 @@ function constructController() {
     const { message } = req.body;
     detectIntent(message).then((response) => {
       res.json({ response });
+    }).catch((error) => {
+      res.status(500).send({ error: error.message });
+    });
+  });
+  expressApp.post("/api/classify/yesno", (req, res) => {
+    const { message } = req.body;
+    getYesNoMaybe(message).then((result) => {
+      res.json({ result });
     }).catch((error) => {
       res.status(500).send({ error: error.message });
     });

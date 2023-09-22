@@ -8,6 +8,7 @@ import { ChatInterface, ConstructInterface, LoreEntryInterface, MessageInterface
 import { getRelaventMemories } from '../api/vector';
 import { detectIntent } from '../helpers/actions-helpers';
 import { expressApp } from '..';
+import { getYesNoMaybe } from '../model-pipeline/transformers';
 const store = new Store({
     name: 'constructData',
 });
@@ -744,5 +745,14 @@ function constructController() {
         });
     });
     
+    expressApp.post('/api/classify/yesno', (req, res) => {
+        const { message } = req.body;
+    
+        getYesNoMaybe(message).then((result) => {
+            res.json({ result });
+        }).catch(error => {
+            res.status(500).send({ error: error.message });
+        });
+    });    
 }
 export default constructController;
