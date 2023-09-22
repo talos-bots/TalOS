@@ -103,9 +103,9 @@ const ConstructsPage = () => {
     if(!isLoaded) return (<Loading/>);
     
     return (
-        <div className="w-full h-[calc(100vh-70px)] grid grid-rows-[auto,1fr] overflow-y-auto overflow-x-hidden p-4 lg:p-8">
+        <div className="max-w-[100%] h-[calc(100vh-70px)] grid grid-rows-[auto,1fr] overflow-y-auto overflow-x-auto p-4 lg:p-8">
             <div className="flex flex-col gap-2">
-                <div className="themed-root slide-in-top">
+                <div className="themed-root slide-in-top overflow-x-auto">
                     <h2 className="text-2xl font-bold text-theme-text text-shadow-xl">Constructs</h2>
                     <div className="grid grid-cols-5 gap-1 w-15vw mb-4 h-14">
                         <button onClick={clearActive} className="themed-button-pos flex items-center justify-center" data-tooltip="Clear Active Constructs">
@@ -133,8 +133,8 @@ const ConstructsPage = () => {
                             </div>
                         }
                     </div>
-                    <div className="flex w-full slide-in-left overflow-x-auto gap-2 h-auto">
-                        <div className="flex flex-row w-full flex-grow overflow-x-auto gap-2 h-auto">
+                    <div className="flex flex-row w-95vw max-w-full gap-2 overflow-x-auto grow-0 lg:gap-2">
+                        <div className="flex flex-row max-w-full gap-2 overflow-x-auto grow-0 lg:gap-2">
                             <Link
                                 className="themed-root-no-padding w-36 h-48 flex flex-col justify-center items-center cursor-pointer relative shrink-0 grow-0 lg:w-[calc(100% - 2rem)] lg:h-[calc(100%)]"
                                 to={"/constructs/new"}
