@@ -17,8 +17,9 @@ interface Props {
     character: Construct;
     onCharacterDelete: (character: Construct) => void;
     onCharacterEdit: (character: Construct) => void;
+    onEditStatus: () => void;
 }
-const ConstructBox: React.FC<Props> = ({character, onCharacterDelete, onCharacterEdit}) => {
+const ConstructBox: React.FC<Props> = ({character, onCharacterDelete, onCharacterEdit, onEditStatus}) => {
     const [characterName, setCharacterName] = useState<string>(character.name);
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const [isActive, setIsActive] = useState<boolean>(false);
@@ -64,24 +65,28 @@ const ConstructBox: React.FC<Props> = ({character, onCharacterDelete, onCharacte
         if(!await confirmModal(`Are you sure you want to delete this construct? This cannot be undone.`)) return;
         await deleteConstruct(character._id);
         onCharacterDelete(character);
+        onEditStatus();
     }
 
     const makeActive = async () => {
         await addConstructToActive(character._id);
         setIsActive(true);
         setIsPrimary(false);
+        onEditStatus();
     }
 
     const makePrimary = async () => {
         await setConstructAsPrimary(character._id);
         setIsPrimary(true);
         setIsActive(true);
+        onEditStatus();
     }
 
     const makeInactive = async () => {
         await removeConstructFromActive(character._id);
         setIsActive(false);
         setIsPrimary(false);
+        onEditStatus();
     }
 
     const editConstruct = () => {

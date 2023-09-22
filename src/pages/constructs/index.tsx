@@ -72,6 +72,14 @@ const ConstructsPage = () => {
         });
     }, []);
 
+    const refreshList = async () => {
+        getActiveConstructList().then((activeChars) => {
+            setActiveChars(activeChars);
+        }).catch((err) => {
+            console.error(err);
+        });
+    }
+
     const clearActive = async () => {
         await removeAllActiveConstructs();
         window.location.reload();
@@ -177,7 +185,7 @@ const ConstructsPage = () => {
                     if (aIsActive) return -1;
                     return 1;  // If only `b` is active or any other case not caught above
                 }).map((character, index) => (
-                    <ConstructBox key={index} character={character} onCharacterDelete={removeConstruct} onCharacterEdit={editConstruct}/>
+                    <ConstructBox key={index} character={character} onCharacterDelete={removeConstruct} onCharacterEdit={editConstruct} onEditStatus={refreshList}/>
                 ))}
                 </div>
             </div>
