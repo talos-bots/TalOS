@@ -16,7 +16,7 @@ const MenuThemeLoader = (props: Props) => {
         let savedTheme: string | undefined;
         const getBackground = async () => {
             const data = await getStorageValue('background');
-            if(data !== null) {
+            if(data !== null && data !== undefined) {
                 setStyle('background-image', `url(./backgrounds/${data})`);
                 setBackground(data);
             }
