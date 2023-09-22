@@ -1213,7 +1213,7 @@ function PouchDBRoutes() {
     lorebookDB = new PouchDB("lorebook", { prefix: dataPath, adapter: "leveldb" });
   }
 }
-const getModels$1 = async () => {
+async function getModels$1() {
   try {
     const { pipeline, env } = await import("@xenova/transformers");
     env.localModelPath = modelsPath;
@@ -1237,7 +1237,7 @@ const getModels$1 = async () => {
   } catch (err) {
     console.log(err);
   }
-};
+}
 const modelPromise = new Promise(async (resolve, reject) => {
   try {
     const { pipeline, env } = await import("@xenova/transformers");
@@ -3772,7 +3772,7 @@ function setInterrupted() {
 }
 let isInterrupted = false;
 async function handleDiscordMessage(message) {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _i;
+  var _a, _b, _c, _d, _e, _f, _g;
   const activeConstructs = retrieveConstructs();
   if (activeConstructs.length < 1)
     return;
@@ -3826,7 +3826,7 @@ async function handleDiscordMessage(message) {
     await updateChat(chatLog);
     return;
   }
-  (_e = exports.win) == null ? void 0 : _e.webContents.send(`chat-message-${message.channel.id}`);
+  expressAppIO.emit(`chat-message-${message.channel.id}`);
   if (chatLog.doVector) {
     if (chatLog.global) {
       for (let i = 0; i < constructArray.length; i++) {
@@ -3837,7 +3837,7 @@ async function handleDiscordMessage(message) {
     }
   }
   await updateChat(chatLog);
-  (_f = exports.win) == null ? void 0 : _f.webContents.send(`chat-message-${message.channel.id}`);
+  expressAppIO.emit(`chat-message-${message.channel.id}`);
   const mode = getDiscordMode();
   if (mode === "Character") {
     if (isMultiCharacterMode() && !message.channel.isDMBased()) {
@@ -3859,13 +3859,13 @@ async function handleDiscordMessage(message) {
       if (chatLog === void 0)
         return;
       let hasBeenMention = true;
-      let lastMessageText = (_g = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _g.text;
+      let lastMessageText = (_e = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _e.text;
       let iterations = 0;
       do {
         if (isInterrupted) {
           break;
         }
-        if (((_h = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _h.text) === void 0)
+        if (((_f = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _f.text) === void 0)
           break;
         if (iterations > 0 && lastMessageText === chatLog.lastMessage.text)
           break;
@@ -3896,7 +3896,7 @@ async function handleDiscordMessage(message) {
             break;
           }
           let config = shuffledConstructs[i].defaultConfig;
-          if ((_i = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _i.isHuman) {
+          if ((_g = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _g.isHuman) {
             if (config.replyToUser >= Math.random()) {
               let replyLog = await doCharacterReply(shuffledConstructs[i], chatLog, message);
               if (replyLog !== void 0) {
@@ -5699,7 +5699,7 @@ let multiCharacterMode = false;
 getDiscordData();
 function createClient() {
   disClient.on("messageCreate", async (message) => {
-    var _a, _b;
+    var _a;
     if (message.author.id === ((_a = disClient.user) == null ? void 0 : _a.id))
       return;
     if (message.webhookId)
@@ -5720,24 +5720,24 @@ function createClient() {
       }
       messageQueue.push(message);
       await processQueue();
-      (_b = exports.win) == null ? void 0 : _b.webContents.send(`chat-message-${message.channel.id}`);
+      expressAppIO.emit(`chat-message-${message.channel.id}`);
     }
     expressAppIO.emit("discord-message", message);
   });
   disClient.on("messageUpdate", async (oldMessage, newMessage) => {
-    var _a, _b, _c;
+    var _a, _b;
     if (((_a = newMessage.author) == null ? void 0 : _a.id) === ((_b = disClient.user) == null ? void 0 : _b.id))
       return;
-    (_c = exports.win) == null ? void 0 : _c.webContents.send("discord-message-update", oldMessage, newMessage);
+    expressAppIO.emit("discord-message-update", oldMessage, newMessage);
   });
   disClient.on("messageDelete", async (message) => {
-    var _a, _b, _c;
+    var _a, _b;
     if (((_a = message.author) == null ? void 0 : _a.id) === ((_b = disClient.user) == null ? void 0 : _b.id))
       return;
-    (_c = exports.win) == null ? void 0 : _c.webContents.send("discord-message-delete", message);
+    expressAppIO.emit("discord-message-delete", message);
   });
   disClient.on("messageReactionAdd", async (reaction, user) => {
-    var _a, _b, _c;
+    var _a, _b;
     if (user.id === ((_a = disClient.user) == null ? void 0 : _a.id))
       return;
     console.log("Reaction added...");
@@ -5768,105 +5768,84 @@ function createClient() {
       if (reaction.emoji.name === "❓") {
         await getMessageIntent(message);
       }
-      (_c = exports.win) == null ? void 0 : _c.webContents.send("discord-message-reaction-add", reaction, user);
+      expressAppIO.emit("discord-message-reaction-add", reaction, user);
     } catch (error) {
       console.error("Something went wrong when fetching the message:", error);
     }
   });
   disClient.on("messageReactionRemove", async (reaction, user) => {
-    var _a, _b;
+    var _a;
     if (user.id === ((_a = disClient.user) == null ? void 0 : _a.id))
       return;
-    (_b = exports.win) == null ? void 0 : _b.webContents.send("discord-message-reaction-remove", reaction, user);
+    expressAppIO.emit("discord-message-reaction-remove", reaction, user);
   });
   disClient.on("messageReactionRemoveAll", async (message) => {
-    var _a, _b, _c;
+    var _a, _b;
     if (((_a = message.author) == null ? void 0 : _a.id) === ((_b = disClient.user) == null ? void 0 : _b.id))
       return;
-    (_c = exports.win) == null ? void 0 : _c.webContents.send("discord-message-reaction-remove-all", message);
+    expressAppIO.emit("discord-message-reaction-remove-all", message);
   });
   disClient.on("messageReactionRemoveEmoji", async (reaction) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-message-reaction-remove-emoji", reaction);
+    expressAppIO.emit("discord-message-reaction-remove-emoji", reaction);
   });
   disClient.on("channelCreate", async (channel) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-channel-create", channel);
+    expressAppIO.emit("discord-channel-create", channel);
   });
   disClient.on("channelDelete", async (channel) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-channel-delete", channel);
+    expressAppIO.emit("discord-channel-delete", channel);
   });
   disClient.on("channelPinsUpdate", async (channel, time) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-channel-pins-update", channel, time);
+    expressAppIO.emit("discord-channel-pins-update", channel, time);
   });
   disClient.on("channelUpdate", async (oldChannel, newChannel) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-channel-update", oldChannel, newChannel);
+    expressAppIO.emit("discord-channel-update", oldChannel, newChannel);
   });
   disClient.on("emojiCreate", async (emoji) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-emoji-create", emoji);
+    expressAppIO.emit("discord-emoji-create", emoji);
   });
   disClient.on("emojiDelete", async (emoji) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-emoji-delete", emoji);
+    expressAppIO.emit("discord-emoji-delete", emoji);
   });
   disClient.on("emojiUpdate", async (oldEmoji, newEmoji) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-emoji-update", oldEmoji, newEmoji);
+    expressAppIO.emit("discord-emoji-update", oldEmoji, newEmoji);
   });
   disClient.on("guildBanAdd", async (ban) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-ban-add", ban);
+    expressAppIO.emit("discord-guild-ban-add", ban);
   });
   disClient.on("guildBanRemove", async (ban) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-ban-remove", ban);
+    expressAppIO.emit("discord-guild-ban-remove", ban);
   });
   disClient.on("guildCreate", async (guild) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-create", guild);
+    expressAppIO.emit("discord-guild-create", guild);
   });
   disClient.on("guildDelete", async (guild) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-delete", guild);
+    expressAppIO.emit("discord-guild-delete", guild);
   });
   disClient.on("guildUnavailable", async (guild) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-unavailable", guild);
+    expressAppIO.emit("discord-guild-unavailable", guild);
   });
   disClient.on("guildIntegrationsUpdate", async (guild) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-integrations-update", guild);
+    expressAppIO.emit("discord-guild-integrations-update", guild);
   });
   disClient.on("guildMemberAdd", async (member) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-member-add", member);
+    expressAppIO.emit("discord-guild-member-add", member);
   });
   disClient.on("guildMemberRemove", async (member) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-member-remove", member);
+    expressAppIO.emit("discord-guild-member-remove", member);
   });
   disClient.on("guildMemberAvailable", async (member) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-member-available", member);
+    expressAppIO.emit("discord-guild-member-available", member);
   });
   disClient.on("guildMemberUpdate", async (oldMember, newMember) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-member-update", oldMember, newMember);
+    expressAppIO.emit("discord-guild-member-update", oldMember, newMember);
   });
   disClient.on("guildMembersChunk", async (members, guild) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-members-chunk", members, guild);
+    expressAppIO.emit("discord-guild-members-chunk", members, guild);
   });
   disClient.on("guildUpdate", async (oldGuild, newGuild) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-update", oldGuild, newGuild);
+    expressAppIO.emit("discord-guild-update", oldGuild, newGuild);
   });
   disClient.on("interactionCreate", async (interaction) => {
-    var _a;
     if (!interaction.isCommand())
       return;
     let commandsToCheck = commands;
@@ -5882,27 +5861,23 @@ function createClient() {
       console.error(error);
       await interaction.reply({ content: "There was an error while executing this command!", ephemeral: true });
     }
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-interaction-create", interaction);
+    expressAppIO.emit("discord-interaction-create", interaction);
   });
   disClient.on("inviteCreate", async (invite) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-invite-create", invite);
+    expressAppIO.emit("discord-invite-create", invite);
   });
   disClient.on("inviteDelete", async (invite) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-invite-delete", invite);
+    expressAppIO.emit("discord-invite-delete", invite);
   });
   disClient.on("presenceUpdate", async (oldPresence, newPresence) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-presence-update", oldPresence, newPresence);
+    expressAppIO.emit("discord-presence-update", oldPresence, newPresence);
   });
   disClient.on("ready", async () => {
-    var _a;
     if (!disClient.user)
       return;
     isReady = true;
     console.log(`Logged in as ${disClient.user.tag}!`);
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-ready", disClient.user.tag);
+    expressAppIO.emit("discord-ready", disClient.user.tag);
     registerCommands();
     let constructs = retrieveConstructs();
     let constructRaw = await getConstruct(constructs[0]);
@@ -6386,7 +6361,6 @@ function DiscordJSRoutes() {
     }
   });
   expressApp.post("/api/discord/logout", async (req, res) => {
-    var _a;
     try {
       await disClient.destroy();
       disClient.removeAllListeners();
@@ -6394,7 +6368,7 @@ function DiscordJSRoutes() {
       messageQueue = [];
       disClient = new discord_js.Client(intents);
       console.log("Logged out!");
-      (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-disconnected");
+      expressAppIO.emit("discord-disconnected");
       res.json({ success: true });
     } catch (error) {
       console.error("Failed to logout from Discord:", error);
@@ -6499,7 +6473,7 @@ function DiscordJSRoutes() {
     }
     res.send({ createdAt: disClient.user.createdAt });
   });
-  expressApp.get("/discord/bot/status", (req, res) => {
+  expressApp.get("/api/discord/bot/status", (req, res) => {
     res.send({ status: isReady });
   });
 }

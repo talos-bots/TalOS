@@ -8,7 +8,7 @@ import { deleteMessage, disClient, editMessage, getStopList, isAutoReplyMode, is
 import { Alias, ChannelConfigInterface, ChatInterface, ConstructInterface } from '../types/types';
 import { addVectorFromMessage } from '../api/vector';
 import { getDefaultCfg, getDefaultHeight, getDefaultHighresSteps, getDefaultNegativePrompt, getDefaultPrompt, getDefaultSteps, getDefaultWidth, makeImage } from '../api/sd';
-import { win } from '..';
+import { expressAppIO, win } from '..';
 import { detectIntent } from '../helpers/actions-helpers';
 
 const store = new Store({
@@ -306,7 +306,7 @@ export async function handleDiscordMessage(message: Message) {
         await updateChat(chatLog);
         return;
     }
-    win?.webContents.send(`chat-message-${message.channel.id}`);
+    expressAppIO.emit(`chat-message-${message.channel.id}`);
     if(chatLog.doVector){
         if(chatLog.global){
             for(let i = 0; i < constructArray.length; i++){
@@ -317,7 +317,7 @@ export async function handleDiscordMessage(message: Message) {
         }
     }
     await updateChat(chatLog);
-    win?.webContents.send(`chat-message-${message.channel.id}`);
+    expressAppIO.emit(`chat-message-${message.channel.id}`);
     const mode = getDiscordMode();
     if(mode === 'Character'){
         if(isMultiCharacterMode() && !message.channel.isDMBased()){

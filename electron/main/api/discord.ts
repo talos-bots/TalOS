@@ -51,19 +51,19 @@ function createClient(){
             }
             messageQueue.push(message);
             await processQueue();
-            win?.webContents.send(`chat-message-${message.channel.id}`);
+            expressAppIO.emit(`chat-message-${message.channel.id}`);
         }
         expressAppIO.emit('discord-message', message);
     });
 
     disClient.on('messageUpdate', async (oldMessage, newMessage) => {
         if (newMessage.author?.id === disClient.user?.id) return;
-        win?.webContents.send('discord-message-update', oldMessage, newMessage);
+        expressAppIO.emit('discord-message-update', oldMessage, newMessage);
     });
 
     disClient.on('messageDelete', async (message) => {
         if (message.author?.id === disClient.user?.id) return;
-        win?.webContents.send('discord-message-delete', message);
+        expressAppIO.emit('discord-message-delete', message);
     });
 
     disClient.on("messageReactionAdd", async (reaction, user) => {
@@ -105,7 +105,7 @@ function createClient(){
             if(reaction.emoji.name === '❓'){
                 await getMessageIntent(message as Message);
             }
-            win?.webContents.send('discord-message-reaction-add', reaction, user);
+            expressAppIO.emit('discord-message-reaction-add', reaction, user);
         } catch (error) {
             console.error('Something went wrong when fetching the message:', error);
         }
@@ -114,92 +114,92 @@ function createClient(){
 
     disClient.on('messageReactionRemove', async (reaction, user) => {
         if (user.id === disClient.user?.id) return;
-        win?.webContents.send('discord-message-reaction-remove', reaction, user);
+        expressAppIO.emit('discord-message-reaction-remove', reaction, user);
     });
 
     disClient.on('messageReactionRemoveAll', async (message) => {
         if (message.author?.id === disClient.user?.id) return;
-        win?.webContents.send('discord-message-reaction-remove-all', message);
+        expressAppIO.emit('discord-message-reaction-remove-all', message);
     });
 
     disClient.on('messageReactionRemoveEmoji', async (reaction) => {
-        win?.webContents.send('discord-message-reaction-remove-emoji', reaction);
+        expressAppIO.emit('discord-message-reaction-remove-emoji', reaction);
     });
 
     disClient.on('channelCreate', async (channel) => {
-        win?.webContents.send('discord-channel-create', channel);
+        expressAppIO.emit('discord-channel-create', channel);
     });
 
     disClient.on('channelDelete', async (channel) => {
-        win?.webContents.send('discord-channel-delete', channel);
+        expressAppIO.emit('discord-channel-delete', channel);
     });
 
     disClient.on('channelPinsUpdate', async (channel, time) => {
-        win?.webContents.send('discord-channel-pins-update', channel, time);
+        expressAppIO.emit('discord-channel-pins-update', channel, time);
     });
 
     disClient.on('channelUpdate', async (oldChannel, newChannel) => {
-        win?.webContents.send('discord-channel-update', oldChannel, newChannel);
+        expressAppIO.emit('discord-channel-update', oldChannel, newChannel);
     });
 
     disClient.on('emojiCreate', async (emoji) => {
-        win?.webContents.send('discord-emoji-create', emoji);
+        expressAppIO.emit('discord-emoji-create', emoji);
     });
 
     disClient.on('emojiDelete', async (emoji) => {
-        win?.webContents.send('discord-emoji-delete', emoji);
+        expressAppIO.emit('discord-emoji-delete', emoji);
     });
 
     disClient.on('emojiUpdate', async (oldEmoji, newEmoji) => {
-        win?.webContents.send('discord-emoji-update', oldEmoji, newEmoji);
+        expressAppIO.emit('discord-emoji-update', oldEmoji, newEmoji);
     });
 
     disClient.on('guildBanAdd', async (ban) => {
-        win?.webContents.send('discord-guild-ban-add', ban);
+        expressAppIO.emit('discord-guild-ban-add', ban);
     });
 
     disClient.on('guildBanRemove', async (ban) => {
-        win?.webContents.send('discord-guild-ban-remove', ban);
+        expressAppIO.emit('discord-guild-ban-remove', ban);
     });
 
     disClient.on('guildCreate', async (guild) => {
-        win?.webContents.send('discord-guild-create', guild);
+        expressAppIO.emit('discord-guild-create', guild);
     });
 
     disClient.on('guildDelete', async (guild) => {
-        win?.webContents.send('discord-guild-delete', guild);
+        expressAppIO.emit('discord-guild-delete', guild);
     });
 
     disClient.on('guildUnavailable', async (guild) => {
-        win?.webContents.send('discord-guild-unavailable', guild);
+        expressAppIO.emit('discord-guild-unavailable', guild);
     });
 
     disClient.on('guildIntegrationsUpdate', async (guild) => {
-        win?.webContents.send('discord-guild-integrations-update', guild);
+        expressAppIO.emit('discord-guild-integrations-update', guild);
     });
 
     disClient.on('guildMemberAdd', async (member) => {
-        win?.webContents.send('discord-guild-member-add', member);
+        expressAppIO.emit('discord-guild-member-add', member);
     });
 
     disClient.on('guildMemberRemove', async (member) => {
-        win?.webContents.send('discord-guild-member-remove', member);
+        expressAppIO.emit('discord-guild-member-remove', member);
     });
 
     disClient.on('guildMemberAvailable', async (member) => {
-        win?.webContents.send('discord-guild-member-available', member);
+        expressAppIO.emit('discord-guild-member-available', member);
     });
 
     disClient.on('guildMemberUpdate', async (oldMember, newMember) => {
-        win?.webContents.send('discord-guild-member-update', oldMember, newMember);
+        expressAppIO.emit('discord-guild-member-update', oldMember, newMember);
     });
 
     disClient.on('guildMembersChunk', async (members, guild) => {
-        win?.webContents.send('discord-guild-members-chunk', members, guild);
+        expressAppIO.emit('discord-guild-members-chunk', members, guild);
     });
 
     disClient.on('guildUpdate', async (oldGuild, newGuild) => {
-        win?.webContents.send('discord-guild-update', oldGuild, newGuild);
+        expressAppIO.emit('discord-guild-update', oldGuild, newGuild);
     });
 
     disClient.on('interactionCreate', async (interaction) => {
@@ -217,26 +217,26 @@ function createClient(){
             console.error(error);
             await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
         }
-        win?.webContents.send('discord-interaction-create', interaction);
+        expressAppIO.emit('discord-interaction-create', interaction);
     });
 
     disClient.on('inviteCreate', async (invite) => {
-        win?.webContents.send('discord-invite-create', invite);
+        expressAppIO.emit('discord-invite-create', invite);
     });
 
     disClient.on('inviteDelete', async (invite) => {
-        win?.webContents.send('discord-invite-delete', invite);
+        expressAppIO.emit('discord-invite-delete', invite);
     });
 
     disClient.on('presenceUpdate', async (oldPresence, newPresence) => {
-        win?.webContents.send('discord-presence-update', oldPresence, newPresence);
+        expressAppIO.emit('discord-presence-update', oldPresence, newPresence);
     });
 
     disClient.on('ready', async () => {
         if(!disClient.user) return;
         isReady = true;
         console.log(`Logged in as ${disClient.user.tag}!`);
-        win?.webContents.send('discord-ready', disClient.user.tag);
+        expressAppIO.emit('discord-ready', disClient.user.tag);
         registerCommands();
         let constructs = retrieveConstructs();
         let constructRaw = await getConstruct(constructs[0]);
@@ -809,7 +809,7 @@ export function DiscordJSRoutes(){
             messageQueue = [];
             disClient = new Client(intents);
             console.log('Logged out!');
-            win?.webContents.send('discord-disconnected');
+            expressAppIO.emit('discord-disconnected');
             res.json({ success: true });
         } catch (error) {
             console.error('Failed to logout from Discord:', error);
@@ -927,7 +927,7 @@ export function DiscordJSRoutes(){
         res.send({ createdAt: disClient.user.createdAt });
     });
 
-    expressApp.get('/discord/bot/status', (req, res) => {
+    expressApp.get('/api/discord/bot/status', (req, res) => {
         res.send({ status: isReady });
     });
 };
