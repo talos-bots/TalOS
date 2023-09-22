@@ -12,6 +12,7 @@ import { saveTavernCardAsImage } from "@/api/extrasapi";
 import { Download, Edit, Trash } from "lucide-react";
 import { confirmModal } from "../confirm-modal";
 import QuickChatCongfig from "./construct-quick-chat-config";
+import TokenTextarea from "../token-textarea";
 interface Props {
     character: Construct;
     onCharacterDelete: (character: Construct) => void;
@@ -22,6 +23,13 @@ const ConstructBox: React.FC<Props> = ({character, onCharacterDelete, onCharacte
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const [isActive, setIsActive] = useState<boolean>(false);
     const [isPrimary, setIsPrimary] = useState<boolean>(false);
+    const [authorsNote, setAuthorsNote] = useState<string>(character.authorsNote);
+    const [characterRelationships, setCharacterRelationships] = useState<string[]>(character.relationships);
+    const [characterInterests, setCharacterInterests] = useState<string[]>(character.interests);
+    const [characterGreetings, setCharacterGreetings] = useState<string[]>(character.greetings);
+    const [characterFarewells, setCharacterFarewells] = useState<string[]>(character.farewells);
+    const [characterPersonality, setCharacterPersonality] = useState<string>(character.personality);
+    const [characterBackground, setCharacterBackground] = useState<string>(character.background);
 
     useEffect(() => {
         setCharacterName(character.name);
@@ -75,6 +83,22 @@ const ConstructBox: React.FC<Props> = ({character, onCharacterDelete, onCharacte
         setIsActive(false);
         setIsPrimary(false);
     }
+
+    const editConstruct = () => {
+        character.name = characterName;
+        character.relationships = characterRelationships;
+        character.interests = characterInterests;
+        character.greetings = characterGreetings;
+        character.farewells = characterFarewells;
+        character.personality = characterPersonality;
+        character.background = characterBackground;
+        character.authorsNote = authorsNote;
+        onCharacterEdit(character);
+    }
+
+    useEffect(() => {
+        editConstruct();
+    }, [authorsNote, characterBackground, characterFarewells, characterGreetings, characterInterests, characterName, characterPersonality, characterRelationships]);
 
     useEffect(() => {
         if(localStorage.getItem(characterName+'-expanded')){
@@ -156,51 +180,51 @@ const ConstructBox: React.FC<Props> = ({character, onCharacterDelete, onCharacte
                     </div>
                     <div className="col-span-1 flex flex-col justify-start items-start">
                         <label className="text-xl font-semibold text-left">Personality</label>
-                        <textarea
-                            className="overflow-hidden w-full h-1/3 themed-input"
-                            value={character.personality}
-                            disabled
+                        <TokenTextarea
+                            className="overflow-hidden w-full h-1/3 themed-input flex-grow"
+                            value={characterPersonality}
+                            onChange={(string) => setCharacterPersonality(string)}
                         />
                         <label className="text-xl font-semibold text-left">Background</label>
-                        <textarea
-                            className="overflow-hidden w-full h-1/3 themed-input"
-                            value={character.background}
-                            disabled
+                        <TokenTextarea
+                            className="overflow-hidden w-full h-1/3 themed-input flex-grow"
+                            value={characterBackground}
+                            onChange={(string) => setCharacterBackground(string)}
                         />
                         <label className="text-xl font-semibold text-left">Author's Note</label>
-                        <textarea
-                            className="overflow-hidden w-full h-1/3 themed-input"
-                            value={character.authorsNote}
-                            disabled
+                        <TokenTextarea
+                            className="overflow-hidden w-full h-1/3 themed-input flex-grow"
+                            value={authorsNote}
+                            onChange={(string) => setAuthorsNote(string)}
                         />
                     </div>
                     <div className="col-span-1 flex flex-col justify-start">
                         <label className="text-xl font-semibold text-left">Relationships</label>
                         <div className="w-full h-1/4 overflow-hidden text-left">
                             <StringArrayEditorCards
-                                value={character.relationships}
-                                disabled
+                                value={characterRelationships}
+                                onChange={(array) => setCharacterRelationships(array)}
                             />
                         </div>
                         <label className="text-xl font-semibold text-left">Interests</label>
                         <div className="w-full h-1/4 overflow-hidden">
                             <StringArrayEditorCards
-                                value={character.interests}
-                                disabled
+                                value={characterInterests}
+                                onChange={(array) => setCharacterInterests(array)}
                             />
                         </div>
                         <label className="text-xl font-semibold text-left">Greetings</label>
                         <div className="w-full h-1/4 overflow-hidden">
                             <StringArrayEditorCards
-                                value={character.greetings}
-                                disabled
+                                value={characterGreetings}
+                                onChange={(array) => setCharacterGreetings(array)}
                             />
                         </div>
                         <label className="text-xl font-semibold text-left">Farewells</label>
                         <div className="w-full h-1/4 overflow-hidden">
                             <StringArrayEditorCards
-                                value={character.farewells}
-                                disabled
+                                value={characterFarewells}
+                                onChange={(array) => setCharacterFarewells(array)}
                             />
                         </div>
                     </div>
