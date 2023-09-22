@@ -81,105 +81,107 @@ export async function deleteConstruct(id: string) {
 }
 
 export async function getCommands(): Promise<string[]> {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "get-commands-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send("get-commands", uniqueEventName);
-
-        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any[]) => {
-            if (data) {
-                resolve(data);
-            } else {
-                reject(new Error("No data received from 'commands' event."));
-            }
-        });
-    });
+    try {
+        const response = await axios.get('/api/commands');
+        return response.data;
+    } catch (error) {
+        throw new Error("Failed to get commands from server.");
+    }
 }
 
 export async function getCommand(id: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "get-command-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send("get-command", id, uniqueEventName);
-
-        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any) => {
-            if (data) {
-                resolve(data);
-            } else {
-                reject(new Error("No data received from 'command' event."));
-            }
-        });
-    });
+    try {
+        const response = await axios.get(`/api/command/${id}`);
+        return response.data;
+    } catch (error) {
+        throw new Error("Failed to get command from server.");
+    }
 }
 
 export async function saveNewCommand(command: string) {
-    ipcRenderer.send('add-command', command);
+    try {
+        await axios.post('/api/command', { command });
+    } catch (error) {
+        throw new Error("Failed to save new command to server.");
+    }
 }
 
 export async function updateCommand(command: string) {
-    ipcRenderer.send('update-command', command);
+    try {
+        await axios.put('/api/command', { command });
+    } catch (error) {
+        throw new Error("Failed to update command on server.");
+    }
 }
 
 export async function deleteCommand(id: string) {
-    ipcRenderer.send('delete-command', id);
+    try {
+        await axios.delete(`/api/command/${id}`);
+    } catch (error) {
+        throw new Error("Failed to delete command from server.");
+    }
 }
 
 export async function getAttachments(): Promise<Attachment[]> {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "get-attachments-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send("get-attachments", uniqueEventName);
+    try {
+        const response = await axios.get('/api/attachments');
+        const data = response.data;
 
-        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any[]) => {
-            if (data) {
-                const attachments = data.map((doc: any) => {
-                    return new Attachment(
-                        doc.doc._id,
-                        doc.doc.name,
-                        doc.doc.type,
-                        doc.doc.fileext,
-                        doc.doc.data,
-                        doc.doc.metadata
-                    );
-                });
-                resolve(attachments);
-            } else {
-                reject(new Error("No data received from 'attachments' event."));
-            }
+        return data.map((doc: any) => {
+            return new Attachment(
+                doc.doc._id,
+                doc.doc.name,
+                doc.doc.type,
+                doc.doc.fileext,
+                doc.doc.data,
+                doc.doc.metadata
+            );
         });
-    });
+    } catch (error) {
+        throw new Error("Failed to fetch attachments from the server.");
+    }
 }
 
 export async function getAttachment(id: string): Promise<Attachment> {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "get-attachment-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send("get-attachment", id, uniqueEventName);
+    try {
+        const response = await axios.get(`/api/attachment/${id}`);
+        const data = response.data;
 
-        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any) => {
-            if (data) {
-                const attachment = new Attachment(
-                    data._id,
-                    data.name,
-                    data.type,
-                    data.fileext,
-                    data.data,
-                    data.metadata
-                );
-                resolve(attachment);
-            } else {
-                reject(new Error("No data received from 'attachment' event."));
-            }
-        });
-    });
+        return new Attachment(
+            data._id,
+            data.name,
+            data.type,
+            data.fileext,
+            data.data,
+            data.metadata
+        );
+    } catch (error) {
+        throw new Error("Failed to fetch the attachment from the server.");
+    }
 }
 
 export async function saveNewAttachment(attachment: Attachment) {
-    ipcRenderer.send('add-attachment', attachment);
+    try {
+        await axios.post('/api/attachment', attachment);
+    } catch (error) {
+        throw new Error("Failed to save the new attachment to the server.");
+    }
 }
 
 export async function updateAttachment(attachment: Attachment) {
-    ipcRenderer.send('update-attachment', attachment);
+    try {
+        await axios.put(`/api/attachment/${attachment._id}`, attachment);
+    } catch (error) {
+        throw new Error("Failed to update the attachment on the server.");
+    }
 }
 
 export async function deleteAttachment(id: string) {
-    ipcRenderer.send('delete-attachment', id);
+    try {
+        await axios.delete(`/api/attachment/${id}`);
+    } catch (error) {
+        throw new Error("Failed to delete the attachment from the server.");
+    }
 }
 
 export async function getChats(): Promise<Chat[]> {
@@ -329,197 +331,194 @@ export async function deleteInstruct(id: string) {
 }
 
 export async function getCompletions(): Promise<CompletionLog[]> {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "get-completions-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send("get-completions", uniqueEventName);
-
-        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any[]) => {
-            if (data) {
-                const completions = data.map((doc: any) => {
-                    return new CompletionLog(
-                        doc.doc._id,
-                        doc.doc.name,
-                        doc.doc.type,
-                        doc.doc.completions,
-                        doc.doc.lastCompletion,
-                        doc.doc.lastCompletionDate
-                    );
-                });
-                resolve(completions);
-            } else {
-                reject(new Error("No data received from 'completions' event."));
-            }
-        });
-    });
+    try {
+        const response = await axios.get(`/api/completions`);
+        return response.data.map((doc: any) => new CompletionLog(
+            doc.doc._id,
+            doc.doc.name,
+            doc.doc.type,
+            doc.doc.completions,
+            doc.doc.lastCompletion,
+            doc.doc.lastCompletionDate
+        ));
+    } catch (error) {
+        throw new Error("Failed to fetch completions from server.");
+    }
 }
 
 export async function getCompletion(id: string): Promise<CompletionLog> {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "get-completion-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send("get-completion", id, uniqueEventName);
-
-        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any) => {
-            if (data) {
-                const completion = new CompletionLog(
-                    data._id,
-                    data.name,
-                    data.type,
-                    data.completions,
-                    data.lastCompletion,
-                    data.lastCompletionDate
-                );
-                resolve(completion);
-            } else {
-                reject(new Error("No data received from 'completion' event."));
-            }
-        });
-    });
+    try {
+        const response = await axios.get(`/api/completion/${id}`);
+        const data = response.data;
+        return new CompletionLog(
+            data._id,
+            data.name,
+            data.type,
+            data.completions,
+            data.lastCompletion,
+            data.lastCompletionDate
+        );
+    } catch (error) {
+        throw new Error("Failed to fetch completion from server.");
+    }
 }
 
-export async function saveNewCompletion(completion: CompletionLog) {
-    ipcRenderer.send('add-completion', completion);
+export async function saveNewCompletion(completion: CompletionLog): Promise<void> {
+    try {
+        await axios.post(`/api/completion`, completion);
+    } catch (error) {
+        throw new Error("Failed to save new completion to server.");
+    }
 }
 
-export async function updateCompletion(completion: CompletionLog) {
-    ipcRenderer.send('update-completion', completion);
+export async function updateCompletion(completion: CompletionLog): Promise<void> {
+    try {
+        await axios.put(`/api/completion/${completion._id}`, completion);
+    } catch (error) {
+        throw new Error("Failed to update completion on server.");
+    }
 }
 
-export async function deleteCompletion(id: string) {
-    ipcRenderer.send('delete-completion', id);
+export async function deleteCompletion(id: string): Promise<void> {
+    try {
+        await axios.delete(`/api/completion/${id}`);
+    } catch (error) {
+        throw new Error("Failed to delete completion from server.");
+    }
 }
 
 export async function getUsers(): Promise<User[]> {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "get-users-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send("get-users", uniqueEventName);
-
-        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any[]) => {
-            if (data) {
-                const users = data.map((doc: any) => {
-                    return new User(
-                        doc.doc._id,
-                        doc.doc.name,
-                        doc.doc.nickname,
-                        doc.doc.avatar,
-                        doc.doc.personality,
-                        doc.doc.background,
-                        doc.doc.relationships,
-                        doc.doc.interests
-                    );
-                });
-                resolve(users);
-            } else {
-                reject(new Error("No data received from 'users' event."));
-            }
+    try {
+        const response = await axios.get('/api/users');
+        const users = response.data.map((doc: any) => {
+            return new User(
+                doc.doc._id,
+                doc.doc.name,
+                doc.doc.nickname,
+                doc.doc.avatar,
+                doc.doc.personality,
+                doc.doc.background,
+                doc.doc.relationships,
+                doc.doc.interests
+            );
         });
-    });
+        return users;
+    } catch (error: any) {
+        throw new Error(`Error fetching users: ${error.message}`);
+    }
 }
 
 export async function getUser(id: string): Promise<User> {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "get-user-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send("get-user", id, uniqueEventName);
-
-        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any) => {
-            if (data) {
-                const user = new User(
-                    data._id,
-                    data.name,
-                    data.nickname,
-                    data.avatar,
-                    data.personality,
-                    data.background,
-                    data.relationships,
-                    data.interests
-                );
-                resolve(user);
-            } else {
-                reject(new Error("No data received from 'user' event."));
-            }
-        });
-    });
+    try {
+        const response = await axios.get(`/api/user/${id}`);
+        const data = response.data;
+        const user = new User(
+            data._id,
+            data.name,
+            data.nickname,
+            data.avatar,
+            data.personality,
+            data.background,
+            data.relationships,
+            data.interests
+        );
+        return user;
+    } catch (error: any) {
+        throw new Error(`Error fetching user with ID ${id}: ${error.message}`);
+    }
 }
 
-export async function saveNewUser(user: User) {
-    ipcRenderer.send('add-user', user);
+export async function saveNewUser(user: User): Promise<void> {
+    try {
+        await axios.post('/api/user', user);
+    } catch (error: any) {
+        throw new Error(`Error adding user: ${error.message}`);
+    }
 }
 
-export async function updateUser(user: User) {
-    ipcRenderer.send('update-user', user);
+export async function updateUser(user: User): Promise<void> {
+    try {
+        await axios.put(`/api/user/${user._id}`, user);
+    } catch (error: any) {
+        throw new Error(`Error updating user with ID ${user._id}: ${error.message}`);
+    }
 }
 
-export async function deleteUser(id: string) {
-    ipcRenderer.send('delete-user', id);
+export async function deleteUser(id: string): Promise<void> {
+    try {
+        await axios.delete(`/api/user/${id}`);
+    } catch (error: any) {
+        throw new Error(`Error deleting user with ID ${id}: ${error.message}`);
+    }
 }
 
 export async function getLorebooks(): Promise<Lorebook[]> {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "get-lorebooks-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send("get-lorebooks", uniqueEventName);
-
-        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any[]) => {
-            if (data) {
-                const lorebooks = data.map((doc: any) => {
-                    return new Lorebook(
-                        doc.doc._id,
-                        doc.doc.name,
-                        doc.doc.avatar,
-                        doc.doc.description,
-                        doc.doc.scan_depth,
-                        doc.doc.token_budget,
-                        doc.doc.recursive_scanning,
-                        doc.doc.global,
-                        doc.doc.constructs,
-                        doc.doc.extensions,
-                        doc.doc.entries
-                    );
-                });
-                resolve(lorebooks);
-            } else {
-                reject(new Error("No data received from 'lorebooks' event."));
-            }
+    try {
+        const response = await axios.get('/api/lorebooks');
+        return response.data.map((lorebookData: any) => {
+            return new Lorebook(
+                lorebookData.doc._id,
+                lorebookData.doc.name,
+                lorebookData.doc.avatar,
+                lorebookData.doc.description,
+                lorebookData.doc.scan_depth,
+                lorebookData.doc.token_budget,
+                lorebookData.doc.recursive_scanning,
+                lorebookData.doc.global,
+                lorebookData.doc.constructs,
+                lorebookData.doc.extensions,
+                lorebookData.doc.entries
+            );
         });
-    });
+    } catch (error: any) {
+        throw new Error("Failed to fetch lorebooks: " + error.message);
+    }
 }
 
 export async function getLorebook(id: string): Promise<Lorebook> {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "get-lorebook-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send("get-lorebook", id, uniqueEventName);
-
-        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any) => {
-            if (data) {
-                const lorebook = new Lorebook(
-                    data._id,
-                    data.name,
-                    data.avatar,
-                    data.description,
-                    data.scan_depth,
-                    data.token_budget,
-                    data.recursive_scanning,
-                    data.global,
-                    data.constructs,
-                    data.extensions,
-                    data.entries
-                );
-                resolve(lorebook);
-            } else {
-                reject(new Error("No data received from 'lorebook' event."));
-            }
-        });
-    });
+    try {
+        const response = await axios.get(`/api/lorebook/${id}`);
+        const lorebookData = response.data;
+        return new Lorebook(
+            lorebookData._id,
+            lorebookData.name,
+            lorebookData.avatar,
+            lorebookData.description,
+            lorebookData.scan_depth,
+            lorebookData.token_budget,
+            lorebookData.recursive_scanning,
+            lorebookData.global,
+            lorebookData.constructs,
+            lorebookData.extensions,
+            lorebookData.entries
+        );
+    } catch (error: any) {
+        throw new Error("Failed to fetch lorebook: " + error.message);
+    }
 }
 
 export async function saveNewLorebook(lorebook: Lorebook) {
-    ipcRenderer.send('add-lorebook', lorebook);
+    try {
+        await axios.post('/api/lorebook', lorebook);
+    } catch (error: any) {
+        throw new Error("Failed to save new lorebook: " + error.message);
+    }
 }
 
 export async function updateLorebook(lorebook: Lorebook) {
-    ipcRenderer.send('update-lorebook', lorebook);
+    try {
+        await axios.put(`/api/lorebook/${lorebook._id}`, lorebook);
+    } catch (error: any) {
+        throw new Error("Failed to update lorebook: " + error.message);
+    }
 }
 
 export async function deleteLorebook(id: string) {
-    ipcRenderer.send('delete-lorebook', id);
+    try {
+        await axios.delete(`/api/lorebook/${id}`);
+    } catch (error: any) {
+        throw new Error("Failed to delete lorebook: " + error.message);
+    }
 }
 
 export async function setStorageValue(key: string, value: string): Promise<void> {
@@ -546,6 +545,16 @@ export async function getStorageValue(key: string): Promise<string> {
     }
 }
 
-export async function clearDBs(){
-    ipcRenderer.send('clear-data');
+export async function clearDBs() {
+    try {
+        const response = await axios.delete('/api/clear-data');
+        
+        if (response.status === 200) {
+            console.log("Data cleared successfully.");
+        } else {
+            console.error("Failed to clear data:", response.data);
+        }
+    } catch (error) {
+        console.error("Error clearing data:", error);
+    }
 }

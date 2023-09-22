@@ -729,7 +729,7 @@ async function removeUser(id) {
 async function updateUser(user) {
   if (isDarwin) {
     addUserFromEDB(user._id, user);
-    return;
+    return user;
   }
   return userDB.get(user._id).then((doc) => {
     let updatedDoc = { ...doc, ...user };
@@ -910,166 +910,295 @@ function PouchDBRoutes() {
       res.status(500).json({ message: "An error occurred." });
     }
   });
-  electron.ipcMain.on("get-commands", (event, replyName) => {
-    getAllCommands().then((result) => {
-      event.sender.send(replyName, result);
-    });
+  expressApp.get("/api/commands", async (req, res) => {
+    try {
+      const result = await getAllCommands();
+      res.json(result);
+    } catch (error) {
+      res.status(500).send("Failed to get commands.");
+    }
   });
-  electron.ipcMain.on("get-command", (event, arg, replyName) => {
-    getCommand(arg).then((result) => {
-      event.sender.send(replyName, result);
-    });
+  expressApp.get("/api/command/:id", async (req, res) => {
+    try {
+      const id = req.params.id;
+      const result = await getCommand(id);
+      res.json(result);
+    } catch (error) {
+      res.status(500).send("Failed to get command.");
+    }
   });
-  electron.ipcMain.on("add-command", (event, arg) => {
-    addCommand(arg).then((result) => {
-      event.sender.send("add-command-reply", result);
-    });
+  expressApp.post("/api/command", async (req, res) => {
+    try {
+      const command = req.body.command;
+      const result = await addCommand(command);
+      res.json(result);
+    } catch (error) {
+      res.status(500).send("Failed to add command.");
+    }
   });
-  electron.ipcMain.on("update-command", (event, arg) => {
-    updateCommand(arg).then((result) => {
-      event.sender.send("update-command-reply", result);
-    });
+  expressApp.put("/api/command", async (req, res) => {
+    try {
+      const command = req.body.command;
+      const result = await updateCommand(command);
+      res.json(result);
+    } catch (error) {
+      res.status(500).send("Failed to update command.");
+    }
   });
-  electron.ipcMain.on("delete-command", (event, arg) => {
-    removeCommand(arg).then((result) => {
-      event.sender.send("delete-command-reply", result);
-    });
+  expressApp.delete("/api/command/:id", async (req, res) => {
+    try {
+      const id = req.params.id;
+      const result = await removeCommand(id);
+      res.json(result);
+    } catch (error) {
+      res.status(500).send("Failed to delete command.");
+    }
   });
-  electron.ipcMain.on("get-attachments", (event, replyName) => {
-    getAllAttachments().then((result) => {
-      event.sender.send(replyName, result);
-    });
+  expressApp.get("/api/attachments", async (req, res) => {
+    try {
+      const result = await getAllAttachments();
+      res.json(result);
+    } catch (error) {
+      res.status(500).send("Failed to get attachments.");
+    }
   });
-  electron.ipcMain.on("get-attachment", (event, arg, replyName) => {
-    getAttachment(arg).then((result) => {
-      event.sender.send(replyName, result);
-    });
+  expressApp.get("/api/attachment/:id", async (req, res) => {
+    try {
+      const id = req.params.id;
+      const result = await getAttachment(id);
+      res.json(result);
+    } catch (error) {
+      res.status(500).send("Failed to get attachment.");
+    }
   });
-  electron.ipcMain.on("add-attachment", (event, arg) => {
-    addAttachment(arg).then((result) => {
-      event.sender.send("add-attachment-reply", result);
-    });
+  expressApp.post("/api/attachment", async (req, res) => {
+    try {
+      const attachment = req.body;
+      const result = await addAttachment(attachment);
+      res.json(result);
+    } catch (error) {
+      res.status(500).send("Failed to add attachment.");
+    }
   });
-  electron.ipcMain.on("update-attachment", (event, arg) => {
-    updateAttachment(arg).then((result) => {
-      event.sender.send("update-attachment-reply", result);
-    });
+  expressApp.put("/api/attachment/:id", async (req, res) => {
+    try {
+      const id = req.params.id;
+      const updatedData = req.body;
+      const result = await updateAttachment(updatedData);
+      res.json(result);
+    } catch (error) {
+      res.status(500).send("Failed to update attachment.");
+    }
   });
-  electron.ipcMain.on("delete-attachment", (event, arg) => {
-    removeAttachment(arg).then((result) => {
-      event.sender.send("delete-attachment-reply", result);
-    });
+  expressApp.delete("/api/attachment/:id", async (req, res) => {
+    try {
+      const id = req.params.id;
+      const result = await removeAttachment(id);
+      res.json(result);
+    } catch (error) {
+      res.status(500).send("Failed to delete attachment.");
+    }
   });
-  electron.ipcMain.on("get-instructs", (event, replyName) => {
-    getAllInstructs().then((result) => {
-      event.sender.send(replyName, result);
-    });
+  expressApp.get("/api/instructs", async (req, res) => {
+    try {
+      const instructs = await getAllInstructs();
+      res.json(instructs);
+    } catch (error) {
+      res.status(500).send({ error: "Failed to get all instructs." });
+    }
   });
-  electron.ipcMain.on("get-instruct", (event, arg, replyName) => {
-    getInstruct(arg).then((result) => {
-      event.sender.send(replyName, result);
-    });
+  expressApp.get("/api/instruct/:id", async (req, res) => {
+    try {
+      const instruct = await getInstruct(req.params.id);
+      if (!instruct) {
+        return res.status(404).send({ error: "Instruct not found." });
+      }
+      res.json(instruct);
+    } catch (error) {
+      res.status(500).send({ error: "Failed to get instruct." });
+    }
   });
-  electron.ipcMain.on("add-instruct", (event, arg) => {
-    addInstruct(arg).then((result) => {
-      event.sender.send("add-instruct-reply", result);
-    });
+  expressApp.post("/api/instruct", async (req, res) => {
+    try {
+      const result = await addInstruct(req.body);
+      res.json(result);
+    } catch (error) {
+      res.status(500).send({ error: "Failed to add instruct." });
+    }
   });
-  electron.ipcMain.on("update-instruct", (event, arg) => {
-    updateInstruct(arg).then((result) => {
-      event.sender.send("update-instruct-reply", result);
-    });
+  expressApp.put("/api/instruct/:id", async (req, res) => {
+    try {
+      const result = await updateInstruct(req.body);
+      res.json(result);
+    } catch (error) {
+      res.status(500).send({ error: "Failed to update instruct." });
+    }
   });
-  electron.ipcMain.on("delete-instruct", (event, arg) => {
-    removeInstruct(arg).then((result) => {
-      event.sender.send("delete-instruct-reply", result);
-    });
+  expressApp.delete("/api/instruct/:id", async (req, res) => {
+    try {
+      const result = await removeInstruct(req.params.id);
+      res.json(result);
+    } catch (error) {
+      res.status(500).send({ error: "Failed to delete instruct." });
+    }
   });
-  electron.ipcMain.on("get-completions", (event, replyName) => {
-    getAllCompletions().then((result) => {
-      event.sender.send(replyName, result);
-    });
+  expressApp.get("/api/completions", async (req, res) => {
+    try {
+      const result = await getAllCompletions();
+      res.json(result);
+    } catch (error) {
+      res.status(500).send("Failed to get completions.");
+    }
   });
-  electron.ipcMain.on("get-completion", (event, arg, replyName) => {
-    getCompletion(arg).then((result) => {
-      event.sender.send(replyName, result);
-    });
+  expressApp.get("/api/completion/:id", async (req, res) => {
+    try {
+      const id = req.params.id;
+      const result = await getCompletion(id);
+      res.json(result);
+    } catch (error) {
+      res.status(500).send("Failed to get completion.");
+    }
   });
-  electron.ipcMain.on("add-completion", (event, arg) => {
-    addCompletion(arg).then((result) => {
-      event.sender.send("add-completion-reply", result);
-    });
+  expressApp.post("/api/completion", async (req, res) => {
+    try {
+      const completion = req.body;
+      const result = await addCompletion(completion);
+      res.json(result);
+    } catch (error) {
+      res.status(500).send("Failed to add completion.");
+    }
   });
-  electron.ipcMain.on("update-completion", (event, arg) => {
-    updateCompletion(arg).then((result) => {
-      event.sender.send("update-completion-reply", result);
-    });
+  expressApp.put("/api/completion/:id", async (req, res) => {
+    try {
+      const id = req.params.id;
+      const updatedData = req.body;
+      const result = await updateCompletion(updatedData);
+      res.json(result);
+    } catch (error) {
+      res.status(500).send("Failed to update completion.");
+    }
   });
-  electron.ipcMain.on("delete-completion", (event, arg) => {
-    removeCompletion(arg).then((result) => {
-      event.sender.send("delete-completion-reply", result);
-    });
+  expressApp.delete("/api/completion/:id", async (req, res) => {
+    try {
+      const id = req.params.id;
+      const result = await removeCompletion(id);
+      res.json(result);
+    } catch (error) {
+      res.status(500).send("Failed to delete completion.");
+    }
   });
-  electron.ipcMain.on("get-users", (event, replyName) => {
-    getUsers().then((result) => {
-      event.sender.send(replyName, result);
-    });
+  expressApp.get("/api/users", async (req, res) => {
+    try {
+      const users = await getUsers();
+      res.json(users);
+    } catch (error) {
+      res.status(500).send("Error fetching users");
+    }
   });
-  electron.ipcMain.on("get-user", (event, arg, replyName) => {
-    getUser(arg).then((result) => {
-      event.sender.send(replyName, result);
-    });
+  expressApp.get("/api/user/:id", async (req, res) => {
+    try {
+      const user = await getUser(req.params.id);
+      if (user) {
+        res.json(user);
+      } else {
+        res.status(404).send("User not found");
+      }
+    } catch (error) {
+      res.status(500).send("Error fetching user");
+    }
   });
-  electron.ipcMain.on("add-user", (event, arg) => {
-    addUser(arg).then((result) => {
-      event.sender.send("add-user-reply", result);
-    });
+  expressApp.post("/api/user", async (req, res) => {
+    try {
+      const user = req.body;
+      const result = await addUser(user);
+      res.status(201).json(result);
+    } catch (error) {
+      res.status(500).send("Error adding user");
+    }
   });
-  electron.ipcMain.on("update-user", (event, arg) => {
-    updateUser(arg).then((result) => {
-      event.sender.send("update-user-reply", result);
-    });
+  expressApp.put("/api/user/:id", async (req, res) => {
+    try {
+      const user = req.body;
+      const result = await updateUser(user);
+      if (result) {
+        res.json(result);
+      } else {
+        res.status(404).send("User not found");
+      }
+    } catch (error) {
+      res.status(500).send("Error updating user");
+    }
   });
-  electron.ipcMain.on("delete-user", (event, arg) => {
-    removeUser(arg).then((result) => {
-      event.sender.send("delete-user-reply", result);
-    });
+  expressApp.delete("/api/user/:id", async (req, res) => {
+    try {
+      const result = await removeUser(req.params.id);
+      if (result) {
+        res.json(result);
+      } else {
+        res.status(404).send("User not found");
+      }
+    } catch (error) {
+      res.status(500).send("Error deleting user");
+    }
   });
-  electron.ipcMain.on("get-lorebooks", (event, replyName) => {
-    getLorebooks().then((result) => {
-      event.sender.send(replyName, result);
-    });
+  expressApp.get("/api/lorebooks", async (req, res) => {
+    try {
+      const lorebooks = await getLorebooks();
+      res.json(lorebooks);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch lorebooks." });
+    }
   });
-  electron.ipcMain.on("get-lorebook", (event, arg, replyName) => {
-    getLorebook(arg).then((result) => {
-      event.sender.send(replyName, result);
-    });
+  expressApp.get("/api/lorebook/:id", async (req, res) => {
+    const { id } = req.params;
+    try {
+      const lorebook = await getLorebook(id);
+      res.json(lorebook);
+    } catch (error) {
+      res.status(500).json({ error: `Failed to fetch lorebook with ID ${id}.` });
+    }
   });
-  electron.ipcMain.on("add-lorebook", (event, arg) => {
-    addLorebook(arg).then((result) => {
-      event.sender.send("add-lorebook-reply", result);
-    });
+  expressApp.post("/api/lorebook", async (req, res) => {
+    try {
+      const result = await addLorebook(req.body);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to add lorebook." });
+    }
   });
-  electron.ipcMain.on("update-lorebook", (event, arg) => {
-    updateLorebook(arg).then((result) => {
-      event.sender.send("update-lorebook-reply", result);
-    });
+  expressApp.put("/api/lorebook/:id", async (req, res) => {
+    try {
+      const result = await updateLorebook(req.body);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ error: `Failed to update lorebook with ID ${req.params.id}.` });
+    }
   });
-  electron.ipcMain.on("delete-lorebook", (event, arg) => {
-    removeLorebook(arg).then((result) => {
-      event.sender.send("delete-lorebook-reply", result);
-    });
+  expressApp.delete("/api/lorebook/:id", async (req, res) => {
+    const { id } = req.params;
+    try {
+      const result = await removeLorebook(id);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ error: `Failed to delete lorebook with ID ${id}.` });
+    }
   });
-  electron.ipcMain.on("clear-data", (event, arg) => {
-    constructDB.destroy();
-    chatsDB.destroy();
-    commandDB.destroy();
-    attachmentDB.destroy();
-    instructDB.destroy();
-    completionDB.destroy();
-    userDB.destroy();
-    lorebookDB.destroy();
-    createDBs();
+  expressApp.delete("/api/clear-data", async (req, res) => {
+    try {
+      await constructDB.destroy();
+      await chatsDB.destroy();
+      await commandDB.destroy();
+      await attachmentDB.destroy();
+      await instructDB.destroy();
+      await completionDB.destroy();
+      await userDB.destroy();
+      await lorebookDB.destroy();
+      createDBs();
+      res.status(200).send("Data cleared successfully.");
+    } catch (error) {
+      console.error("Error clearing data:", error);
+      res.status(500).send("Failed to clear data.");
+    }
   });
   function createDBs() {
     constructDB = new PouchDB("constructs", { prefix: dataPath, adapter: "leveldb" });
