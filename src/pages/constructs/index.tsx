@@ -101,10 +101,10 @@ const ConstructsPage = () => {
                     <h2 className="text-2xl font-bold text-theme-text text-shadow-xl">Constructs</h2>
                     <div className="grid grid-cols-5 gap-1 w-15vw mb-4 h-14">
                         <button onClick={clearActive} className="themed-button-pos flex items-center justify-center" data-tooltip="Clear Active Constructs">
-                            <FiX className='absolute'size={'3.5rem'}/>
+                            <FiX className='absolute'size={'3rem'}/>
                         </button>
                         <label htmlFor="character-image-input" className="themed-button-pos flex items-center justify-center" data-tooltip="Import Character Card" id="importCard">
-                            <AiOutlineUpload className='absolute'size={'3.5rem'}/>
+                            <AiOutlineUpload className='absolute'size={'3rem'}/>
                         </label>
                         <input
                             type="file"
