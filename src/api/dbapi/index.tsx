@@ -277,58 +277,51 @@ export async function deleteChat(id: string) {
 }
 
 export async function getInstructs(): Promise<Instruct[]> {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "get-instructs-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send("get-instructs", uniqueEventName);
-
-        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any[]) => {
-            if (data) {
-                const instructs = data.map((doc: any) => {
-                    return new Instruct(
-                        doc.doc._id,
-                        doc.doc.name,
-                        doc.doc.randomEvents
-                    );
-                });
-                resolve(instructs);
-            } else {
-                reject(new Error("No data received from 'instructs' event."));
-            }
-        });
-    });
+    try {
+        const response = await axios.get('/api/instructs');
+        return response.data.map((doc: any) => new Instruct(doc.doc._id, doc.doc.name, doc.doc.randomEvents));
+    } catch (error) {
+        throw new Error("Failed to get all instructs.");
+    }
 }
 
 export async function getInstruct(id: string): Promise<Instruct> {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "get-instruct-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send("get-instruct", id);
-
-        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: any) => {
-            if (data) {
-                const instruct = new Instruct(
-                    data._id,
-                    data.name,
-                    data.randomEvents
-                );
-                resolve(instruct);
-            } else {
-                reject(new Error("No data received from 'instruct' event."));
-            }
-        });
-    });
+    try {
+        const response = await axios.get(`/api/instruct/${id}`);
+        const data = response.data;
+        return new Instruct(data._id, data.name, data.randomEvents);
+    } catch (error) {
+        throw new Error("Failed to get instruct.");
+    }
 }
 
 export async function saveNewInstruct(instruct: Instruct) {
-    ipcRenderer.send('add-instruct', instruct);
+    try {
+        const response = await axios.post('/api/instruct', instruct);
+        return response.data; // Assuming the server returns the saved instruct data.
+    } catch (error) {
+        throw new Error("Failed to add instruct.");
+    }
 }
 
 export async function updateInstruct(instruct: Instruct) {
-    ipcRenderer.send('update-instruct', instruct);
+    try {
+        const response = await axios.put(`/api/instruct/${instruct._id}`, instruct);
+        return response.data; // Assuming the server returns the updated instruct data.
+    } catch (error) {
+        throw new Error("Failed to update instruct.");
+    }
 }
 
 export async function deleteInstruct(id: string) {
-    ipcRenderer.send('delete-instruct', id);
+    try {
+        const response = await axios.delete(`/api/instruct/${id}`);
+        return response.data; // Assuming the server returns some status or confirmation data.
+    } catch (error) {
+        throw new Error("Failed to delete instruct.");
+    }
 }
+
 
 export async function getCompletions(): Promise<CompletionLog[]> {
     try {
