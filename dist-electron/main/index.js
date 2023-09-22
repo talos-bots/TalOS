@@ -3349,114 +3349,153 @@ const getDefaultUpscale = () => {
   return store$3.get("defaultUpscale", 1.5);
 };
 function SDRoutes() {
-  electron.ipcMain.on("set-default-prompt", (event, prompt) => {
-    setDefaultPrompt(prompt);
-  });
-  electron.ipcMain.on("get-default-prompt", (event) => {
-    event.sender.send("get-default-prompt-reply", getDefaultPrompt());
-  });
-  electron.ipcMain.on("set-sdapi-url", (event, apiUrl) => {
+  expressApp.post("/api/diffusion/url", (req, res) => {
+    const apiUrl = req.body.apiUrl;
     console.log(apiUrl);
     setSDApiUrl(apiUrl);
+    res.sendStatus(200);
   });
-  electron.ipcMain.on("get-sdapi-url", (event) => {
-    event.sender.send("get-sdapi-url-reply", getSDApiUrl());
+  expressApp.get("/api/diffusion/url", (req, res) => {
+    const apiUrl = getSDApiUrl();
+    res.json({ apiUrl });
   });
-  electron.ipcMain.on("txt2img", (event, data, endpoint2) => {
-    txt2img(data, endpoint2).then((result) => {
-      event.sender.send("txt2img-reply", result);
-    }).catch((err) => {
+  expressApp.post("/api/diffusion/txt2img", async (req, res) => {
+    const { data, endpoint: endpoint2 } = req.body;
+    try {
+      const result = await txt2img(data, endpoint2);
+      res.json({ result });
+    } catch (err) {
       console.log(err);
-    });
+      res.status(500).json({ error: "Failed to process txt2img" });
+    }
   });
-  electron.ipcMain.on("set-default-negative-prompt", (event, prompt) => {
+  expressApp.post("/api/diffusion/default-prompt", (req, res) => {
+    const prompt = req.body.prompt;
+    setDefaultPrompt(prompt);
+    res.sendStatus(200);
+  });
+  expressApp.get("/api/diffusion/default-prompt", (req, res) => {
+    const prompt = getDefaultPrompt();
+    res.json({ prompt });
+  });
+  expressApp.post("/api/diffusion/default-negative-prompt", (req, res) => {
+    const prompt = req.body.prompt;
     setDefaultNegativePrompt(prompt);
+    res.sendStatus(200);
   });
-  electron.ipcMain.on("get-default-negative-prompt", (event) => {
-    event.sender.send("get-default-negative-prompt-reply", getDefaultNegativePrompt());
+  expressApp.get("/api/diffusion/default-negative-prompt", (req, res) => {
+    const prompt = getDefaultNegativePrompt();
+    res.json({ prompt });
   });
-  electron.ipcMain.on("set-default-upscaler", (event, upscaler) => {
+  expressApp.post("/api/diffusion/default-upscaler", (req, res) => {
+    const upscaler = req.body.upscaler;
     setDefaultUpscaler(upscaler);
+    res.sendStatus(200);
   });
-  electron.ipcMain.on("get-default-upscaler", (event) => {
-    event.sender.send("get-default-upscaler-reply", getDefaultUpscaler());
+  expressApp.get("/api/diffusion/default-upscaler", (req, res) => {
+    const upscaler = getDefaultUpscaler();
+    res.json({ upscaler });
   });
-  electron.ipcMain.on("get-loras", (event) => {
-    getAllLoras().then((result) => {
-      event.sender.send("get-loras-reply", result);
-    }).catch((err) => {
+  expressApp.get("/api/diffusion/loras", async (req, res) => {
+    try {
+      const result = await getAllLoras();
+      res.json({ result });
+    } catch (err) {
       console.log(err);
-    });
+      res.status(500).json({ error: "Failed to get loras" });
+    }
   });
-  electron.ipcMain.on("get-embeddings", (event) => {
-    getEmbeddings().then((result) => {
-      event.sender.send("get-embeddings-reply", result);
-    }).catch((err) => {
+  expressApp.get("/api/diffusion/embeddings", async (req, res) => {
+    try {
+      const result = await getEmbeddings();
+      res.json({ result });
+    } catch (err) {
       console.log(err);
-    });
+      res.status(500).json({ error: "Failed to get embeddings" });
+    }
   });
-  electron.ipcMain.on("get-models", (event) => {
-    getModels().then((result) => {
-      event.sender.send("get-models-reply", result);
-    }).catch((err) => {
+  expressApp.get("/api/diffusion/models", async (req, res) => {
+    try {
+      const result = await getModels();
+      res.json({ result });
+    } catch (err) {
       console.log(err);
-    });
+      res.status(500).json({ error: "Failed to get models" });
+    }
   });
-  electron.ipcMain.on("get-vae-models", (event) => {
-    getVaeModels().then((result) => {
-      event.sender.send("get-vae-models-reply", result);
-    }).catch((err) => {
+  expressApp.get("/api/diffusion/vae-models", async (req, res) => {
+    try {
+      const result = await getVaeModels();
+      res.json({ result });
+    } catch (err) {
       console.log(err);
-    });
+      res.status(500).json({ error: "Failed to get VAE models" });
+    }
   });
-  electron.ipcMain.on("get-upscalers", (event) => {
-    getUpscalers().then((result) => {
-      event.sender.send("get-upscalers-reply", result);
-    }).catch((err) => {
+  expressApp.get("/api/diffusion/upscalers", async (req, res) => {
+    try {
+      const result = await getUpscalers();
+      res.json({ result });
+    } catch (err) {
       console.log(err);
-    });
+      res.status(500).json({ error: "Failed to get upscalers" });
+    }
   });
-  electron.ipcMain.on("set-default-steps", (event, steps) => {
+  expressApp.post("/api/diffusion/default-steps", (req, res) => {
+    const { steps } = req.body;
     setDefaultSteps(steps);
+    res.sendStatus(200);
   });
-  electron.ipcMain.on("get-default-steps", (event) => {
-    event.sender.send("get-default-steps-reply", getDefaultSteps());
+  expressApp.get("/api/diffusion/default-steps", (req, res) => {
+    res.json({ steps: getDefaultSteps() });
   });
-  electron.ipcMain.on("set-default-cfg", (event, cfg) => {
+  expressApp.post("/api/diffusion/default-cfg", (req, res) => {
+    const { cfg } = req.body;
     setDefaultCfg(cfg);
+    res.sendStatus(200);
   });
-  electron.ipcMain.on("get-default-cfg", (event) => {
-    event.sender.send("get-default-cfg-reply", getDefaultCfg());
+  expressApp.get("/api/diffusion/default-cfg", (req, res) => {
+    res.json({ cfg: getDefaultCfg() });
   });
-  electron.ipcMain.on("set-default-width", (event, width) => {
+  expressApp.post("/api/diffusion/default-width", (req, res) => {
+    const { width } = req.body;
     setDefaultWidth(width);
+    res.sendStatus(200);
   });
-  electron.ipcMain.on("get-default-width", (event) => {
-    event.sender.send("get-default-width-reply", getDefaultWidth());
+  expressApp.get("/api/diffusion/default-width", (req, res) => {
+    res.json({ width: getDefaultWidth() });
   });
-  electron.ipcMain.on("set-default-height", (event, height) => {
+  expressApp.post("/api/diffusion/default-height", (req, res) => {
+    const { height } = req.body;
     setDefaultHeight(height);
+    res.sendStatus(200);
   });
-  electron.ipcMain.on("get-default-height", (event) => {
-    event.sender.send("get-default-height-reply", getDefaultHeight());
+  expressApp.get("/api/diffusion/default-height", (req, res) => {
+    res.json({ height: getDefaultHeight() });
   });
-  electron.ipcMain.on("set-default-highres-steps", (event, highresSteps) => {
+  expressApp.post("/api/diffusion/default-highres-steps", (req, res) => {
+    const { highresSteps } = req.body;
     setDefaultHighresSteps(highresSteps);
+    res.sendStatus(200);
   });
-  electron.ipcMain.on("get-default-highres-steps", (event) => {
-    event.sender.send("get-default-highres-steps-reply", getDefaultHighresSteps());
+  expressApp.get("/api/diffusion/default-highres-steps", (req, res) => {
+    res.json({ highresSteps: getDefaultHighresSteps() });
   });
-  electron.ipcMain.on("set-default-denoising-strength", (event, denoisingStrength) => {
+  expressApp.post("/api/diffusion/default-denoising-strength", (req, res) => {
+    const { denoisingStrength } = req.body;
     setDefaultDenoisingStrength(denoisingStrength);
+    res.sendStatus(200);
   });
-  electron.ipcMain.on("get-default-denoising-strength", (event) => {
-    event.sender.send("get-default-denoising-strength-reply", getDefaultDenoisingStrength());
+  expressApp.get("/api/diffusion/default-denoising-strength", (req, res) => {
+    res.json({ denoisingStrength: getDefaultDenoisingStrength() });
   });
-  electron.ipcMain.on("set-default-upscale", (event, upscale) => {
+  expressApp.post("/api/diffusion/default-upscale", (req, res) => {
+    const { upscale } = req.body;
     setDefaultUpscale(upscale);
+    res.sendStatus(200);
   });
-  electron.ipcMain.on("get-default-upscale", (event) => {
-    event.sender.send("get-default-upscale-reply", getDefaultUpscale());
+  expressApp.get("/api/diffusion/default-upscale", (req, res) => {
+    res.json({ upscale: getDefaultUpscale() });
   });
 }
 const txt2img = async (prompt, negativePrompt, steps, cfg, width, height, highresSteps, denoisingStrength) => {
