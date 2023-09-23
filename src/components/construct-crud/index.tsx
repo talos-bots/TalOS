@@ -17,6 +17,7 @@ import TokenTextarea from "../token-textarea";
 import { confirmModal } from "../confirm-modal";
 import Loading from "../loading";
 import { getImageURL, uploadImage } from "@/api/baseapi";
+import AutoFillGenerator, { fieldTypes } from "./auto-fill-generator";
 
 const commandTypes = [
     {
@@ -81,6 +82,9 @@ const ConstructManagement = (props: ConstructManagementProps) => {
     const [page, setPage] = useState<number>(1);
     const [swipeDirection, setSwipeDirection] = useState<string>("none");
     const [isLoaded, setIsLoaded] = useState<boolean>(false);
+    const [showAutoComplete, setShowAutoComplete] = useState<boolean>(false);
+    const [selectedField, setSelectedField] = useState<fieldTypes | null>(null);
+    const [currentState, setCurrentState] = useState<Construct | null>(null);
 
     const makeActive = async () => {
         if(constructState !== null) {
@@ -347,6 +351,61 @@ const ConstructManagement = (props: ConstructManagementProps) => {
         setConstructDefaultChatConfig(config);
     }
 
+    const handleFill = (string: string, field: fieldTypes) => {
+        switch(field) {
+            case "name":
+                setConstructName(string);
+                break;
+            case "visualDescription":
+                setConstructVisualDescription(string);
+                break;
+            case "background":
+                setConstructBackground(string);
+                break;
+            case "greeting":
+                setConstructGreetings([...constructGreetings, string]);
+                break;
+            case "farewell":
+                setConstructFarewells([...constructFarewells, string]);
+                break;
+            case "interests":
+                setConstructInterests([...constructInterests, string]);
+                break;
+            case "nickname":
+                setConstructNick(string);
+                break;
+            case "authorsnote":
+                setConstructAuthorsNote(string);
+                break;
+            case "persona":
+                setConstructPersonality(string);
+                break;
+        }
+    }
+
+    const assembleState = async () => {
+        const newConstruct = new Construct();
+        if(constructState?._id !== undefined) {
+            newConstruct._id = constructState._id;
+        }
+        newConstruct.name = constructName;
+        newConstruct.avatar = constructImage;
+        newConstruct.nickname = constructNickname;
+        newConstruct.commands = constructCommands;
+        newConstruct.visualDescription = constructVisualDescription;
+        newConstruct.personality = constructPersonality;
+        newConstruct.background = constructBackground;
+        newConstruct.relationships = constructRelationships;
+        newConstruct.interests = constructInterests;
+        newConstruct.greetings = constructGreetings;
+        newConstruct.farewells = constructFarewells;
+        newConstruct.authorsNote = constructAuthorsNote;
+        newConstruct.sprites = constructSprites;
+        newConstruct.defaultConfig = constructDefaultChatConfig;
+        newConstruct.thoughtPattern = constructThoughtPattern;
+        setCurrentState(newConstruct);
+    }
+
     if(!isLoaded) return (<Loading/>)
     
     return (
@@ -366,6 +425,7 @@ const ConstructManagement = (props: ConstructManagementProps) => {
 		) : (
 			null
 		)}
+        <AutoFillGenerator visible={showAutoComplete} setVisible={() => setShowAutoComplete(!showAutoComplete)} field={selectedField} fill={handleFill} currentState={currentState} setError={setError}/>
         <div className={"w-full h-[calc(100vh-70px)] max-[h-[calc(100vh-70px)]] overflow-x-hidden p-4 gap-2 " + (isModal ? "backdrop-blur-md z-1000" : "")}>
             <div className="w-full h-full themed-root grid grid-rows-[auto,1fr] pop-in">
                 <h2 className="text-2xl font-bold text-theme-text text-shadow-xl">Construct Editor</h2>
@@ -376,7 +436,11 @@ const ConstructManagement = (props: ConstructManagementProps) => {
                     <div className="col-span-1 items-center gap-2 h-full">
                         <div className="w-full flex flex-col h-full items-center justify-center gap-2">
                             <div className="flex flex-col h-1/6 w-full">
-                                <label htmlFor="construct-role" className="font-semibold">Name</label>
+                                <label htmlFor="construct-role" className="font-semibold gap-2 flex pb-1">Name
+                                    <button className="themed-button-small" onClick={() => {assembleState().then(() => {setSelectedField('name'); setShowAutoComplete(true)})}}>
+                                        <RefreshCw size={'1rem'}/>
+                                    </button>
+                                </label>
                                 <input
                                     type="text"
                                     required={true}
@@ -404,7 +468,11 @@ const ConstructManagement = (props: ConstructManagementProps) => {
                             </div>
                             <button className="themed-button-pos" onClick={() => generateConstructImage()} title="Generate Image using Visual Description"><RefreshCw/></button>
                             <div className="flex flex-col flex-grow-0 h-1/6 w-full">
-                                <label htmlFor="construct-role" className="font-semibold">Nickname</label>
+                                <label htmlFor="construct-role" className="font-semibold gap-2 flex pb-1">Nickname 
+                                    <button className="themed-button-small" onClick={() => {assembleState().then(() => {setSelectedField('nickname'); setShowAutoComplete(true)})}}>
+                                        <RefreshCw size={'1rem'}/>
+                                    </button>
+                                </label>
                                 <input
                                     type="text"
                                     required={false}
@@ -415,7 +483,11 @@ const ConstructManagement = (props: ConstructManagementProps) => {
                                 />
                             </div>
                             <div className="flex flex-col flex-grow-0 h-2/6 w-full">
-                                <label htmlFor="construct-note" className="font-semibold">Author's Note</label>
+                                <label htmlFor="construct-note" className="font-semibold gap-2 flex pb-1">Author's Note
+                                    <button className="themed-button-small" onClick={() => {assembleState().then(() => {setSelectedField('authorsnote'); setShowAutoComplete(true)})}}>
+                                        <RefreshCw size={'1rem'}/>
+                                    </button>
+                                </label>
                                 <TokenTextarea
                                     className="themed-input w-full h-full"
                                     value={constructAuthorsNote}
@@ -430,7 +502,11 @@ const ConstructManagement = (props: ConstructManagementProps) => {
                     <div className="col-span-2 gap-2 grid grid-rows-2">
                         <div className="row-span-1 flex flex-col gap-2 flex-grow-0">
                         <div className="flex flex-col h-1/2 flex-grow-0">
-                                <label htmlFor="construct-background" className="font-semibold">Background</label>
+                                <label htmlFor="construct-background" className="font-semibold gap-2 flex pb-1">Background
+                                    <button className="themed-button-small" onClick={() => {assembleState().then(() => {setSelectedField('background'); setShowAutoComplete(true)})}}>
+                                        <RefreshCw size={'1rem'}/>
+                                    </button>
+                                </label>
                                 <TokenTextarea
                                     className="themed-input h-full"
                                     value={constructBackground}
@@ -438,7 +514,11 @@ const ConstructManagement = (props: ConstructManagementProps) => {
                                 />
                             </div>
                             <div className="flex flex-col h-1/2 flex-grow-0">
-                                <label htmlFor="construct-personality" className="font-semibold">Personality</label>
+                                <label htmlFor="construct-personality" className="font-semibold gap-2 flex pb-1">Personality
+                                    <button className="themed-button-small" onClick={() => {assembleState().then(() => {setSelectedField('persona'); setShowAutoComplete(true)})}}>
+                                        <RefreshCw size={'1rem'}/>
+                                    </button>
+                                </label>
                                 <TokenTextarea
                                     className="themed-input h-full"
                                     value={constructPersonality}
@@ -448,7 +528,11 @@ const ConstructManagement = (props: ConstructManagementProps) => {
                         </div>
                         <div className="row-span-1 flex flex-col gap-2 flex-grow-0">
                             <div className="flex flex-col h-1/2 flex-grow-0">
-                                <label htmlFor="construct-appearance" className="font-semibold">Visual Description</label>
+                                <label htmlFor="construct-appearance" className="font-semibold gap-2 flex pb-1">Visual Description
+                                    <button className="themed-button-small" onClick={() => {assembleState().then(() => {setSelectedField('visualDescription'); setShowAutoComplete(true)})}}>
+                                        <RefreshCw size={'1rem'}/>
+                                    </button>
+                                </label>
                                 <TokenTextarea
                                     className="themed-input h-full"
                                     value={constructVisualDescription}
@@ -456,7 +540,8 @@ const ConstructManagement = (props: ConstructManagementProps) => {
                                 />
                             </div>
                             <div className="flex flex-col h-1/2 overflow-y-auto flex-grow-0">
-                                <label htmlFor="construct-relationships" className="font-semibold">Relationships</label>
+                                <label htmlFor="construct-relationships" className="font-semibold gap-2 flex pb-1">Relationships
+                                </label>
                                 <StringArrayEditorCards 
                                     value={constructRelationships}
                                     onChange={(event) => setConstructRelationships(event)}
@@ -467,14 +552,22 @@ const ConstructManagement = (props: ConstructManagementProps) => {
                     <div className="col-span-2 gap-2 grid grid-rows-2">
                         <div className="row-span-1 flex flex-col gap-2 flex-grow-0">
                             <div className="flex flex-col h-1/2 overflow-y-auto flex-grow-0">
-                                <label htmlFor="construct-interests" className="font-semibold">Interests</label>
+                                <label htmlFor="construct-interests" className="font-semibold gap-2 flex pb-1">Interests
+                                    <button className="themed-button-small" onClick={() => {assembleState().then(() => {setSelectedField('interests'); setShowAutoComplete(true)})}}>
+                                        <RefreshCw size={'1rem'}/>
+                                    </button>
+                                </label>
                                 <StringArrayEditorCards
                                     value={constructInterests}
                                     onChange={(event) => setConstructInterests(event)}
                                 />
                             </div>
                             <div className="flex flex-col h-1/2 overflow-y-auto flex-grow-0">
-                                <label htmlFor="construct-greetings" className="font-semibold">Greetings</label>
+                                <label htmlFor="construct-greetings" className="font-semibold gap-2 flex pb-1">Greetings
+                                    <button className="themed-button-small" onClick={() => {assembleState().then(() => {setSelectedField('greeting'); setShowAutoComplete(true)})}}>
+                                        <RefreshCw size={'1rem'}/>
+                                    </button>
+                                </label>
                                 <StringArrayEditorCards
                                     value={constructGreetings}
                                     onChange={(event) => setConstructGreetings(event)}
@@ -483,7 +576,11 @@ const ConstructManagement = (props: ConstructManagementProps) => {
                         </div>
                         <div className="row-span-1 flex flex-col gap-4 flex-grow-0">
                             <div className="flex flex-col h-1/2 overflow-y-auto flex-grow-0">
-                                <label htmlFor="construct-farewells" className="font-semibold">Farewells</label>
+                                <label htmlFor="construct-farewells" className="font-semibold gap-2 flex pb-1">Farewells
+                                    <button className="themed-button-small" onClick={() => {assembleState().then(() => {setSelectedField('farewell'); setShowAutoComplete(true)})}}>
+                                        <RefreshCw size={'1rem'}/>
+                                    </button>
+                                </label>
                                 <StringArrayEditorCards
                                     value={constructFarewells}
                                     onChange={(event) => setConstructFarewells(event)}
@@ -541,7 +638,11 @@ const ConstructManagement = (props: ConstructManagementProps) => {
                         <ConstructChatConfigPanel chatConfig={constructDefaultChatConfig} onChange={handleConfigEdit}/>
                     </div>
                     <div className="col-span-1 flex flex-col overflow-y-auto">
-                        <label htmlFor="construct-thought-pattern" className="font-semibold">Thought Pattern</label>
+                        <label htmlFor="construct-thought-pattern" className="font-semibold gap-2 flex pb-1">Thought Pattern
+                            <button className="themed-button-small" onClick={() => {assembleState().then(() => {setSelectedField('thoughtpattern'); setShowAutoComplete(true)})}}>
+                                <RefreshCw size={'1rem'}/>
+                            </button>
+                        </label>
                         <TokenTextarea
                             className="themed-input h-full"
                             value={constructThoughtPattern}
