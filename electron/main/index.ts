@@ -147,7 +147,7 @@ ipcMain.handle("open-win", (_, arg) => {
 });
 
 export const expressApp = express();
-const bodyParser = require('body-parser');
+import bodyParser from 'body-parser';
 import { Server } from 'socket.io';
 const port = 3003;
 
