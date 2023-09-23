@@ -1,3 +1,4 @@
+import { getImageURL } from "@/api/baseapi";
 import { User } from "@/classes/User";
 import { confirmModal } from "@/components/confirm-modal";
 import { Download, EditIcon, TrashIcon } from "lucide-react";
@@ -28,7 +29,7 @@ const UserInfo = (props: UserInfoProps) => {
         <div className="themed-box-no-padding w-full flex flex-row justify-start p-1 items-center gap-4" onClick={()=> {if(onClick !== undefined) onClick(user ? user : null)}}>
             <div className="grid grid-cols-3 gap-6 w-2/3 justify-start items-center">
                 <div className="flex items-center justify-center">
-                    {user?.avatar ? (<img src={user.avatar} className="themed-chat-avatar"/>) : (<RiQuestionMark size={'3.5rem'} className="themed-chat-avatar"/>)}
+                    {user?.avatar ? (<img src={getImageURL(user.avatar)} className="themed-chat-avatar"/>) : (<RiQuestionMark size={'3.5rem'} className="themed-chat-avatar"/>)}
                 </div>
                 <p className="text-left">{user?.name ? user.name : 'New User'}</p>
                 <p className="text-right">{user?.nickname ? `"${user.nickname}"` : null}</p>

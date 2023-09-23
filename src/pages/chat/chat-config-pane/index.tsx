@@ -1,3 +1,4 @@
+import { getImageURL } from "@/api/baseapi";
 import { getConstructs, getStorageValue, setStorageValue } from "@/api/dbapi";
 import { Chat } from "@/classes/Chat";
 import { Construct, ConstructChatConfig } from "@/classes/Construct";
@@ -176,7 +177,7 @@ const ChatConfigPane = (props: ChatConfigPaneProps) => {
                                         onClick={() => {chat?._id !== 'activePool' && setConstructs(constructs.includes(construct._id) ? constructs.filter((id) => id !== construct._id) : [...constructs, construct._id]); handleEdit();}}
                                     >
                                         <div className="flex items-center justify-center">
-                                            {construct.avatar.length > 0 ? (<img src={construct.avatar} className="themed-chat-avatar"/>) : (<RiQuestionMark className="themed-chat-avatar" size={'2.5rem'}/>)}
+                                            {construct.avatar.length > 0 ? (<img src={getImageURL(construct.avatar)} className="themed-chat-avatar"/>) : (<RiQuestionMark className="themed-chat-avatar" size={'2.5rem'}/>)}
                                         </div>
                                         <p>{construct.name}</p>
                                     </div>

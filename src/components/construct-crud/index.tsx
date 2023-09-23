@@ -16,7 +16,7 @@ import ConstructChatConfigPanel from "../construct-chat-config";
 import TokenTextarea from "../token-textarea";
 import { confirmModal } from "../confirm-modal";
 import Loading from "../loading";
-import { uploadImage } from "@/api/baseapi";
+import { getImageURL, uploadImage } from "@/api/baseapi";
 
 const commandTypes = [
     {
@@ -129,7 +129,7 @@ const ConstructManagement = (props: ConstructManagementProps) => {
                 const formData = new FormData();
                 formData.append('image', file, newName);
                 uploadImage(formData);
-                setConstructImage(`./api/images/${newName}`);
+                setConstructImage(`/api/images/${newName}`);
                 saveConstruct();
             } else {
                 setError('Error generating image. Check your Stable Diffusion connection settings.');
@@ -266,7 +266,7 @@ const ConstructManagement = (props: ConstructManagementProps) => {
             const formData = new FormData();
             formData.append('image', file, newName);
             uploadImage(formData);
-            setConstructImage(`./api/images/${newName}`);
+            setConstructImage(`/api/images/${newName}`);
         }
     };
 
@@ -391,7 +391,7 @@ const ConstructManagement = (props: ConstructManagementProps) => {
                                 <div className={"absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center" + (!waitingForImage ? " hidden" : "")}>
                                     <div className="animate-spin rounded-full h-20 w-20 border-b-4 border-theme-text"></div>
                                 </div>
-                                {constructImage === '' ? <RiQuestionMark className="construct-image-default"/> : <img src={constructImage} alt={constructName} className="construct-image"/>}
+                                {constructImage === '' ? <RiQuestionMark className="construct-image-default"/> : <img src={getImageURL(constructImage)} alt={constructName} className="construct-image"/>}
                             </label>
                                 <input 
                                     type="file" 

@@ -12,6 +12,7 @@ import { Download, Edit, Trash } from "lucide-react";
 import { confirmModal } from "../confirm-modal";
 import QuickChatCongfig from "./construct-quick-chat-config";
 import TokenTextarea from "../token-textarea";
+import { getImageURL } from "@/api/baseapi";
 interface Props {
     character: Construct;
     onCharacterDelete: (character: Construct) => void;
@@ -133,7 +134,7 @@ const ConstructBox: React.FC<Props> = ({character, onCharacterDelete, onCharacte
                 <div className="flex flex-row gap-2 justify-center items-center">
                     {!isOpen ? (
                     <div>
-                        {character && (character.avatar === '' ? <RiQuestionMark className="themed-message-avatar"/> : <img id={character._id} src={character.avatar} alt={characterName} className="themed-message-avatar"/>)}
+                        {character && (character.avatar === '' ? <RiQuestionMark className="themed-message-avatar"/> : <img id={character._id} src={getImageURL(character.avatar)} alt={characterName} className="themed-message-avatar"/>)}
                     </div>
                     ): null}
                     {characterName}
@@ -146,7 +147,7 @@ const ConstructBox: React.FC<Props> = ({character, onCharacterDelete, onCharacte
             <div className="grid grid-cols-5 gap-2">
                 <div className="col-span-1 flex flex-col text-left items-center">
                     <Link to={`/constructs/${character._id}`}>
-                        {character && (character.avatar === '' ? <RiQuestionMark className="construct-image-default"/> : <img id={character._id} src={character.avatar} alt={characterName} className="agent-image-default cursor-pointer object-fit rounded-theme-border-radius"/>)}
+                        {character && (character.avatar === '' ? <RiQuestionMark className="construct-image-default"/> : <img id={character._id} src={getImageURL(character.avatar)} alt={characterName} className="agent-image-default cursor-pointer object-fit rounded-theme-border-radius"/>)}
                     </Link>
                     <i className="mt-4 font-semibold text-left w-full">
                         {character.nickname}

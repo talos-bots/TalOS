@@ -6,7 +6,7 @@ import ReactSwitch from "react-switch";
 import EntryCrud from "./entry-crud";
 import { Construct } from "@/classes/Construct";
 import { Save, Trash } from "lucide-react";
-import { uploadImage } from "@/api/baseapi";
+import { getImageURL, uploadImage } from "@/api/baseapi";
 
 interface LorebookCrudProps {
     book: Lorebook | null;
@@ -70,7 +70,7 @@ const LorebookCrud = (props: LorebookCrudProps) => {
             const formData = new FormData();
             formData.append('image', file, newName);
             uploadImage(formData);
-            setLorebookImage(`./api/images/${newName}`);
+            setLorebookImage(`/api/images/${newName}`);
         }
     };
     
@@ -147,7 +147,7 @@ const LorebookCrud = (props: LorebookCrudProps) => {
                 <div className="col-span-1 flex flex-col gap-2 h-full text-left">
                     <div className="flex flex-col items-center justify-center h-1/6 mt-4">
                         <label htmlFor="image-upload">
-                            {bookImage === '' ? <RiQuestionMark className="book-image-default"/> : <img src={bookImage} alt={bookName} className="book-image"/>}
+                            {bookImage === '' ? <RiQuestionMark className="book-image-default"/> : <img src={getImageURL(bookImage)} alt={bookName} className="book-image"/>}
                         </label>
                         <input 
                             type="file" 

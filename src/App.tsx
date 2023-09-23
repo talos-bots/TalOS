@@ -25,7 +25,7 @@ export const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, url: str
   ipcRenderer.send('open-external-url', url);
 };
 
-export let url = '';
+export const url = 'http://localhost:3003';
 export const socket = io('http://localhost:3003');
 
 function App() {
@@ -66,10 +66,6 @@ function App() {
   }, []);
   
   const isDev = process.env.NODE_ENV === 'development';
-  
-  if(!isDev) {
-    url = 'http://localhost:3003';
-  }
 
   useEffect(() => {
     if(isFirstRun) {

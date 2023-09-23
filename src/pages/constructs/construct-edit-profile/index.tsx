@@ -1,3 +1,4 @@
+import { getImageURL } from "@/api/baseapi";
 import { Construct } from "@/classes/Construct";
 import { Edit, PlusIcon } from "lucide-react";
 import React, { useState, useEffect } from "react";
@@ -24,7 +25,7 @@ const ConstructEditProfile: React.FC<Props> = ({ character, active }) => {
             onMouseEnter={() => setIsHovered(true)} 
             onMouseLeave={() => setIsHovered(false)}
         >
-            <img src={characterImage} alt={characterName} className="object-cover w-full h-full rounded-theme-border-radius" />
+            <img src={getImageURL(characterImage)} alt={characterName} className="object-cover w-full h-full rounded-theme-border-radius" />
             <p className="text-theme-text first-line font-bold absolute bottom-4 left-4 right-4 text-shadow-xl themed-root-no-padding overflow-y-auto">
                 {characterName}
             </p>

@@ -1,4 +1,4 @@
-import { uploadImage } from "@/api/baseapi";
+import { getImageURL, uploadImage } from "@/api/baseapi";
 import { Sprite } from "@/classes/Construct"
 import { Emotion } from "@/types";
 import { useEffect, useState } from "react";
@@ -44,7 +44,7 @@ const SpriteCrud = (props: SpriteCrudProps) => {
                 <label htmlFor={`emotion-select-${emotion.value}`} className="flex w-fit h-fit cursor-pointer">
                     {spriteImage === null ?
                         <RiQuestionMark className="flex w-36 h-48 themed-root"/> : 
-                        <img src={spriteImage} alt={`Sprite for ${emotion.label}`} className="w-36 h-48 object-scale-down"/>
+                        <img src={getImageURL(spriteImage)} alt={`Sprite for ${emotion.label}`} className="w-36 h-48 object-scale-down"/>
                     }
                     <input
                         id={`emotion-select-${emotion.value}`}

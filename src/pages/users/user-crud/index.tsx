@@ -1,4 +1,4 @@
-import { uploadImage } from "@/api/baseapi";
+import { getImageURL, uploadImage } from "@/api/baseapi";
 import { saveNewUser, updateUser } from "@/api/dbapi";
 import { User } from "@/classes/User";
 import Loading from "@/components/loading";
@@ -53,7 +53,7 @@ const UserCrud = (props: UserCrudProps) => {
             const formData = new FormData();
             formData.append('image', file, newName);
             uploadImage(formData);
-            setUserImage(`./api/images/${newName}`);
+            setUserImage(`/api/images/${newName}`);
         }
     };
     
@@ -113,7 +113,7 @@ const UserCrud = (props: UserCrudProps) => {
                 <div className="col-span-1 flex flex-col gap-2 h-full text-left">
                     <div className="flex flex-col items-center justify-center h-3/6">
                         <label htmlFor="image-upload">
-                            {userImage === '' ? <RiQuestionMark className="user-image-default"/> : <img src={userImage} alt={userName} className="user-image"/>}
+                            {userImage === '' ? <RiQuestionMark className="user-image-default"/> : <img src={getImageURL(userImage)} alt={userName} className="user-image"/>}
                         </label>
                         <input 
                             type="file" 

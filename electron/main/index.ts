@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell, ipcMain, dialog } from "electron";
+import { app, BrowserWindow, shell, ipcMain, dialog, session } from "electron";
 import { release } from "node:os";
 import { join } from "node:path";
 import path from "path";
@@ -84,6 +84,17 @@ async function createWindow() {
     win.loadFile(indexHtml);
   }
 
+  session.defaultSession.webRequest.onBeforeRequest((details, callback) => {
+    if (details.url.includes('http://localhost:3003')) {
+      callback({ cancel: false });
+    } else if (details.url.includes('file:///C:/') && details.url.includes('http://localhost:3003')) {
+      // Modify the URL as needed
+      callback({ redirectURL: details.url.replace(process.env.DIST, '') });
+    } else {
+      callback({ cancel: false });
+    }
+  });
+  
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith("https:")) shell.openExternal(url);
     return { action: "deny" };

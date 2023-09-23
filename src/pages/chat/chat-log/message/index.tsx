@@ -1,3 +1,4 @@
+import { getImageURL } from "@/api/baseapi";
 import { getConstruct } from "@/api/dbapi";
 import { Attachment } from "@/classes/Attachment";
 import { Message } from "@/classes/Message";
@@ -99,7 +100,7 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate, onSplit, on
                 <div className="flex flex-row items-center">
                     <div className="flex flex-row items-center w-full gap-2">
                         <div className="flex items-center justify-center">
-                            {(message.avatar.length > 0 ? <img src={message.avatar} alt="avatar" className="themed-message-avatar" /> : <RiQuestionMark className="themed-message-avatar" size={'2rem'}/>)}
+                            {(message.avatar.length > 0 ? <img src={getImageURL(message.avatar)} alt="avatar" className="themed-message-avatar" /> : <RiQuestionMark className="themed-message-avatar" size={'2rem'}/>)}
                         </div>
                         <div className="themed-message-info text-theme-italic">{!message.isThought? user : `${user}'s thoughts (Internal)`} {getFormattedTime(time)} {message?.emotion ? `(${message.emotion})` : null}</div>
                         <div className="flex flex-col pt-6 w-full">

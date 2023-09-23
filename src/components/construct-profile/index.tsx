@@ -1,3 +1,4 @@
+import { getImageURL } from "@/api/baseapi";
 import { Construct } from "@/classes/Construct";
 import { PlusIcon } from "lucide-react";
 import React, { useState, useEffect } from "react";
@@ -25,7 +26,7 @@ const ConstructProfile: React.FC<Props> = ({ character, onClick, active }) => {
             onMouseLeave={() => setIsHovered(false)} 
             onClick={() => { if (onClick !== undefined) onClick(character) }}
         >
-            <img src={characterImage} alt={characterName} className="object-cover w-full h-full rounded-theme-border-radius" />
+            <img src={getImageURL(characterImage)} alt={characterName} className="object-cover w-full h-full rounded-theme-border-radius" />
             <p className="text-theme-text first-line font-bold absolute bottom-4 left-4 right-4 text-shadow-xl themed-root-no-padding overflow-y-auto">
                 {characterName}
             </p>

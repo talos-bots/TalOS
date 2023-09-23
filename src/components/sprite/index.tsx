@@ -1,3 +1,4 @@
+import { getImageURL } from "@/api/baseapi";
 import { getConstruct } from "@/api/dbapi";
 import { Construct, Sprite } from "@/classes/Construct";
 import { Emotion } from "@/types";
@@ -37,7 +38,7 @@ const SpriteDisplay = (props: SpriteProps) => {
     return (
         <div className="flex flex-col h-screen justify-end items-end">
             {spriteData?.image64 !== "" && spriteData?.image64 && (
-                <img className="object-scale-down cursor-pointer" src={spriteData?.image64} alt={spriteData?.emotion} onClick={() => sendPoke()}/>
+                <img className="object-scale-down cursor-pointer" src={getImageURL(spriteData?.image64)} alt={spriteData?.emotion} onClick={() => sendPoke()}/>
             )}
         </div>
     );    

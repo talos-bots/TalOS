@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { RiQuestionMark } from "react-icons/ri";
 import { truncateText } from "../../helpers";
 import { confirmModal } from "@/components/confirm-modal";
+import { getImageURL } from "@/api/baseapi";
 interface ChatDetailsProps {
     chat: Chat;
     onDoubleClick?: (chat: Chat) => void;
@@ -150,7 +151,7 @@ const ChatDetails = (props: ChatDetailsProps) => {
         >
             <div className="flex flex-row items-center justify-start">
                 <div className="flex items-center justify-center">
-                    {avatars.length > 0 ? (<img src={groupAvatar} className="themed-chat-avatar"/>) : (<RiQuestionMark className="themed-chat-avatar" size={`4rem`}/>)}
+                    {avatars.length > 0 ? (<img src={getImageURL(groupAvatar)} className="themed-chat-avatar"/>) : (<RiQuestionMark className="themed-chat-avatar" size={`4rem`}/>)}
                 </div>
                 {isEditing ? (
                     <textarea 

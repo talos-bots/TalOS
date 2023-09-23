@@ -70,3 +70,12 @@ export async function loadModels(){
       console.error(err);
     });
 }
+
+export function getImageURL(filename: string): string {
+    // Check if it is Base64
+    if (filename.startsWith('data:image')) {
+        return filename;
+    }
+    if(filename.startsWith('http')) return filename;
+    return `${url}${filename}`;
+}
