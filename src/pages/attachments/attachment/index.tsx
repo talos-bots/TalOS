@@ -14,7 +14,7 @@ const ImageAttachmentComponent = (props: AttachmentComponentProps) => {
     return (
         <div className={`col-span-1 w-full h-full themed-root flex flex-col justify-center items-center gap-2 flex-grow-0 aspect-square ${isDeleted? 'pop-out': 'slide-in-left'}`}>
             <p className="text-center font-semibold">{attachment.name}</p>
-            <img src={getAttachmentData(attachment)} className="w-full h-full object-contain rounded-theme-border-radius bg-theme-box border-theme-border-width border-theme-border"/>
+            <img src={getAttachmentData(attachment)} className="w-full h-[18rem] object-contain rounded-theme-border-radius bg-theme-box border-theme-border-width border-theme-border"/>
             <p className="w-full break-words">
                 {assembleMetadata(attachment)}
             </p>
