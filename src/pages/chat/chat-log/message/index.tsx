@@ -147,8 +147,10 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate, onSplit, on
                                         newData = "data:image/gif;base64," + newData;
                                     } else if(attachment.type === "image/webp") {
                                         newData = "data:image/webp;base64," + newData;
-                                    }else{
+                                    }else if(!attachment.data.startsWith("http")){
                                         newData = `data:${attachment.type};base64,` + newData;
+                                    }else{
+                                        newData = attachment.data;
                                     }
                                     if(attachment.type === "image/png" || attachment.type === "image/jpeg" || attachment.type === "image/gif" || attachment.type === "image/webp"){
                                         return (

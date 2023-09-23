@@ -229,7 +229,7 @@ export class DefaultChatConfig{
         public thinkBeforeChat: boolean = false,
         public replyToConstruct: number = 0.50,
         public replyToConstructMention: number = 0.75,
-        public replyToUser: number = 0.80,
+        public replyToUser: number = 1,
         public replyToUserMention: number = 1,
         public thoughtChance: number = 0.50,
     ){}
@@ -292,7 +292,7 @@ export class ConstructChatConfig{
         public thinkBeforeChat: boolean = false,
         public replyToConstruct: number = 0.50,
         public replyToConstructMention: number = 0.75,
-        public replyToUser: number = 0.80,
+        public replyToUser: number = 1,
         public replyToUserMention: number = 1,
         public thoughtChance: number = 0.50,
     ){}
