@@ -30,13 +30,18 @@ const discord_js = require("discord.js");
 const Store = require("electron-store");
 const PouchDB = require("pouchdb");
 const LeveldbAdapter = require("pouchdb-adapter-leveldb");
-const fs = require("fs");
 const axios = require("axios");
 const openai = require("openai");
 const promises = require("fs/promises");
 const FormData = require("form-data");
 const vectra = require("vectra");
 require("gpt-tokenizer");
+const fs = require("fs");
+const express = require("express");
+const multer = require("multer");
+const cors = require("cors");
+const node_http = require("node:http");
+const socket_io = require("socket.io");
 let constructDB$1;
 let chatsDB$1;
 let commandDB$1;
@@ -726,7 +731,7 @@ async function removeUser(id) {
 async function updateUser(user) {
   if (isDarwin) {
     addUserFromEDB(user._id, user);
-    return;
+    return user;
   }
   return userDB.get(user._id).then((doc) => {
     let updatedDoc = { ...doc, ...user };
@@ -806,223 +811,396 @@ function PouchDBRoutes() {
   completionDB = new PouchDB("completion", { prefix: dataPath, adapter: "leveldb" });
   userDB = new PouchDB("user", { prefix: dataPath, adapter: "leveldb" });
   lorebookDB = new PouchDB("lorebook", { prefix: dataPath, adapter: "leveldb" });
-  electron.ipcMain.on("get-constructs", (event, replyName) => {
-    getAllConstructs().then((result) => {
-      event.sender.send(replyName, result);
-    });
+  expressApp.get("/api/constructs", async (req, res) => {
+    try {
+      const constructs = await getAllConstructs();
+      res.json(constructs);
+    } catch (error) {
+      res.status(500).json({ message: "An error occurred." });
+    }
   });
-  electron.ipcMain.on("get-construct", (event, arg, replyName) => {
-    getConstruct(arg).then((result) => {
-      event.sender.send(replyName, result);
-    });
+  expressApp.get("/api/construct/:id", async (req, res) => {
+    try {
+      const id = req.params.id;
+      const construct = await getConstruct(id);
+      if (construct) {
+        res.json(construct);
+      } else {
+        res.status(404).json({ message: "Construct not found." });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "An error occurred." });
+    }
   });
-  electron.ipcMain.on("add-construct", (event, arg) => {
-    addConstruct$1(arg).then((result) => {
-      event.sender.send("add-construct-reply", result);
-    });
+  expressApp.post("/api/add-construct", async (req, res) => {
+    try {
+      const construct = req.body;
+      const result = await addConstruct$1(construct);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ message: "An error occurred while adding the construct." });
+    }
   });
-  electron.ipcMain.on("update-construct", (event, arg) => {
-    updateConstruct(arg).then((result) => {
-      event.sender.send("update-construct-reply", result);
-    });
+  expressApp.put("/api/update-construct", async (req, res) => {
+    try {
+      const construct = req.body;
+      const result = await updateConstruct(construct);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ message: "An error occurred while updating the construct." });
+    }
   });
-  electron.ipcMain.on("delete-construct", (event, arg) => {
-    removeConstruct$1(arg).then((result) => {
-      event.sender.send("delete-construct-reply", result);
-    });
+  expressApp.delete("/api/delete-construct/:id", async (req, res) => {
+    try {
+      const id = req.params.id;
+      const result = await removeConstruct$1(id);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ message: "An error occurred while deleting the construct." });
+    }
   });
-  electron.ipcMain.on("get-chats", (event, replyName) => {
-    getAllChats().then((result) => {
-      event.sender.send(replyName, result);
-    });
+  expressApp.get("/api/chats", async (req, res) => {
+    try {
+      const chats = await getAllChats();
+      res.json(chats);
+    } catch (error) {
+      res.status(500).json({ message: "An error occurred." });
+    }
   });
-  electron.ipcMain.on("get-chats-by-construct", (event, arg, replyName) => {
-    getChatsByConstruct(arg).then((result) => {
-      event.sender.send(replyName, result);
-    });
+  expressApp.get("/api/chats/construct/:constructId", async (req, res) => {
+    try {
+      const constructId = req.params.constructId;
+      const chats = await getChatsByConstruct(constructId);
+      res.json(chats);
+    } catch (error) {
+      res.status(500).json({ message: "An error occurred." });
+    }
   });
-  electron.ipcMain.on("get-chat", (event, arg, replyName) => {
-    getChat(arg).then((result) => {
-      event.sender.send(replyName, result);
-    });
+  expressApp.get("/api/chat/:chatId", async (req, res) => {
+    try {
+      const chatId = req.params.chatId;
+      const chat = await getChat(chatId);
+      res.json(chat);
+    } catch (error) {
+      res.status(500).json({ message: "An error occurred." });
+    }
   });
-  electron.ipcMain.on("add-chat", (event, arg) => {
-    console.log(arg);
-    addChat(arg).then((result) => {
-      event.sender.send("add-chat-reply", result);
-      console.log(result);
-    });
+  expressApp.post("/api/chat", async (req, res) => {
+    try {
+      const chatData = req.body;
+      const chat = await addChat(chatData);
+      res.json(chat);
+    } catch (error) {
+      res.status(500).json({ message: "An error occurred." });
+    }
   });
-  electron.ipcMain.on("update-chat", (event, arg) => {
-    updateChat(arg).then((result) => {
-      event.sender.send("update-chat-reply", result);
-    });
+  expressApp.put("/api/chat", async (req, res) => {
+    try {
+      const chatData = req.body;
+      const chat = await updateChat(chatData);
+      res.json(chat);
+    } catch (error) {
+      res.status(500).json({ message: "An error occurred." });
+    }
   });
-  electron.ipcMain.on("delete-chat", (event, arg) => {
-    removeChat(arg).then((result) => {
-      event.sender.send("delete-chat-reply", result);
-    });
+  expressApp.delete("/api/chat/:chatId", async (req, res) => {
+    try {
+      const chatId = req.params.chatId;
+      const result = await removeChat(chatId);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ message: "An error occurred." });
+    }
   });
-  electron.ipcMain.on("get-commands", (event, replyName) => {
-    getAllCommands().then((result) => {
-      event.sender.send(replyName, result);
-    });
+  expressApp.get("/api/commands", async (req, res) => {
+    try {
+      const result = await getAllCommands();
+      res.json(result);
+    } catch (error) {
+      res.status(500).send("Failed to get commands.");
+    }
   });
-  electron.ipcMain.on("get-command", (event, arg, replyName) => {
-    getCommand(arg).then((result) => {
-      event.sender.send(replyName, result);
-    });
+  expressApp.get("/api/command/:id", async (req, res) => {
+    try {
+      const id = req.params.id;
+      const result = await getCommand(id);
+      res.json(result);
+    } catch (error) {
+      res.status(500).send("Failed to get command.");
+    }
   });
-  electron.ipcMain.on("add-command", (event, arg) => {
-    addCommand(arg).then((result) => {
-      event.sender.send("add-command-reply", result);
-    });
+  expressApp.post("/api/command", async (req, res) => {
+    try {
+      const command = req.body.command;
+      const result = await addCommand(command);
+      res.json(result);
+    } catch (error) {
+      res.status(500).send("Failed to add command.");
+    }
   });
-  electron.ipcMain.on("update-command", (event, arg) => {
-    updateCommand(arg).then((result) => {
-      event.sender.send("update-command-reply", result);
-    });
+  expressApp.put("/api/command", async (req, res) => {
+    try {
+      const command = req.body.command;
+      const result = await updateCommand(command);
+      res.json(result);
+    } catch (error) {
+      res.status(500).send("Failed to update command.");
+    }
   });
-  electron.ipcMain.on("delete-command", (event, arg) => {
-    removeCommand(arg).then((result) => {
-      event.sender.send("delete-command-reply", result);
-    });
+  expressApp.delete("/api/command/:id", async (req, res) => {
+    try {
+      const id = req.params.id;
+      const result = await removeCommand(id);
+      res.json(result);
+    } catch (error) {
+      res.status(500).send("Failed to delete command.");
+    }
   });
-  electron.ipcMain.on("get-attachments", (event, replyName) => {
-    getAllAttachments().then((result) => {
-      event.sender.send(replyName, result);
-    });
+  expressApp.get("/api/attachments", async (req, res) => {
+    try {
+      const result = await getAllAttachments();
+      res.json(result);
+    } catch (error) {
+      res.status(500).send("Failed to get attachments.");
+    }
   });
-  electron.ipcMain.on("get-attachment", (event, arg, replyName) => {
-    getAttachment(arg).then((result) => {
-      event.sender.send(replyName, result);
-    });
+  expressApp.get("/api/attachment/:id", async (req, res) => {
+    try {
+      const id = req.params.id;
+      const result = await getAttachment(id);
+      res.json(result);
+    } catch (error) {
+      res.status(500).send("Failed to get attachment.");
+    }
   });
-  electron.ipcMain.on("add-attachment", (event, arg) => {
-    addAttachment(arg).then((result) => {
-      event.sender.send("add-attachment-reply", result);
-    });
+  expressApp.post("/api/attachment", async (req, res) => {
+    try {
+      const attachment = req.body;
+      const result = await addAttachment(attachment);
+      res.json(result);
+    } catch (error) {
+      res.status(500).send("Failed to add attachment.");
+    }
   });
-  electron.ipcMain.on("update-attachment", (event, arg) => {
-    updateAttachment(arg).then((result) => {
-      event.sender.send("update-attachment-reply", result);
-    });
+  expressApp.put("/api/attachment/:id", async (req, res) => {
+    try {
+      const id = req.params.id;
+      const updatedData = req.body;
+      const result = await updateAttachment(updatedData);
+      res.json(result);
+    } catch (error) {
+      res.status(500).send("Failed to update attachment.");
+    }
   });
-  electron.ipcMain.on("delete-attachment", (event, arg) => {
-    removeAttachment(arg).then((result) => {
-      event.sender.send("delete-attachment-reply", result);
-    });
+  expressApp.delete("/api/attachment/:id", async (req, res) => {
+    try {
+      const id = req.params.id;
+      const result = await removeAttachment(id);
+      res.json(result);
+    } catch (error) {
+      res.status(500).send("Failed to delete attachment.");
+    }
   });
-  electron.ipcMain.on("get-instructs", (event, replyName) => {
-    getAllInstructs().then((result) => {
-      event.sender.send(replyName, result);
-    });
+  expressApp.get("/api/instructs", async (req, res) => {
+    try {
+      const instructs = await getAllInstructs();
+      res.json(instructs);
+    } catch (error) {
+      res.status(500).send({ error: "Failed to get all instructs." });
+    }
   });
-  electron.ipcMain.on("get-instruct", (event, arg, replyName) => {
-    getInstruct(arg).then((result) => {
-      event.sender.send(replyName, result);
-    });
+  expressApp.get("/api/instruct/:id", async (req, res) => {
+    try {
+      const instruct = await getInstruct(req.params.id);
+      if (!instruct) {
+        return res.status(404).send({ error: "Instruct not found." });
+      }
+      res.json(instruct);
+    } catch (error) {
+      res.status(500).send({ error: "Failed to get instruct." });
+    }
   });
-  electron.ipcMain.on("add-instruct", (event, arg) => {
-    addInstruct(arg).then((result) => {
-      event.sender.send("add-instruct-reply", result);
-    });
+  expressApp.post("/api/instruct", async (req, res) => {
+    try {
+      const result = await addInstruct(req.body);
+      res.json(result);
+    } catch (error) {
+      res.status(500).send({ error: "Failed to add instruct." });
+    }
   });
-  electron.ipcMain.on("update-instruct", (event, arg) => {
-    updateInstruct(arg).then((result) => {
-      event.sender.send("update-instruct-reply", result);
-    });
+  expressApp.put("/api/instruct/:id", async (req, res) => {
+    try {
+      const result = await updateInstruct(req.body);
+      res.json(result);
+    } catch (error) {
+      res.status(500).send({ error: "Failed to update instruct." });
+    }
   });
-  electron.ipcMain.on("delete-instruct", (event, arg) => {
-    removeInstruct(arg).then((result) => {
-      event.sender.send("delete-instruct-reply", result);
-    });
+  expressApp.delete("/api/instruct/:id", async (req, res) => {
+    try {
+      const result = await removeInstruct(req.params.id);
+      res.json(result);
+    } catch (error) {
+      res.status(500).send({ error: "Failed to delete instruct." });
+    }
   });
-  electron.ipcMain.on("get-completions", (event, replyName) => {
-    getAllCompletions().then((result) => {
-      event.sender.send(replyName, result);
-    });
+  expressApp.get("/api/completions", async (req, res) => {
+    try {
+      const result = await getAllCompletions();
+      res.json(result);
+    } catch (error) {
+      res.status(500).send("Failed to get completions.");
+    }
   });
-  electron.ipcMain.on("get-completion", (event, arg, replyName) => {
-    getCompletion(arg).then((result) => {
-      event.sender.send(replyName, result);
-    });
+  expressApp.get("/api/completion/:id", async (req, res) => {
+    try {
+      const id = req.params.id;
+      const result = await getCompletion(id);
+      res.json(result);
+    } catch (error) {
+      res.status(500).send("Failed to get completion.");
+    }
   });
-  electron.ipcMain.on("add-completion", (event, arg) => {
-    addCompletion(arg).then((result) => {
-      event.sender.send("add-completion-reply", result);
-    });
+  expressApp.post("/api/completion", async (req, res) => {
+    try {
+      const completion = req.body;
+      const result = await addCompletion(completion);
+      res.json(result);
+    } catch (error) {
+      res.status(500).send("Failed to add completion.");
+    }
   });
-  electron.ipcMain.on("update-completion", (event, arg) => {
-    updateCompletion(arg).then((result) => {
-      event.sender.send("update-completion-reply", result);
-    });
+  expressApp.put("/api/completion/:id", async (req, res) => {
+    try {
+      const id = req.params.id;
+      const updatedData = req.body;
+      const result = await updateCompletion(updatedData);
+      res.json(result);
+    } catch (error) {
+      res.status(500).send("Failed to update completion.");
+    }
   });
-  electron.ipcMain.on("delete-completion", (event, arg) => {
-    removeCompletion(arg).then((result) => {
-      event.sender.send("delete-completion-reply", result);
-    });
+  expressApp.delete("/api/completion/:id", async (req, res) => {
+    try {
+      const id = req.params.id;
+      const result = await removeCompletion(id);
+      res.json(result);
+    } catch (error) {
+      res.status(500).send("Failed to delete completion.");
+    }
   });
-  electron.ipcMain.on("get-users", (event, replyName) => {
-    getUsers().then((result) => {
-      event.sender.send(replyName, result);
-    });
+  expressApp.get("/api/users", async (req, res) => {
+    try {
+      const users = await getUsers();
+      res.json(users);
+    } catch (error) {
+      res.status(500).send("Error fetching users");
+    }
   });
-  electron.ipcMain.on("get-user", (event, arg, replyName) => {
-    getUser(arg).then((result) => {
-      event.sender.send(replyName, result);
-    });
+  expressApp.get("/api/user/:id", async (req, res) => {
+    try {
+      const user = await getUser(req.params.id);
+      if (user) {
+        res.json(user);
+      } else {
+        res.status(404).send("User not found");
+      }
+    } catch (error) {
+      res.status(500).send("Error fetching user");
+    }
   });
-  electron.ipcMain.on("add-user", (event, arg) => {
-    addUser(arg).then((result) => {
-      event.sender.send("add-user-reply", result);
-    });
+  expressApp.post("/api/user", async (req, res) => {
+    try {
+      const user = req.body;
+      const result = await addUser(user);
+      res.status(201).json(result);
+    } catch (error) {
+      res.status(500).send("Error adding user");
+    }
   });
-  electron.ipcMain.on("update-user", (event, arg) => {
-    updateUser(arg).then((result) => {
-      event.sender.send("update-user-reply", result);
-    });
+  expressApp.put("/api/user/:id", async (req, res) => {
+    try {
+      const user = req.body;
+      const result = await updateUser(user);
+      if (result) {
+        res.json(result);
+      } else {
+        res.status(404).send("User not found");
+      }
+    } catch (error) {
+      res.status(500).send("Error updating user");
+    }
   });
-  electron.ipcMain.on("delete-user", (event, arg) => {
-    removeUser(arg).then((result) => {
-      event.sender.send("delete-user-reply", result);
-    });
+  expressApp.delete("/api/user/:id", async (req, res) => {
+    try {
+      const result = await removeUser(req.params.id);
+      if (result) {
+        res.json(result);
+      } else {
+        res.status(404).send("User not found");
+      }
+    } catch (error) {
+      res.status(500).send("Error deleting user");
+    }
   });
-  electron.ipcMain.on("get-lorebooks", (event, replyName) => {
-    getLorebooks().then((result) => {
-      event.sender.send(replyName, result);
-    });
+  expressApp.get("/api/lorebooks", async (req, res) => {
+    try {
+      const lorebooks = await getLorebooks();
+      res.json(lorebooks);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch lorebooks." });
+    }
   });
-  electron.ipcMain.on("get-lorebook", (event, arg, replyName) => {
-    getLorebook(arg).then((result) => {
-      event.sender.send(replyName, result);
-    });
+  expressApp.get("/api/lorebook/:id", async (req, res) => {
+    const { id } = req.params;
+    try {
+      const lorebook = await getLorebook(id);
+      res.json(lorebook);
+    } catch (error) {
+      res.status(500).json({ error: `Failed to fetch lorebook with ID ${id}.` });
+    }
   });
-  electron.ipcMain.on("add-lorebook", (event, arg) => {
-    addLorebook(arg).then((result) => {
-      event.sender.send("add-lorebook-reply", result);
-    });
+  expressApp.post("/api/lorebook", async (req, res) => {
+    try {
+      const result = await addLorebook(req.body);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to add lorebook." });
+    }
   });
-  electron.ipcMain.on("update-lorebook", (event, arg) => {
-    updateLorebook(arg).then((result) => {
-      event.sender.send("update-lorebook-reply", result);
-    });
+  expressApp.put("/api/lorebook/:id", async (req, res) => {
+    try {
+      const result = await updateLorebook(req.body);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ error: `Failed to update lorebook with ID ${req.params.id}.` });
+    }
   });
-  electron.ipcMain.on("delete-lorebook", (event, arg) => {
-    removeLorebook(arg).then((result) => {
-      event.sender.send("delete-lorebook-reply", result);
-    });
+  expressApp.delete("/api/lorebook/:id", async (req, res) => {
+    const { id } = req.params;
+    try {
+      const result = await removeLorebook(id);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ error: `Failed to delete lorebook with ID ${id}.` });
+    }
   });
-  electron.ipcMain.on("clear-data", (event, arg) => {
-    constructDB.destroy();
-    chatsDB.destroy();
-    commandDB.destroy();
-    attachmentDB.destroy();
-    instructDB.destroy();
-    completionDB.destroy();
-    userDB.destroy();
-    lorebookDB.destroy();
-    createDBs();
+  expressApp.delete("/api/clear-data", async (req, res) => {
+    try {
+      await constructDB.destroy();
+      await chatsDB.destroy();
+      await commandDB.destroy();
+      await attachmentDB.destroy();
+      await instructDB.destroy();
+      await completionDB.destroy();
+      await userDB.destroy();
+      await lorebookDB.destroy();
+      createDBs();
+      res.status(200).send("Data cleared successfully.");
+    } catch (error) {
+      console.error("Error clearing data:", error);
+      res.status(500).send("Failed to clear data.");
+    }
   });
   function createDBs() {
     constructDB = new PouchDB("constructs", { prefix: dataPath, adapter: "leveldb" });
@@ -1035,7 +1213,7 @@ function PouchDBRoutes() {
     lorebookDB = new PouchDB("lorebook", { prefix: dataPath, adapter: "leveldb" });
   }
 }
-const getModels$1 = async () => {
+async function getModels$1() {
   try {
     const { pipeline, env } = await import("@xenova/transformers");
     env.localModelPath = modelsPath;
@@ -1059,7 +1237,7 @@ const getModels$1 = async () => {
   } catch (err) {
     console.log(err);
   }
-};
+}
 const modelPromise = new Promise(async (resolve, reject) => {
   try {
     const { pipeline, env } = await import("@xenova/transformers");
@@ -1466,7 +1644,7 @@ const instructPromptWithGuidanceAndExamples = `
 ### Response:
 `;
 const HORDE_API_URL = "https://aihorde.net/api";
-const store$6 = new Store({
+const store$5 = new Store({
   name: "llmData"
 });
 const defaultSettings = {
@@ -1495,72 +1673,72 @@ const defaultPaLMFilters = {
   HARM_CATEGORY_MEDICAL: "BLOCK_NONE",
   HARM_CATEGORY_DANGEROUS: "BLOCK_NONE"
 };
-let endpoint = store$6.get("endpoint", "");
-let endpointType = store$6.get("endpointType", "");
-let password = store$6.get("password", "");
-let settings = store$6.get("settings", defaultSettings);
-let hordeModel = store$6.get("hordeModel", "");
-let stopBrackets = store$6.get("stopBrackets", true);
-let openaiModel = store$6.get("openaiModel", "gpt-3.5-turbo-16k");
-let palmFilters = store$6.get("palmFilters", defaultPaLMFilters);
-let doEmotions = store$6.get("doEmotions", false);
-let doCaption = store$6.get("doCaption", false);
-let palmModel = store$6.get("palmModel", "models/text-bison-001");
-let connectionPresets = store$6.get("connectionPresets", []);
-let currentConnectionPreset = store$6.get("currentConnectionPreset", "");
+let endpoint = store$5.get("endpoint", "");
+let endpointType = store$5.get("endpointType", "");
+let password = store$5.get("password", "");
+let settings = store$5.get("settings", defaultSettings);
+let hordeModel = store$5.get("hordeModel", "");
+let stopBrackets = store$5.get("stopBrackets", true);
+let openaiModel = store$5.get("openaiModel", "gpt-3.5-turbo-16k");
+let palmFilters = store$5.get("palmFilters", defaultPaLMFilters);
+let doEmotions = store$5.get("doEmotions", false);
+let doCaption = store$5.get("doCaption", false);
+let palmModel = store$5.get("palmModel", "models/text-bison-001");
+let connectionPresets = store$5.get("connectionPresets", []);
+let currentConnectionPreset = store$5.get("currentConnectionPreset", "");
 const getLLMConnectionInformation = () => {
   return { endpoint, endpointType, password, settings, hordeModel, stopBrackets };
 };
 const setLLMConnectionInformation = (newEndpoint, newEndpointType, newPassword, newHordeModel) => {
-  store$6.set("endpoint", newEndpoint);
-  store$6.set("endpointType", newEndpointType);
+  store$5.set("endpoint", newEndpoint);
+  store$5.set("endpointType", newEndpointType);
   if (newPassword) {
-    store$6.set("password", newPassword);
+    store$5.set("password", newPassword);
     password = newPassword;
   }
   if (newHordeModel) {
-    store$6.set("hordeModel", newHordeModel);
+    store$5.set("hordeModel", newHordeModel);
     hordeModel = newHordeModel;
   }
   endpoint = newEndpoint;
   endpointType = newEndpointType;
 };
 const setLLMSettings = (newSettings, newStopBrackts) => {
-  store$6.set("settings", newSettings);
+  store$5.set("settings", newSettings);
   if (newStopBrackts) {
-    store$6.set("stopBrackets", newStopBrackts);
+    store$5.set("stopBrackets", newStopBrackts);
     stopBrackets = newStopBrackts;
   }
   settings = newSettings;
 };
 const setLLMOpenAIModel = (newOpenAIModel) => {
-  store$6.set("openaiModel", newOpenAIModel);
+  store$5.set("openaiModel", newOpenAIModel);
   openaiModel = newOpenAIModel;
 };
 const setLLMModel = (newHordeModel) => {
-  store$6.set("hordeModel", newHordeModel);
+  store$5.set("hordeModel", newHordeModel);
   hordeModel = newHordeModel;
 };
 const setPaLMFilters = (newPaLMFilters) => {
-  store$6.set("palmFilters", newPaLMFilters);
+  store$5.set("palmFilters", newPaLMFilters);
   palmFilters = newPaLMFilters;
 };
 const setDoEmotions = (newDoEmotions) => {
-  store$6.set("doEmotions", newDoEmotions);
+  store$5.set("doEmotions", newDoEmotions);
   doEmotions = doEmotions;
 };
 const getDoEmotions = () => {
   return doEmotions;
 };
 const setDoCaption = (newDoCaption) => {
-  store$6.set("doCaption", newDoCaption);
+  store$5.set("doCaption", newDoCaption);
   doCaption = newDoCaption;
 };
 const getDoCaption = () => {
   return doCaption;
 };
 const setPaLMModel = (newPaLMModel) => {
-  store$6.set("palmModel", newPaLMModel);
+  store$5.set("palmModel", newPaLMModel);
   palmModel = newPaLMModel;
 };
 const getPaLMModel = () => {
@@ -1570,22 +1748,22 @@ const addConnectionPreset = (newConnectionPreset) => {
   for (let i = 0; i < connectionPresets.length; i++) {
     if (connectionPresets[i]._id === newConnectionPreset._id) {
       connectionPresets[i] = newConnectionPreset;
-      store$6.set("connectionPresets", connectionPresets);
+      store$5.set("connectionPresets", connectionPresets);
       return;
     }
   }
   connectionPresets.push(newConnectionPreset);
-  store$6.set("connectionPresets", connectionPresets);
+  store$5.set("connectionPresets", connectionPresets);
 };
 const removeConnectionPreset = (oldConnectionPreset) => {
   connectionPresets = connectionPresets.filter((connectionPreset) => connectionPreset !== oldConnectionPreset);
-  store$6.set("connectionPresets", connectionPresets);
+  store$5.set("connectionPresets", connectionPresets);
 };
 const getConnectionPresets = () => {
   return connectionPresets;
 };
 const setCurrentConnectionPreset = (newCurrentConnectionPreset) => {
-  store$6.set("currentConnectionPreset", newCurrentConnectionPreset);
+  store$5.set("currentConnectionPreset", newCurrentConnectionPreset);
   currentConnectionPreset = newCurrentConnectionPreset;
 };
 const getCurrentConnectionPreset = () => {
@@ -2025,135 +2203,171 @@ function assembleInstructPrompt$1(instruction, guidance, context, examples) {
   return prompt;
 }
 function LanguageModelAPI() {
-  electron.ipcMain.on("generate-text", async (event, prompt, configuredName, stopList, uniqueEventName) => {
-    const results = await generateText(prompt, configuredName, stopList);
-    event.reply(uniqueEventName, results);
+  expressApp.post("/api/generate-text", async (req, res) => {
+    const { prompt, configuredName, stopList } = req.body;
+    res.json(await generateText(prompt, configuredName, stopList));
   });
-  electron.ipcMain.on("do-instruct", async (event, instruction, guidance, context, examples, uniqueEventName) => {
-    const results = await doInstruct(instruction, guidance, context, examples);
-    event.reply(uniqueEventName, results);
+  expressApp.post("/api/do-instruct", async (req, res) => {
+    const { instruction, guidance, context, examples } = req.body;
+    res.json(await doInstruct(instruction, guidance, context, examples));
   });
-  electron.ipcMain.on("get-status", async (event, endpoint2, endpointType2) => {
-    const status = await getStatus(endpoint2, endpointType2);
-    event.reply("get-status-reply", status);
+  expressApp.post("/api/get-instruct-prompt", (req, res) => {
+    const { instruction, guidance, context, examples } = req.body;
+    res.json(assembleInstructPrompt$1(instruction, guidance, context, examples));
   });
-  electron.ipcMain.on("get-llm-connection-information", (event) => {
-    const connectionInformation = getLLMConnectionInformation();
-    event.reply("get-llm-connection-information-reply", connectionInformation);
+  expressApp.post("/api/get-status", async (req, res) => {
+    const { endpoint: endpoint2, endpointType: endpointType2 } = req.body;
+    res.json(await getStatus(endpoint2, endpointType2));
   });
-  electron.ipcMain.on("set-llm-connection-information", (event, newEndpoint, newEndpointType, newPassword, newHordeModel) => {
-    setLLMConnectionInformation(newEndpoint, newEndpointType, newPassword, newHordeModel);
-    event.reply("set-llm-connection-information-reply", getLLMConnectionInformation());
+  expressApp.get("/api/llm/connection-information", (req, res) => {
+    res.json(getLLMConnectionInformation());
   });
-  electron.ipcMain.on("set-llm-settings", (event, newSettings, newStopBrackets) => {
-    setLLMSettings(newSettings, newStopBrackets);
-    event.reply("set-llm-settings-reply", getLLMConnectionInformation());
+  expressApp.post("/api/llm/connection-information", (req, res) => {
+    const { endpoint: endpoint2, endpointType: endpointType2, password: password2, hordeModel: hordeModel2 } = req.body;
+    setLLMConnectionInformation(endpoint2, endpointType2, password2, hordeModel2);
+    res.json(getLLMConnectionInformation());
   });
-  electron.ipcMain.on("get-llm-settings", (event) => {
-    event.reply("get-llm-settings-reply", { settings, stopBrackets });
+  expressApp.get("/api/llm/settings", (req, res) => {
+    res.json({ settings, stopBrackets });
   });
-  electron.ipcMain.on("set-llm-model", (event, newHordeModel) => {
-    setLLMModel(newHordeModel);
-    event.reply("set-llm-model-reply", getLLMConnectionInformation());
+  expressApp.post("/api/llm/settings", (req, res) => {
+    const { settings: settings2, stopBrackets: stopBrackets2 } = req.body;
+    setLLMSettings(settings2, stopBrackets2);
+    res.json(getLLMConnectionInformation());
   });
-  electron.ipcMain.on("get-llm-model", (event) => {
-    event.reply("get-llm-model-reply", hordeModel);
+  expressApp.post("/api/llm/model", (req, res) => {
+    const { model } = req.body;
+    setLLMModel(model);
+    res.json(getLLMConnectionInformation());
   });
-  electron.ipcMain.on("set-llm-openai-model", (event, newOpenAIModel) => {
-    setLLMOpenAIModel(newOpenAIModel);
-    event.reply("set-llm-openai-model-reply", getLLMConnectionInformation());
+  expressApp.get("/api/llm/model", (req, res) => {
+    res.json(hordeModel);
   });
-  electron.ipcMain.on("get-llm-openai-model", (event) => {
-    event.reply("get-llm-openai-model-reply", openaiModel);
+  expressApp.post("/api/llm/openai-model", (req, res) => {
+    const { model } = req.body;
+    setLLMOpenAIModel(model);
+    res.json(getLLMConnectionInformation());
   });
-  electron.ipcMain.on("set-palm-filters", (event, newPaLMFilters) => {
-    setPaLMFilters(newPaLMFilters);
-    event.reply("set-palm-filters-reply", getLLMConnectionInformation());
+  expressApp.get("/api/llm/openai-model", (req, res) => {
+    res.json(openaiModel);
   });
-  electron.ipcMain.on("get-palm-filters", (event) => {
-    event.reply("get-palm-filters-reply", palmFilters);
+  expressApp.post("/api/palm/filters", (req, res) => {
+    const { filters } = req.body;
+    setPaLMFilters(filters);
+    res.json(getLLMConnectionInformation());
   });
-  electron.ipcMain.on("get-text-classification", (event, uniqueEventName, text) => {
-    getClassification(text).then((result) => {
-      event.reply(uniqueEventName, result);
-    });
+  expressApp.get("/api/palm/filters", (req, res) => {
+    res.json(palmFilters);
   });
-  electron.ipcMain.on("get-image-to-text", (event, uniqueEventName, base64) => {
-    console.log("get-image-to-text");
-    getCaption(base64).then((result) => {
-      event.reply(uniqueEventName, result);
-    });
+  expressApp.post("/api/text/classification", (req, res) => {
+    const { text } = req.body;
+    getClassification(text).then((result) => res.json(result)).catch((error) => res.status(500).send({ error: error.message }));
   });
-  electron.ipcMain.on("get-text-embedding", (event, uniqueEventName, text) => {
-    console.log("get-text-embedding");
-    getEmbedding(text).then((result) => {
-      event.reply(uniqueEventName, result);
-    });
+  expressApp.post("/api/image/caption", (req, res) => {
+    const { base64 } = req.body;
+    getCaption(base64).then((result) => res.json(result)).catch((error) => res.status(500).send({ error: error.message }));
   });
-  electron.ipcMain.on("get-text-similarity", (event, uniqueEventName, text1, text2) => {
-    console.log("get-text-similarity");
-    getEmbeddingSimilarity(text1, text2).then((result) => {
-      event.reply(uniqueEventName, result);
-    });
+  expressApp.post("/api/text/embedding", (req, res) => {
+    const { text } = req.body;
+    getEmbedding(text).then((result) => res.json(result)).catch((error) => res.status(500).send({ error: error.message }));
   });
-  electron.ipcMain.on("get-question-answer", (event, uniqueEventName, context, question) => {
-    console.log("get-text-similarity");
-    getQuestionAnswering(context, question).then((result) => {
-      event.reply(uniqueEventName, result);
-    });
+  expressApp.post("/api/text/similarity", (req, res) => {
+    const { text1, text2 } = req.body;
+    getEmbeddingSimilarity(text1, text2).then((result) => res.json(result)).catch((error) => res.status(500).send({ error: error.message }));
   });
-  electron.ipcMain.on("get-zero-shot-classification", (event, uniqueEventName, text, labels) => {
-    console.log("get-zero-shot-classification");
-    getQuestionAnswering(text, labels).then((result) => {
-      event.reply(uniqueEventName, result);
-    });
+  expressApp.post("/api/text/question-answer", (req, res) => {
+    const { context, question } = req.body;
+    getQuestionAnswering(context, question).then((result) => res.json(result)).catch((error) => res.status(500).send({ error: error.message }));
   });
-  electron.ipcMain.on("get-yes-no-classification", (event, uniqueEventName, text) => {
-    console.log("get-yes-no-classification");
-    getYesNoMaybe(text).then((result) => {
-      event.reply(uniqueEventName, result);
-    });
+  expressApp.post("/api/text/zero-shot-classification", (req, res) => {
+    const { text, labels } = req.body;
+    getQuestionAnswering(text, labels).then((result) => res.json(result)).catch((error) => res.status(500).send({ error: error.message }));
   });
-  electron.ipcMain.on("set-do-emotions", (event, newDoEmotions) => {
-    setDoEmotions(newDoEmotions);
-    event.reply("set-do-emotions-reply", getDoEmotions());
+  expressApp.post("/api/settings/do-emotions", (req, res) => {
+    try {
+      setDoEmotions(req.body.value);
+      res.json({ value: getDoEmotions() });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.on("get-do-emotions", (event) => {
-    event.reply("get-do-emotions-reply", getDoEmotions());
+  expressApp.get("/api/settings/do-emotions", (req, res) => {
+    try {
+      const value = getDoEmotions();
+      res.json({ value });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.on("set-do-caption", (event, newDoCaption) => {
-    setDoCaption(newDoCaption);
-    event.reply("set-do-caption-reply", getDoCaption());
+  expressApp.post("/api/settings/do-caption", (req, res) => {
+    try {
+      setDoCaption(req.body.value);
+      res.json({ value: getDoCaption() });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.on("get-do-caption", (event) => {
-    event.reply("get-do-caption-reply", getDoCaption());
+  expressApp.get("/api/settings/do-caption", (req, res) => {
+    try {
+      const value = getDoCaption();
+      res.json({ value });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.on("set-palm-model", (event, newPaLMModel) => {
-    setPaLMModel(newPaLMModel);
+  expressApp.post("/api/palm/model", (req, res) => {
+    try {
+      setPaLMModel(req.body.model);
+      res.send({ message: "Model updated successfully." });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.on("get-palm-model", (event) => {
-    event.reply("get-palm-model-reply", getPaLMModel());
+  expressApp.get("/api/palm/model", (req, res) => {
+    try {
+      const model = getPaLMModel();
+      res.json({ model });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.on("get-instruct-prompt", (event, instruction, guidance, context, examples, uniqueEventName) => {
-    event.reply(uniqueEventName, assembleInstructPrompt$1(instruction, guidance, context, examples));
+  expressApp.post("/api/connections/presets", (req, res) => {
+    try {
+      addConnectionPreset(req.body.preset);
+      res.json(getConnectionPresets());
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.on("add-connection-preset", (event, newConnectionPreset) => {
-    addConnectionPreset(newConnectionPreset);
-    event.reply("add-connection-preset-reply", getConnectionPresets());
+  expressApp.delete("/api/connections/presets", (req, res) => {
+    try {
+      removeConnectionPreset(req.body.preset);
+      res.json(getConnectionPresets());
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.on("remove-connection-preset", (event, oldConnectionPreset) => {
-    removeConnectionPreset(oldConnectionPreset);
-    event.reply("remove-connection-preset-reply", getConnectionPresets());
+  expressApp.get("/api/connections/presets", (req, res) => {
+    try {
+      res.json(getConnectionPresets());
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.on("get-connection-presets", (event) => {
-    event.reply("get-connection-presets-reply", getConnectionPresets());
+  expressApp.get("/api/connections/current-preset", (req, res) => {
+    try {
+      res.json(getCurrentConnectionPreset());
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.on("set-current-connection-preset", (event, newCurrentConnectionPreset) => {
-    setCurrentConnectionPreset(newCurrentConnectionPreset);
-    event.reply("set-current-connection-preset-reply", getCurrentConnectionPreset());
-  });
-  electron.ipcMain.on("get-current-connection-preset", (event) => {
-    event.reply("get-current-connection-preset-reply", getCurrentConnectionPreset());
+  expressApp.post("/api/connections/current-preset", (req, res) => {
+    try {
+      setCurrentConnectionPreset(req.body.preset);
+      res.json(getCurrentConnectionPreset());
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
 }
 async function getAllVectors(schemaName) {
@@ -2222,40 +2436,49 @@ async function deleteIndex(schemaName) {
   }
 }
 function VectorDBRoutes() {
-  electron.ipcMain.on("get-all-vectors", async (event, schemaName, uniqueReplyName) => {
-    getAllVectors(schemaName).then((vectors) => {
-      event.reply(uniqueReplyName, vectors);
-    }).catch((error) => {
-      event.reply(uniqueReplyName, error);
-    });
+  expressApp.get("/api/vectors/:schemaName", async (req, res) => {
+    try {
+      const vectors = await getAllVectors(req.params.schemaName);
+      res.json(vectors);
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.on("get-relavent-memories", async (event, schemaName, text, uniqueReplyName) => {
-    getRelaventMemories(schemaName, text).then((memories) => {
-      event.reply(uniqueReplyName, memories);
-    }).catch((error) => {
-      event.reply(uniqueReplyName, error);
-    });
+  expressApp.get("/api/memories/:schemaName", async (req, res) => {
+    try {
+      const memories = await getRelaventMemories(req.params.schemaName, req.query.text);
+      res.json(memories);
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.on("add-vector-from-message", async (event, schemaName, message, uniqueReplyName) => {
-    addVectorFromMessage(schemaName, message).then(() => {
-      event.reply(uniqueReplyName, true);
-    }).catch((error) => {
-      event.reply(uniqueReplyName, error);
-    });
+  expressApp.post("/api/vector/:schemaName", async (req, res) => {
+    try {
+      await addVectorFromMessage(req.params.schemaName, req.body);
+      res.sendStatus(201);
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.on("get-vector", async (event, text, uniqueReplyName) => {
-    getVector(text).then((vector) => {
-      event.reply(uniqueReplyName, vector);
-    }).catch((error) => {
-      event.reply(uniqueReplyName, error);
-    });
+  expressApp.get("/api/vector", async (req, res) => {
+    try {
+      const vector = await getVector(req.query.text);
+      if (vector) {
+        res.json(vector);
+      } else {
+        res.status(404).send({ error: "Vector not found" });
+      }
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.on("delete-index", async (event, schemaName, uniqueReplyName) => {
-    deleteIndex(schemaName).then(() => {
-      event.reply(uniqueReplyName, true);
-    }).catch((error) => {
-      event.reply(uniqueReplyName, error);
-    });
+  expressApp.delete("/api/index/:schemaName", async (req, res) => {
+    try {
+      await deleteIndex(req.params.schemaName);
+      res.sendStatus(204);
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
 }
 const selfieIntentExamples = [
@@ -2444,37 +2667,37 @@ function detectAss(text) {
   }
   return detected;
 }
-const store$5 = new Store({
+const store$4 = new Store({
   name: "constructData"
 });
 let ActiveConstructs = [];
 const retrieveConstructs = () => {
-  return store$5.get("ids", []);
+  return store$4.get("ids", []);
 };
 const setDoMultiLine = (doMultiLine) => {
-  store$5.set("doMultiLine", doMultiLine);
+  store$4.set("doMultiLine", doMultiLine);
 };
 const getDoMultiLine = () => {
-  return store$5.get("doMultiLine", false);
+  return store$4.get("doMultiLine", false);
 };
 const addConstruct = (newId) => {
   const existingIds = retrieveConstructs();
   if (!existingIds.includes(newId)) {
     existingIds.push(newId);
-    store$5.set("ids", existingIds);
+    store$4.set("ids", existingIds);
   }
 };
 const removeConstruct = (idToRemove) => {
   const existingIds = retrieveConstructs();
   const updatedIds = existingIds.filter((id) => id !== idToRemove);
-  store$5.set("ids", updatedIds);
+  store$4.set("ids", updatedIds);
 };
 const isConstructActive = (id) => {
   const existingIds = retrieveConstructs();
   return existingIds.includes(id);
 };
 const clearActiveConstructs = () => {
-  store$5.set("ids", []);
+  store$4.set("ids", []);
 };
 const setAsPrimary = async (id) => {
   const existingIds = retrieveConstructs();
@@ -2483,7 +2706,7 @@ const setAsPrimary = async (id) => {
     existingIds.splice(index, 1);
   }
   existingIds.unshift(id);
-  store$5.set("ids", existingIds);
+  store$4.set("ids", existingIds);
   if (isReady) {
     let constructRaw = await getConstruct(id);
     let construct = assembleConstructFromData(constructRaw);
@@ -3010,266 +3233,339 @@ async function regenerateUserMessageFromChatLog(chatLog, messageContent, message
 }
 function constructController() {
   ActiveConstructs = retrieveConstructs();
-  electron.ipcMain.on("add-construct-to-active", (event, arg) => {
-    addConstruct(arg);
+  expressApp.post("/api/constructs/add-to-active", (req, res) => {
+    addConstruct(req.body.construct);
     ActiveConstructs = retrieveConstructs();
-    event.reply("add-construct-to-active-reply", ActiveConstructs);
+    res.json({ activeConstructs: ActiveConstructs });
   });
-  electron.ipcMain.on("remove-construct-active", (event, arg) => {
-    removeConstruct(arg);
+  expressApp.post("/api/constructs/remove-active", (req, res) => {
+    removeConstruct(req.body.construct);
     ActiveConstructs = retrieveConstructs();
-    event.reply("remove-construct-active-reply", ActiveConstructs);
+    res.json({ activeConstructs: ActiveConstructs });
   });
-  electron.ipcMain.on("get-construct-active-list", (event, arg) => {
+  expressApp.get("/api/constructs/active-list", (req, res) => {
     ActiveConstructs = retrieveConstructs();
-    event.reply(arg, ActiveConstructs);
+    res.json({ activeConstructs: ActiveConstructs });
   });
-  electron.ipcMain.on("is-construct-active", (event, arg, replyName) => {
-    const isActive = isConstructActive(arg);
-    event.reply(replyName, isActive);
+  expressApp.post("/api/constructs/is-active", (req, res) => {
+    const isActive = isConstructActive(req.body.construct);
+    res.json({ isActive });
   });
-  electron.ipcMain.on("remove-all-constructs-active", (event, arg) => {
+  expressApp.post("/api/constructs/remove-all-active", (req, res) => {
     clearActiveConstructs();
     ActiveConstructs = retrieveConstructs();
-    event.reply("remove-all-constructs-active-reply", ActiveConstructs);
+    res.json({ activeConstructs: ActiveConstructs });
   });
-  electron.ipcMain.on("set-construct-primary", (event, arg) => {
-    setAsPrimary(arg);
-    ActiveConstructs = retrieveConstructs();
-    event.reply("set-construct-primary-reply", ActiveConstructs);
+  expressApp.post("/api/constructs/set-construct-primary", (req, res) => {
+    const constructId = req.body.constructId;
+    setAsPrimary(constructId);
+    const activeConstructs = retrieveConstructs();
+    res.json({ activeConstructs });
   });
-  electron.ipcMain.on("set-do-multi-line", (event, arg, uniqueEventName) => {
-    setDoMultiLine(arg);
-    event.reply(uniqueEventName, getDoMultiLine());
+  expressApp.post("/api/constructs/multi-line", (req, res) => {
+    const value = req.body.value;
+    setDoMultiLine(value);
+    const currentDoMultiLine = getDoMultiLine();
+    res.json({ doMultiLine: currentDoMultiLine });
   });
-  electron.ipcMain.on("get-do-multi-line", (event, uniqueEventName) => {
-    event.reply(uniqueEventName, getDoMultiLine());
+  expressApp.get("/api/constructs/multi-line", (req, res) => {
+    const currentDoMultiLine = getDoMultiLine();
+    res.json({ doMultiLine: currentDoMultiLine });
   });
-  electron.ipcMain.on("get-character-prompt-from-construct", (event, arg, uniqueEventName) => {
-    let prompt = getCharacterPromptFromConstruct(arg);
-    event.reply(uniqueEventName, prompt);
+  expressApp.post("/api/constructs/character-prompt", (req, res) => {
+    const construct = req.body.construct;
+    const prompt = getCharacterPromptFromConstruct(construct);
+    res.json({ prompt });
   });
-  electron.ipcMain.on("assemble-prompt", (event, construct, chatLog, currentUser, messagesToInclude, uniqueEventName) => {
-    let prompt = assemblePrompt(construct, chatLog, currentUser, messagesToInclude);
-    event.reply(uniqueEventName, prompt);
+  expressApp.post("/api/constructs/assemble-prompt", (req, res) => {
+    const { construct, chatLog, currentUser, messagesToInclude } = req.body;
+    const prompt = assemblePrompt(construct, chatLog, currentUser, messagesToInclude);
+    res.json({ prompt });
   });
-  electron.ipcMain.on("assemble-instruct-prompt", (event, construct, chatLog, currentUser, messagesToInclude, uniqueEventName) => {
-    let prompt = assembleInstructPrompt(construct, chatLog, currentUser);
-    event.reply(uniqueEventName, prompt);
+  expressApp.post("/api/constructs/assemble-instruct-prompt", (req, res) => {
+    const { construct, chatLog, currentUser, messagesToInclude } = req.body;
+    const prompt = assembleInstructPrompt(construct, chatLog, currentUser);
+    res.json({ prompt });
   });
-  electron.ipcMain.on("generate-continue-chat-log", (event, construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth, doMultiline, replaceUser2, uniqueEventName) => {
+  expressApp.post("/api/chat/continue", (req, res) => {
+    const { construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth, doMultiline, replaceUser: replaceUser2 } = req.body;
     generateContinueChatLog(construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth, doMultiline, replaceUser2).then((response) => {
-      event.reply(uniqueEventName, response);
+      res.json({ response });
+    }).catch((error) => {
+      res.status(500).json({ error: error.message });
     });
   });
-  electron.ipcMain.on("remove-messages-from-chat-log", (event, chatLog, messageContent, uniqueEventName) => {
+  expressApp.post("/api/chat/remove-messages", (req, res) => {
+    const { chatLog, messageContent } = req.body;
     removeMessagesFromChatLog(chatLog, messageContent).then((response) => {
-      event.reply(uniqueEventName, response);
+      res.json({ response });
+    }).catch((error) => {
+      res.status(500).json({ error: error.message });
     });
   });
-  electron.ipcMain.on("regenerate-message-from-chat-log", (event, chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, uniqueEventName) => {
-    regenerateMessageFromChatLog(chatLog, messageContent, messageID, authorsNote, authorsNoteDepth).then((response) => {
-      event.reply(uniqueEventName, response);
+  expressApp.post("/api/chat/regenerate-message", (req, res) => {
+    const { chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, doMultiline, replaceUser: replaceUser2 } = req.body;
+    regenerateMessageFromChatLog(chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, doMultiline).then((response) => {
+      res.json({ response });
+    }).catch((error) => {
+      res.status(500).json({ error: error.message });
     });
   });
-  electron.ipcMain.on("break-up-commands", (event, charName, commandString, user, stopList, uniqueEventName) => {
+  expressApp.post("/api/chat/regenerate-user-message", (req, res) => {
+    const { chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, doMultiline, replaceUser: replaceUser2 } = req.body;
+    regenerateUserMessageFromChatLog(chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, doMultiline).then((response) => {
+      res.json({ response });
+    }).catch((error) => {
+      res.status(500).json({ error: error.message });
+    });
+  });
+  expressApp.post("/api/chat/parse-reply", (req, res) => {
+    const { charName, commandString, user, stopList } = req.body;
     let response = breakUpCommands(charName, commandString, user, stopList);
-    event.reply(uniqueEventName, response);
+    res.json({ response });
   });
-  electron.ipcMain.on("generate-thoughts", (event, construct, chat, currentUser, messagesToInclude, uniqueEventName) => {
-    generateThoughts(construct, chat, currentUser, messagesToInclude).then((response) => {
-      event.reply(uniqueEventName, response);
+  expressApp.post("/api/construct/thoughts", (req, res) => {
+    const { construct, chatLog, currentUser, messagesToInclude } = req.body;
+    generateThoughts(construct, chatLog, currentUser, messagesToInclude).then((response) => {
+      res.json({ response });
+    }).catch((error) => {
+      res.status(500).send({ error: error.message });
     });
   });
-  electron.ipcMain.on("regenerate-user-message-from-chat-log", (event, chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, uniqueEventName) => {
-    regenerateUserMessageFromChatLog(chatLog, messageContent, messageID, authorsNote, authorsNoteDepth).then((response) => {
-      event.reply(uniqueEventName, response);
-    });
-  });
-  electron.ipcMain.on("detect-intent", async (event, uniqueEventName, message) => {
+  expressApp.post("/api/chat/intent", (req, res) => {
+    const { message } = req.body;
     detectIntent(message).then((response) => {
-      event.reply(uniqueEventName, response);
+      res.json({ response });
+    }).catch((error) => {
+      res.status(500).send({ error: error.message });
+    });
+  });
+  expressApp.post("/api/classify/yesno", (req, res) => {
+    const { message } = req.body;
+    getYesNoMaybe(message).then((result) => {
+      res.json({ result });
+    }).catch((error) => {
+      res.status(500).send({ error: error.message });
     });
   });
 }
-const store$4 = new Store({
+const store$3 = new Store({
   name: "stableDiffusionData"
 });
 const getSDApiUrl = () => {
-  return store$4.get("apiUrl", "");
+  return store$3.get("apiUrl", "");
 };
 const setSDApiUrl = (apiUrl) => {
-  store$4.set("apiUrl", apiUrl);
+  store$3.set("apiUrl", apiUrl);
 };
 const setDefaultPrompt = (prompt) => {
-  store$4.set("defaultPrompt", prompt);
+  store$3.set("defaultPrompt", prompt);
 };
 const getDefaultPrompt = () => {
-  return store$4.get("defaultPrompt", "");
+  return store$3.get("defaultPrompt", "");
 };
 const setDefaultNegativePrompt = (prompt) => {
-  store$4.set("defaultNegativePrompt", prompt);
+  store$3.set("defaultNegativePrompt", prompt);
 };
 const getDefaultNegativePrompt = () => {
-  return store$4.get("defaultNegativePrompt", "lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry");
+  return store$3.get("defaultNegativePrompt", "lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry");
 };
 const setDefaultUpscaler = (upscaler) => {
-  store$4.set("defaultUpscaler", upscaler);
+  store$3.set("defaultUpscaler", upscaler);
 };
 const getDefaultUpscaler = () => {
-  return store$4.get("defaultUpscaler", "");
+  return store$3.get("defaultUpscaler", "");
 };
 const setDefaultSteps = (steps) => {
-  store$4.set("defaultSteps", steps);
+  store$3.set("defaultSteps", steps);
 };
 const getDefaultSteps = () => {
-  return store$4.get("defaultSteps", 25);
+  return store$3.get("defaultSteps", 25);
 };
 const setDefaultCfg = (cfg) => {
-  store$4.set("defaultCfg", cfg);
+  store$3.set("defaultCfg", cfg);
 };
 const getDefaultCfg = () => {
-  return store$4.get("defaultCfg", 7);
+  return store$3.get("defaultCfg", 7);
 };
 const setDefaultWidth = (width) => {
-  store$4.set("defaultWidth", width);
+  store$3.set("defaultWidth", width);
 };
 const getDefaultWidth = () => {
-  return store$4.get("defaultWidth", 512);
+  return store$3.get("defaultWidth", 512);
 };
 const setDefaultHeight = (height) => {
-  store$4.set("defaultHeight", height);
+  store$3.set("defaultHeight", height);
 };
 const getDefaultHeight = () => {
-  return store$4.get("defaultHeight", 512);
+  return store$3.get("defaultHeight", 512);
 };
 const setDefaultHighresSteps = (highresSteps) => {
-  store$4.set("defaultHighresSteps", highresSteps);
+  store$3.set("defaultHighresSteps", highresSteps);
 };
 const getDefaultHighresSteps = () => {
-  return store$4.get("defaultHighresSteps", 10);
+  return store$3.get("defaultHighresSteps", 10);
 };
 const setDefaultDenoisingStrength = (denoisingStrength) => {
-  store$4.set("defaultDenoisingStrength", denoisingStrength);
+  store$3.set("defaultDenoisingStrength", denoisingStrength);
 };
 const getDefaultDenoisingStrength = () => {
-  return store$4.get("defaultDenoisingStrength", 0.25);
+  return store$3.get("defaultDenoisingStrength", 0.25);
 };
 const setDefaultUpscale = (upscale) => {
-  store$4.set("defaultUpscale", upscale);
+  store$3.set("defaultUpscale", upscale);
 };
 const getDefaultUpscale = () => {
-  return store$4.get("defaultUpscale", 1.5);
+  return store$3.get("defaultUpscale", 1.5);
 };
 function SDRoutes() {
-  electron.ipcMain.on("set-default-prompt", (event, prompt) => {
-    setDefaultPrompt(prompt);
-  });
-  electron.ipcMain.on("get-default-prompt", (event) => {
-    event.sender.send("get-default-prompt-reply", getDefaultPrompt());
-  });
-  electron.ipcMain.on("set-sdapi-url", (event, apiUrl) => {
+  expressApp.post("/api/diffusion/url", (req, res) => {
+    const apiUrl = req.body.apiUrl;
     console.log(apiUrl);
     setSDApiUrl(apiUrl);
+    res.sendStatus(200);
   });
-  electron.ipcMain.on("get-sdapi-url", (event) => {
-    event.sender.send("get-sdapi-url-reply", getSDApiUrl());
+  expressApp.get("/api/diffusion/url", (req, res) => {
+    const apiUrl = getSDApiUrl();
+    res.json({ apiUrl });
   });
-  electron.ipcMain.on("txt2img", (event, data, endpoint2) => {
-    txt2img(data, endpoint2).then((result) => {
-      event.sender.send("txt2img-reply", result);
-    }).catch((err) => {
+  expressApp.post("/api/diffusion/txt2img", async (req, res) => {
+    const { data, endpoint: endpoint2 } = req.body;
+    try {
+      const result = await txt2img(data, endpoint2);
+      res.json({ result });
+    } catch (err) {
       console.log(err);
-    });
+      res.status(500).json({ error: "Failed to process txt2img" });
+    }
   });
-  electron.ipcMain.on("set-default-negative-prompt", (event, prompt) => {
+  expressApp.post("/api/diffusion/default-prompt", (req, res) => {
+    const prompt = req.body.prompt;
+    setDefaultPrompt(prompt);
+    res.sendStatus(200);
+  });
+  expressApp.get("/api/diffusion/default-prompt", (req, res) => {
+    const prompt = getDefaultPrompt();
+    res.json({ prompt });
+  });
+  expressApp.post("/api/diffusion/default-negative-prompt", (req, res) => {
+    const prompt = req.body.prompt;
     setDefaultNegativePrompt(prompt);
+    res.sendStatus(200);
   });
-  electron.ipcMain.on("get-default-negative-prompt", (event) => {
-    event.sender.send("get-default-negative-prompt-reply", getDefaultNegativePrompt());
+  expressApp.get("/api/diffusion/default-negative-prompt", (req, res) => {
+    const prompt = getDefaultNegativePrompt();
+    res.json({ prompt });
   });
-  electron.ipcMain.on("set-default-upscaler", (event, upscaler) => {
+  expressApp.post("/api/diffusion/default-upscaler", (req, res) => {
+    const upscaler = req.body.upscaler;
     setDefaultUpscaler(upscaler);
+    res.sendStatus(200);
   });
-  electron.ipcMain.on("get-default-upscaler", (event) => {
-    event.sender.send("get-default-upscaler-reply", getDefaultUpscaler());
+  expressApp.get("/api/diffusion/default-upscaler", (req, res) => {
+    const upscaler = getDefaultUpscaler();
+    res.json({ upscaler });
   });
-  electron.ipcMain.on("get-loras", (event) => {
-    getAllLoras().then((result) => {
-      event.sender.send("get-loras-reply", result);
-    }).catch((err) => {
+  expressApp.get("/api/diffusion/loras", async (req, res) => {
+    try {
+      const result = await getAllLoras();
+      res.json({ result });
+    } catch (err) {
       console.log(err);
-    });
+      res.status(500).json({ error: "Failed to get loras" });
+    }
   });
-  electron.ipcMain.on("get-embeddings", (event) => {
-    getEmbeddings().then((result) => {
-      event.sender.send("get-embeddings-reply", result);
-    }).catch((err) => {
+  expressApp.get("/api/diffusion/embeddings", async (req, res) => {
+    try {
+      const result = await getEmbeddings();
+      res.json({ result });
+    } catch (err) {
       console.log(err);
-    });
+      res.status(500).json({ error: "Failed to get embeddings" });
+    }
   });
-  electron.ipcMain.on("get-models", (event) => {
-    getModels().then((result) => {
-      event.sender.send("get-models-reply", result);
-    }).catch((err) => {
+  expressApp.get("/api/diffusion/models", async (req, res) => {
+    try {
+      const result = await getModels();
+      res.json({ result });
+    } catch (err) {
       console.log(err);
-    });
+      res.status(500).json({ error: "Failed to get models" });
+    }
   });
-  electron.ipcMain.on("get-vae-models", (event) => {
-    getVaeModels().then((result) => {
-      event.sender.send("get-vae-models-reply", result);
-    }).catch((err) => {
+  expressApp.get("/api/diffusion/vae-models", async (req, res) => {
+    try {
+      const result = await getVaeModels();
+      res.json({ result });
+    } catch (err) {
       console.log(err);
-    });
+      res.status(500).json({ error: "Failed to get VAE models" });
+    }
   });
-  electron.ipcMain.on("get-upscalers", (event) => {
-    getUpscalers().then((result) => {
-      event.sender.send("get-upscalers-reply", result);
-    }).catch((err) => {
+  expressApp.get("/api/diffusion/upscalers", async (req, res) => {
+    try {
+      const result = await getUpscalers();
+      res.json({ result });
+    } catch (err) {
       console.log(err);
-    });
+      res.status(500).json({ error: "Failed to get upscalers" });
+    }
   });
-  electron.ipcMain.on("set-default-steps", (event, steps) => {
+  expressApp.post("/api/diffusion/default-steps", (req, res) => {
+    const { steps } = req.body;
     setDefaultSteps(steps);
+    res.sendStatus(200);
   });
-  electron.ipcMain.on("get-default-steps", (event) => {
-    event.sender.send("get-default-steps-reply", getDefaultSteps());
+  expressApp.get("/api/diffusion/default-steps", (req, res) => {
+    res.json({ steps: getDefaultSteps() });
   });
-  electron.ipcMain.on("set-default-cfg", (event, cfg) => {
+  expressApp.post("/api/diffusion/default-cfg", (req, res) => {
+    const { cfg } = req.body;
     setDefaultCfg(cfg);
+    res.sendStatus(200);
   });
-  electron.ipcMain.on("get-default-cfg", (event) => {
-    event.sender.send("get-default-cfg-reply", getDefaultCfg());
+  expressApp.get("/api/diffusion/default-cfg", (req, res) => {
+    res.json({ cfg: getDefaultCfg() });
   });
-  electron.ipcMain.on("set-default-width", (event, width) => {
+  expressApp.post("/api/diffusion/default-width", (req, res) => {
+    const { width } = req.body;
     setDefaultWidth(width);
+    res.sendStatus(200);
   });
-  electron.ipcMain.on("get-default-width", (event) => {
-    event.sender.send("get-default-width-reply", getDefaultWidth());
+  expressApp.get("/api/diffusion/default-width", (req, res) => {
+    res.json({ width: getDefaultWidth() });
   });
-  electron.ipcMain.on("set-default-height", (event, height) => {
+  expressApp.post("/api/diffusion/default-height", (req, res) => {
+    const { height } = req.body;
     setDefaultHeight(height);
+    res.sendStatus(200);
   });
-  electron.ipcMain.on("get-default-height", (event) => {
-    event.sender.send("get-default-height-reply", getDefaultHeight());
+  expressApp.get("/api/diffusion/default-height", (req, res) => {
+    res.json({ height: getDefaultHeight() });
   });
-  electron.ipcMain.on("set-default-highres-steps", (event, highresSteps) => {
+  expressApp.post("/api/diffusion/default-highres-steps", (req, res) => {
+    const { highresSteps } = req.body;
     setDefaultHighresSteps(highresSteps);
+    res.sendStatus(200);
   });
-  electron.ipcMain.on("get-default-highres-steps", (event) => {
-    event.sender.send("get-default-highres-steps-reply", getDefaultHighresSteps());
+  expressApp.get("/api/diffusion/default-highres-steps", (req, res) => {
+    res.json({ highresSteps: getDefaultHighresSteps() });
   });
-  electron.ipcMain.on("set-default-denoising-strength", (event, denoisingStrength) => {
+  expressApp.post("/api/diffusion/default-denoising-strength", (req, res) => {
+    const { denoisingStrength } = req.body;
     setDefaultDenoisingStrength(denoisingStrength);
+    res.sendStatus(200);
   });
-  electron.ipcMain.on("get-default-denoising-strength", (event) => {
-    event.sender.send("get-default-denoising-strength-reply", getDefaultDenoisingStrength());
+  expressApp.get("/api/diffusion/default-denoising-strength", (req, res) => {
+    res.json({ denoisingStrength: getDefaultDenoisingStrength() });
   });
-  electron.ipcMain.on("set-default-upscale", (event, upscale) => {
+  expressApp.post("/api/diffusion/default-upscale", (req, res) => {
+    const { upscale } = req.body;
     setDefaultUpscale(upscale);
+    res.sendStatus(200);
   });
-  electron.ipcMain.on("get-default-upscale", (event) => {
-    event.sender.send("get-default-upscale-reply", getDefaultUpscale());
+  expressApp.get("/api/diffusion/default-upscale", (req, res) => {
+    res.json({ upscale: getDefaultUpscale() });
   });
 }
 const txt2img = async (prompt, negativePrompt, steps, cfg, width, height, highresSteps, denoisingStrength) => {
@@ -3403,7 +3699,7 @@ function getTimestamp() {
   const seconds = String(now.getSeconds()).padStart(2, "0");
   return `${year}${month}${day}_${hours}${minutes}${seconds}`;
 }
-const store$3 = new Store({
+const store$2 = new Store({
   name: "discordData"
 });
 let maxMessages = 25;
@@ -3422,54 +3718,43 @@ function getDiscordSettings() {
   showDiffusionDetails = getShowDiffusionDetails();
   replaceUser = getReplaceUser();
 }
-const setDiscordMode = (mode) => {
-  store$3.set("mode", mode);
-  console.log(store$3.get("mode"));
-};
 const getDiscordMode = () => {
-  console.log(store$3.get("mode"));
-  return store$3.get("mode");
-};
-const clearDiscordMode = () => {
-  store$3.set("mode", null);
+  console.log(store$2.get("mode"));
+  return store$2.get("mode");
 };
 const setDoAutoReply = (doAutoReply2) => {
-  store$3.set("doAutoReply", doAutoReply2);
+  store$2.set("doAutoReply", doAutoReply2);
 };
 const getDoAutoReply = () => {
-  return store$3.get("doAutoReply", false);
+  return store$2.get("doAutoReply", false);
 };
 const setDoStableDiffusion = (doStableDiffusion2) => {
-  store$3.set("doStableDiffusion", doStableDiffusion2);
+  store$2.set("doStableDiffusion", doStableDiffusion2);
   doStableDiffusion2 = doStableDiffusion2;
   registerCommands();
 };
 const getDoStableDiffusion = () => {
-  return store$3.get("doStableDiffusion", false);
+  return store$2.get("doStableDiffusion", false);
 };
 const setDoStableReactions = (doStableReactions2) => {
-  store$3.set("doStableReactions", doStableReactions2);
+  store$2.set("doStableReactions", doStableReactions2);
   doStableReactions2 = doStableReactions2;
 };
 const getDoStableReactions = () => {
-  return store$3.get("doStableReactions", false);
-};
-const setDoGeneralPurpose = (doGeneralPurpose2) => {
-  store$3.set("doGeneralPurpose", doGeneralPurpose2);
-  doGeneralPurpose2 = doGeneralPurpose2;
+  return store$2.get("doStableReactions", false);
 };
 const getDoGeneralPurpose = () => {
-  return store$3.get("doGeneralPurpose", false);
+  return store$2.get("doGeneralPurpose", false);
 };
 const getDiffusionWhitelist = () => {
-  return store$3.get("diffusionWhitelist", []);
+  return store$2.get("diffusionWhitelist", []);
 };
 const addDiffusionWhitelist = (channelID) => {
   let whitelist = getDiffusionWhitelist();
   if (!whitelist.includes(channelID)) {
     whitelist.push(channelID);
   }
-  store$3.set("diffusionWhitelist", whitelist);
+  store$2.set("diffusionWhitelist", whitelist);
   diffusionWhitelist = whitelist;
 };
 const removeDiffusionWhitelist = (channelID) => {
@@ -3477,22 +3762,22 @@ const removeDiffusionWhitelist = (channelID) => {
   if (whitelist.includes(channelID)) {
     whitelist.splice(whitelist.indexOf(channelID), 1);
   }
-  store$3.set("diffusionWhitelist", whitelist);
+  store$2.set("diffusionWhitelist", whitelist);
   diffusionWhitelist = whitelist;
 };
 const setShowDiffusionDetails = (show) => {
-  store$3.set("showDiffusionDetails", show);
+  store$2.set("showDiffusionDetails", show);
   showDiffusionDetails = show;
 };
 const getShowDiffusionDetails = () => {
-  return store$3.get("showDiffusionDetails", false);
+  return store$2.get("showDiffusionDetails", false);
 };
 const setReplaceUser = (replace) => {
-  store$3.set("replaceUser", replace);
+  store$2.set("replaceUser", replace);
   replaceUser = replace;
 };
 const getReplaceUser = () => {
-  return store$3.get("replaceUser", false);
+  return store$2.get("replaceUser", false);
 };
 async function getUsername(userID, channelID) {
   var _a, _b;
@@ -3539,16 +3824,16 @@ const addAlias = (newAlias, channelID) => {
       }
     }
   }
-  store$3.set("channels", channels);
+  store$2.set("channels", channels);
 };
 const setMaxMessages = (max) => {
-  store$3.set("maxMessages", max);
+  store$2.set("maxMessages", max);
 };
 const getMaxMessages = () => {
-  return store$3.get("maxMessages", 25);
+  return store$2.get("maxMessages", 25);
 };
 const getRegisteredChannels = () => {
-  return store$3.get("channels", []);
+  return store$2.get("channels", []);
 };
 const addRegisteredChannel = (newChannel) => {
   const existingChannels = getRegisteredChannels();
@@ -3563,13 +3848,13 @@ const addRegisteredChannel = (newChannel) => {
     return;
   if (!existingChannels.includes(newChannel)) {
     existingChannels.push(newChannel);
-    store$3.set("channels", existingChannels);
+    store$2.set("channels", existingChannels);
   }
 };
 const removeRegisteredChannel = (channelToRemove) => {
   const existingChannels = getRegisteredChannels();
   const updatedChannels = existingChannels.filter((channel) => channel._id !== channelToRemove);
-  store$3.set("channels", updatedChannels);
+  store$2.set("channels", updatedChannels);
 };
 const isChannelRegistered = (channel) => {
   const existingChannels = getRegisteredChannels();
@@ -3585,7 +3870,7 @@ function setInterrupted() {
 }
 let isInterrupted = false;
 async function handleDiscordMessage(message) {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _i;
+  var _a, _b, _c, _d, _e, _f, _g;
   const activeConstructs = retrieveConstructs();
   if (activeConstructs.length < 1)
     return;
@@ -3639,7 +3924,7 @@ async function handleDiscordMessage(message) {
     await updateChat(chatLog);
     return;
   }
-  (_e = exports.win) == null ? void 0 : _e.webContents.send(`chat-message-${message.channel.id}`);
+  expressAppIO.emit(`chat-message-${message.channel.id}`);
   if (chatLog.doVector) {
     if (chatLog.global) {
       for (let i = 0; i < constructArray.length; i++) {
@@ -3650,7 +3935,7 @@ async function handleDiscordMessage(message) {
     }
   }
   await updateChat(chatLog);
-  (_f = exports.win) == null ? void 0 : _f.webContents.send(`chat-message-${message.channel.id}`);
+  expressAppIO.emit(`chat-message-${message.channel.id}`);
   const mode = getDiscordMode();
   if (mode === "Character") {
     if (isMultiCharacterMode() && !message.channel.isDMBased()) {
@@ -3672,13 +3957,13 @@ async function handleDiscordMessage(message) {
       if (chatLog === void 0)
         return;
       let hasBeenMention = true;
-      let lastMessageText = (_g = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _g.text;
+      let lastMessageText = (_e = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _e.text;
       let iterations = 0;
       do {
         if (isInterrupted) {
           break;
         }
-        if (((_h = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _h.text) === void 0)
+        if (((_f = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _f.text) === void 0)
           break;
         if (iterations > 0 && lastMessageText === chatLog.lastMessage.text)
           break;
@@ -3709,7 +3994,7 @@ async function handleDiscordMessage(message) {
             break;
           }
           let config = shuffledConstructs[i].defaultConfig;
-          if ((_i = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _i.isHuman) {
+          if ((_g = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _g.isHuman) {
             if (config.replyToUser >= Math.random()) {
               let replyLog = await doCharacterReply(shuffledConstructs[i], chatLog, message);
               if (replyLog !== void 0) {
@@ -4362,71 +4647,115 @@ Scores are the following:
 }
 function DiscordController() {
   getDiscordSettings();
-  electron.ipcMain.on("discordMode", (event, arg) => {
-    setDiscordMode(arg);
+  expressApp.get("/api/discord/channels", (req, res) => {
+    try {
+      const channels = getRegisteredChannels();
+      res.json({ channels });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.handle("getDiscordMode", () => {
-    return getDiscordMode();
+  expressApp.post("/api/discord/channels/register", (req, res) => {
+    try {
+      const { channel } = req.body;
+      addRegisteredChannel(channel);
+      res.status(200).send({ message: "Channel registered successfully." });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.on("clearDiscordMode", () => {
-    clearDiscordMode();
+  expressApp.delete("/api/discord/channels/unregister", (req, res) => {
+    try {
+      const { channel } = req.body;
+      removeRegisteredChannel(channel);
+      res.status(200).send({ message: "Channel unregistered successfully." });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.handle("getRegisteredChannels", () => {
-    return getRegisteredChannels();
+  expressApp.get("/api/discord/channels/check", (req, res) => {
+    try {
+      const { channel } = req.query;
+      const isRegistered = isChannelRegistered(channel);
+      res.json({ isRegistered });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.handle("addRegisteredChannel", (event, arg) => {
-    addRegisteredChannel(arg);
+  expressApp.get("/api/discord/diffusion", (req, res) => {
+    try {
+      res.json({ value: getDoStableDiffusion() });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.handle("removeRegisteredChannel", (event, arg) => {
-    removeRegisteredChannel(arg);
+  expressApp.post("/api/discord/diffusion", (req, res) => {
+    try {
+      setDoStableDiffusion(req.body.value);
+      res.send({ message: "Updated successfully." });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.handle("isChannelRegistered", (event, arg) => {
-    return isChannelRegistered(arg);
+  expressApp.get("/api/discord/diffusion-reactions", (req, res) => {
+    try {
+      res.json({ value: getDoStableReactions() });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.on("get-do-stable-diffusion", (event, arg) => {
-    event.reply("get-do-stable-diffusion-reply", getDoStableDiffusion());
+  expressApp.post("/api/discord/diffusion-reactions", (req, res) => {
+    try {
+      setDoStableReactions(req.body.value);
+      res.send({ message: "Updated successfully." });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.on("set-do-stable-diffusion", (event, arg) => {
-    setDoStableDiffusion(arg);
+  expressApp.get("/api/discord/diffusion-whitelist", (req, res) => {
+    try {
+      res.json({ channels: getDiffusionWhitelist() });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.on("get-do-stable-reactions", (event, arg) => {
-    event.reply("get-do-stable-reactions-reply", getDoStableReactions());
+  expressApp.post("/api/discord/diffusion-whitelist", (req, res) => {
+    try {
+      addDiffusionWhitelist(req.body.channel);
+      res.send({ message: "Channel added to whitelist successfully." });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.on("set-do-stable-reactions", (event, arg) => {
-    setDoStableReactions(arg);
+  expressApp.delete("/api/discord/diffusion-whitelist", (req, res) => {
+    try {
+      removeDiffusionWhitelist(req.body.channel);
+      res.send({ message: "Channel removed from whitelist successfully." });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.on("get-do-general-purpose", (event, arg) => {
-    event.reply("get-do-general-purpose-reply", getDoGeneralPurpose());
+  expressApp.get("/api/discord/diffusion-details", (req, res) => {
+    try {
+      res.json({ value: getShowDiffusionDetails() });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.on("set-do-general-purpose", (event, arg) => {
-    setDoGeneralPurpose(arg);
+  expressApp.post("/api/discord/diffusion-details", (req, res) => {
+    try {
+      setShowDiffusionDetails(req.body.value);
+      res.send({ message: "Detail setting updated successfully." });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.on("get-do-auto-reply", (event, arg) => {
-    event.reply("get-do-auto-reply-reply", getDoAutoReply());
-  });
-  electron.ipcMain.on("set-do-auto-reply", (event, arg) => {
-    setDoAutoReply(arg);
-  });
-  electron.ipcMain.handle("get-diffusion-whitelist", (event, arg) => {
-    return getDiffusionWhitelist();
-  });
-  electron.ipcMain.handle("add-diffusion-whitelist", (event, arg) => {
-    addDiffusionWhitelist(arg);
-  });
-  electron.ipcMain.handle("remove-diffusion-whitelist", (event, arg) => {
-    removeDiffusionWhitelist(arg);
-  });
-  electron.ipcMain.on("get-show-diffusion-details", (event, arg) => {
-    event.sender.send("get-show-diffusion-details-reply", getShowDiffusionDetails());
-  });
-  electron.ipcMain.on("set-show-diffusion-details", (event, arg) => {
-    setShowDiffusionDetails(arg);
-  });
-  electron.ipcMain.on("get-registered-channels-for-chat", (event, arg) => {
-    event.reply("get-registered-channels-for-chat-reply", getRegisteredChannels());
-  });
-  electron.ipcMain.on("get-registered-channels-for-diffusion", (event, arg) => {
-    event.reply("get-registered-channels-for-diffusion-reply", getDiffusionWhitelist());
+  expressApp.get("/api/discord/diffusion-channels", (req, res) => {
+    try {
+      res.json({ channels: getDiffusionWhitelist() });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
 }
 const RegisterCommand = {
@@ -5500,19 +5829,19 @@ const intents = {
   ],
   partials: [discord_js.Partials.Channel, discord_js.Partials.GuildMember, discord_js.Partials.User, discord_js.Partials.Reaction, discord_js.Partials.Message, discord_js.Partials.ThreadMember, discord_js.Partials.GuildScheduledEvent]
 };
-const store$2 = new Store({
+const store$1 = new Store({
   name: "discordData"
 });
-getDiscordData();
 let disClient = new discord_js.Client(intents);
 const commands = [...DefaultCommands];
 let isReady = false;
 let token = "";
 let applicationID = "";
 let multiCharacterMode = false;
+getDiscordData();
 function createClient() {
   disClient.on("messageCreate", async (message) => {
-    var _a, _b, _c;
+    var _a;
     if (message.author.id === ((_a = disClient.user) == null ? void 0 : _a.id))
       return;
     if (message.webhookId)
@@ -5533,24 +5862,24 @@ function createClient() {
       }
       messageQueue.push(message);
       await processQueue();
-      (_b = exports.win) == null ? void 0 : _b.webContents.send(`chat-message-${message.channel.id}`);
-      (_c = exports.win) == null ? void 0 : _c.webContents.send("discord-message", message);
+      expressAppIO.emit(`chat-message-${message.channel.id}`);
     }
+    expressAppIO.emit("discord-message", message);
   });
   disClient.on("messageUpdate", async (oldMessage, newMessage) => {
-    var _a, _b, _c;
+    var _a, _b;
     if (((_a = newMessage.author) == null ? void 0 : _a.id) === ((_b = disClient.user) == null ? void 0 : _b.id))
       return;
-    (_c = exports.win) == null ? void 0 : _c.webContents.send("discord-message-update", oldMessage, newMessage);
+    expressAppIO.emit("discord-message-update", oldMessage, newMessage);
   });
   disClient.on("messageDelete", async (message) => {
-    var _a, _b, _c;
+    var _a, _b;
     if (((_a = message.author) == null ? void 0 : _a.id) === ((_b = disClient.user) == null ? void 0 : _b.id))
       return;
-    (_c = exports.win) == null ? void 0 : _c.webContents.send("discord-message-delete", message);
+    expressAppIO.emit("discord-message-delete", message);
   });
   disClient.on("messageReactionAdd", async (reaction, user) => {
-    var _a, _b, _c;
+    var _a, _b;
     if (user.id === ((_a = disClient.user) == null ? void 0 : _a.id))
       return;
     console.log("Reaction added...");
@@ -5581,105 +5910,84 @@ function createClient() {
       if (reaction.emoji.name === "❓") {
         await getMessageIntent(message);
       }
-      (_c = exports.win) == null ? void 0 : _c.webContents.send("discord-message-reaction-add", reaction, user);
+      expressAppIO.emit("discord-message-reaction-add", reaction, user);
     } catch (error) {
       console.error("Something went wrong when fetching the message:", error);
     }
   });
   disClient.on("messageReactionRemove", async (reaction, user) => {
-    var _a, _b;
+    var _a;
     if (user.id === ((_a = disClient.user) == null ? void 0 : _a.id))
       return;
-    (_b = exports.win) == null ? void 0 : _b.webContents.send("discord-message-reaction-remove", reaction, user);
+    expressAppIO.emit("discord-message-reaction-remove", reaction, user);
   });
   disClient.on("messageReactionRemoveAll", async (message) => {
-    var _a, _b, _c;
+    var _a, _b;
     if (((_a = message.author) == null ? void 0 : _a.id) === ((_b = disClient.user) == null ? void 0 : _b.id))
       return;
-    (_c = exports.win) == null ? void 0 : _c.webContents.send("discord-message-reaction-remove-all", message);
+    expressAppIO.emit("discord-message-reaction-remove-all", message);
   });
   disClient.on("messageReactionRemoveEmoji", async (reaction) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-message-reaction-remove-emoji", reaction);
+    expressAppIO.emit("discord-message-reaction-remove-emoji", reaction);
   });
   disClient.on("channelCreate", async (channel) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-channel-create", channel);
+    expressAppIO.emit("discord-channel-create", channel);
   });
   disClient.on("channelDelete", async (channel) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-channel-delete", channel);
+    expressAppIO.emit("discord-channel-delete", channel);
   });
   disClient.on("channelPinsUpdate", async (channel, time) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-channel-pins-update", channel, time);
+    expressAppIO.emit("discord-channel-pins-update", channel, time);
   });
   disClient.on("channelUpdate", async (oldChannel, newChannel) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-channel-update", oldChannel, newChannel);
+    expressAppIO.emit("discord-channel-update", oldChannel, newChannel);
   });
   disClient.on("emojiCreate", async (emoji) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-emoji-create", emoji);
+    expressAppIO.emit("discord-emoji-create", emoji);
   });
   disClient.on("emojiDelete", async (emoji) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-emoji-delete", emoji);
+    expressAppIO.emit("discord-emoji-delete", emoji);
   });
   disClient.on("emojiUpdate", async (oldEmoji, newEmoji) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-emoji-update", oldEmoji, newEmoji);
+    expressAppIO.emit("discord-emoji-update", oldEmoji, newEmoji);
   });
   disClient.on("guildBanAdd", async (ban) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-ban-add", ban);
+    expressAppIO.emit("discord-guild-ban-add", ban);
   });
   disClient.on("guildBanRemove", async (ban) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-ban-remove", ban);
+    expressAppIO.emit("discord-guild-ban-remove", ban);
   });
   disClient.on("guildCreate", async (guild) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-create", guild);
+    expressAppIO.emit("discord-guild-create", guild);
   });
   disClient.on("guildDelete", async (guild) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-delete", guild);
+    expressAppIO.emit("discord-guild-delete", guild);
   });
   disClient.on("guildUnavailable", async (guild) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-unavailable", guild);
+    expressAppIO.emit("discord-guild-unavailable", guild);
   });
   disClient.on("guildIntegrationsUpdate", async (guild) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-integrations-update", guild);
+    expressAppIO.emit("discord-guild-integrations-update", guild);
   });
   disClient.on("guildMemberAdd", async (member) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-member-add", member);
+    expressAppIO.emit("discord-guild-member-add", member);
   });
   disClient.on("guildMemberRemove", async (member) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-member-remove", member);
+    expressAppIO.emit("discord-guild-member-remove", member);
   });
   disClient.on("guildMemberAvailable", async (member) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-member-available", member);
+    expressAppIO.emit("discord-guild-member-available", member);
   });
   disClient.on("guildMemberUpdate", async (oldMember, newMember) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-member-update", oldMember, newMember);
+    expressAppIO.emit("discord-guild-member-update", oldMember, newMember);
   });
   disClient.on("guildMembersChunk", async (members, guild) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-members-chunk", members, guild);
+    expressAppIO.emit("discord-guild-members-chunk", members, guild);
   });
   disClient.on("guildUpdate", async (oldGuild, newGuild) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-guild-update", oldGuild, newGuild);
+    expressAppIO.emit("discord-guild-update", oldGuild, newGuild);
   });
   disClient.on("interactionCreate", async (interaction) => {
-    var _a;
     if (!interaction.isCommand())
       return;
     let commandsToCheck = commands;
@@ -5695,27 +6003,23 @@ function createClient() {
       console.error(error);
       await interaction.reply({ content: "There was an error while executing this command!", ephemeral: true });
     }
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-interaction-create", interaction);
+    expressAppIO.emit("discord-interaction-create", interaction);
   });
   disClient.on("inviteCreate", async (invite) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-invite-create", invite);
+    expressAppIO.emit("discord-invite-create", invite);
   });
   disClient.on("inviteDelete", async (invite) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-invite-delete", invite);
+    expressAppIO.emit("discord-invite-delete", invite);
   });
   disClient.on("presenceUpdate", async (oldPresence, newPresence) => {
-    var _a;
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-presence-update", oldPresence, newPresence);
+    expressAppIO.emit("discord-presence-update", oldPresence, newPresence);
   });
   disClient.on("ready", async () => {
-    var _a;
     if (!disClient.user)
       return;
     isReady = true;
     console.log(`Logged in as ${disClient.user.tag}!`);
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-ready", disClient.user.tag);
+    expressAppIO.emit("discord-ready", disClient.user.tag);
     registerCommands();
     let constructs = retrieveConstructs();
     let constructRaw = await getConstruct(constructs[0]);
@@ -5793,8 +6097,14 @@ async function setDiscordBotInfo(botName, base64Avatar) {
     }
   }
   try {
-    const buffer = await base642Buffer(base64Avatar);
-    await disClient.user.setAvatar(buffer);
+    console.log("Setting new avatar...");
+    console.log(base64Avatar);
+    if (!base64Avatar.includes("/api/images/")) {
+      base64Avatar = await base642Buffer(base64Avatar);
+    } else {
+      base64Avatar = uploadsPath + base64Avatar.replaceAll("/api/images/", "");
+    }
+    await disClient.user.setAvatar(base64Avatar);
     console.log("New avatar set!");
   } catch (error) {
     console.error("Failed to set avatar:", error);
@@ -6042,35 +6352,35 @@ async function getWebhooksForChannel(channelID) {
 }
 async function getDiscordData() {
   let savedToken;
-  const storedToken = store$2.get("discordToken");
+  const storedToken = store$1.get("discordToken");
   if (storedToken !== void 0 && typeof storedToken === "string") {
     savedToken = storedToken;
   } else {
     savedToken = "";
   }
   let appId;
-  const storedAppId = store$2.get("discordAppId");
+  const storedAppId = store$1.get("discordAppId");
   if (storedAppId !== void 0 && typeof storedAppId === "string") {
     appId = storedAppId;
   } else {
     appId = "";
   }
   let discordCharacterMode;
-  const storedDiscordCharacterMode = store$2.get("discordCharacterMode");
+  const storedDiscordCharacterMode = store$1.get("discordCharacterMode");
   if (storedDiscordCharacterMode !== void 0 && typeof storedDiscordCharacterMode === "boolean") {
     discordCharacterMode = storedDiscordCharacterMode;
   } else {
     discordCharacterMode = false;
   }
   let discordMultiCharacterMode;
-  const storedDiscordMultiCharacterMode = store$2.get("discordMultiCharacterMode");
+  const storedDiscordMultiCharacterMode = store$1.get("discordMultiCharacterMode");
   if (storedDiscordMultiCharacterMode !== void 0 && typeof storedDiscordMultiCharacterMode === "boolean") {
     discordMultiCharacterMode = storedDiscordMultiCharacterMode;
   } else {
     discordMultiCharacterMode = false;
   }
   let discordMultiConstructMode;
-  const storedDiscordMultiConstructMode = store$2.get("discordMultiConstructMode");
+  const storedDiscordMultiConstructMode = store$1.get("discordMultiConstructMode");
   if (storedDiscordMultiConstructMode !== void 0 && typeof storedDiscordMultiConstructMode === "boolean") {
     discordMultiConstructMode = storedDiscordMultiConstructMode;
   } else {
@@ -6083,7 +6393,7 @@ async function getDiscordData() {
 }
 function saveDiscordData(newToken, newAppId, discordCharacterMode, discordMultiCharacterMode, discordMultiConstructMode) {
   if (newToken === "") {
-    const storedToken = store$2.get("discordToken");
+    const storedToken = store$1.get("discordToken");
     if (storedToken !== void 0 && typeof storedToken === "string") {
       token = storedToken;
     } else {
@@ -6091,10 +6401,10 @@ function saveDiscordData(newToken, newAppId, discordCharacterMode, discordMultiC
     }
   } else {
     token = newToken;
-    store$2.set("discordToken", newToken);
+    store$1.set("discordToken", newToken);
   }
   if (newAppId === "") {
-    const storedAppId = store$2.get("discordAppId");
+    const storedAppId = store$1.get("discordAppId");
     if (storedAppId !== void 0 && typeof storedAppId === "string") {
       applicationID = storedAppId;
     } else {
@@ -6102,17 +6412,17 @@ function saveDiscordData(newToken, newAppId, discordCharacterMode, discordMultiC
     }
   } else {
     applicationID = newAppId;
-    store$2.set("discordAppId", newAppId);
+    store$1.set("discordAppId", newAppId);
   }
   multiCharacterMode = discordMultiCharacterMode;
-  store$2.set("discordCharacterMode", discordCharacterMode);
+  store$1.set("discordCharacterMode", discordCharacterMode);
   if (!discordCharacterMode) {
-    store$2.set("mode", "Construct");
+    store$1.set("mode", "Construct");
   } else {
-    store$2.set("mode", "Character");
+    store$1.set("mode", "Character");
   }
-  store$2.set("discordMultiCharacterMode", discordMultiCharacterMode);
-  store$2.set("discordMultiConstructMode", discordMultiConstructMode);
+  store$1.set("discordMultiCharacterMode", discordMultiCharacterMode);
+  store$1.set("discordMultiConstructMode", discordMultiConstructMode);
 }
 let messageQueue = [];
 let isProcessing = false;
@@ -6138,295 +6448,181 @@ function clearMessageQueue() {
   messageQueue = [];
 }
 function DiscordJSRoutes() {
-  electron.ipcMain.on("discord-get-token", async (event) => {
-    event.sender.send("discord-get-token-reply", token);
+  expressApp.get("/api/discord/token", (req, res) => {
+    res.json({ token });
   });
-  electron.ipcMain.on("discord-get-data", async (event) => {
+  expressApp.get("/api/discord/data", async (req, res) => {
     let data = await getDiscordData();
-    event.sender.send("discord-get-data-reply", data);
+    res.json(data);
   });
-  electron.ipcMain.on("discord-save-data", async (event, newToken, newAppId, discordCharacterMode, discordMultiCharacterMode, discordMultiConstructMode) => {
+  expressApp.post("/api/discord/data", async (req, res) => {
+    const { newToken, newAppId, discordCharacterMode, discordMultiCharacterMode, discordMultiConstructMode } = req.body;
     saveDiscordData(newToken, newAppId, discordCharacterMode, discordMultiCharacterMode, discordMultiConstructMode);
-    event.sender.send("discord-save-data-reply", token, applicationID);
+    res.json({ token, applicationID });
   });
-  electron.ipcMain.on("discord-get-application-id", async (event) => {
-    event.sender.send("discord-get-application-id-reply", applicationID);
+  expressApp.get("/api/discord/application-id", (req, res) => {
+    res.json({ applicationID });
   });
-  electron.ipcMain.on("discord-get-guilds", async (event) => {
-    event.sender.send("discord-get-guilds-reply", await getDiscordGuilds());
+  expressApp.get("/api/discord/guilds", async (req, res) => {
+    const guilds = await getDiscordGuilds();
+    res.json(guilds);
   });
-  electron.ipcMain.handle("discord-login", async (event, rawToken, appId) => {
+  expressApp.post("/api/discord/login", async (req, res) => {
     try {
+      let rawToken = req.body.rawToken;
+      let appId = req.body.appId;
       if (rawToken === "") {
-        const storedToken = store$2.get("discordToken");
+        const storedToken = store$1.get("discordToken");
         if (storedToken !== void 0 && typeof storedToken === "string") {
           token = storedToken;
         } else {
-          return false;
+          res.status(400).json({ success: false, message: "Invalid token." });
+          return;
         }
       } else {
         token = rawToken;
-        store$2.set("discordToken", rawToken);
+        store$1.set("discordToken", rawToken);
       }
       if (appId === "") {
-        const storedAppId = store$2.get("discordAppId");
+        const storedAppId = store$1.get("discordAppId");
         if (storedAppId !== void 0 && typeof storedAppId === "string") {
           applicationID = storedAppId;
         } else {
-          return false;
+          res.status(400).json({ success: false, message: "Invalid application ID." });
+          return;
         }
       } else {
         applicationID = appId;
-        store$2.set("discordAppId", appId);
+        store$1.set("discordAppId", appId);
       }
       await disClient.login(token);
       createClient();
       if (!disClient.user) {
         console.error("Discord client user is not initialized.");
-        return false;
+        res.status(500).json({ success: false, message: "Discord client user is not initialized." });
       } else {
-        return true;
+        res.json({ success: true });
       }
     } catch (error) {
       console.error("Failed to login to Discord:", error);
-      return false;
+      res.status(500).json({ success: false, message: "Failed to login to Discord." });
     }
   });
-  electron.ipcMain.handle("discord-logout", async (event) => {
-    var _a;
-    await disClient.destroy();
-    disClient.removeAllListeners();
-    isReady = false;
-    disClient = new discord_js.Client(intents);
-    console.log("Logged out!");
-    messageQueue = [];
-    (_a = exports.win) == null ? void 0 : _a.webContents.send("discord-disconnected");
-    return true;
+  expressApp.post("/api/discord/logout", async (req, res) => {
+    try {
+      await disClient.destroy();
+      disClient.removeAllListeners();
+      isReady = false;
+      messageQueue = [];
+      disClient = new discord_js.Client(intents);
+      console.log("Logged out!");
+      expressAppIO.emit("discord-disconnected");
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Failed to logout from Discord:", error);
+      res.status(500).json({ success: false, error: "Failed to logout from Discord." });
+    }
   });
-  electron.ipcMain.handle("discord-set-bot-info", async (event, botName, base64Avatar) => {
+  expressApp.post("/api/discord/set-bot-info", async (req, res) => {
+    const { botName, base64Avatar } = req.body;
     if (!isReady)
-      return false;
+      return res.status(503).json({ success: false, message: "Bot not ready." });
     await setDiscordBotInfo(botName, base64Avatar);
-    return true;
+    res.json({ success: true });
   });
-  electron.ipcMain.handle("discord-set-status", async (event, message, type) => {
+  expressApp.post("/api/discord/set-status", async (req, res) => {
+    const { message, type } = req.body;
     if (!isReady)
-      return false;
+      return res.status(503).json({ success: false, message: "Bot not ready." });
     await setStatus(message, type);
-    return true;
+    res.json({ success: true });
   });
-  electron.ipcMain.handle("discord-set-online-mode", async (event, type) => {
+  expressApp.post("/api/discord/set-online-mode", async (req, res) => {
+    const { type } = req.body;
     if (!isReady)
-      return false;
+      return res.status(503).json({ success: false, message: "Bot not ready." });
     await setOnlineMode(type);
-    return true;
+    res.json({ success: true });
   });
-  electron.ipcMain.handle("discord-send-message", async (event, channelID, message) => {
+  expressApp.post("/api/discord/send-message", async (req, res) => {
+    const { channelID, message } = req.body;
     if (!isReady)
-      return false;
+      return res.status(503).json({ success: false, message: "Bot not ready." });
     await sendMessage(channelID, message);
-    return true;
+    res.json({ success: true });
   });
-  electron.ipcMain.handle("discord-send-message-as-character", async (event, char, channelID, message) => {
+  expressApp.post("/api/discord/send-message-as-character", async (req, res) => {
+    const { char, channelID, message } = req.body;
     if (!isReady)
-      return false;
+      return res.status(503).json({ success: false, message: "Bot not ready." });
     await sendMessageAsCharacter(char, channelID, message);
-    return true;
+    res.json({ success: true });
   });
-  electron.ipcMain.on("discord-get-webhooks-for-channel", async (event, channelID) => {
+  expressApp.get("/api/discord/get-webhooks-for-channel/:channelID", async (req, res) => {
+    const { channelID } = req.params;
     if (!isReady)
-      return false;
+      return res.status(503).json({ success: false, message: "Bot not ready." });
     const webhooks = await getWebhooksForChannel(channelID);
-    event.sender.send("discord-get-webhooks-for-channel-reply", webhooks);
+    res.json({ success: true, webhooks });
   });
-  electron.ipcMain.on("discord-get-webhook-for-character", async (event, charName, channelID) => {
+  expressApp.get("/api/discord/get-webhook-for-character", async (req, res) => {
+    const { charName, channelID } = req.query;
     if (!isReady)
-      return false;
+      return res.status(503).json({ success: false, message: "Bot not ready." });
     const webhook = await getWebhookForCharacter(charName, channelID);
-    event.sender.send("discord-get-webhook-for-character-reply", webhook);
+    res.json({ success: true, webhook });
   });
-  electron.ipcMain.on("discord-get-user", async (event) => {
-    if (!isReady)
-      return false;
-    if (!disClient.user) {
+  expressApp.get("/api/discord/user", (req, res) => {
+    if (!isReady || !disClient.user) {
       console.error("Discord client user is not initialized.");
-      return false;
+      return res.status(500).send({ error: "Discord client user is not initialized." });
     }
-    event.sender.send("discord-get-user-reply", disClient.user);
+    res.send(disClient.user);
   });
-  electron.ipcMain.on("discord-get-user-id", async (event) => {
-    if (!isReady)
-      return false;
-    if (!disClient.user) {
+  expressApp.get("/api/discord/user/id", (req, res) => {
+    if (!isReady || !disClient.user) {
       console.error("Discord client user is not initialized.");
-      return false;
+      return res.status(500).send({ error: "Discord client user is not initialized." });
     }
-    event.sender.send("discord-get-user-id-reply", disClient.user.id);
+    res.send({ id: disClient.user.id });
   });
-  electron.ipcMain.on("discord-get-user-username", async (event) => {
-    if (!isReady)
-      return false;
-    if (!disClient.user) {
+  expressApp.get("/api/discord/user/username", (req, res) => {
+    if (!isReady || !disClient.user) {
       console.error("Discord client user is not initialized.");
-      return false;
+      return res.status(500).send({ error: "Discord client user is not initialized." });
     }
-    event.sender.send("discord-get-user-username-reply", disClient.user.username);
+    res.send({ username: disClient.user.username });
   });
-  electron.ipcMain.on("discord-get-user-avatar", async (event) => {
-    if (!isReady)
-      return false;
-    if (!disClient.user) {
+  expressApp.get("/api/discord/user/avatar", (req, res) => {
+    if (!isReady || !disClient.user) {
       console.error("Discord client user is not initialized.");
-      return false;
+      return res.status(500).send({ error: "Discord client user is not initialized." });
     }
-    event.sender.send("discord-get-user-avatar-reply", disClient.user.avatarURL());
+    res.send({ avatarURL: disClient.user.avatarURL() });
   });
-  electron.ipcMain.on("discord-get-user-discriminator", async (event) => {
-    if (!isReady)
-      return false;
-    if (!disClient.user) {
+  expressApp.get("/api/discord/user/discriminator", (req, res) => {
+    if (!isReady || !disClient.user) {
       console.error("Discord client user is not initialized.");
-      return false;
+      return res.status(500).send({ error: "Discord client user is not initialized." });
     }
-    event.sender.send("discord-get-user-discriminator-reply", disClient.user.discriminator);
+    res.send({ discriminator: disClient.user.discriminator });
   });
-  electron.ipcMain.on("discord-get-user-tag", async (event) => {
-    if (!isReady)
-      return false;
-    if (!disClient.user) {
+  expressApp.get("/api/discord/user/tag", (req, res) => {
+    if (!isReady || !disClient.user) {
       console.error("Discord client user is not initialized.");
-      return false;
+      return res.status(500).send({ error: "Discord client user is not initialized." });
     }
-    event.sender.send("discord-get-user-tag-reply", disClient.user.tag);
+    res.send({ tag: disClient.user.tag });
   });
-  electron.ipcMain.on("discord-get-user-createdAt", async (event) => {
-    if (!isReady)
-      return false;
-    if (!disClient.user) {
+  expressApp.get("/api/discord/user/createdAt", (req, res) => {
+    if (!isReady || !disClient.user) {
       console.error("Discord client user is not initialized.");
-      return false;
+      return res.status(500).send({ error: "Discord client user is not initialized." });
     }
-    event.sender.send("discord-get-user-createdAt-reply", disClient.user.createdAt);
+    res.send({ createdAt: disClient.user.createdAt });
   });
-  electron.ipcMain.on("discord-bot-status", async (event) => {
-    event.sender.send("discord-bot-status-reply", isReady);
-  });
-}
-function FsAPIRoutes() {
-  electron.ipcMain.handle("read-file", async (event, filePath) => {
-    try {
-      const data = await fs.promises.readFile(filePath, "utf8");
-      return data;
-    } catch (err) {
-      console.error(`Error reading file at ${filePath}:`, err);
-      throw err;
-    }
-  });
-  electron.ipcMain.handle("write-file", async (event, filePath, data) => {
-    try {
-      await fs.promises.writeFile(filePath, data, "utf8");
-      return { success: true };
-    } catch (err) {
-      console.error(`Error writing to file at ${filePath}:`, err);
-      throw err;
-    }
-  });
-  electron.ipcMain.handle("mkdir", async (event, dirPath) => {
-    try {
-      await fs.promises.mkdir(dirPath, { recursive: true });
-      return { success: true };
-    } catch (err) {
-      console.error(`Error creating directory at ${dirPath}:`, err);
-      throw err;
-    }
-  });
-  electron.ipcMain.handle("readdir", async (event, dirPath) => {
-    try {
-      const files = await fs.promises.readdir(dirPath);
-      return files;
-    } catch (err) {
-      console.error(`Error reading directory at ${dirPath}:`, err);
-      throw err;
-    }
-  });
-  electron.ipcMain.handle("rename", async (event, oldPath, newPath) => {
-    try {
-      await fs.promises.rename(oldPath, newPath);
-      return { success: true };
-    } catch (err) {
-      console.error(`Error renaming from ${oldPath} to ${newPath}:`, err);
-      throw err;
-    }
-  });
-  electron.ipcMain.handle("unlink", async (event, filePath) => {
-    try {
-      await fs.promises.unlink(filePath);
-      return { success: true };
-    } catch (err) {
-      console.error(`Error removing file at ${filePath}:`, err);
-      throw err;
-    }
-  });
-  electron.ipcMain.handle("exists", (event, path2) => {
-    return fs.existsSync(path2);
-  });
-  electron.ipcMain.handle("stat", async (event, filePath) => {
-    try {
-      const stats = await fs.promises.stat(filePath);
-      return stats;
-    } catch (err) {
-      console.error(`Error getting stats for file at ${filePath}:`, err);
-      throw err;
-    }
-  });
-  electron.ipcMain.handle("copy-file", async (event, src, dest, flags) => {
-    try {
-      await fs.promises.copyFile(src, dest, flags);
-      return { success: true };
-    } catch (err) {
-      console.error(`Error copying file from ${src} to ${dest}:`, err);
-      throw err;
-    }
-  });
-  electron.ipcMain.handle("open-file", async (event, path2, flags, mode) => {
-    try {
-      const fd = await fs.promises.open(path2, flags, mode);
-      return fd.fd;
-    } catch (err) {
-      console.error(`Error opening file at ${path2}:`, err);
-      throw err;
-    }
-  });
-}
-const store$1 = new Store({
-  name: "langChainData"
-});
-store$1.get("serpKey", "");
-store$1.get("azureKey", "");
-const setSerpKey = (key) => {
-  store$1.set("serpKey", key);
-};
-const getSerpKey = () => {
-  return store$1.get("serpKey");
-};
-const setAzureKey = (key) => {
-  store$1.set("azureKey", key);
-};
-const getAzureKey = () => {
-  return store$1.get("azureKey");
-};
-function LangChainRoutes() {
-  electron.ipcMain.on("set-serp-key", (_, arg) => {
-    setSerpKey(arg);
-  });
-  electron.ipcMain.on("set-azure-key", (_, arg) => {
-    setAzureKey(arg);
-  });
-  electron.ipcMain.on("get-serp-key", (event) => {
-    event.sender.send("get-serp-key-reply", getSerpKey());
-  });
-  electron.ipcMain.on("get-azure-key", (event) => {
-    event.sender.send("get-azure-key-reply", getAzureKey());
+  expressApp.get("/api/discord/bot/status", (req, res) => {
+    res.send({ status: isReady });
   });
 }
 process.env.DIST_ELECTRON = node_path.join(__dirname, "../");
@@ -6451,8 +6647,10 @@ const backgroundsPath = node_path.join(process.env.VITE_PUBLIC, "backgrounds/");
 const charactersPath = node_path.join(process.env.VITE_PUBLIC, "defaults/characters/");
 const dataPath = path.join(electron.app.getPath("userData"), "data/");
 const imagesPath = path.join(dataPath, "images/");
+const uploadsPath = path.join(dataPath, "uploads/");
 fs.mkdirSync(dataPath, { recursive: true });
 fs.mkdirSync(imagesPath, { recursive: true });
+fs.mkdirSync(uploadsPath, { recursive: true });
 const store = new Store();
 async function createWindow() {
   exports.win = new electron.BrowserWindow({
@@ -6486,13 +6684,11 @@ async function createWindow() {
   });
   DiscordJSRoutes();
   PouchDBRoutes();
-  FsAPIRoutes();
   LanguageModelAPI();
   SDRoutes();
   ElectronDBRoutes();
   constructController();
   DiscordController();
-  LangChainRoutes();
   VectorDBRoutes();
 }
 electron.app.whenReady().then(createWindow);
@@ -6535,67 +6731,100 @@ electron.ipcMain.handle("open-win", (_, arg) => {
     childWindow.loadFile(indexHtml, { hash: arg });
   }
 });
-electron.ipcMain.on("load-models", async (event) => {
-  getModels$1().then((models) => {
-    event.sender.send("load-models-reply", true);
+const expressApp = express();
+const bodyParser = require("body-parser");
+const port = 3003;
+expressApp.use(express.static("public"));
+expressApp.use(express.static("dist"));
+expressApp.use(bodyParser.json({ limit: "1000mb" }));
+expressApp.use(bodyParser.urlencoded({ limit: "1000mb", extended: true }));
+expressApp.use(cors());
+expressApp.use("/api/images", express.static(uploadsPath));
+const server = node_http.createServer(expressApp);
+const expressAppIO = new socket_io.Server(server);
+expressAppIO.sockets.on("connection", (socket) => {
+  console.log("Client connected:", socket.id);
+  socket.onAny((eventName, ...args) => {
+    console.log(`event: ${eventName}`, args);
   });
 });
-electron.ipcMain.on("open-external-url", (event, url2) => {
-  electron.shell.openExternal(url2);
+server.listen(port, () => {
+  console.log(`Server started on http://localhost:${port}`);
 });
-electron.ipcMain.handle("get-data-path", () => {
-  return dataPath;
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsPath);
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname);
+  }
 });
-electron.ipcMain.on("set-data", (event, arg) => {
-  store.set(arg.key, arg.value);
+const upload = multer({ storage });
+expressApp.post("/api/models/load", async (req, res) => {
+  getModels$1().then(() => {
+    res.send(true);
+  }).catch((err) => {
+    res.send(err);
+  });
 });
-electron.ipcMain.on("get-data", (event, arg, replyName) => {
-  event.sender.send(replyName, store.get(arg));
+expressApp.get("/api/get-data-path", (req, res) => {
+  res.send({ dataPath });
 });
-electron.ipcMain.on("save-background", (event, imageData, name, fileType) => {
+expressApp.post("/api/set-data", (req, res) => {
+  const { key, value } = req.body;
+  store.set(key, value);
+  res.send({ status: "success" });
+});
+expressApp.get("/api/get-data/:key", (req, res) => {
+  const value = store.get(req.params.key);
+  res.send({ value });
+});
+expressApp.post("/api/save-background", (req, res) => {
+  const { imageData, name, fileType } = req.body;
   const imagePath = path.join(backgroundsPath, `${name}.${fileType}`);
   const data = Buffer.from(imageData, "base64");
   fs.writeFileSync(imagePath, data);
-  event.sender.send("save-background-reply", `${name}.${fileType}`);
+  res.send({ fileName: `${name}.${fileType}` });
 });
-electron.ipcMain.on("get-backgrounds", (event) => {
+expressApp.get("/api/get-backgrounds", (req, res) => {
   fs.readdir(backgroundsPath, (err, files) => {
     if (err) {
-      event.sender.send("get-backgrounds-reply", []);
+      res.send({ files: [] });
       return;
     }
-    event.sender.send("get-backgrounds-reply", files);
+    res.send({ files });
   });
 });
-electron.ipcMain.on("delete-background", (event, name) => {
-  fs.unlink(path.join(backgroundsPath, name), (err) => {
+expressApp.delete("/api/delete-background/:name", (req, res) => {
+  fs.unlink(path.join(backgroundsPath, req.params.name), (err) => {
     if (err) {
-      event.sender.send("delete-background-reply", false);
+      res.send({ success: false });
       return;
     }
-    event.sender.send("delete-background-reply", true);
+    res.send({ success: true });
   });
 });
-electron.ipcMain.handle("get-server-port", (event) => {
+expressApp.get("/api/get-default-characters", (req, res) => {
+  const characters = [];
   try {
-    const appRoot = electron.app.getAppPath();
-    const configPath = path.join(appRoot, "backend", "config.json");
-    const rawData = fs.readFileSync(configPath, "utf8");
-    const config = JSON.parse(rawData);
-    return config.port;
-  } catch (error) {
-    console.error("Failed to get server port:", error);
-    throw error;
+    fs.readdirSync(charactersPath).forEach((file) => {
+      if (file.endsWith(".png")) {
+        characters.push(file);
+      }
+    });
+    res.send({ characters });
+  } catch (err) {
+    res.status(500).send({ error: "Failed to read the characters directory." });
   }
 });
-electron.ipcMain.on("get-default-characters", (event) => {
-  const characters = [];
-  fs.readdirSync(charactersPath).forEach((file) => {
-    if (file.endsWith(".png")) {
-      characters.push(file);
-    }
-  });
-  event.sender.send("get-default-characters-reply", characters);
+expressApp.post("/api/images/upload", upload.single("image"), (req, res) => {
+  if (!req.file) {
+    return res.status(400).send("No file uploaded.");
+  }
+  res.send(`File uploaded: ${req.file.originalname}`);
+});
+electron.ipcMain.on("open-external-url", (event, url2) => {
+  electron.shell.openExternal(url2);
 });
 async function requestFullDiskAccess() {
   if (process.platform === "darwin") {
@@ -6620,9 +6849,12 @@ async function requestFullDiskAccess() {
 exports.backgroundsPath = backgroundsPath;
 exports.charactersPath = charactersPath;
 exports.dataPath = dataPath;
+exports.expressApp = expressApp;
+exports.expressAppIO = expressAppIO;
 exports.imagesPath = imagesPath;
 exports.isDarwin = isDarwin;
 exports.modelsPath = modelsPath;
 exports.store = store;
+exports.uploadsPath = uploadsPath;
 exports.wasmPath = wasmPath;
 //# sourceMappingURL=index.js.map

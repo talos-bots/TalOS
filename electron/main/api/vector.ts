@@ -1,5 +1,4 @@
-import { dataPath, isDarwin } from '../';
-import { ipcMain } from 'electron';
+import { dataPath, expressApp, isDarwin } from '../';
 import path from 'path';
 import { LocalIndex } from 'vectra';
 import { MessageInterface } from '../types/types';
@@ -76,43 +75,57 @@ export async function deleteIndex(schemaName: string) {
 }
 
 export function VectorDBRoutes(){
-    ipcMain.on('get-all-vectors', async (event, schemaName: string, uniqueReplyName: string) => {
-        getAllVectors(schemaName).then((vectors) => {
-            event.reply(uniqueReplyName, vectors);
-        }).catch((error) => {
-            event.reply(uniqueReplyName, error);
-        });
+    // 1. GET all vectors
+    expressApp.get('/api/vectors/:schemaName', async (req, res) => {
+        try {
+            const vectors = await getAllVectors(req.params.schemaName);
+            res.json(vectors);
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
     });
 
-    ipcMain.on('get-relavent-memories', async (event, schemaName: string, text: string, uniqueReplyName: string) => {
-        getRelaventMemories(schemaName, text).then((memories) => {
-            event.reply(uniqueReplyName, memories);
-        }).catch((error) => {
-            event.reply(uniqueReplyName, error);
-        });
+    // 2. GET relevant memories
+    expressApp.get('/api/memories/:schemaName', async (req, res) => {
+        try {
+            const memories = await getRelaventMemories(req.params.schemaName, req.query.text as string);
+            res.json(memories);
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
     });
 
-    ipcMain.on('add-vector-from-message', async (event, schemaName: string, message: MessageInterface, uniqueReplyName: string) => {
-        addVectorFromMessage(schemaName, message).then(() => {
-            event.reply(uniqueReplyName, true);
-        }).catch((error) => {
-            event.reply(uniqueReplyName, error);
-        });
+    // 3. POST to add vector from message
+    expressApp.post('/api/vector/:schemaName', async (req, res) => {
+        try {
+            await addVectorFromMessage(req.params.schemaName, req.body);
+            res.sendStatus(201); // 201: Created
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
     });
 
-    ipcMain.on('get-vector', async (event, text: string, uniqueReplyName: string) => {
-        getVector(text).then((vector) => {
-            event.reply(uniqueReplyName, vector);
-        }).catch((error) => {
-            event.reply(uniqueReplyName, error);
-        });
+    // 4. GET a specific vector
+    expressApp.get('/api/vector', async (req, res) => {
+        try {
+            const vector = await getVector(req.query.text as string);
+            if (vector) {
+                res.json(vector);
+            } else {
+                res.status(404).send({ error: 'Vector not found' });
+            }
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
     });
 
-    ipcMain.on('delete-index', async (event, schemaName: string, uniqueReplyName: string) => {
-        deleteIndex(schemaName).then(() => {
-            event.reply(uniqueReplyName, true);
-        }).catch((error) => {
-            event.reply(uniqueReplyName, error);
-        });
+    // 5. DELETE an index
+    expressApp.delete('/api/index/:schemaName', async (req, res) => {
+        try {
+            await deleteIndex(req.params.schemaName);
+            res.sendStatus(204); // 204: No Content
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
     });
 }

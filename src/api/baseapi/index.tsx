@@ -1,39 +1,42 @@
-import { ipcRenderer } from "electron";
+import { sendDesktopNotification } from '@/components/desktop-notification';
+import axios from 'axios';
 
-export function getBackgrounds(): Promise<any[]>{
-    return new Promise((resolve, reject) => {
-        ipcRenderer.send('get-backgrounds');
-        ipcRenderer.once('get-backgrounds-reply', (event, data) => {
-            if(data.error) reject(data.error);
-            resolve(data);
+export async function getBackgrounds(): Promise<any[]> {
+    return axios.get(`/api/get-backgrounds`)
+        .then(response => response.data.files)
+        .catch(error => {
+            throw error.response.data.error;
         });
-    });
 }
 
-export function deleteBackground(filename: string): Promise<{success: boolean}>{
-    return new Promise((resolve, reject) => {
-        ipcRenderer.send('delete-background', filename);
-        ipcRenderer.once('delete-background-reply', (event, data) => {
-            if(data.error) reject(data.error);
-            resolve(data);
+export async function deleteBackground(filename: string): Promise<{ success: boolean }> {
+    return axios.delete(`/api/delete-background/${filename}`)
+        .then(response => response.data)
+        .catch(error => {
+            throw error.response.data.error;
         });
-    });
 }
 
 export function saveBackground(file: File): Promise<string> {
     const name = file.name;
-    const fileType = file.name.split('.').pop();
+    const fileType = name.split('.').pop();
     const reader = new FileReader();
 
     return new Promise((resolve, reject) => {
         reader.onload = () => {
             const base64String = reader.result as string;
             const imageData = base64String.split(',')[1];
-            
-            ipcRenderer.send('save-background', imageData, name, fileType);
-            ipcRenderer.once('save-background-reply', (event, data) => {
-                if (data.error) reject(data.error);
-                resolve(data);
+
+            axios.post(`/api/save-background`, {
+                imageData: imageData,
+                name: name,
+                fileType: fileType
+            })
+            .then(response => {
+                resolve(response.data.fileName);
+            })
+            .catch(error => {
+                reject(error.response.data.error);
             });
         };
 
@@ -42,5 +45,27 @@ export function saveBackground(file: File): Promise<string> {
         };
 
         reader.readAsDataURL(file);
+    });
+}
+
+export function uploadImage(formData: FormData): void {
+    axios.post('/api/images/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+    .then(response => {
+      console.log('Upload successful:', response.data);
+    })
+    .catch(error => {
+      console.error('Error uploading:', error);
+    });
+}
+
+export async function loadModels(){
+    return axios.post('/api/models/load').then((response) => {
+      sendDesktopNotification('ConstructOS', 'Models Loaded');
+    }).catch((err) => {
+      console.error(err);
     });
 }

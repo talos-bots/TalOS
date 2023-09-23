@@ -16,7 +16,7 @@ const MenuThemeLoader = (props: Props) => {
         let savedTheme: string | undefined;
         const getBackground = async () => {
             const data = await getStorageValue('background');
-            if(data !== null) {
+            if(data !== null && data !== undefined) {
                 setStyle('background-image', `url(./backgrounds/${data})`);
                 setBackground(data);
             }
@@ -87,7 +87,7 @@ const MenuThemeLoader = (props: Props) => {
                 if(background !== null) {
                     setStyle('background-image', `url(./backgrounds/${background})`);
                 }else{
-                    setStyle('background-image', `url(./backgrounds/${uiTheme.themeBackground})`);
+                    setStyle('background-image', `${uiTheme.themeBackground}`);
                 }
             }
             if(uiTheme.themeAccent.length > 0) {

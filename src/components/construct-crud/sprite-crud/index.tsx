@@ -1,3 +1,4 @@
+import { uploadImage } from "@/api/baseapi";
 import { Sprite } from "@/classes/Construct"
 import { Emotion } from "@/types";
 import { useEffect, useState } from "react";
@@ -24,13 +25,13 @@ const SpriteCrud = (props: SpriteCrudProps) => {
         const file = event.target.files?.[0];
         const newSprite = new Sprite(emotion);
         if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                newSprite.image64 = reader.result as string;
-                addSprite(newSprite, emotion);
-                setSpriteImage(newSprite.image64);
-            };
-            reader.readAsDataURL(file);
+            const newName = Date.now().toString()+`-${emotion}` + '.' + file.name.split('.').pop();
+            const formData = new FormData();
+            formData.append('image', file, newName);
+            uploadImage(formData);
+            setSpriteImage(`/api/images/${newName}`);
+            newSprite.image64 = `/api/images/${newName}`;
+            addSprite(newSprite, emotion);
         } else {
             // Handle the case where no file was selected, if necessary
         }

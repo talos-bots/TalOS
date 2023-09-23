@@ -72,6 +72,7 @@ const InputGroup = (props: InputGroupProps) => {
 				onChange={(e) => setMessage(e.target.value)}
 				onKeyUp={(e) => {
 					if (e.key === "Enter") {
+						e.preventDefault();
 						console.log(attachments)
 						sendMessage(message, attachments);
 						setMessage("");

@@ -1,4 +1,4 @@
-import { loadModels } from "@/App";
+import { loadModels } from "@/api/baseapi";
 import { getDoCaptioning, getDoEmotions, setDoCaptioning, setDoEmotions } from "@/api/llmapi";
 import { Save } from "lucide-react";
 import { useEffect, useState } from "react";

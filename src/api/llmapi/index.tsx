@@ -1,9 +1,9 @@
 import { PaLMFilters } from '@/components/llm-panel/palm-panel';
 import { Emotion, EndpointType, LLMConnectionInformation, Settings } from '@/types';
-import { ipcRenderer } from 'electron';
 // @ts-ignore
 import llamaTokenizer from 'llama-tokenizer-js'
 import { encode } from 'gpt-tokenizer'
+import axios from 'axios';
 
 export interface ConnectionPreset {
     _id: string;
@@ -19,140 +19,106 @@ export interface ConnectionPreset {
 
 export type OAI_Model = 'gpt-3.5-turbo-16k' | 'gpt-4' | 'gpt-3.5-turbo' | 'gpt-3.5-turbo-16k-0613' | 'gpt-3.5-turbo-0613' | 'gpt-3.5-turbo-0301' | 'gpt-4-0314' | 'gpt-4-0613';
 // Generate Text
-export const generateText = (
+export const generateText = async (
     prompt: string,
     configuredName?: string,
     stopList?: string[]
 ): Promise<any> => {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "generate-text-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send('generate-text', prompt, configuredName, stopList, uniqueEventName);
-        ipcRenderer.once(uniqueEventName, (event, results) => {
-            resolve(results);
-        });
-
-    });
+    return axios.post(`/api/generate-text`, { prompt, configuredName, stopList })
+        .then(response => response.data)
+        .catch(error => Promise.reject(error.response.data.error || 'Failed to generate text'));
 }
 
-export const doInstructions = (
+export const doInstructions = async (
     instruction: string,
     guidance?: string,
     context?: string,
-    examples?: string | string[],
+    examples?: string | string[]
 ): Promise<any> => {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "do-instruct-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send('do-instruct', instruction, guidance, context, examples, uniqueEventName);
-        ipcRenderer.once(uniqueEventName, (event, results) => {
-            resolve(results);
-        });
-
-    });
+    return axios.post(`/api/do-instruct`, { instruction, guidance, context, examples })
+        .then(response => response.data)
+        .catch(error => Promise.reject(error.response.data.error || 'Failed to process instruction'));
 }
 
-export const getInstructPrompt = (
+export const getInstructPrompt = async (
     instruction: string,
     guidance?: string,
     context?: string,
-    examples?: string | string[],
+    examples?: string | string[]
 ): Promise<any> => {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "get-instruct-prompt-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send('get-instruct-prompt', instruction, guidance, context, examples, uniqueEventName);
-        ipcRenderer.once(uniqueEventName, (event, results) => {
-            resolve(results);
-        });
-
-    });
+    return axios.post(`/api/get-instruct-prompt`, { instruction, guidance, context, examples })
+        .then(response => response.data)
+        .catch(error => Promise.reject(error.response.data.error || 'Failed to get instruct prompt'));
 }
 
 // Get Status
-export const getStatus = (
+export const getStatus = async (
     endpoint?: string,
     endpointType?: string 
 ): Promise<any> => { 
-    return new Promise((resolve, reject) => {
-        ipcRenderer.send('get-status', endpoint, endpointType);
-        ipcRenderer.once('get-status-reply', (event, status) => {
-            resolve(status);
-        });
-    });
+    return axios.post(`/api/get-status`, { endpoint, endpointType })
+        .then(response => response.data)
+        .catch(error => Promise.reject(error.response.data.error || 'Failed to get status'));
 }
 
-export const getLLMConnectionInformation = (): Promise<LLMConnectionInformation> => {
-    return new Promise((resolve, reject) => {
-        ipcRenderer.send('get-llm-connection-information');
-        ipcRenderer.once('get-llm-connection-information-reply', (event, data) => {
-            if(data.error) reject(data.error);
-            resolve(data);
-        });
-    });
+export const getLLMConnectionInformation = async (): Promise<LLMConnectionInformation> => {
+    return axios.get(`/api/llm/connection-information`)
+        .then(response => response.data)
+        .catch(error => Promise.reject(error.response.data.error || 'Failed to get LLM connection information'));
 }
 
-export const setLLMConnectionInformation = (endpoint: string, endpointType: EndpointType, password?: string, hordeModel?: string): Promise<any> => {
-    return new Promise((resolve, reject) => {
-        ipcRenderer.send('set-llm-connection-information', endpoint, endpointType, password, hordeModel);
-        ipcRenderer.once('set-llm-connection-information-reply', (event, data) => {
-            if(data.error) reject(data.error);
-            resolve(data);
-        });
-    });
+export const setLLMConnectionInformation = async (endpoint: string, endpointType: EndpointType, password?: string, hordeModel?: string): Promise<any> => {
+    return axios.post(`/api/llm/connection-information`, { endpoint, endpointType, password, hordeModel })
+        .then(response => response.data)
+        .catch(error => Promise.reject(error.response.data.error || 'Failed to set LLM connection information'));
 }
 
-export const setLLMSettings = (settings: Settings, stopBrackets: boolean): void => {
-    ipcRenderer.send('set-llm-settings', settings, stopBrackets);
+export const setLLMSettings = async (settings: Settings, stopBrackets: boolean): Promise<any> => {
+    return axios.post(`/api/llm/settings`, { settings, stopBrackets })
+        .then(response => response.data)
+        .catch(error => Promise.reject(error.response.data.error || 'Failed to set LLM settings'));
 }
 
-export const getLLMSettings = (): Promise<{settings: Settings, stopBrackets: boolean}> => {
-    return new Promise((resolve, reject) => {
-        ipcRenderer.send('get-llm-settings');
-        ipcRenderer.once('get-llm-settings-reply', (event, data) => {
-            if(data.error) reject(data.error);
-            resolve(data);
-        });
-    });
+export const getLLMSettings = async (): Promise<{settings: Settings, stopBrackets: boolean}> => {
+    return axios.get(`/api/llm/settings`)
+        .then(response => response.data)
+        .catch(error => Promise.reject(error.response.data.error || 'Failed to get LLM settings'));
 }
 
-export const getLLMModel = (): Promise<any> => {
-    return new Promise((resolve, reject) => {
-        ipcRenderer.send('get-llm-model');
-        ipcRenderer.once('get-llm-model-reply', (event, data) => {
-            if(data.error) reject(data.error);
-            resolve(data);
-        });
-    });
+export const setLLMModel = async (model: string): Promise<any> => {
+    return axios.post(`/api/llm/model`, { model })
+        .then(response => response.data)
+        .catch(error => Promise.reject(error.response.data.error || 'Failed to set LLM model'));
 }
 
-export const setLLMModel = (model: string) => {
-    ipcRenderer.send('set-llm-model', model);
+export const getLLMModel = async (): Promise<string> => {
+    return axios.get(`/api/llm/model`)
+        .then(response => response.data)
+        .catch(error => Promise.reject(error.response.data.error || 'Failed to get LLM model'));
 }
 
-export const getLLMOAIModel = (): Promise<any> => {
-    return new Promise((resolve, reject) => {
-        ipcRenderer.send('get-llm-openai-model');
-        ipcRenderer.once('get-llm-openai-model-reply', (event, data) => {
-            if(data.error) reject(data.error);
-            resolve(data);
-        });
-    });
+export const setLLMOAIModel = async (model: string): Promise<any> => {
+    return axios.post(`/api/llm/openai-model`, { model })
+        .then(response => response.data)
+        .catch(error => Promise.reject(error.response.data.error || 'Failed to set LLM OpenAI model'));
 }
 
-export const setLLMOAIModel = (model: string) => {
-    ipcRenderer.send('set-llm-openai-model', model);
+export const getLLMOAIModel = async (): Promise<string> => {
+    return axios.get(`/api/llm/openai-model`)
+        .then(response => response.data)
+        .catch(error => Promise.reject(error.response.data.error || 'Failed to get LLM OpenAI model'));
 }
 
-export const setPaLMFilters = (filters: PaLMFilters) => {
-    ipcRenderer.send('set-palm-filters', filters);
+export async function setPaLMFilters(filters: PaLMFilters): Promise<any> {
+    return axios.post(`/api/palm/filters`, { filters })
+        .then(response => response.data)
+        .catch(error => Promise.reject(error.response.data.error || 'Failed to set PaLM filters'));
 }
 
-export const getPaLMFilters = (): Promise<PaLMFilters> => {
-    return new Promise((resolve, reject) => {
-        ipcRenderer.send('get-palm-filters');
-        ipcRenderer.once('get-palm-filters-reply', (event, data) => {
-            if(data.error) reject(data.error);
-            resolve(data);
-        });
-    });
+export async function getPaLMFilters(): Promise<PaLMFilters> {
+    return axios.get(`/api/palm/filters`)
+        .then(response => response.data)
+        .catch(error => Promise.reject(error.response.data.error || 'Failed to get PaLM filters'));
 }
 
 export function getLlamaTokens(text: string): number{
@@ -165,144 +131,116 @@ export function getGPTTokens(text: string): number{
 	return tokens;
 }
 
-export function getTextEmotion(text: string): Promise<Emotion>{
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "get-text-classification-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send('get-text-classification', uniqueEventName, text);
-        ipcRenderer.once(uniqueEventName, (event, data) => {
-            if(data.error) reject(data.error);
-            resolve(data);
+export async function getTextEmotion(text: string): Promise<Emotion> {
+    return axios.post(`/api/text/classification`, { text })
+        .then(response => response.data)
+        .catch(error => Promise.reject(error.response.data.error || 'Failed to get text emotion'));
+}
+
+export async function getImageCaption(image: string): Promise<string> {
+    return axios.post(`/api/image/caption`, { base64: image })
+        .then(response => response.data)
+        .catch(error => Promise.reject(error.response.data.error || 'Failed to get image caption'));
+}
+
+export async function setDoEmotions(value: boolean): Promise<boolean> {
+    return axios.post(`/api/settings/do-emotions`, { value })
+        .then(response => {
+            if (response.status !== 200) {
+                throw new Error(response.data.error || 'Failed to set Do Emotions value');
+            }
+            return response.data.value;
         });
-    });
 }
 
-export function getImageCaption(image: string): Promise<string>{
-    return new Promise((resolve, reject) => {
-        console.log("getting image caption");
-        const uniqueEventName = "get-image-to-text-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send('get-image-to-text', uniqueEventName, image);
-        ipcRenderer.once(uniqueEventName, (event, data) => {
-            if(data.error) reject(data.error);
-            resolve(data);
+export async function getDoEmotions(): Promise<boolean> {
+    return axios.get(`/api/settings/do-emotions`)
+        .then(response => {
+            if (response.status !== 200) {
+                throw new Error(response.data.error || 'Failed to get Do Emotions value');
+            }
+            return response.data.value;
         });
-    });
 }
 
-export function setDoEmotions(value: boolean){
-    ipcRenderer.send('set-do-emotions', value);
-}
-
-export function getDoEmotions(): Promise<boolean>{
-    return new Promise((resolve, reject) => {
-        ipcRenderer.send('get-do-emotions');
-        ipcRenderer.once('get-do-emotions-reply', (event, data) => {
-            if(data.error) reject(data.error);
-            resolve(data);
+export async function setDoCaptioning(value: boolean): Promise<boolean> {
+    return axios.post(`/api/settings/do-caption`, { value })
+        .then(response => {
+            if (response.status !== 200) {
+                throw new Error(response.data.error || 'Failed to set Do Caption value');
+            }
+            return response.data.value;
         });
-    });
 }
 
-export function setDoCaptioning(value: boolean){
-    ipcRenderer.send('set-do-caption', value);
-}
-
-export function getDoCaptioning(): Promise<boolean>{
-    return new Promise((resolve, reject) => {
-        ipcRenderer.send('get-do-caption');
-        ipcRenderer.once('get-do-caption-reply', (event, data) => {
-            if(data.error) reject(data.error);
-            resolve(data);
+export async function getDoCaptioning(): Promise<boolean> {
+    return axios.get(`/api/settings/do-caption`)
+        .then(response => {
+            if (response.status !== 200) {
+                throw new Error(response.data.error || 'Failed to get Do Caption value');
+            }
+            return response.data.value;
         });
-    });
 }
 
-export function setPalmModel(model: string){
-    ipcRenderer.send('set-palm-model', model);
-}
-
-export function getPalmModel(): Promise<string>{
-    return new Promise((resolve, reject) => {
-        ipcRenderer.send('get-palm-model');
-        ipcRenderer.once('get-palm-model-reply', (event, data) => {
-            if(data.error) reject(data.error);
-            resolve(data);
+export async function setPalmModel(model: string): Promise<void> {
+    return axios.post(`/api/palm/model`, { model })
+        .then(response => {
+            if (response.status !== 200) {
+                throw new Error(response.data.error || 'Failed to set model');
+            }
         });
-    });
 }
 
-export function getTextEmbedding(text: string): Promise<any>{
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "get-text-embedding-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send('get-text-embedding', uniqueEventName, text);
-        ipcRenderer.once(uniqueEventName, (event, data) => {
-            if(data.error) reject(data.error);
-            resolve(data);
+export async function getPalmModel(): Promise<string> {
+    return axios.get(`/api/palm/model`)
+        .then(response => {
+            if (response.status !== 200) {
+                throw new Error(response.data.error || 'Failed to get model');
+            }
+            return response.data.model;
         });
-    });
 }
 
-export function compareStrings(string1: string, string2: string): Promise<any>{
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "get-text-similarity-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send('get-text-similarity', uniqueEventName, string1, string2);
-        ipcRenderer.once(uniqueEventName, (event, data) => {
-            if(data.error) reject(data.error);
-            resolve(data);
-        });
-    });
+export async function getTextEmbedding(text: string): Promise<any> {
+    return axios.post(`/api/text/embedding`, { text })
+        .then(response => response.data)
+        .catch(error => Promise.reject(error.response.data.error || 'Failed to get text embedding'));
 }
 
-export const getZeroShotClassifcation = (message: string, labels: string[]): Promise<any> => {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "get-zero-shot-classification-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send('get-zero-shot-classificationn', uniqueEventName, message, labels);
-        ipcRenderer.once(uniqueEventName, (event, response) => {
-            resolve(response);
-        });
-    });
+export async function compareStrings(string1: string, string2: string): Promise<any> {
+    return axios.post(`/api/text/similarity`, { text1: string1, text2: string2 })
+        .then(response => response.data)
+        .catch(error => Promise.reject(error.response.data.error || 'Failed to get text similarity'));
 }
 
-export const getLLMConnectionPresets = (): Promise<ConnectionPreset[]> => {
-    return new Promise((resolve, reject) => {
-        ipcRenderer.send('get-connection-presets');
-        ipcRenderer.once('get-connection-presets-reply', (event, presets) => {
-            resolve(presets);
-        });
-    });
+export async function getZeroShotClassifcation(message: string, labels: string[]): Promise<any> {
+    return axios.post(`/api/text/zero-shot-classification`, { text: message, labels })
+        .then(response => response.data)
+        .catch(error => Promise.reject(error.response.data.error || 'Failed to get zero-shot classification'));
 }
 
-export const addLLMConnectionPreset = (preset: ConnectionPreset): Promise<ConnectionPreset[]> => {
-    return new Promise((resolve, reject) => {
-        ipcRenderer.send('add-connection-preset', preset);
-        ipcRenderer.once('add-connection-preset-reply', (event, presets) => {
-            resolve(presets);
-        });
-    });
+export const getLLMConnectionPresets = async (): Promise<ConnectionPreset[]> => {
+    const response = await axios.get(`/api/connections/presets`);
+    return response.data;
 }
 
-export const removeLLMConnectionPreset = (preset: ConnectionPreset): Promise<ConnectionPreset[]> => {
-    return new Promise((resolve, reject) => {
-        ipcRenderer.send('remove-connection-preset', preset);
-        ipcRenderer.once('remove-connection-preset-reply', (event, presets) => {
-            resolve(presets);
-        });
-    });
+export const addLLMConnectionPreset = async (preset: ConnectionPreset): Promise<ConnectionPreset[]> => {
+    const response = await axios.post(`/api/connections/presets`, { preset });
+    return response.data;
 }
 
-export const getCurrentLLMConnectionPreset = (): Promise<string> => {
-    return new Promise((resolve, reject) => {
-        ipcRenderer.send('get-current-connection-preset');
-        ipcRenderer.once('get-current-connection-preset-reply', (event, preset) => {
-            resolve(preset);
-        });
-    });
+export const removeLLMConnectionPreset = async (preset: ConnectionPreset): Promise<ConnectionPreset[]> => {
+    const response = await axios.delete(`/api/connections/presets`, { data: { preset } });
+    return response.data;
 }
 
-export const setCurrentLLMConnectionPreset = (preset: string): Promise<string> => {
-    return new Promise((resolve, reject) => {
-        ipcRenderer.send('set-current-connection-preset', preset);
-        ipcRenderer.once('set-current-connection-preset-reply', (event, preset) => {
-            resolve(preset);
-        });
-    });
+export const getCurrentLLMConnectionPreset = async (): Promise<string> => {
+    const response = await axios.get(`/api/connections/current-preset`);
+    return response.data;
+}
+
+export const setCurrentLLMConnectionPreset = async (preset: string): Promise<string> => {
+    const response = await axios.post(`/api/connections/current-preset`, { preset });
+    return response.data;
 }

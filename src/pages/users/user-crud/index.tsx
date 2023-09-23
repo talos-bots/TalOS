@@ -1,3 +1,4 @@
+import { uploadImage } from "@/api/baseapi";
 import { saveNewUser, updateUser } from "@/api/dbapi";
 import { User } from "@/classes/User";
 import Loading from "@/components/loading";
@@ -48,12 +49,11 @@ const UserCrud = (props: UserCrudProps) => {
     const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const base64String = reader.result as string;
-                setUserImage(base64String);
-            };
-            reader.readAsDataURL(file);
+            const newName = Date.now().toString() + '.' + file.name.split('.').pop();
+            const formData = new FormData();
+            formData.append('image', file, newName);
+            uploadImage(formData);
+            setUserImage(`/api/images/${newName}`);
         }
     };
     

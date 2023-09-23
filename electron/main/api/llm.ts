@@ -1,9 +1,9 @@
-import { ipcMain } from 'electron';
 import axios from 'axios';
 import { Configuration, OpenAIApi } from 'openai';
 import Store from 'electron-store';
 import { instructPrompt, instructPromptWithContext, instructPromptWithExamples, instructPromptWithGuidance, instructPromptWithGuidanceAndContext, instructPromptWithGuidanceAndContextAndExamples, instructPromptWithGuidanceAndExamples } from '../types/prompts';
-import { getCaption, getClassification, getEmbedding, getEmbeddingSimilarity, getEmbeddingTensor, getQuestionAnswering, getYesNoMaybe } from '../model-pipeline/transformers';
+import { getCaption, getClassification, getEmbedding, getEmbeddingSimilarity,  getQuestionAnswering } from '../model-pipeline/transformers';
+import { expressApp } from '..';
 
 const HORDE_API_URL = 'https://aihorde.net/api';
 
@@ -522,7 +522,6 @@ export const generateText = async (
             break;        
         break;
         case 'PaLM':
-            const MODEL_NAME = "models/text-bison-001";
             const PaLM_Payload = {
                 "prompt": {
                     text: `${prompt}`,
@@ -664,165 +663,216 @@ export function assembleInstructPrompt(instruction: string, guidance?: string, c
 }
 
 export function LanguageModelAPI(){
-    ipcMain.on('generate-text', async (event, prompt, configuredName, stopList, uniqueEventName) => {
-        const results = await generateText(prompt, configuredName, stopList);
-        event.reply(uniqueEventName, results);
-    });
-
-    ipcMain.on('do-instruct', async (event, instruction, guidance, context, examples, uniqueEventName) => {
-        const results = await doInstruct(instruction, guidance, context, examples);
-        event.reply(uniqueEventName, results);
-    });
-
-    ipcMain.on('get-status', async (event, endpoint, endpointType) => {
-        const status = await getStatus(endpoint, endpointType);
-        event.reply('get-status-reply', status);
-    });
-
-    ipcMain.on('get-llm-connection-information', (event) => {
-        const connectionInformation = getLLMConnectionInformation();
-        event.reply('get-llm-connection-information-reply', connectionInformation);
-    });
-
-    ipcMain.on('set-llm-connection-information', (event, newEndpoint, newEndpointType, newPassword, newHordeModel) => {
-        setLLMConnectionInformation(newEndpoint, newEndpointType, newPassword, newHordeModel);
-        event.reply('set-llm-connection-information-reply', getLLMConnectionInformation());
-    });
-
-    ipcMain.on('set-llm-settings', (event, newSettings, newStopBrackets) => {
-        setLLMSettings(newSettings, newStopBrackets);
-        event.reply('set-llm-settings-reply', getLLMConnectionInformation());
-    });
-
-    ipcMain.on('get-llm-settings', (event) => {
-        event.reply('get-llm-settings-reply', {settings, stopBrackets});
-    });
-
-    ipcMain.on('set-llm-model', (event, newHordeModel) => {
-        setLLMModel(newHordeModel);
-        event.reply('set-llm-model-reply', getLLMConnectionInformation());
-    });
-
-    ipcMain.on('get-llm-model', (event) => {
-        event.reply('get-llm-model-reply', hordeModel);
-    });
-
-    ipcMain.on('set-llm-openai-model', (event, newOpenAIModel) => {
-        setLLMOpenAIModel(newOpenAIModel);
-        event.reply('set-llm-openai-model-reply', getLLMConnectionInformation());
-    });
-
-    ipcMain.on('get-llm-openai-model', (event) => {
-        event.reply('get-llm-openai-model-reply', openaiModel);
-    });
-
-    ipcMain.on('set-palm-filters', (event, newPaLMFilters) => {
-        setPaLMFilters(newPaLMFilters);
-        event.reply('set-palm-filters-reply', getLLMConnectionInformation());
-    });
-
-    ipcMain.on('get-palm-filters', (event) => {
-        event.reply('get-palm-filters-reply', palmFilters);
-    });
-
-    ipcMain.on('get-text-classification', (event, uniqueEventName, text) => {
-        getClassification(text).then((result) => {
-            event.reply(uniqueEventName, result);
-        });
-    });
-
-    ipcMain.on('get-image-to-text', (event, uniqueEventName, base64) => {
-        console.log('get-image-to-text');
-        getCaption(base64).then((result) => {
-            event.reply(uniqueEventName, result);
-        });
-    });
-
-    ipcMain.on('get-text-embedding', (event, uniqueEventName, text) => {
-        console.log('get-text-embedding');
-        getEmbedding(text).then((result) => {
-            event.reply(uniqueEventName, result);
-        });
-    });
-
-    ipcMain.on('get-text-similarity', (event, uniqueEventName, text1, text2) => {
-        console.log('get-text-similarity');
-        getEmbeddingSimilarity(text1, text2).then((result) => {
-            event.reply(uniqueEventName, result);
-        });
-    });
-
-    ipcMain.on('get-question-answer', (event, uniqueEventName, context, question) => {
-        console.log('get-text-similarity');
-        getQuestionAnswering(context, question).then((result) => {
-            event.reply(uniqueEventName, result);
-        });
-    });
-
-    ipcMain.on('get-zero-shot-classification', (event, uniqueEventName, text, labels) => {
-        console.log('get-zero-shot-classification');
-        getQuestionAnswering(text, labels).then((result) => {
-            event.reply(uniqueEventName, result);
-        });
-    });
-
-    ipcMain.on('get-yes-no-classification', (event, uniqueEventName, text) => {
-        console.log('get-yes-no-classification');
-        getYesNoMaybe(text).then((result) => {
-            event.reply(uniqueEventName, result);
-        });
-    });
-
-    ipcMain.on('set-do-emotions', (event, newDoEmotions) => {
-        setDoEmotions(newDoEmotions);
-        event.reply('set-do-emotions-reply', getDoEmotions());
-    });
-
-    ipcMain.on('get-do-emotions', (event) => {
-        event.reply('get-do-emotions-reply', getDoEmotions());
+    expressApp.post('/api/generate-text', async (req, res) => {
+        const { prompt, configuredName, stopList } = req.body;
+        res.json(await generateText(prompt, configuredName, stopList));
     });
     
-    ipcMain.on('set-do-caption', (event, newDoCaption) => {
-        setDoCaption(newDoCaption);
-        event.reply('set-do-caption-reply', getDoCaption());
+    expressApp.post('/api/do-instruct', async (req, res) => {
+        const { instruction, guidance, context, examples } = req.body;
+        res.json(await doInstruct(instruction, guidance, context, examples));
+    });
+    
+    expressApp.post('/api/get-instruct-prompt', (req, res) => {
+        const { instruction, guidance, context, examples } = req.body;
+        res.json(assembleInstructPrompt(instruction, guidance, context, examples));
+    });
+    
+    expressApp.post('/api/get-status', async (req, res) => {
+        const { endpoint, endpointType } = req.body;
+        res.json(await getStatus(endpoint, endpointType));
+    });
+    
+
+    expressApp.get('/api/llm/connection-information', (req, res) => {
+        res.json(getLLMConnectionInformation());
+    });
+    
+    expressApp.post('/api/llm/connection-information', (req, res) => {
+        const { endpoint, endpointType, password, hordeModel } = req.body;
+        setLLMConnectionInformation(endpoint, endpointType, password, hordeModel);
+        res.json(getLLMConnectionInformation());
+    });
+    
+    expressApp.get('/api/llm/settings', (req, res) => {
+        res.json({ settings, stopBrackets });
+    });
+    
+    expressApp.post('/api/llm/settings', (req, res) => {
+        const { settings, stopBrackets } = req.body;
+        setLLMSettings(settings, stopBrackets);
+        res.json(getLLMConnectionInformation());
+    });    
+
+    expressApp.post('/api/llm/model', (req, res) => {
+        const { model } = req.body;
+        setLLMModel(model);
+        res.json(getLLMConnectionInformation());
+    });
+    
+    expressApp.get('/api/llm/model', (req, res) => {
+        res.json(hordeModel);
+    });
+    
+    expressApp.post('/api/llm/openai-model', (req, res) => {
+        const { model } = req.body;
+        setLLMOpenAIModel(model);
+        res.json(getLLMConnectionInformation());
+    });
+    
+    expressApp.get('/api/llm/openai-model', (req, res) => {
+        res.json(openaiModel);
+    });    
+
+    expressApp.post('/api/palm/filters', (req, res) => {
+        const { filters } = req.body;
+        setPaLMFilters(filters);
+        res.json(getLLMConnectionInformation());
+    });
+    
+    expressApp.get('/api/palm/filters', (req, res) => {
+        res.json(palmFilters);
+    });    
+
+    expressApp.post('/api/text/classification', (req, res) => {
+        const { text } = req.body;
+        getClassification(text)
+            .then(result => res.json(result))
+            .catch(error => res.status(500).send({ error: error.message }));
+    });
+    
+    expressApp.post('/api/image/caption', (req, res) => {
+        const { base64 } = req.body;
+        getCaption(base64)
+            .then(result => res.json(result))
+            .catch(error => res.status(500).send({ error: error.message }));
+    });    
+
+    expressApp.post('/api/text/embedding', (req, res) => {
+        const { text } = req.body;
+        getEmbedding(text)
+            .then(result => res.json(result))
+            .catch(error => res.status(500).send({ error: error.message }));
+    });
+    
+    expressApp.post('/api/text/similarity', (req, res) => {
+        const { text1, text2 } = req.body;
+        getEmbeddingSimilarity(text1, text2)
+            .then(result => res.json(result))
+            .catch(error => res.status(500).send({ error: error.message }));
+    });
+    
+    expressApp.post('/api/text/question-answer', (req, res) => {
+        const { context, question } = req.body;
+        getQuestionAnswering(context, question)
+            .then(result => res.json(result))
+            .catch(error => res.status(500).send({ error: error.message }));
+    });
+    
+    expressApp.post('/api/text/zero-shot-classification', (req, res) => {
+        const { text, labels } = req.body;
+        getQuestionAnswering(text, labels)
+            .then(result => res.json(result))
+            .catch(error => res.status(500).send({ error: error.message }));
+    });    
+
+    // Route for Do Emotions
+    expressApp.post('/api/settings/do-emotions', (req, res) => {
+        try {
+            setDoEmotions(req.body.value);
+            res.json({ value: getDoEmotions() });
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
     });
 
-    ipcMain.on('get-do-caption', (event) => {
-        event.reply('get-do-caption-reply', getDoCaption());
+    expressApp.get('/api/settings/do-emotions', (req, res) => {
+        try {
+            const value = getDoEmotions();
+            res.json({ value });
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
     });
 
-    ipcMain.on('set-palm-model', (event, newPaLMModel) => {
-        setPaLMModel(newPaLMModel);
+    // Route for Do Captioning
+    expressApp.post('/api/settings/do-caption', (req, res) => {
+        try {
+            setDoCaption(req.body.value);
+            res.json({ value: getDoCaption() });
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
     });
 
-    ipcMain.on('get-palm-model', (event) => {
-        event.reply('get-palm-model-reply', getPaLMModel());
+    expressApp.get('/api/settings/do-caption', (req, res) => {
+        try {
+            const value = getDoCaption();
+            res.json({ value });
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
     });
 
-    ipcMain.on('get-instruct-prompt', (event, instruction, guidance, context, examples, uniqueEventName) => {
-        event.reply(uniqueEventName, assembleInstructPrompt(instruction, guidance, context, examples));
+    expressApp.post('/api/palm/model', (req, res) => {
+        try {
+            setPaLMModel(req.body.model);
+            res.send({ message: "Model updated successfully." });
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
     });
 
-    ipcMain.on('add-connection-preset', (event, newConnectionPreset) => {
-        addConnectionPreset(newConnectionPreset);
-        event.reply('add-connection-preset-reply', getConnectionPresets());
+    expressApp.get('/api/palm/model', (req, res) => {
+        try {
+            const model = getPaLMModel();
+            res.json({ model });
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
     });
 
-    ipcMain.on('remove-connection-preset', (event, oldConnectionPreset) => {
-        removeConnectionPreset(oldConnectionPreset);
-        event.reply('remove-connection-preset-reply', getConnectionPresets());
+    expressApp.post('/api/connections/presets', (req, res) => {
+        try {
+            addConnectionPreset(req.body.preset);
+            res.json(getConnectionPresets());
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
     });
-
-    ipcMain.on('get-connection-presets', (event) => {
-        event.reply('get-connection-presets-reply', getConnectionPresets());
+    
+    expressApp.delete('/api/connections/presets', (req, res) => {
+        try {
+            removeConnectionPreset(req.body.preset);
+            res.json(getConnectionPresets());
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
     });
-
-    ipcMain.on('set-current-connection-preset', (event, newCurrentConnectionPreset) => {
-        setCurrentConnectionPreset(newCurrentConnectionPreset);
-        event.reply('set-current-connection-preset-reply', getCurrentConnectionPreset());
+    
+    expressApp.get('/api/connections/presets', (req, res) => {
+        try {
+            res.json(getConnectionPresets());
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
     });
-
-    ipcMain.on('get-current-connection-preset', (event) => {
-        event.reply('get-current-connection-preset-reply', getCurrentConnectionPreset());
+    
+    expressApp.get('/api/connections/current-preset', (req, res) => {
+        try {
+            res.json(getCurrentConnectionPreset());
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
     });
+    
+    expressApp.post('/api/connections/current-preset', (req, res) => {
+        try {
+            setCurrentConnectionPreset(req.body.preset);
+            res.json(getCurrentConnectionPreset());
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
+    });
+    
 }

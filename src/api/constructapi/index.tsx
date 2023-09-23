@@ -1,175 +1,214 @@
 import { Chat } from "@/classes/Chat";
 import { Construct } from "@/classes/Construct";
-import { IpcRendererEvent, ipcRenderer } from "electron";
+import axios from "axios";
 
 export async function constructIsActive(id: string): Promise<boolean> {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "is-construct-active-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send("is-construct-active", id, uniqueEventName);
-
-        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: boolean) => {
-            resolve(data);
-        });
-    });
+    try {
+        const response = await axios.post(`/api/construct/is-active`, { construct: id });
+        return response.data.isActive;
+    } catch (error) {
+        console.error("Error checking if construct is active:", error);
+        return false;
+    }
 }
 
 export async function getActiveConstructList(): Promise<string[]> {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "get-construct-active-list-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send("get-construct-active-list", uniqueEventName);
-
-        ipcRenderer.once(uniqueEventName, (event: IpcRendererEvent, data: string[]) => {
-            if (data.length === 0) {
-                resolve([]);
-            } else {
-                resolve(data);
-            }
-        });
-    });
+    try {
+        const response = await axios.get(`/api/constructs/active-list`);
+        return response.data.activeConstructs;
+    } catch (error) {
+        console.error("Error retrieving active construct list:", error);
+        return [];
+    }
 }
 
 export async function addConstructToActive(id: string): Promise<void> {
-    ipcRenderer.send("add-construct-to-active", id);
+    try {
+        await axios.post(`/api/constructs/add-to-active`, { construct: id });
+    } catch (error) {
+        console.error("Error adding construct to active list:", error);
+    }
 }
 
 export async function removeConstructFromActive(id: string): Promise<void> {
-    ipcRenderer.send("remove-construct-active", id);
+    try {
+        await axios.post(`/api/constructs/remove-active`, { construct: id });
+    } catch (error) {
+        console.error("Error removing construct from active list:", error);
+    }
 }
 
 export async function removeAllActiveConstructs(): Promise<void> {
-    ipcRenderer.send("remove-all-constructs-active");
+    try {
+        await axios.post(`/api/constructs/remove-all-active`);
+    } catch (error) {
+        console.error("Error removing all active constructs:", error);
+    }
 }
 
-export async function setConstructAsPrimary(id: string): Promise<void> {
-    ipcRenderer.send("set-construct-primary", id);
+export async function setConstructAsPrimary(constructId: string): Promise<{ activeConstructs: any }> {
+    const response = await axios.post('/api/constructs/set-construct-primary', { constructId });
+    return response.data;
 }
 
-export const setDoMultiLine = (arg: any): Promise<any> => {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "set-do-multi-line-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send('set-do-multi-line', arg, uniqueEventName);
-        ipcRenderer.once(uniqueEventName, (event, response) => {
-            resolve(response);
+export async function setDoMultiLine(value: boolean): Promise<{ doMultiLine: boolean }> {
+    const response = await axios.post('/api/constructs/multi-line', { value });
+    return response.data;
+}
+
+export async function getDoMultiLine(): Promise<{ doMultiLine: boolean }> {
+    const response = await axios.get('/api/constructs/multi-line');
+    return response.data;
+}
+
+export const getCharacterPromptFromConstruct = async (construct: Construct): Promise<string> => {
+    try {
+        const response = await axios.post('/api/constructs/character-prompt', { construct });
+        return response.data.prompt;
+    } catch (error: any) {
+        throw new Error(error);
+    }
+}
+
+export const assemblePrompt = async (construct: Construct, chatLog: Chat, currentUser?: string, messagesToInclude?: number): Promise<string> => {
+    try {
+        const response = await axios.post('/api/constructs/assemble-prompt', {
+            construct,
+            chatLog,
+            currentUser,
+            messagesToInclude
         });
-    });
+        return response.data.prompt;
+    } catch (error: any) {
+        throw new Error(error);
+    }
 }
 
-export const getDoMultiLine = (): Promise<any> => {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "get-do-multi-line-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send('get-do-multi-line', uniqueEventName);
-        ipcRenderer.once(uniqueEventName, (event, response) => {
-            resolve(response);
+export const assembleInstructPrompt = async (construct: Construct, chatLog: Chat, currentUser?: string, messagesToInclude?: number): Promise<string> => {
+    try {
+        const response = await axios.post('/api/constructs/assemble-instruct-prompt', {
+            construct,
+            chatLog,
+            currentUser,
+            messagesToInclude
         });
-    });
+        return response.data.prompt;
+    } catch (error: any) {
+        throw new Error(error);
+    }
 }
 
-export const getCharacterPromptFromConstruct = (construct: Construct): Promise<string> => {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "get-character-prompt-from-construct-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send('get-character-prompt-from-construct', construct, uniqueEventName);
-        ipcRenderer.once(uniqueEventName, (event, prompt) => {
-            resolve(prompt);
+export const generateContinueChatLog = async (construct: Construct, chatLog: Chat, currentUser?: string, messagesToInclude?: number, stopList?: any, authorsNote?: string | string[], authorsNoteDepth?: number, doMultiline?: boolean, replaceUser?: boolean): Promise<string> => {
+    try {
+        const response = await axios.post('/api/chat/continue', {
+            construct,
+            chatLog,
+            currentUser,
+            messagesToInclude,
+            stopList,
+            authorsNote,
+            authorsNoteDepth,
+            doMultiline,
+            replaceUser
         });
-    });
+        return response.data.response;
+    } catch (error: any) {
+        throw new Error(error);
+    }
 }
 
-export const assemblePrompt = (construct: Construct, chatLog: Chat, currentUser?: string, messagesToInclude?: number): Promise<string> => {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "assemble-prompt-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send('assemble-prompt', construct, chatLog, currentUser, messagesToInclude, uniqueEventName);
-        ipcRenderer.once(uniqueEventName, (event, prompt) => {
-            resolve(prompt);
+export const removeMessagesFromChatLog = async (chatLog: Chat, messageContent: string): Promise<any> => {
+    try {
+        const response = await axios.post('/api/chat/remove-messages', {
+            chatLog,
+            messageContent
         });
-    });
+        return response.data.response;
+    } catch (error: any) {
+        throw new Error(error);
+    }
 }
 
-export const assembleInstructPrompt = (construct: Construct, chatLog: Chat, currentUser?: string, messagesToInclude?: number): Promise<string> => {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "assemble-instruct-prompt-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send('assemble-instruct-prompt', construct, chatLog, currentUser, messagesToInclude, uniqueEventName);
-        ipcRenderer.once(uniqueEventName, (event, prompt) => {
-            resolve(prompt);
+export const regenerateMessageFromChatLog = async (chatLog: Chat, messageContent: string, messageID: string, authorsNote?: string | string[], authorsNoteDepth?: number, doMultiline?: boolean, replaceUser?: boolean): Promise<any> => {
+    try {
+        const response = await axios.post('/api/chat/regenerate-message', {
+            chatLog,
+            messageContent,
+            messageID,
+            authorsNote,
+            authorsNoteDepth,
+            doMultiline,
+            replaceUser
         });
-    });
+        return response.data.response;
+    } catch (error: any) {
+        throw new Error(error);
+    }
 }
 
-export const generateContinueChatLog = (construct: Construct, chatLog: Chat, currentUser?: string, messagesToInclude?: number, stopList?: any, authorsNote?: string | string[], authorsNoteDepth?: number, doMultiline?: boolean, replaceUser?: boolean): Promise<string> => {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "generate-continue-chat-log-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send('generate-continue-chat-log', construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth, doMultiline, replaceUser, uniqueEventName);
-        ipcRenderer.once(uniqueEventName, (event, response) => {
-            resolve(response);
+export const regenerateUserMessageFromChatLog = async (chatLog: Chat, messageContent: string, messageID: string, authorsNote?: string | string[], authorsNoteDepth?: number, doMultiline?: boolean, replaceUser?: boolean): Promise<any> => {
+    try {
+        const response = await axios.post('/api/chat/regenerate-user-message', {
+            chatLog,
+            messageContent,
+            messageID,
+            authorsNote,
+            authorsNoteDepth,
+            doMultiline,
+            replaceUser
         });
-    });
+        return response.data.response;
+    } catch (error: any) {
+        throw new Error(error);
+    }
 }
 
-export const removeMessagesFromChatLog = (chatLog: Chat, messageContent: string): Promise<any> => {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "remove-messages-from-chat-log-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send('remove-messages-from-chat-log', chatLog, messageContent, uniqueEventName);
-        ipcRenderer.once(uniqueEventName, (event, response) => {
-            resolve(response);
+export const breakUpCommands = async (charName: string, commandString: string, user: any, stopList: any): Promise<any> => {
+    try {
+        const response = await axios.post('/api/chat/parse-reply', {
+            charName,
+            commandString,
+            user,
+            stopList
         });
-    });
+        return response.data.response;
+    } catch (error: any) {
+        throw new Error(error);
+    }
 }
 
-export const regenerateMessageFromChatLog = (chatLog: Chat, messageContent: string, messageID: string, authorsNote?: string | string[], authorsNoteDepth?: number, doMultiline?: boolean, replaceUser?: boolean): Promise<any> => {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "regenerate-message-from-chat-log-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send('regenerate-message-from-chat-log', chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, uniqueEventName);
-        ipcRenderer.once(uniqueEventName, (event, response) => {
-            resolve(response);
+export const generateThoughts = async (construct: Construct, chatLog: Chat, currentUser?: string, messagesToInclude?: number): Promise<string> => {
+    try {
+        const response = await axios.post('/api/constructs/thoughts', {
+            construct,
+            chatLog,
+            currentUser,
+            messagesToInclude
         });
-    });
+        return response.data.response;
+    } catch (error: any) {
+        throw new Error(error.response.data.error);
+    }
 }
 
-export const regenerateUserMessageFromChatLog = (chatLog: Chat, messageContent: string, messageID: string, authorsNote?: string | string[], authorsNoteDepth?: number, doMultiline?: boolean, replaceUser?: boolean): Promise<any> => {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "regenerate-user-message-from-chat-log-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send('regenerate-user-message-from-chat-log', chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, uniqueEventName);
-        ipcRenderer.once(uniqueEventName, (event, response) => {
-            resolve(response);
+export const getIntent = async (message: string): Promise<any> => {
+    try {
+        const response = await axios.post('/api/chat/intent', {
+            message
         });
-    });
+        return response.data.response;
+    } catch (error: any) {
+        throw new Error(error.response.data.error);
+    }
 }
 
-export const breakUpCommands = (charName: string, commandString: string, user: any, stopList: any): Promise<any> => {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "break-up-commands-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send('break-up-commands', charName, commandString, user, stopList, uniqueEventName);
-        ipcRenderer.once(uniqueEventName, (event, response) => {
-            resolve(response);
+export const getYesNo = async (message: string): Promise<any> => {
+    try {
+        const response = await axios.post('/api/classify/yesno', {
+            message
         });
-    });
-}
-
-export const generateThoughts = (construct: Construct, chatLog: Chat, currentUser?: string, messagesToInclude?: number): Promise<string> => {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "generate-thoughts-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send('generate-thoughts', construct, chatLog, currentUser, messagesToInclude, uniqueEventName);
-        ipcRenderer.once(uniqueEventName, (event, response) => {
-            resolve(response);
-        });
-    });
-}
-
-export const getIntent = (message: string): Promise<any> => {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "detect-intent-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send('detect-intent', uniqueEventName, message);
-        ipcRenderer.once(uniqueEventName, (event, response) => {
-            resolve(response);
-        });
-    });
-}
-
-export const getYesNo = (message: string): Promise<any> => {
-    return new Promise((resolve, reject) => {
-        const uniqueEventName = "get-yes-no-classification-reply-" + Date.now() + "-" + Math.random();
-        ipcRenderer.send('get-yes-no-classification', uniqueEventName, message);
-        ipcRenderer.once(uniqueEventName, (event, response) => {
-            resolve(response);
-        });
-    });
+        return response.data.result;
+    } catch (error: any) {
+        throw new Error(error.response.data.error);
+    }
 }

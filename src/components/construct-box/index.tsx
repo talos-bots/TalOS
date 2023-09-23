@@ -5,7 +5,6 @@ import { AiOutlineDown, AiOutlineUp } from "react-icons/ai";
 import { RiQuestionMark } from "react-icons/ri";
 import './ConstructBox.scss';
 import { deleteConstruct, getConstruct } from "@/api/dbapi";
-import RouteButton from "../route-button";
 import { setConstructAsPrimary, addConstructToActive, constructIsActive, getActiveConstructList, removeConstructFromActive } from "@/api/constructapi";
 import StringArrayEditorCards from "../string-array-editor-cards";
 import { saveTavernCardAsImage } from "@/api/extrasapi";
@@ -129,7 +128,7 @@ const ConstructBox: React.FC<Props> = ({character, onCharacterDelete, onCharacte
     }
 
     return (
-        <div className="themed-root h-calc(100vh/6) w-full justify-center">
+        <div className="themed-root h-calc(100vh/6) w-full justify-center pop-in">
             <div className="text-2xl font-bold z-10 flex justify-between items-center" onClick={() => setIsOpen(!isOpen)}>
                 <div className="flex flex-row gap-2 justify-center items-center">
                     {!isOpen ? (

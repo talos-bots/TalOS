@@ -17,28 +17,21 @@ import ChatPage from './pages/chat/';
 import SettingsPage from './pages/settings';
 import ConstructManagement from './components/construct-crud';
 import ZeroPage from './pages/zero';
-import DevPanel from './components/dev-panel';
 import NavBar from './components/shared/NavBar';
-import { sendDesktopNotification } from './components/desktop-notification';
+import { io } from 'socket.io-client';
 
 export const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, url: string) => {
   e.preventDefault();
   ipcRenderer.send('open-external-url', url);
 };
 
-export const loadModels = async () => {
-  ipcRenderer.send('load-models');
-
-  ipcRenderer.once('load-models-reply', () => {
-    sendDesktopNotification('ConstructOS', 'TransformersJS Models loaded successfully.');
-  });
-}
+export const socket = io();
 
 function App() {
   const [needsReload, setNeedsReload] = useState(false);
   const [doneTutorial, setDoneTutorial] = useState(true);
   const [isFirstRun, setIsFirstRun] = useState(false);
-
+  
   const returnToMenu = () => {
     history.back();
   }
@@ -78,7 +71,6 @@ function App() {
       getDefaultCharactersFromPublic();
       setStorageValue('isFirstRun', 'false');
       setIsFirstRun(false);
-      loadModels();
     }
   }, [isFirstRun]);
 

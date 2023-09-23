@@ -3,7 +3,7 @@ import { imagesPath, modelsPath, wasmPath } from '..';
 import { unlink, writeFile } from 'fs/promises';
 import { Pipeline, Tensor } from '@xenova/transformers';
 
-export const getModels = async () => {
+export async function getModels(){
     try{
         const { pipeline, env } = await import('@xenova/transformers');
         env.localModelPath = modelsPath;

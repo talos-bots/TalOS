@@ -15,6 +15,8 @@ import SpriteCrud from "./sprite-crud";
 import ConstructChatConfigPanel from "../construct-chat-config";
 import TokenTextarea from "../token-textarea";
 import { confirmModal } from "../confirm-modal";
+import Loading from "../loading";
+import { uploadImage } from "@/api/baseapi";
 
 const commandTypes = [
     {
@@ -78,6 +80,7 @@ const ConstructManagement = (props: ConstructManagementProps) => {
     const [error, setError] = useState<string | null>(null);
     const [page, setPage] = useState<number>(1);
     const [swipeDirection, setSwipeDirection] = useState<string>("none");
+    const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
     const makeActive = async () => {
         if(constructState !== null) {
@@ -99,18 +102,41 @@ const ConstructManagement = (props: ConstructManagementProps) => {
 
     const generateConstructImage = async () => {
         setWaitingForImage(true);
-        if(constructVisualDescription !== '') {
+        if (constructVisualDescription !== '') {
             const imageData = await sendTxt2Img(constructVisualDescription);
-            if(imageData !== null) {
+            if (imageData !== null) {
                 console.log(imageData);
-                setConstructImage(`data:image/jpeg;base64,`+imageData.base64);
+    
+                // Convert base64 to blob
+                const byteCharacters = atob(imageData.base64);
+                const byteArrays = [];
+                for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+                    const slice = byteCharacters.slice(offset, offset + 512);
+                    const byteNumbers = new Array(slice.length);
+                    for (let i = 0; i < slice.length; i++) {
+                        byteNumbers[i] = slice.charCodeAt(i);
+                    }
+                    const byteArray = new Uint8Array(byteNumbers);
+                    byteArrays.push(byteArray);
+                }
+                const blob = new Blob(byteArrays, { type: "image/jpeg" });
+    
+                // Create a File object
+                const newName = Date.now().toString() + '.jpg'; // Since it's JPEG, I'm assuming the extension here.
+                const file = new File([blob], newName, { type: "image/jpeg" });
+    
+                // Add to FormData and upload
+                const formData = new FormData();
+                formData.append('image', file, newName);
+                uploadImage(formData);
+                setConstructImage(`/api/images/${newName}`);
                 saveConstruct();
             } else {
                 setError('Error generating image. Check your Stable Diffusion connection settings.');
             }
         }
         setWaitingForImage(false);
-    }
+    };
 
     useEffect(() => {
         const getPassedCharacter = async () => {
@@ -180,7 +206,11 @@ const ConstructManagement = (props: ConstructManagementProps) => {
                 getActiveStatus();
             }
         }
-        getPassedCharacter();
+        getPassedCharacter().then(() => {
+            setIsLoaded(true);
+        }).catch((err) => {
+            console.log(err);
+        });
     }, [id !== undefined && id !== null && id !== 'create']);
 
     const returnToMenu = () => {
@@ -232,12 +262,11 @@ const ConstructManagement = (props: ConstructManagementProps) => {
     const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const base64String = reader.result as string;
-                setConstructImage(base64String);
-            };
-            reader.readAsDataURL(file);
+            const newName = Date.now().toString() + '.' + file.name.split('.').pop();
+            const formData = new FormData();
+            formData.append('image', file, newName);
+            uploadImage(formData);
+            setConstructImage(`/api/images/${newName}`);
         }
     };
 
@@ -317,6 +346,9 @@ const ConstructManagement = (props: ConstructManagementProps) => {
         console.log(config);
         setConstructDefaultChatConfig(config);
     }
+
+    if(!isLoaded) return (<Loading/>)
+    
     return (
         <>
         {error !== null ? (
