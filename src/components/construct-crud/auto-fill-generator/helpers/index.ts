@@ -95,6 +95,12 @@ function assembleConstructPrompt(construct: Construct){
     if(construct.authorsNote.length > 1){
         prompt += `${construct.authorsNote}\n`;
     }
+    if(construct.thoughtPattern.length > 1){
+        prompt += `Thoughts: ${construct.thoughtPattern}\n`;
+    }
+    if(construct.visualDescription.length > 0){
+        prompt += `${construct.visualDescription}\n`;
+    }
     return prompt;
 }
 
