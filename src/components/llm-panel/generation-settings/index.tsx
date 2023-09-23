@@ -1,4 +1,4 @@
-import { SettingsPreset, addLLMSettingsPreset, getLLMSettings, setLLMSettings } from "@/api/llmapi";
+import { SettingsPreset, addLLMSettingsPreset, getCurrentLLMSettingsPreset, getLLMSettings, getLLMSettingsPresets, setLLMSettings } from "@/api/llmapi";
 import { EndpointType, Settings } from "@/types";
 import { Save, Trash } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -44,6 +44,13 @@ const GenerationSettings = () => {
             setSamplerOrder(settings.sampler_order);
             setStopBrackets(stopBrackets);
         }
+        getLLMSettingsPresets().then((presets) => {
+            setConnectionPresets(presets);
+        });
+        getCurrentLLMSettingsPreset().then((currentPreset) => {
+            connectionPresets.find((preset) => preset._id === currentPreset) as SettingsPreset
+            setCurrentConnectionPreset(currentPreset);
+        });
         fetchGenerationSettings();
     }, []);
     
