@@ -37,9 +37,9 @@ export const sendTxt2Img = async (
     }
 }
 
-export const setSDAPIUrl = async (url: string): Promise<void> => {
+export const setSDAPIUrl = async (newURL: string): Promise<void> => {
     try {
-        await axios.post(`${url}/api/diffusion/url`, { apiUrl: url });
+        await axios.post(`${url}/api/diffusion/url`, { apiUrl: newURL });
     } catch (error) {
         console.error("Error setting SDAPI Url:", error);
     }
