@@ -180,7 +180,7 @@ export const breakUpCommands = async (charName: string, commandString: string, u
 
 export const generateThoughts = async (construct: Construct, chatLog: Chat, currentUser?: string, messagesToInclude?: number): Promise<string> => {
     try {
-        const response = await axios.post(`${url}/api/constructs/thoughts`, {
+        const response = await axios.post(`${url}/api/construct/thoughts`, {
             construct,
             chatLog,
             currentUser,

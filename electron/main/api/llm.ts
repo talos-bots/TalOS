@@ -577,7 +577,7 @@ export const generateText = async (
         case 'PaLM':
             const PaLM_Payload = {
                 "prompt": {
-                    text: `${prompt}`,
+                    text: `${prompt.toString()}`,
                 },
                 "safetySettings": [
                     {
@@ -619,25 +619,19 @@ export const generateText = async (
                 const googleReply = await axios.post(`https://generativelanguage.googleapis.com/v1beta2/models/text-bison-001:generateText?key=${endpoint.trim()}`, PaLM_Payload, {
                     headers: {'Content-Type': 'application/json'}
                 });
-                
-                if (!googleReply.data) {
-                    console.log(googleReply)
+                if (!googleReply?.data) {
                     throw new Error('No valid response from LLM.');
-                }
-        
-                if (googleReply.data.error) {
+                }else if (googleReply?.data?.error) {
                     throw new Error(googleReply.data.error.message);
-                }
-        
-                if (googleReply.data.filters) {
+                }else if (googleReply?.data?.filters) {
                     throw new Error('No valid response from LLM. Filters are blocking the response.');
-                }
-        
-                if (!googleReply.data.candidates[0]?.output) {
+                }else if (!googleReply?.data?.candidates[0]?.output) {
                     throw new Error('No valid response from LLM.');
+                }else if (googleReply?.data?.candidates[0]?.output?.length < 1) {
+                    throw new Error('No valid response from LLM.');
+                }else if (googleReply?.data?.candidates[0]?.output?.length > 1) {
+                    return results = { results: [googleReply.data.candidates[0]?.output], prompt: prompt };
                 }
-        
-                return results = { results: [googleReply.data.candidates[0]?.output], prompt: prompt };
             } catch (error: any) {
                 console.error(error.response.data);
                 return results = { results: null, error: error, prompt: prompt };
