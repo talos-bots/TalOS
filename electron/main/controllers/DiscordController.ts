@@ -8,7 +8,7 @@ import { deleteMessage, disClient, editMessage, getStopList, isAutoReplyMode, is
 import { Alias, ChannelConfigInterface, ChatInterface, ConstructInterface } from '../types/types';
 import { addVectorFromMessage } from '../api/vector';
 import { getDefaultCfg, getDefaultHeight, getDefaultHighresSteps, getDefaultNegativePrompt, getDefaultPrompt, getDefaultSteps, getDefaultWidth, makeImage } from '../api/sd';
-import { expressAppIO, win } from '..';
+import { expressApp, expressAppIO, win } from '..';
 import { detectIntent } from '../helpers/actions-helpers';
 
 const store = new Store({
@@ -1034,92 +1034,134 @@ export async function getMessageIntent(message: Message){
 
 function DiscordController(){
     getDiscordSettings();
-    ipcMain.on('discordMode', (event, arg) => {
-        setDiscordMode(arg);
+
+    expressApp.get('/api/discord/channels', (req, res) => {
+        try {
+            const channels = getRegisteredChannels();
+            res.json({ channels });
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
+    });
+    
+    expressApp.post('/api/discord/channels/register', (req, res) => {
+        try {
+            const { channel } = req.body;
+            addRegisteredChannel(channel);
+            res.status(200).send({ message: "Channel registered successfully." });
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
+    });
+    
+    expressApp.delete('/api/discord/channels/unregister', (req, res) => {
+        try {
+            const { channel } = req.body;
+            removeRegisteredChannel(channel);
+            res.status(200).send({ message: "Channel unregistered successfully." });
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
+    });
+    
+    expressApp.get('/api/discord/channels/check', (req, res) => {
+        try {
+            const { channel } = req.query;
+            const isRegistered = isChannelRegistered(channel as string);
+            res.json({ isRegistered });
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
     });
 
-    ipcMain.handle('getDiscordMode', () => {
-        return getDiscordMode();
+    // Routes for get and set do-stable-diffusion
+    expressApp.get('/api/discord/diffusion', (req, res) => {
+        try {
+            res.json({ value: getDoStableDiffusion() });
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
     });
 
-    ipcMain.on('clearDiscordMode', () => {
-        clearDiscordMode();
+    expressApp.post('/api/discord/diffusion', (req, res) => {
+        try {
+            setDoStableDiffusion(req.body.value);
+            res.send({ message: "Updated successfully." });
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
     });
 
-    ipcMain.handle('getRegisteredChannels', () => {
-        return getRegisteredChannels();
+    // Routes for get and set do-stable-reactions
+    expressApp.get('/api/discord/diffusion-reactions', (req, res) => {
+        try {
+            res.json({ value: getDoStableReactions() });
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
     });
 
-    ipcMain.handle('addRegisteredChannel', (event, arg) => {
-        addRegisteredChannel(arg);
+    expressApp.post('/api/discord/diffusion-reactions', (req, res) => {
+        try {
+            setDoStableReactions(req.body.value);
+            res.send({ message: "Updated successfully." });
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
     });
 
-    ipcMain.handle('removeRegisteredChannel', (event, arg) => {
-        removeRegisteredChannel(arg);
+    // Routes for diffusion whitelist
+    expressApp.get('/api/discord/diffusion-whitelist', (req, res) => {
+        try {
+            res.json({ channels: getDiffusionWhitelist() });
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
     });
 
-    ipcMain.handle('isChannelRegistered', (event, arg) => {
-        return isChannelRegistered(arg);
+    expressApp.post('/api/discord/diffusion-whitelist', (req, res) => {
+        try {
+            addDiffusionWhitelist(req.body.channel);
+            res.send({ message: "Channel added to whitelist successfully." });
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
     });
 
-    ipcMain.on('get-do-stable-diffusion', (event, arg) => {
-        event.reply('get-do-stable-diffusion-reply', getDoStableDiffusion());
+    expressApp.delete('/api/discord/diffusion-whitelist', (req, res) => {
+        try {
+            removeDiffusionWhitelist(req.body.channel);
+            res.send({ message: "Channel removed from whitelist successfully." });
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
     });
 
-    ipcMain.on('set-do-stable-diffusion', (event, arg) => {
-        setDoStableDiffusion(arg);
+    // Route for get-show-diffusion-details and set-show-diffusion-details
+    expressApp.get('/api/discord/diffusion-details', (req, res) => {
+        try {
+            res.json({ value: getShowDiffusionDetails() });
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
     });
 
-    ipcMain.on('get-do-stable-reactions', (event, arg) => {
-        event.reply('get-do-stable-reactions-reply', getDoStableReactions());
+    expressApp.post('/api/discord/diffusion-details', (req, res) => {
+        try {
+            setShowDiffusionDetails(req.body.value);
+            res.send({ message: "Detail setting updated successfully." });
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
     });
 
-    ipcMain.on('set-do-stable-reactions', (event, arg) => {
-        setDoStableReactions(arg);
-    });
-
-    ipcMain.on('get-do-general-purpose', (event, arg) => {
-        event.reply('get-do-general-purpose-reply', getDoGeneralPurpose());
-    });
-
-    ipcMain.on('set-do-general-purpose', (event, arg) => {
-        setDoGeneralPurpose(arg);
-    });
-
-    ipcMain.on('get-do-auto-reply', (event, arg) => {
-        event.reply('get-do-auto-reply-reply', getDoAutoReply());
-    });
-
-    ipcMain.on('set-do-auto-reply', (event, arg) => {
-        setDoAutoReply(arg);
-    });
-
-    ipcMain.handle('get-diffusion-whitelist', (event, arg) => {
-        return getDiffusionWhitelist();
-    });
-
-    ipcMain.handle('add-diffusion-whitelist', (event, arg) => {
-        addDiffusionWhitelist(arg);
-    });
-
-    ipcMain.handle('remove-diffusion-whitelist', (event, arg) => {
-        removeDiffusionWhitelist(arg);
-    });
-
-    ipcMain.on('get-show-diffusion-details', (event, arg) => {
-        event.sender.send('get-show-diffusion-details-reply', getShowDiffusionDetails());
-    });
-
-    ipcMain.on('set-show-diffusion-details', (event, arg) => {
-        setShowDiffusionDetails(arg);
-    });
-
-    ipcMain.on('get-registered-channels-for-chat', (event, arg) => {
-        event.reply('get-registered-channels-for-chat-reply', getRegisteredChannels());
-    });
-
-    ipcMain.on('get-registered-channels-for-diffusion', (event, arg) => {
-        event.reply('get-registered-channels-for-diffusion-reply', getDiffusionWhitelist());
+    // Route for get-registered-channels-for-diffusion
+    expressApp.get('/api/discord/diffusion-channels', (req, res) => {
+        try {
+            res.json({ channels: getDiffusionWhitelist() });
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
     });
 }
 

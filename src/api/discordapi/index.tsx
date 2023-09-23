@@ -169,54 +169,87 @@ export const saveDiscordData = async (
     }
 }
 
-// Utility Functions
-function fetchFromMain(event: string, replyEvent: string): Promise<any> {
-    return new Promise((resolve) => {
-        ipcRenderer.send(event);
-        ipcRenderer.once(replyEvent, (_, data) => {
-            resolve(data);
-        });
-    });
+export const getDoStableDiffusionStatus = async (): Promise<boolean> => {
+    const response = await axios.get(`/api/discord/diffusion`);
+    return response.data.value;
 }
 
-function fetchFromMainWithArgs(event: string, replyEvent: string, ...args: any[]): Promise<any> {
-    return new Promise((resolve) => {
-        ipcRenderer.send(event, ...args);
-        ipcRenderer.once(replyEvent, (_, data) => {
-            resolve(data);
-        });
-    });
+export const setDoStableDiffusionStatus = async (status: boolean): Promise<void> => {
+    await axios.post(`/api/discord/diffusion`, { value: status });
 }
 
-// Enable Stable Diffusion Commands
-export const getDoStableDiffusionStatus = (): Promise<boolean> => {
-    return fetchFromMain('get-do-stable-diffusion', 'get-do-stable-diffusion-reply');
+export const getDoStableDiffusionReactsStatus = async (): Promise<boolean> => {
+    const response = await axios.get(`/api/discord/diffusion-reactions`);
+    return response.data.value;
 }
 
-export const setDoStableDiffusionStatus = (status: boolean): Promise<boolean> => {
-    return fetchFromMainWithArgs('set-do-stable-diffusion', 'set-do-stable-diffusion-reply', status);
+export const setDoStableDiffusionReactsStatus = async (status: boolean): Promise<void> => {
+    await axios.post(`/api/discord/diffusion-reactions`, { value: status });
 }
 
-export const setDoStableDiffusionReactsStatus = (status: boolean): Promise<boolean> => {
-    return fetchFromMainWithArgs('set-do-stable-reactions', 'set-do-stable-reactions-reply', status);
+export const getShowDiffusionDetailsStatus = async (): Promise<boolean> => {
+    const response = await axios.get(`/api/discord/diffusion-details`);
+    return response.data.value;
 }
 
-export const getDoStableDiffusionReactsStatus = (): Promise<boolean> => {
-    return fetchFromMain('get-do-stable-reactions', 'get-do-stable-reactions-reply');
+export const setShowDiffusionDetailsStatus = async (status: boolean): Promise<void> => {
+    await axios.post(`/api/discord/diffusion-details`, { value: status });
 }
 
-export const getShowDiffusionDetailsStatus = (): Promise<boolean> => {
-    return fetchFromMain('get-show-diffusion-details', 'get-show-diffusion-details-reply');
+export const getRegisteredChannelsForDiffusion = async (): Promise<Array<any>> => {
+    const response = await axios.get(`/api/discord/diffusion-channels`);
+    return response.data.channels;
 }
 
-export const setShowDiffusionDetailsStatus = (status: boolean): Promise<boolean> => {
-    return fetchFromMainWithArgs('set-show-diffusion-details', 'set-show-diffusion-details-reply', status);
+export const getDiffusionWhitelist = async (): Promise<Array<string>> => {
+    const response = await axios.get(`/api/discord/diffusion-whitelist`);
+    return response.data.channels;
 }
 
-export const getRegisteredChannelsForChat = (): Promise<Array<any>> => {
-    return fetchFromMain('get-registered-channels-for-chat', 'get-registered-channels-for-chat-reply');
+export const addChannelToDiffusionWhitelist = async (channel: string): Promise<void> => {
+    await axios.post(`/api/discord/diffusion-whitelist`, { channel });
 }
 
-export const getRegisteredChannelsForDiffusion = (): Promise<Array<any>> => {
-    return fetchFromMain('get-registered-channels-for-diffusion', 'get-registered-channels-for-diffusion-reply');
+export const removeChannelFromDiffusionWhitelist = async (channel: string): Promise<void> => {
+    await axios.delete(`/api/discord/diffusion-whitelist`, { data: { channel } });
 }
+
+// Get list of registered Discord channels
+export const getRegisteredChannelsForChat = async (): Promise<any> => {
+    try {
+        const response = await axios.get('/api/discord/channels');
+        return response.data.channels;
+    } catch (error: any) {
+        throw error.response.data.error;
+    }
+};
+
+// Register a new Discord channel
+export const registerDiscordChannel = async (channel: string): Promise<any> => {
+    try {
+        const response = await axios.post('/api/discord/channels/register', { channel });
+        return response.data.message;
+    } catch (error: any) {
+        throw error.response.data.error;
+    }
+};
+
+// Unregister a Discord channel
+export const unregisterDiscordChannel = async (channel: string): Promise<any> => {
+    try {
+        const response = await axios.delete('/api/discord/channels/unregister', { data: { channel } });
+        return response.data.message;
+    } catch (error: any) {
+        throw error.response.data.error;
+    }
+};
+
+// Check if a Discord channel is registered
+export const checkIfDiscordChannelIsRegistered = async (channel: string): Promise<boolean> => {
+    try {
+        const response = await axios.get('/api/discord/channels/check', { params: { channel } });
+        return response.data.isRegistered;
+    } catch (error: any) {
+        throw error.response.data.error;
+    }
+};

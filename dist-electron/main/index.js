@@ -3676,16 +3676,9 @@ function getDiscordSettings() {
   showDiffusionDetails = getShowDiffusionDetails();
   replaceUser = getReplaceUser();
 }
-const setDiscordMode = (mode) => {
-  store$2.set("mode", mode);
-  console.log(store$2.get("mode"));
-};
 const getDiscordMode = () => {
   console.log(store$2.get("mode"));
   return store$2.get("mode");
-};
-const clearDiscordMode = () => {
-  store$2.set("mode", null);
 };
 const setDoAutoReply = (doAutoReply2) => {
   store$2.set("doAutoReply", doAutoReply2);
@@ -3707,10 +3700,6 @@ const setDoStableReactions = (doStableReactions2) => {
 };
 const getDoStableReactions = () => {
   return store$2.get("doStableReactions", false);
-};
-const setDoGeneralPurpose = (doGeneralPurpose2) => {
-  store$2.set("doGeneralPurpose", doGeneralPurpose2);
-  doGeneralPurpose2 = doGeneralPurpose2;
 };
 const getDoGeneralPurpose = () => {
   return store$2.get("doGeneralPurpose", false);
@@ -4616,71 +4605,115 @@ Scores are the following:
 }
 function DiscordController() {
   getDiscordSettings();
-  electron.ipcMain.on("discordMode", (event, arg) => {
-    setDiscordMode(arg);
+  expressApp.get("/api/discord/channels", (req, res) => {
+    try {
+      const channels = getRegisteredChannels();
+      res.json({ channels });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.handle("getDiscordMode", () => {
-    return getDiscordMode();
+  expressApp.post("/api/discord/channels/register", (req, res) => {
+    try {
+      const { channel } = req.body;
+      addRegisteredChannel(channel);
+      res.status(200).send({ message: "Channel registered successfully." });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.on("clearDiscordMode", () => {
-    clearDiscordMode();
+  expressApp.delete("/api/discord/channels/unregister", (req, res) => {
+    try {
+      const { channel } = req.body;
+      removeRegisteredChannel(channel);
+      res.status(200).send({ message: "Channel unregistered successfully." });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.handle("getRegisteredChannels", () => {
-    return getRegisteredChannels();
+  expressApp.get("/api/discord/channels/check", (req, res) => {
+    try {
+      const { channel } = req.query;
+      const isRegistered = isChannelRegistered(channel);
+      res.json({ isRegistered });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.handle("addRegisteredChannel", (event, arg) => {
-    addRegisteredChannel(arg);
+  expressApp.get("/api/discord/diffusion", (req, res) => {
+    try {
+      res.json({ value: getDoStableDiffusion() });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.handle("removeRegisteredChannel", (event, arg) => {
-    removeRegisteredChannel(arg);
+  expressApp.post("/api/discord/diffusion", (req, res) => {
+    try {
+      setDoStableDiffusion(req.body.value);
+      res.send({ message: "Updated successfully." });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.handle("isChannelRegistered", (event, arg) => {
-    return isChannelRegistered(arg);
+  expressApp.get("/api/discord/diffusion-reactions", (req, res) => {
+    try {
+      res.json({ value: getDoStableReactions() });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.on("get-do-stable-diffusion", (event, arg) => {
-    event.reply("get-do-stable-diffusion-reply", getDoStableDiffusion());
+  expressApp.post("/api/discord/diffusion-reactions", (req, res) => {
+    try {
+      setDoStableReactions(req.body.value);
+      res.send({ message: "Updated successfully." });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.on("set-do-stable-diffusion", (event, arg) => {
-    setDoStableDiffusion(arg);
+  expressApp.get("/api/discord/diffusion-whitelist", (req, res) => {
+    try {
+      res.json({ channels: getDiffusionWhitelist() });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.on("get-do-stable-reactions", (event, arg) => {
-    event.reply("get-do-stable-reactions-reply", getDoStableReactions());
+  expressApp.post("/api/discord/diffusion-whitelist", (req, res) => {
+    try {
+      addDiffusionWhitelist(req.body.channel);
+      res.send({ message: "Channel added to whitelist successfully." });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.on("set-do-stable-reactions", (event, arg) => {
-    setDoStableReactions(arg);
+  expressApp.delete("/api/discord/diffusion-whitelist", (req, res) => {
+    try {
+      removeDiffusionWhitelist(req.body.channel);
+      res.send({ message: "Channel removed from whitelist successfully." });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.on("get-do-general-purpose", (event, arg) => {
-    event.reply("get-do-general-purpose-reply", getDoGeneralPurpose());
+  expressApp.get("/api/discord/diffusion-details", (req, res) => {
+    try {
+      res.json({ value: getShowDiffusionDetails() });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.on("set-do-general-purpose", (event, arg) => {
-    setDoGeneralPurpose(arg);
+  expressApp.post("/api/discord/diffusion-details", (req, res) => {
+    try {
+      setShowDiffusionDetails(req.body.value);
+      res.send({ message: "Detail setting updated successfully." });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
-  electron.ipcMain.on("get-do-auto-reply", (event, arg) => {
-    event.reply("get-do-auto-reply-reply", getDoAutoReply());
-  });
-  electron.ipcMain.on("set-do-auto-reply", (event, arg) => {
-    setDoAutoReply(arg);
-  });
-  electron.ipcMain.handle("get-diffusion-whitelist", (event, arg) => {
-    return getDiffusionWhitelist();
-  });
-  electron.ipcMain.handle("add-diffusion-whitelist", (event, arg) => {
-    addDiffusionWhitelist(arg);
-  });
-  electron.ipcMain.handle("remove-diffusion-whitelist", (event, arg) => {
-    removeDiffusionWhitelist(arg);
-  });
-  electron.ipcMain.on("get-show-diffusion-details", (event, arg) => {
-    event.sender.send("get-show-diffusion-details-reply", getShowDiffusionDetails());
-  });
-  electron.ipcMain.on("set-show-diffusion-details", (event, arg) => {
-    setShowDiffusionDetails(arg);
-  });
-  electron.ipcMain.on("get-registered-channels-for-chat", (event, arg) => {
-    event.reply("get-registered-channels-for-chat-reply", getRegisteredChannels());
-  });
-  electron.ipcMain.on("get-registered-channels-for-diffusion", (event, arg) => {
-    event.reply("get-registered-channels-for-diffusion-reply", getDiffusionWhitelist());
+  expressApp.get("/api/discord/diffusion-channels", (req, res) => {
+    try {
+      res.json({ channels: getDiffusionWhitelist() });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
 }
 const RegisterCommand = {
