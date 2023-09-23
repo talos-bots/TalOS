@@ -134,7 +134,7 @@ const ConstructsPage = () => {
                         }
                     </div>
                     <div className="flex flex-row w-95vw max-w-full gap-2 overflow-x-auto grow-0 lg:gap-2">
-                        <div className="flex flex-row max-w-full gap-2 overflow-x-auto grow-0 lg:gap-2">
+                        <div className="flex flex-row max-w-full gap-2 overflow-x-auto grow-0 lg:gap-2 overflow-y-hidden">
                             <Link
                                 className="themed-root-no-padding w-36 min-h-48 flex flex-col justify-center items-center cursor-pointer relative shrink-0"
                                 to={"/constructs/new"}

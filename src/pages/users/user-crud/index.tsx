@@ -182,8 +182,8 @@ const UserCrud = (props: UserCrudProps) => {
                             onChange={setUserInterests}
                         />
                     </div>
-                    <div className="flex flex-col flex-grow-0 w-full h-1/4">
-                        <div className="flex flex-row gap-1 h-1/2">
+                    <div className="flex flex-col flex-grow-0 w-full h-1/4 gap-2">
+                        <div className="flex flex-row gap-2 h-1/2">
                             <button className="themed-button-pos w-1/2 justify-center items-center flex" onClick={handleUserUpdate}><Save/></button>
                             <button className="themed-button-neg w-1/2 justify-center items-center flex" onClick={handleUserDelete}><Trash/></button>
                         </div>
