@@ -25,7 +25,7 @@ const plainPrompt = `
 {extracontext}
 
 ### Instruction:
-Write the {field} for a character. Be simple, short, and to the point.
+Write the {field} for a character.
 {request}
 
 {context}
