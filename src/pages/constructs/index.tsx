@@ -36,8 +36,11 @@ const ConstructsPage = () => {
         
         const uploadPromises = filesArray.map(async (file) => {
             try {
-                const importData = await importTavernCharacter(file);
-                return importData;
+                if(file.type === 'image/png'){
+                    const importData = await importTavernCharacter(file);
+                    return importData;
+                }else if(file.type === 'application/json'){
+                }
             } catch (error) {
                 console.error(error);
             }
@@ -107,12 +110,14 @@ const ConstructsPage = () => {
             <div className="flex flex-col gap-2">
                 <div className="themed-root slide-in-top overflow-x-auto">
                     <h2 className="text-2xl font-bold text-theme-text text-shadow-xl">Constructs</h2>
-                    <div className="grid grid-cols-5 gap-1 w-15vw mb-4 h-14">
-                        <button onClick={clearActive} className="themed-button-pos flex items-center justify-center" data-tooltip="Clear Active Constructs">
-                            <FiX className='absolute'size={'3rem'}/>
+                    <div className="grid grid-cols-8 gap-2 mb-4 h-14 max-h-[3.5rem]">
+                        <button onClick={clearActive} className="themed-button-pos w-full flex flex-row items-center gap-1 col-span-1" data-tooltip="Clear Active Constructs">
+                            <FiX className="justify-self-start" size={'2rem'}/>
+                            Clear Active
                         </button>
-                        <label htmlFor="character-image-input" className="themed-button-pos flex items-center justify-center" data-tooltip="Import Character Card" id="importCard">
-                            <AiOutlineUpload className='absolute'size={'3rem'}/>
+                        <label htmlFor="character-image-input" className="themed-button-pos w-full flex flex-row items-center gap-1 col-span-1" data-tooltip="Import Character Card" id="importCard">
+                            <AiOutlineUpload className="justify-self-start" size={'2rem'}/>
+                            Import Card
                         </label>
                         <input
                             type="file"
@@ -123,8 +128,9 @@ const ConstructsPage = () => {
                             multiple={true}
                         />
                         {characters && 
-                            <div className="construct-search-bar col-span-2">
+                            <div className="construct-search-bar flex-grow w-full col-span-2">
                                 <input
+                                className="w-full h-full rounded-theme-border-radius text-theme-text text-shadow-xl p-2"
                                 type="text"
                                 placeholder="Search Constructs"
                                 value={searchTerm}
