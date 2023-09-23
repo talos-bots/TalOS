@@ -3507,9 +3507,18 @@ function SDRoutes() {
     res.json({ apiUrl });
   });
   expressApp.post("/api/diffusion/txt2img", async (req, res) => {
-    const { data, endpoint: endpoint2 } = req.body;
+    const {
+      prompt,
+      negativePrompt,
+      steps,
+      cfg,
+      width,
+      height,
+      highresSteps,
+      denoisingStrength
+    } = req.body;
     try {
-      const result = await txt2img(data, endpoint2);
+      const result = await txt2img(prompt, negativePrompt, steps, cfg, width, height, highresSteps, denoisingStrength);
       res.json({ result });
     } catch (err) {
       console.log(err);

@@ -18,16 +18,14 @@ export const sendTxt2Img = async (
 ): Promise<ImageReply | null> => {
     try {
         const response = await axios.post(`${url}/api/diffusion/txt2img`, {
-            data: {
-                prompt,
-                negativePrompt,
-                steps,
-                cfg,
-                width,
-                height,
-                highresSteps,
-                denoisingStrength
-            }
+            prompt,
+            negativePrompt,
+            steps,
+            cfg,
+            width,
+            height,
+            highresSteps,
+            denoisingStrength
         });
 
         return response.data.result;

@@ -112,10 +112,17 @@ export function SDRoutes(){
 
     // Corresponding to the 'txt2img' event
     expressApp.post('/api/diffusion/txt2img', async (req, res) => {
-        const { data, endpoint } = req.body;
+        const {             prompt,
+            negativePrompt,
+            steps,
+            cfg,
+            width,
+            height,
+            highresSteps,
+            denoisingStrength } = req.body;
 
         try {
-            const result = await txt2img(data, endpoint);
+            const result = await txt2img(prompt, negativePrompt, steps, cfg, width, height, highresSteps, denoisingStrength);
             res.json({ result });
         } catch (err) {
             console.log(err);
