@@ -1,3 +1,4 @@
+import { url } from '@/App';
 import { sendDesktopNotification } from '@/components/desktop-notification';
 import axios from 'axios';
 import { Snowflake, Webhook } from 'discord.js';
@@ -6,7 +7,7 @@ type ValidStatus = 'online' | 'dnd' | 'idle' | 'invisible';
 // Discord Login
 export const loginToDiscord = async (rawToken?: string, appId?: string): Promise<boolean> => {
     try {
-        const response = await axios.post('/api/discord/login', {
+        const response = await axios.post(`${url}/api/discord/login`, {
             rawToken: rawToken,
             appId: appId
         });
@@ -20,7 +21,7 @@ export const loginToDiscord = async (rawToken?: string, appId?: string): Promise
 // Discord Logout
 export const logoutFromDiscord = async (): Promise<boolean> => {
     try {
-        const response = await axios.post('/api/discord/logout');
+        const response = await axios.post(`${url}/api/discord/logout`);
         sendDesktopNotification('Discord', 'Logged out successfully.', () => {});
         return response.data.success;
     } catch (error) {
@@ -31,43 +32,43 @@ export const logoutFromDiscord = async (): Promise<boolean> => {
 
 // Set Bot Info
 export const setBotInfo = async (botName: string, base64Avatar: string): Promise<boolean> => {
-    const response = await axios.post(`/api/discord/set-bot-info`, { botName, base64Avatar });
+    const response = await axios.post(`${url}/api/discord/set-bot-info`, { botName, base64Avatar });
     return response.data.success;
 }
 
 // Set Status
 export const setStatus = async (message: string, type: string): Promise<boolean> => {
-    const response = await axios.post(`/api/discord/set-status`, { message, type });
+    const response = await axios.post(`${url}/api/discord/set-status`, { message, type });
     return response.data.success;
 }
 
 // Set Online Mode
 export const setOnlineMode = async (type: ValidStatus): Promise<boolean> => {
-    const response = await axios.post(`/api/discord/set-online-mode`, { type });
+    const response = await axios.post(`${url}/api/discord/set-online-mode`, { type });
     return response.data.success;
 }
 
 // Send Message
 export const sendMessage = async (channelID: Snowflake, message: string): Promise<boolean> => {
-    const response = await axios.post(`/api/discord/send-message`, { channelID, message });
+    const response = await axios.post(`${url}/api/discord/send-message`, { channelID, message });
     return response.data.success;
 }
 
 // Send Message As Character
 export const sendMessageAsCharacter = async (charName: string, channelID: Snowflake, message: string): Promise<boolean> => {
-    const response = await axios.post(`/api/discord/send-message-as-character`, { charName, channelID, message });
+    const response = await axios.post(`${url}/api/discord/send-message-as-character`, { charName, channelID, message });
     return response.data.success;
 }
 
 // Get Webhooks for Channel
 export const getWebhooksForChannel = async (channelID: Snowflake): Promise<Webhook[]> => {
-    const response = await axios.get(`/api/discord/get-webhooks-for-channel/${channelID}`);
+    const response = await axios.get(`${url}/api/discord/get-webhooks-for-channel/${channelID}`);
     return response.data.webhooks;
 }
 
 // Get Webhook for Character
 export const getWebhookForCharacter = async (charName: string, channelID: Snowflake): Promise<Webhook> => {
-    const response = await axios.get(`/api/discord/get-webhook-for-character`, { params: { charName, channelID } });
+    const response = await axios.get(`${url}/api/discord/get-webhook-for-character`, { params: { charName, channelID } });
     return response.data.webhook;
 }
 
@@ -82,7 +83,7 @@ export const getUserInfo = {
 }
 
 async function fetchUserData(endpoint: string): Promise<any> {
-    return axios.get(`/api${endpoint}`)
+    return axios.get(`${url}/api${endpoint}`)
         .then(response => response.data)
         .catch(error => {
             console.error("Error fetching user data:", error);
@@ -93,7 +94,7 @@ async function fetchUserData(endpoint: string): Promise<any> {
 // Get Bot Status
 export const getBotStatus = async (): Promise<boolean> => {
     try {
-        const response = await axios.get('/api/discord/bot/status');
+        const response = await axios.get(`${url}/api/discord/bot/status`);
         return response.data.status;
     } catch (error) {
         console.error('Failed to get bot status:', error);
@@ -104,7 +105,7 @@ export const getBotStatus = async (): Promise<boolean> => {
 // Get Token
 export const getToken = async (): Promise<string> => {
     try {
-        const response = await axios.get('/api/discord/token');
+        const response = await axios.get(`${url}/api/discord/token`);
         return response.data.token;
     } catch (error) {
         console.error('Failed to get token:', error);
@@ -115,7 +116,7 @@ export const getToken = async (): Promise<string> => {
 // Get Application ID
 export const getApplicationID = async (): Promise<string> => {
     try {
-        const response = await axios.get('/api/discord/application-id');
+        const response = await axios.get(`${url}/api/discord/application-id`);
         return response.data.applicationID;
     } catch (error) {
         console.error('Failed to get application ID:', error);
@@ -126,7 +127,7 @@ export const getApplicationID = async (): Promise<string> => {
 // Get Guilds
 export const getGuilds = async (): Promise<Array<any>> => {
     try {
-        const response = await axios.get('/api/discord/guilds');
+        const response = await axios.get(`${url}/api/discord/guilds`);
         return response.data;
     } catch (error) {
         console.error('Failed to get guilds:', error);
@@ -137,7 +138,7 @@ export const getGuilds = async (): Promise<Array<any>> => {
 // Get Saved Discord Data
 export const getSavedDiscordData = async (): Promise<any> => {
     try {
-        const response = await axios.get('/api/discord/data');
+        const response = await axios.get(`${url}/api/discord/data`);
         return response.data;
     } catch (error) {
         console.error('Failed to get saved discord data:', error);
@@ -154,7 +155,7 @@ export const saveDiscordData = async (
     discordMultiConstructMode: boolean
 ): Promise<boolean> => {
     try {
-        await axios.post('/api/discord/data', {
+        await axios.post(`${url}/api/discord/data`, {
             newToken: token,
             newAppId: appID,
             discordCharacterMode,
@@ -169,54 +170,54 @@ export const saveDiscordData = async (
 }
 
 export const getDoStableDiffusionStatus = async (): Promise<boolean> => {
-    const response = await axios.get(`/api/discord/diffusion`);
+    const response = await axios.get(`${url}/api/discord/diffusion`);
     return response.data.value;
 }
 
 export const setDoStableDiffusionStatus = async (status: boolean): Promise<void> => {
-    await axios.post(`/api/discord/diffusion`, { value: status });
+    await axios.post(`${url}/api/discord/diffusion`, { value: status });
 }
 
 export const getDoStableDiffusionReactsStatus = async (): Promise<boolean> => {
-    const response = await axios.get(`/api/discord/diffusion-reactions`);
+    const response = await axios.get(`${url}/api/discord/diffusion-reactions`);
     return response.data.value;
 }
 
 export const setDoStableDiffusionReactsStatus = async (status: boolean): Promise<void> => {
-    await axios.post(`/api/discord/diffusion-reactions`, { value: status });
+    await axios.post(`${url}/api/discord/diffusion-reactions`, { value: status });
 }
 
 export const getShowDiffusionDetailsStatus = async (): Promise<boolean> => {
-    const response = await axios.get(`/api/discord/diffusion-details`);
+    const response = await axios.get(`${url}/api/discord/diffusion-details`);
     return response.data.value;
 }
 
 export const setShowDiffusionDetailsStatus = async (status: boolean): Promise<void> => {
-    await axios.post(`/api/discord/diffusion-details`, { value: status });
+    await axios.post(`${url}/api/discord/diffusion-details`, { value: status });
 }
 
 export const getRegisteredChannelsForDiffusion = async (): Promise<Array<any>> => {
-    const response = await axios.get(`/api/discord/diffusion-channels`);
+    const response = await axios.get(`${url}/api/discord/diffusion-channels`);
     return response.data.channels;
 }
 
 export const getDiffusionWhitelist = async (): Promise<Array<string>> => {
-    const response = await axios.get(`/api/discord/diffusion-whitelist`);
+    const response = await axios.get(`${url}/api/discord/diffusion-whitelist`);
     return response.data.channels;
 }
 
 export const addChannelToDiffusionWhitelist = async (channel: string): Promise<void> => {
-    await axios.post(`/api/discord/diffusion-whitelist`, { channel });
+    await axios.post(`${url}/api/discord/diffusion-whitelist`, { channel });
 }
 
 export const removeChannelFromDiffusionWhitelist = async (channel: string): Promise<void> => {
-    await axios.delete(`/api/discord/diffusion-whitelist`, { data: { channel } });
+    await axios.delete(`${url}/api/discord/diffusion-whitelist`, { data: { channel } });
 }
 
 // Get list of registered Discord channels
 export const getRegisteredChannelsForChat = async (): Promise<any> => {
     try {
-        const response = await axios.get('/api/discord/channels');
+        const response = await axios.get(`${url}/api/discord/channels`);
         return response.data.channels;
     } catch (error: any) {
         throw error.response.data.error;
@@ -226,7 +227,7 @@ export const getRegisteredChannelsForChat = async (): Promise<any> => {
 // Register a new Discord channel
 export const registerDiscordChannel = async (channel: string): Promise<any> => {
     try {
-        const response = await axios.post('/api/discord/channels/register', { channel });
+        const response = await axios.post(`${url}/api/discord/channels/register`, { channel });
         return response.data.message;
     } catch (error: any) {
         throw error.response.data.error;
@@ -236,7 +237,7 @@ export const registerDiscordChannel = async (channel: string): Promise<any> => {
 // Unregister a Discord channel
 export const unregisterDiscordChannel = async (channel: string): Promise<any> => {
     try {
-        const response = await axios.delete('/api/discord/channels/unregister', { data: { channel } });
+        const response = await axios.delete(`${url}/api/discord/channels/unregister`, { data: { channel } });
         return response.data.message;
     } catch (error: any) {
         throw error.response.data.error;
@@ -246,7 +247,7 @@ export const unregisterDiscordChannel = async (channel: string): Promise<any> =>
 // Check if a Discord channel is registered
 export const checkIfDiscordChannelIsRegistered = async (channel: string): Promise<boolean> => {
     try {
-        const response = await axios.get('/api/discord/channels/check', { params: { channel } });
+        const response = await axios.get(`${url}/api/discord/channels/check`, { params: { channel } });
         return response.data.isRegistered;
     } catch (error: any) {
         throw error.response.data.error;

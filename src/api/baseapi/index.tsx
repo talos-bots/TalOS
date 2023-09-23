@@ -1,8 +1,9 @@
+import { url } from '@/App';
 import { sendDesktopNotification } from '@/components/desktop-notification';
 import axios from 'axios';
 
 export async function getBackgrounds(): Promise<any[]> {
-    return axios.get(`/api/get-backgrounds`)
+    return axios.get(`${url}/api/get-backgrounds`)
         .then(response => response.data.files)
         .catch(error => {
             throw error.response.data.error;
@@ -10,7 +11,7 @@ export async function getBackgrounds(): Promise<any[]> {
 }
 
 export async function deleteBackground(filename: string): Promise<{ success: boolean }> {
-    return axios.delete(`/api/delete-background/${filename}`)
+    return axios.delete(`${url}/api/delete-background/${filename}`)
         .then(response => response.data)
         .catch(error => {
             throw error.response.data.error;
@@ -27,7 +28,7 @@ export function saveBackground(file: File): Promise<string> {
             const base64String = reader.result as string;
             const imageData = base64String.split(',')[1];
 
-            axios.post(`/api/save-background`, {
+            axios.post(`${url}/api/save-background`, {
                 imageData: imageData,
                 name: name,
                 fileType: fileType
@@ -49,7 +50,7 @@ export function saveBackground(file: File): Promise<string> {
 }
 
 export function uploadImage(formData: FormData): void {
-    axios.post('/api/images/upload', formData, {
+    axios.post(`${url}/api/images/upload`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
@@ -63,7 +64,7 @@ export function uploadImage(formData: FormData): void {
 }
 
 export async function loadModels(){
-    return axios.post('/api/models/load').then((response) => {
+    return axios.post(`${url}/api/models/load`).then((response) => {
       sendDesktopNotification('ConstructOS', 'Models Loaded');
     }).catch((err) => {
       console.error(err);

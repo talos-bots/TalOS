@@ -37,7 +37,7 @@ export const importTavernCharacter = (file: File): Promise<Construct> => {
                     formData.append('image', file, newName);
                     uploadImage(formData);
                     // Here, instead of appending the base64, you append the new filename
-                    const newPath = '/api/images/' + newName;
+                    const newPath = '${url}/api/images/' + newName;
                     characterData.avatar = newPath;
                     console.log("New Filename", newPath);
                     console.log(characterData);
@@ -48,7 +48,7 @@ export const importTavernCharacter = (file: File): Promise<Construct> => {
                     const formData = new FormData();
                     formData.append('image', file, newName);
                     uploadImage(formData);
-                    const newPath = '/api/images/' + newName;
+                    const newPath = '${url}/api/images/' + newName;
                     tryParseOldCard(file, newPath).then((construct) => {
                         if (construct) {
                             resolve(construct);
@@ -64,7 +64,7 @@ export const importTavernCharacter = (file: File): Promise<Construct> => {
             const formData = new FormData();
             formData.append('image', file, newName);
             uploadImage(formData);
-            const newPath = '/api/images/' + newName;
+            const newPath = '${url}/api/images/' + newName;
             tryParseOldCard(file, newPath).then((construct) => {
                 console.log("Exif parser failure. Trying old parser");
                 if (construct) {

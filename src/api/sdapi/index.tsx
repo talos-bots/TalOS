@@ -1,3 +1,4 @@
+import { url } from "@/App";
 import axios from "axios";
 
 export type ImageReply = {
@@ -16,7 +17,7 @@ export const sendTxt2Img = async (
     denoisingStrength?: number
 ): Promise<ImageReply | null> => {
     try {
-        const response = await axios.post('/api/diffusion/txt2img', {
+        const response = await axios.post(`${url}/api/diffusion/txt2img`, {
             data: {
                 prompt,
                 negativePrompt,
@@ -38,7 +39,7 @@ export const sendTxt2Img = async (
 
 export const setSDAPIUrl = async (url: string): Promise<void> => {
     try {
-        await axios.post('/api/diffusion/url', { apiUrl: url });
+        await axios.post(`${url}/api/diffusion/url`, { apiUrl: url });
     } catch (error) {
         console.error("Error setting SDAPI Url:", error);
     }
@@ -46,7 +47,7 @@ export const setSDAPIUrl = async (url: string): Promise<void> => {
 
 export const getSDAPIUrl = async (): Promise<string> => {
     try {
-        const response = await axios.get('/api/diffusion/url');
+        const response = await axios.get(`${url}/api/diffusion/url`);
         const apiUrl: string = response.data.apiUrl;
         return apiUrl;
     } catch (error) {
@@ -57,7 +58,7 @@ export const getSDAPIUrl = async (): Promise<string> => {
 
 export const setDefaultNegativePrompt = async (negativePrompt: string): Promise<void> => {
     try {
-        await axios.post('/api/diffusion/default-negative-prompt', { prompt: negativePrompt });
+        await axios.post(`${url}/api/diffusion/default-negative-prompt`, { prompt: negativePrompt });
     } catch (error) {
         console.error("Error setting default negative prompt:", error);
     }
@@ -65,7 +66,7 @@ export const setDefaultNegativePrompt = async (negativePrompt: string): Promise<
 
 export const getDefaultNegativePrompt = async (): Promise<string> => {
     try {
-        const response = await axios.get('/api/diffusion/default-negative-prompt');
+        const response = await axios.get(`${url}/api/diffusion/default-negative-prompt`);
         return response.data.prompt;
     } catch (error) {
         console.error("Error getting default negative prompt:", error);
@@ -75,7 +76,7 @@ export const getDefaultNegativePrompt = async (): Promise<string> => {
 
 export const setSDDefaultPrompt = async (positivePrompt: string): Promise<void> => {
     try {
-        await axios.post('/api/diffusion/default-prompt', { prompt: positivePrompt });
+        await axios.post(`${url}/api/diffusion/default-prompt`, { prompt: positivePrompt });
     } catch (error) {
         console.error("Error setting default prompt:", error);
     }
@@ -83,7 +84,7 @@ export const setSDDefaultPrompt = async (positivePrompt: string): Promise<void> 
 
 export const getDefaultPrompt = async (): Promise<string> => {
     try {
-        const response = await axios.get('/api/diffusion/default-prompt');
+        const response = await axios.get(`${url}/api/diffusion/default-prompt`);
         return response.data.prompt;
     } catch (error) {
         console.error("Error getting default prompt:", error);
@@ -93,7 +94,7 @@ export const getDefaultPrompt = async (): Promise<string> => {
 
 export const getDefaultUpscaler = async (): Promise<string> => {
     try {
-        const response = await axios.get('/api/diffusion/default-upscaler');
+        const response = await axios.get(`${url}/api/diffusion/default-upscaler`);
         return response.data.upscaler;
     } catch (error) {
         console.error("Error getting default upscaler:", error);
@@ -103,7 +104,7 @@ export const getDefaultUpscaler = async (): Promise<string> => {
 
 export const setDefaultUpscaler = async (upscaler: string): Promise<void> => {
     try {
-        await axios.post('/api/diffusion/default-upscaler', { upscaler });
+        await axios.post(`${url}/api/diffusion/default-upscaler`, { upscaler });
     } catch (error) {
         console.error("Error setting default upscaler:", error);
     }
@@ -111,7 +112,7 @@ export const setDefaultUpscaler = async (upscaler: string): Promise<void> => {
 
 export const getUpscalers = async (): Promise<any> => {
     try {
-        const response = await axios.get('/api/diffusion/upscalers');
+        const response = await axios.get(`${url}/api/diffusion/upscalers`);
         return response.data.result;
     } catch (error) {
         console.error("Error getting upscalers:", error);
@@ -121,7 +122,7 @@ export const getUpscalers = async (): Promise<any> => {
 
 export const getLoras = async (): Promise<any> => {
     try {
-        const response = await axios.get('/api/diffusion/loras');
+        const response = await axios.get(`${url}/api/diffusion/loras`);
         return response.data.result;
     } catch (error) {
         console.error("Error getting loras:", error);
@@ -131,7 +132,7 @@ export const getLoras = async (): Promise<any> => {
 
 export const getEmbeddings = async (): Promise<any> => {
     try {
-        const response = await axios.get('/api/diffusion/embeddings');
+        const response = await axios.get(`${url}/api/diffusion/embeddings`);
         return response.data.result;
     } catch (error) {
         console.error("Error getting embeddings:", error);
@@ -141,7 +142,7 @@ export const getEmbeddings = async (): Promise<any> => {
 
 export const getModels = async (): Promise<any> => {
     try {
-        const response = await axios.get('/api/diffusion/models');
+        const response = await axios.get(`${url}/api/diffusion/models`);
         return response.data.result;
     } catch (error) {
         console.error("Error getting models:", error);
@@ -151,7 +152,7 @@ export const getModels = async (): Promise<any> => {
 
 export const getVaeModels = async (): Promise<any> => {
     try {
-        const response = await axios.get('/api/diffusion/vae-models');
+        const response = await axios.get(`${url}/api/diffusion/vae-models`);
         return response.data.result;
     } catch (error) {
         console.error("Error getting VAE models:", error);
@@ -160,64 +161,64 @@ export const getVaeModels = async (): Promise<any> => {
 }
 
 export const getDefaultSteps = async (): Promise<number> => {
-    const response = await axios.get(`/api/diffusion/default-steps`);
+    const response = await axios.get(`${url}/api/diffusion/default-steps`);
     return response.data.steps;
 };
 
 export const setDefaultSteps = async (steps: number): Promise<void> => {
-    await axios.post(`/api/diffusion/default-steps`, { steps });
+    await axios.post(`${url}/api/diffusion/default-steps`, { steps });
 };
 
 export const getDefaultCfg = async (): Promise<string> => {
-    const response = await axios.get(`/api/diffusion/default-cfg`);
+    const response = await axios.get(`${url}/api/diffusion/default-cfg`);
     return response.data.cfg;
 };
 
 export const setDefaultCfg = async (cfg: string): Promise<void> => {
-    await axios.post(`/api/diffusion/default-cfg`, { cfg });
+    await axios.post(`${url}/api/diffusion/default-cfg`, { cfg });
 };
 
 export const getDefaultWidth = async (): Promise<number> => {
-    const response = await axios.get(`/api/diffusion/default-width`);
+    const response = await axios.get(`${url}/api/diffusion/default-width`);
     return response.data.width;
 };
 
 export const setDefaultWidth = async (width: number): Promise<void> => {
-    await axios.post(`/api/diffusion/default-width`, { width });
+    await axios.post(`${url}/api/diffusion/default-width`, { width });
 };
 
 export const getDefaultHeight = async (): Promise<number> => {
-    const response = await axios.get(`/api/diffusion/default-height`);
+    const response = await axios.get(`${url}/api/diffusion/default-height`);
     return response.data.height;
 };
 
 export const setDefaultHeight = async (height: number): Promise<void> => {
-    await axios.post(`/api/diffusion/default-height`, { height });
+    await axios.post(`${url}/api/diffusion/default-height`, { height });
 };
 
 export const getDefaultHighresSteps = async (): Promise<number> => {
-    const response = await axios.get(`/api/diffusion/default-highres-steps`);
+    const response = await axios.get(`${url}/api/diffusion/default-highres-steps`);
     return response.data.highresSteps;
 };
 
 export const setDefaultHighresSteps = async (highresSteps: number): Promise<void> => {
-    await axios.post(`/api/diffusion/default-highres-steps`, { highresSteps });
+    await axios.post(`${url}/api/diffusion/default-highres-steps`, { highresSteps });
 };
 
 export const getDefaultDenoisingStrength = async (): Promise<number> => {
-    const response = await axios.get(`/api/diffusion/default-denoising-strength`);
+    const response = await axios.get(`${url}/api/diffusion/default-denoising-strength`);
     return response.data.denoisingStrength;
 };
 
 export const setDefaultDenoisingStrength = async (denoisingStrength: number): Promise<void> => {
-    await axios.post(`/api/diffusion/default-denoising-strength`, { denoisingStrength });
+    await axios.post(`${url}/api/diffusion/default-denoising-strength`, { denoisingStrength });
 };
 
 export const getDefaultUpscale = async (): Promise<number> => {
-    const response = await axios.get(`/api/diffusion/default-upscale`);
+    const response = await axios.get(`${url}/api/diffusion/default-upscale`);
     return response.data.upscale;
 };
 
 export const setDefaultUpscale = async (upscale: number): Promise<void> => {
-    await axios.post(`/api/diffusion/default-upscale`, { upscale });
+    await axios.post(`${url}/api/diffusion/default-upscale`, { upscale });
 };
