@@ -12,11 +12,11 @@ import { User } from "@/classes/User";
 import { addVectorFromMessage } from "@/api/vectorapi";
 import { getDoCaptioning, getDoEmotions, getImageCaption, getTextEmotion } from "@/api/llmapi";
 import { Attachment } from "@/classes/Attachment";
-import { ipcRenderer } from "electron";
 import ChatConfigPane from "../chat-config-pane";
 import { Link } from "react-router-dom";
 import SpriteDisplay from "@/components/sprite";
 import { Construct, ConstructChatConfig, DefaultChatConfig } from "@/classes/Construct";
+import { socket } from "@/App";
 interface ChatLogProps {
 	chatLogID?: string;
 	goBack: () => void;
@@ -93,7 +93,7 @@ const ChatLog = (props: ChatLogProps) => {
 			}).catch((err) => {
 				console.error(err);
 			});
-			ipcRenderer.on(`chat-message-${chatLogID}`, () => {
+			socket.on(`chat-message-${chatLogID}`, () => {
 				getChat(chatLogID).then((chat) => {
 					if(chat === null) return;
 					if(chat.messages.length > messages.length){
@@ -104,9 +104,6 @@ const ChatLog = (props: ChatLogProps) => {
 					console.error(err);
 				});
 			});
-		}
-		return () => {
-			ipcRenderer.removeAllListeners(`chat-message-${chatLogID}`);
 		}
 	}, [chatLogID !== undefined && chatLogID !== null]);
 
