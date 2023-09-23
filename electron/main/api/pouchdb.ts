@@ -585,9 +585,11 @@ export function PouchDBRoutes(){
         }
     });
 
-    expressApp.post('/api/add-construct', async (req, res) => {
+    expressApp.post('/api/constructs/add/:id', async (req, res) => {
         try {
+            const id = req.params.id;
             const construct = req.body;
+            construct._id = id;
             const result = await addConstruct(construct); // Assuming addConstruct() is a function in your backend logic
             res.json(result);
         } catch (error) {
@@ -595,9 +597,11 @@ export function PouchDBRoutes(){
         }
     });
     
-    expressApp.put('/api/update-construct', async (req, res) => {
+    expressApp.put('/api/update-construct/:id', async (req, res) => {
         try {
+            const id = req.params.id;
             const construct = req.body;
+            construct._id = id;
             const result = await updateConstruct(construct); // Assuming updateConstruct() is a function in your backend logic
             res.json(result);
         } catch (error) {

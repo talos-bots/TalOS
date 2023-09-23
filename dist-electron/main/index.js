@@ -841,18 +841,22 @@ function PouchDBRoutes() {
       res.status(500).json({ message: "An error occurred." });
     }
   });
-  expressApp.post("/api/add-construct", async (req, res) => {
+  expressApp.post("/api/constructs/add/:id", async (req, res) => {
     try {
+      const id = req.params.id;
       const construct = req.body;
+      construct._id = id;
       const result = await addConstruct$1(construct);
       res.json(result);
     } catch (error) {
       res.status(500).json({ message: "An error occurred while adding the construct." });
     }
   });
-  expressApp.put("/api/update-construct", async (req, res) => {
+  expressApp.put("/api/update-construct/:id", async (req, res) => {
     try {
+      const id = req.params.id;
       const construct = req.body;
+      construct._id = id;
       const result = await updateConstruct(construct);
       res.json(result);
     } catch (error) {

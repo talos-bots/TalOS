@@ -20,17 +20,17 @@ interface Props {
     onEditStatus: () => void;
 }
 const ConstructBox: React.FC<Props> = ({character, onCharacterDelete, onCharacterEdit, onEditStatus}) => {
-    const [characterName, setCharacterName] = useState<string>(character.name);
+    const [characterName, setCharacterName] = useState<string>('');
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const [isActive, setIsActive] = useState<boolean>(false);
     const [isPrimary, setIsPrimary] = useState<boolean>(false);
-    const [authorsNote, setAuthorsNote] = useState<string>(character.authorsNote);
-    const [characterRelationships, setCharacterRelationships] = useState<string[]>(character.relationships);
-    const [characterInterests, setCharacterInterests] = useState<string[]>(character.interests);
-    const [characterGreetings, setCharacterGreetings] = useState<string[]>(character.greetings);
-    const [characterFarewells, setCharacterFarewells] = useState<string[]>(character.farewells);
-    const [characterPersonality, setCharacterPersonality] = useState<string>(character.personality);
-    const [characterBackground, setCharacterBackground] = useState<string>(character.background);
+    const [authorsNote, setAuthorsNote] = useState<string>('');
+    const [characterRelationships, setCharacterRelationships] = useState<string[]>([]);
+    const [characterInterests, setCharacterInterests] = useState<string[]>([]);
+    const [characterGreetings, setCharacterGreetings] = useState<string[]>([]);
+    const [characterFarewells, setCharacterFarewells] = useState<string[]>([]);
+    const [characterPersonality, setCharacterPersonality] = useState<string>('');
+    const [characterBackground, setCharacterBackground] = useState<string>('');
 
     useEffect(() => {
         setCharacterName(character.name);
@@ -59,6 +59,13 @@ const ConstructBox: React.FC<Props> = ({character, onCharacterDelete, onCharacte
         }
         getPrimaryStatus();
         getActiveStatus();
+        setAuthorsNote(character.authorsNote);
+        setCharacterRelationships(character.relationships);
+        setCharacterInterests(character.interests);
+        setCharacterGreetings(character.greetings);
+        setCharacterFarewells(character.farewells);
+        setCharacterPersonality(character.personality);
+        setCharacterBackground(character.background);
     }, [character]);
 
     const deleteConstructFrom = async () => {
@@ -88,22 +95,6 @@ const ConstructBox: React.FC<Props> = ({character, onCharacterDelete, onCharacte
         setIsPrimary(false);
         onEditStatus();
     }
-
-    const editConstruct = () => {
-        character.name = characterName;
-        character.relationships = characterRelationships;
-        character.interests = characterInterests;
-        character.greetings = characterGreetings;
-        character.farewells = characterFarewells;
-        character.personality = characterPersonality;
-        character.background = characterBackground;
-        character.authorsNote = authorsNote;
-        onCharacterEdit(character);
-    }
-
-    useEffect(() => {
-        editConstruct();
-    }, [authorsNote, characterBackground, characterFarewells, characterGreetings, characterInterests, characterName, characterPersonality, characterRelationships]);
 
     useEffect(() => {
         if(localStorage.getItem(characterName+'-expanded')){
@@ -189,18 +180,21 @@ const ConstructBox: React.FC<Props> = ({character, onCharacterDelete, onCharacte
                             className="overflow-hidden w-full h-1/3 themed-input flex-grow"
                             value={characterPersonality}
                             onChange={(string) => setCharacterPersonality(string)}
+                            disabled={true}
                         />
                         <label className="text-xl font-semibold text-left">Background</label>
                         <TokenTextarea
                             className="overflow-hidden w-full h-1/3 themed-input flex-grow"
                             value={characterBackground}
                             onChange={(string) => setCharacterBackground(string)}
+                            disabled={true}
                         />
                         <label className="text-xl font-semibold text-left">Author's Note</label>
                         <TokenTextarea
                             className="overflow-hidden w-full h-1/3 themed-input flex-grow"
                             value={authorsNote}
                             onChange={(string) => setAuthorsNote(string)}
+                            disabled={true}
                         />
                     </div>
                     <div className="col-span-1 flex flex-col justify-start">
@@ -209,6 +203,7 @@ const ConstructBox: React.FC<Props> = ({character, onCharacterDelete, onCharacte
                             <StringArrayEditorCards
                                 value={characterRelationships}
                                 onChange={(array) => setCharacterRelationships(array)}
+                                disabled={true}
                             />
                         </div>
                         <label className="text-xl font-semibold text-left">Interests</label>
@@ -216,6 +211,7 @@ const ConstructBox: React.FC<Props> = ({character, onCharacterDelete, onCharacte
                             <StringArrayEditorCards
                                 value={characterInterests}
                                 onChange={(array) => setCharacterInterests(array)}
+                                disabled={true}
                             />
                         </div>
                         <label className="text-xl font-semibold text-left">Greetings</label>
@@ -223,6 +219,7 @@ const ConstructBox: React.FC<Props> = ({character, onCharacterDelete, onCharacte
                             <StringArrayEditorCards
                                 value={characterGreetings}
                                 onChange={(array) => setCharacterGreetings(array)}
+                                disabled={true}
                             />
                         </div>
                         <label className="text-xl font-semibold text-left">Farewells</label>
@@ -230,6 +227,7 @@ const ConstructBox: React.FC<Props> = ({character, onCharacterDelete, onCharacte
                             <StringArrayEditorCards
                                 value={characterFarewells}
                                 onChange={(array) => setCharacterFarewells(array)}
+                                disabled={true}
                             />
                         </div>
                     </div>

@@ -13,7 +13,7 @@ export async function getConstructs(): Promise<Construct[]> {
     try {
         const response = await axios.get(`${url}/api/constructs`);
         const data = response.data;
-
+        console.log("Constructs:", data);
         return data.map((doc: any) => {
             return new Construct(
                 doc.doc._id,
@@ -41,26 +41,25 @@ export async function getConstructs(): Promise<Construct[]> {
 
 export async function getConstruct(id: string): Promise<Construct> {
     try {
-        const response = await axios.get(`${url}/api/construct/${id}`);
-        const data = response.data;
-
+        const response = await axios.get(`${url}/api/construct/${id}`).then(response => response.data);
+        console.log("Construct:", response);
         return new Construct(
-            data._id,
-            data.name,
-            data.nickname,
-            data.avatar,
-            data.commands,
-            data.visualDescription,
-            data.personality,
-            data.background,
-            data.relationships,
-            data.interests,
-            data.greetings,
-            data.farewells,
-            data.authorsNote,
-            data.defaultConfig,
-            data.thoughtPattern,
-            data.sprites
+            response._id,
+            response.name,
+            response.nickname,
+            response.avatar,
+            response.commands,
+            response.visualDescription,
+            response.personality,
+            response.background,
+            response.relationships,
+            response.interests,
+            response.greetings,
+            response.farewells,
+            response.authorsNote,
+            response.defaultConfig,
+            response.thoughtPattern,
+            response.sprites
         );
     } catch (error: any) {
         throw new Error(`Failed to fetch construct with ID ${id}: ${error.message}`);
@@ -68,11 +67,11 @@ export async function getConstruct(id: string): Promise<Construct> {
 }
 
 export async function saveNewConstruct(construct: Construct) {
-    await axios.post(`${url}/api/add-construct`, construct);
+    await axios.post(`${url}/api/constructs/add/${construct._id}`, construct);
 }
 
 export async function updateConstruct(construct: Construct) {
-    await axios.put(`${url}/api/update-construct`, construct);
+    await axios.put(`${url}/api/update-construct/${construct._id}`, construct);
 }
 
 export async function deleteConstruct(id: string) {
