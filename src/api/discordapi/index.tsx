@@ -1,7 +1,6 @@
 import { sendDesktopNotification } from '@/components/desktop-notification';
 import axios from 'axios';
 import { Snowflake, Webhook } from 'discord.js';
-import { ipcRenderer } from 'electron';
 type ValidStatus = 'online' | 'dnd' | 'idle' | 'invisible';
 
 // Discord Login

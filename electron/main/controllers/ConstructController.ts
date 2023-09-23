@@ -1,4 +1,3 @@
-import { ipcMain } from 'electron';
 import Store from 'electron-store';
 import { assembleConstructFromData, assembleLorebookFromData, assemblePromptFromLog, assembleUserFromData } from '../helpers/helpers';
 import { generateText } from '../api/llm';

@@ -1,7 +1,6 @@
 import { Chat } from "@/classes/Chat";
 import { Construct } from "@/classes/Construct";
 import axios from "axios";
-import { IpcRendererEvent, ipcRenderer } from "electron";
 
 export async function constructIsActive(id: string): Promise<boolean> {
     try {

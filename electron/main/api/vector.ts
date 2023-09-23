@@ -1,5 +1,4 @@
 import { dataPath, expressApp, isDarwin } from '../';
-import { ipcMain } from 'electron';
 import path from 'path';
 import { LocalIndex } from 'vectra';
 import { MessageInterface } from '../types/types';

@@ -1,4 +1,3 @@
-import { ipcMain } from 'electron';
 import axios from 'axios';
 import { Configuration, OpenAIApi } from 'openai';
 import Store from 'electron-store';

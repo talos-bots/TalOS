@@ -1,6 +1,5 @@
 import { PaLMFilters } from '@/components/llm-panel/palm-panel';
 import { Emotion, EndpointType, LLMConnectionInformation, Settings } from '@/types';
-import { ipcRenderer } from 'electron';
 // @ts-ignore
 import llamaTokenizer from 'llama-tokenizer-js'
 import { encode } from 'gpt-tokenizer'

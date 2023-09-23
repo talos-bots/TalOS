@@ -1,4 +1,3 @@
-import { ipcMain } from 'electron';
 import Store from 'electron-store';
 import { generateContinueChatLog, generateThoughts, getDoMultiLine, regenerateMessageFromChatLog, removeMessagesFromChatLog, retrieveConstructs } from './ConstructController';
 import { addChat, getChat, getConstruct, updateChat } from '../api/pouchdb';
