@@ -153,7 +153,7 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate, onSplit, on
                                     if(attachment.type === "image/png" || attachment.type === "image/jpeg" || attachment.type === "image/gif" || attachment.type === "image/webp"){
                                         return (
                                             <div key={index}>
-                                                <img className="w-1/2 object-cover rounded-md"src={newData} alt={attachment?.metadata?.caption ? attachment?.metadata?.caption : 'A Photo'} title={attachment?.metadata?.caption ? attachment?.metadata?.caption : 'A Photo'}/>
+                                                <img className="w-1/2 object-cover rounded-md"src={getImageURL(newData)} alt={attachment?.metadata?.caption ? attachment?.metadata?.caption : 'A Photo'} title={attachment?.metadata?.caption ? attachment?.metadata?.caption : 'A Photo'}/>
                                             </div>
                                         )
                                     }else{
