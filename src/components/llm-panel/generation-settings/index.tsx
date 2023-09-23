@@ -1,4 +1,4 @@
-import { SettingsPreset, addLLMSettingsPreset, getCurrentLLMSettingsPreset, getLLMSettings, getLLMSettingsPresets, setLLMSettings } from "@/api/llmapi";
+import { SettingsPreset, addLLMSettingsPreset, getCurrentLLMSettingsPreset, getLLMSettings, getLLMSettingsPresets, removeLLMSettingsPreset, setLLMSettings } from "@/api/llmapi";
 import { EndpointType, Settings } from "@/types";
 import { Save, Trash } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -201,6 +201,7 @@ const GenerationSettings = () => {
                             setConnectionPreset(undefined);
                             setCurrentConnectionPreset("");
                             setCurrentLLMConnectionPreset("");
+                            removeLLMSettingsPreset(connectionPresets.find((preset) => preset._id === connectionPreset?._id) as SettingsPreset);
                         }}
                     >
                         <Trash/>
