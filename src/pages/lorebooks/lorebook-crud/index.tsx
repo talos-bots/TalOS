@@ -70,7 +70,7 @@ const LorebookCrud = (props: LorebookCrudProps) => {
             const formData = new FormData();
             formData.append('image', file, newName);
             uploadImage(formData);
-            setLorebookImage(`/api/images/${newName}`);
+            setLorebookImage(`./api/images/${newName}`);
         }
     };
     

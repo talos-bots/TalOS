@@ -53,7 +53,7 @@ const UserCrud = (props: UserCrudProps) => {
             const formData = new FormData();
             formData.append('image', file, newName);
             uploadImage(formData);
-            setUserImage(`/api/images/${newName}`);
+            setUserImage(`./api/images/${newName}`);
         }
     };
     

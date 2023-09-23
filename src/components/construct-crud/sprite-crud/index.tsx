@@ -29,8 +29,8 @@ const SpriteCrud = (props: SpriteCrudProps) => {
             const formData = new FormData();
             formData.append('image', file, newName);
             uploadImage(formData);
-            setSpriteImage(`/api/images/${newName}`);
-            newSprite.image64 = `/api/images/${newName}`;
+            setSpriteImage(`./api/images/${newName}`);
+            newSprite.image64 = `./api/images/${newName}`;
             addSprite(newSprite, emotion);
         } else {
             // Handle the case where no file was selected, if necessary

@@ -129,7 +129,7 @@ const ConstructManagement = (props: ConstructManagementProps) => {
                 const formData = new FormData();
                 formData.append('image', file, newName);
                 uploadImage(formData);
-                setConstructImage(`/api/images/${newName}`);
+                setConstructImage(`./api/images/${newName}`);
                 saveConstruct();
             } else {
                 setError('Error generating image. Check your Stable Diffusion connection settings.');
@@ -266,7 +266,7 @@ const ConstructManagement = (props: ConstructManagementProps) => {
             const formData = new FormData();
             formData.append('image', file, newName);
             uploadImage(formData);
-            setConstructImage(`/api/images/${newName}`);
+            setConstructImage(`./api/images/${newName}`);
         }
     };
 
