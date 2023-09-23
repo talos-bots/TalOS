@@ -155,6 +155,13 @@ const ConnectionBox = (props: ConnectionBoxProps) => {
                         value={connectionPresetName}
                         onChange={(e) => setConnectionPresetName(e.target.value)}
                     />
+                    <button className="themed-button-pos justify-center items-center flex"
+                        onClick={() => {
+                            saveConnectionPreset();
+                        }}
+                    >
+                        <Save/>
+                    </button>
                     <button className="themed-button-neg justify-center items-center flex"
                         onClick={() => {
                             setConnectionPresetName("");
@@ -164,13 +171,6 @@ const ConnectionBox = (props: ConnectionBoxProps) => {
                         }}
                     >
                         <Trash/>
-                    </button>
-                    <button className="themed-button-pos justify-center items-center flex"
-                        onClick={() => {
-                            saveConnectionPreset();
-                        }}
-                    >
-                        <Save/>
                     </button>
                 </div>
                 <label className="text-theme-text text-shadow-xl font-semibold">Select Preset</label>
