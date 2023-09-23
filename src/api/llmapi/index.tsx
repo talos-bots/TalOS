@@ -17,6 +17,25 @@ export interface ConnectionPreset {
     palmModel: string;
     hordeModel: string;
 }
+export interface SettingsPreset {
+    _id: string;
+    name: string;
+    rep_pen: number;
+    rep_pen_range: number;
+    temperature: number;
+    sampler_order: number[];
+    top_k: number;
+    top_p: number;
+    top_a: number;
+    tfs: number;
+    typical: number;
+    singleline: boolean;
+    sampler_full_determinism: boolean;
+    max_length: number;
+    min_length: number;
+    max_context_length: number;
+    max_tokens: number;
+}
 
 export type OAI_Model = 'gpt-3.5-turbo-16k' | 'gpt-4' | 'gpt-3.5-turbo' | 'gpt-3.5-turbo-16k-0613' | 'gpt-3.5-turbo-0613' | 'gpt-3.5-turbo-0301' | 'gpt-4-0314' | 'gpt-4-0613';
 // Generate Text
@@ -243,5 +262,30 @@ export const getCurrentLLMConnectionPreset = async (): Promise<string> => {
 
 export const setCurrentLLMConnectionPreset = async (preset: string): Promise<string> => {
     const response = await axios.post(`${url}/api/connections/current-preset`, { preset });
+    return response.data;
+}
+
+export const getLLMSettingsPresets = async (): Promise<SettingsPreset[]> => {
+    const response = await axios.get(`${url}/api/settings/presets`);
+    return response.data;
+}
+
+export const addLLMSettingsPreset = async (preset: SettingsPreset): Promise<SettingsPreset[]> => {
+    const response = await axios.post(`${url}/api/settings/presets`, { preset });
+    return response.data;
+}
+
+export const removeLLMSettingsPreset = async (preset: SettingsPreset): Promise<SettingsPreset[]> => {
+    const response = await axios.delete(`${url}/api/settings/presets`, { data: { preset } });
+    return response.data;
+}
+
+export const getCurrentLLMSettingsPreset = async (): Promise<string> => {
+    const response = await axios.get(`${url}/api/settings/current-preset`);
+    return response.data;
+}
+
+export const setCurrentLLMSettingsPreset = async (preset: string): Promise<string> => {
+    const response = await axios.post(`${url}/api/settings/current-preset`, { preset });
     return response.data;
 }

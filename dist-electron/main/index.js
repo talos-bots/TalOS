@@ -1699,6 +1699,8 @@ let doCaption = store$5.get("doCaption", false);
 let palmModel = store$5.get("palmModel", "models/text-bison-001");
 let connectionPresets = store$5.get("connectionPresets", []);
 let currentConnectionPreset = store$5.get("currentConnectionPreset", "");
+let settingsPresets = store$5.get("settingsPresets", []);
+let currentSettingsPreset = store$5.get("currentSettingsPreset", "");
 const getLLMConnectionInformation = () => {
   return { endpoint, endpointType, password, settings, hordeModel, stopBrackets };
 };
@@ -1781,6 +1783,31 @@ const setCurrentConnectionPreset = (newCurrentConnectionPreset) => {
 };
 const getCurrentConnectionPreset = () => {
   return currentConnectionPreset;
+};
+const addSettingsPreset = (newSettingsPreset) => {
+  for (let i = 0; i < settingsPresets.length; i++) {
+    if (settingsPresets[i]._id === newSettingsPreset._id) {
+      settingsPresets[i] = newSettingsPreset;
+      store$5.set("settingsPresets", settingsPresets);
+      return;
+    }
+  }
+  settingsPresets.push(newSettingsPreset);
+  store$5.set("settingsPresets", settingsPresets);
+};
+const removeSettingsPreset = (oldSettingsPreset) => {
+  settingsPresets = settingsPresets.filter((settingsPreset) => settingsPreset !== oldSettingsPreset);
+  store$5.set("settingsPresets", settingsPresets);
+};
+const getSettingsPresets = () => {
+  return settingsPresets;
+};
+const setCurrentSettingsPreset = (newCurrentSettingsPreset) => {
+  store$5.set("currentSettingsPreset", newCurrentSettingsPreset);
+  currentSettingsPreset = newCurrentSettingsPreset;
+};
+const getCurrentSettingsPreset = () => {
+  return currentSettingsPreset;
 };
 async function getStatus(testEndpoint, testEndpointType) {
   var _a, _b, _c;
@@ -2378,6 +2405,44 @@ function LanguageModelAPI() {
     try {
       setCurrentConnectionPreset(req.body.preset);
       res.json(getCurrentConnectionPreset());
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
+  });
+  expressApp.get("/api/settings/presets", (req, res) => {
+    try {
+      res.json(getSettingsPresets());
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
+  });
+  expressApp.post("/api/settings/presets", (req, res) => {
+    try {
+      addSettingsPreset(req.body.preset);
+      res.json(getSettingsPresets());
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
+  });
+  expressApp.delete("/api/settings/presets", (req, res) => {
+    try {
+      removeSettingsPreset(req.body.preset);
+      res.json(getSettingsPresets());
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
+  });
+  expressApp.get("/api/settings/current-preset", (req, res) => {
+    try {
+      res.json(getCurrentSettingsPreset());
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
+  });
+  expressApp.post("/api/settings/current-preset", (req, res) => {
+    try {
+      setCurrentSettingsPreset(req.body.preset);
+      res.json(getCurrentSettingsPreset());
     } catch (error) {
       res.status(500).send({ error: error.message });
     }

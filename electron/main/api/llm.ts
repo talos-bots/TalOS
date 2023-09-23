@@ -79,6 +79,26 @@ interface Settings {
     max_tokens: number;
 }
 
+interface SettingsPreset {
+    _id: string;
+    name: string;
+    rep_pen: number;
+    rep_pen_range: number;
+    temperature: number;
+    sampler_order: number[];
+    top_k: number;
+    top_p: number;
+    top_a: number;
+    tfs: number;
+    typical: number;
+    singleline: boolean;
+    sampler_full_determinism: boolean;
+    max_length: number;
+    min_length: number;
+    max_context_length: number;
+    max_tokens: number;
+}
+
 interface ConnectionPreset {
     _id: string;
     name: string;
@@ -104,6 +124,8 @@ let doCaption = store.get('doCaption', false) as boolean;
 let palmModel = store.get('palmModel', 'models/text-bison-001') as string;
 let connectionPresets = store.get('connectionPresets', []) as ConnectionPreset[];
 let currentConnectionPreset = store.get('currentConnectionPreset', '') as string;
+let settingsPresets = store.get('settingsPresets', []) as SettingsPreset[];
+let currentSettingsPreset = store.get('currentSettingsPreset', '') as string;
 
 const getLLMConnectionInformation = () => {
     return { endpoint, endpointType, password, settings, hordeModel, stopBrackets };
@@ -204,6 +226,37 @@ export const setCurrentConnectionPreset = (newCurrentConnectionPreset: string) =
 export const getCurrentConnectionPreset = () => {
     return currentConnectionPreset;
 };
+
+export const addSettingsPreset = (newSettingsPreset: SettingsPreset) => {
+    for (let i = 0; i < settingsPresets.length; i++) {
+        if (settingsPresets[i]._id === newSettingsPreset._id) {
+            settingsPresets[i] = newSettingsPreset;
+            store.set('settingsPresets', settingsPresets);
+            return;
+        }
+    }
+    settingsPresets.push(newSettingsPreset);
+    store.set('settingsPresets', settingsPresets);
+};
+
+export const removeSettingsPreset = (oldSettingsPreset: SettingsPreset) => {
+    settingsPresets = settingsPresets.filter((settingsPreset) => settingsPreset !== oldSettingsPreset);
+    store.set('settingsPresets', settingsPresets);
+};
+
+export const getSettingsPresets = () => {
+    return settingsPresets;
+};
+
+export const setCurrentSettingsPreset = (newCurrentSettingsPreset: string) => {
+    store.set('currentSettingsPreset', newCurrentSettingsPreset);
+    currentSettingsPreset = newCurrentSettingsPreset;
+};
+
+export const getCurrentSettingsPreset = () => {
+    return currentSettingsPreset;
+};
+
 export async function getStatus(testEndpoint?: string, testEndpointType?: string){
     let endpointUrl = testEndpoint ? testEndpoint : endpoint;
     let endpointStatusType = testEndpointType ? testEndpointType : endpointType;
@@ -874,5 +927,47 @@ export function LanguageModelAPI(){
             res.status(500).send({ error: error.message });
         }
     });
-    
+
+    expressApp.get('/api/settings/presets', (req, res) => {
+        try {
+            res.json(getSettingsPresets());
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
+    });
+
+    expressApp.post('/api/settings/presets', (req, res) => {
+        try {
+            addSettingsPreset(req.body.preset);
+            res.json(getSettingsPresets());
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
+    });
+
+    expressApp.delete('/api/settings/presets', (req, res) => {
+        try {
+            removeSettingsPreset(req.body.preset);
+            res.json(getSettingsPresets());
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
+    });
+
+    expressApp.get('/api/settings/current-preset', (req, res) => {
+        try {
+            res.json(getCurrentSettingsPreset());
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
+    });
+
+    expressApp.post('/api/settings/current-preset', (req, res) => {
+        try {
+            setCurrentSettingsPreset(req.body.preset);
+            res.json(getCurrentSettingsPreset());
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
+    });
 }
