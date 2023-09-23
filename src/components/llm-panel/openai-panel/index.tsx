@@ -10,7 +10,7 @@ const OpenAIPanel = (props: OpenAIPanelProps) => {
 
     useEffect(() => {
         getLLMOAIModel().then((model) => {
-            setSelectedModel(model);
+            setSelectedModel(model as OAI_Model);
         });
     }, []);
     
