@@ -12,6 +12,7 @@ import { getActiveConstructList } from "@/api/constructapi";
 import { removeAllMemories } from "@/api/vectorapi";
 import ChatSettings from "./chat-settings";
 import ChatConfigMain from "./chat-config-main";
+import { importTavernCharacter } from "@/api/extrasapi";
 interface ChatSelectorProps {
     onClick?: (chatID: Chat) => void;
 }
@@ -133,6 +134,29 @@ const ChatSelector = (props: ChatSelectorProps) => {
         }
     }
 
+    const handleImageUpload = async (files: FileList | null) => {
+      if (!files) return;
+      const filesArray = Array.from(files);
+      
+      const uploadPromises = filesArray.map(async (file) => {
+          try {
+              if(file.type === 'image/png'){
+                  const importData = await importTavernCharacter(file);
+                  return importData;
+              }else if(file.type === 'application/json'){
+              }
+          } catch (error) {
+              console.error(error);
+          }
+      });
+      const newConstructs: any[] = await Promise.all(uploadPromises);
+      for (const character of newConstructs) {
+          if(character){
+            setConstructs([...constructs, character]);
+          }
+      }
+    };    
+  
     if(!isLoaded) return (<Loading/>);
 
     return (
@@ -152,6 +176,23 @@ const ChatSelector = (props: ChatSelectorProps) => {
                   </span>
                 </div>
               </Link>
+              <label htmlFor="character-image-input" className="themed-root-no-padding w-36 min-h-48 flex flex-col justify-center items-center cursor-pointer relative shrink-0 grow-0 lg:w-[calc(100% - 2rem)] lg:h-[calc(100%)]" data-tooltip="Import Character Card" id="importCard">
+                  <div className="absolute inset-0 bg-themed-root hover:bg-theme-hover-pos flex items-center justify-center rounded-theme-border-radius">
+                      <span className="text-theme-text text-2xl font-bold justify-center items-center align-middle flex flex-col lg:text-2xl">
+                      Import Character Card
+                      <br />
+                      <AiOutlineUpload size={`4rem`} className="text-theme-text lg:text-4xl" />
+                      </span>
+                  </div>
+              </label>
+              <input
+                  type="file"
+                  accept="image/png, application/json"
+                  id="character-image-input"
+                  onChange={(e) => handleImageUpload(e.target.files)}
+                  style={{ display: 'none' }}
+                  multiple={true}
+              />
               {Array.isArray(constructs) && constructs.sort((a, b) => {
                 // Check if either construct is active
                 const aIsActive = activeConstructs.includes(a._id);

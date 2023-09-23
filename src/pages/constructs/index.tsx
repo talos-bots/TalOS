@@ -115,18 +115,6 @@ const ConstructsPage = () => {
                             <FiX className="justify-self-start" size={'2rem'}/>
                             Clear Active
                         </button>
-                        <label htmlFor="character-image-input" className="themed-button-pos w-full flex flex-row items-center gap-1 col-span-1" data-tooltip="Import Character Card" id="importCard">
-                            <AiOutlineUpload className="justify-self-start" size={'2rem'}/>
-                            Import Card
-                        </label>
-                        <input
-                            type="file"
-                            accept="image/png, application/json"
-                            id="character-image-input"
-                            onChange={(e) => handleImageUpload(e.target.files)}
-                            style={{ display: 'none' }}
-                            multiple={true}
-                        />
                         {characters && 
                             <div className="construct-search-bar flex-grow w-full col-span-2">
                                 <input
@@ -153,6 +141,23 @@ const ConstructsPage = () => {
                                 </span>
                                 </div>
                             </Link>
+                            <label htmlFor="character-image-input" className="themed-root-no-padding w-36 min-h-48 flex flex-col justify-center items-center cursor-pointer relative shrink-0 grow-0 lg:w-[calc(100% - 2rem)] lg:h-[calc(100%)]" data-tooltip="Import Character Card" id="importCard">
+                                <div className="absolute inset-0 bg-themed-root hover:bg-theme-hover-pos flex items-center justify-center rounded-theme-border-radius">
+                                    <span className="text-theme-text text-2xl font-bold justify-center items-center align-middle flex flex-col lg:text-2xl">
+                                    Import Character Card
+                                    <br />
+                                    <AiOutlineUpload size={`4rem`} className="text-theme-text lg:text-4xl" />
+                                    </span>
+                                </div>
+                            </label>
+                            <input
+                                type="file"
+                                accept="image/png, application/json"
+                                id="character-image-input"
+                                onChange={(e) => handleImageUpload(e.target.files)}
+                                style={{ display: 'none' }}
+                                multiple={true}
+                            />
                             {Array.isArray(filteredCharacters) && filteredCharacters.sort((a, b) => {
                                 // Check if either construct is active
                                 const aIsActive = activeChars.includes(a._id);
