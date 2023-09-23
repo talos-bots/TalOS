@@ -1,6 +1,6 @@
 import { ActivityType, Client, GatewayIntentBits, Collection, REST, Routes, Partials, TextChannel, DMChannel, NewsChannel, Snowflake, Webhook, Message, CommandInteraction, Events, PartialGroupDMChannel } from 'discord.js';
 import Store from 'electron-store';
-import { expressApp, expressAppIO } from '..';
+import { expressApp, expressAppIO, uploadsPath } from '..';
 import { doImageReaction, getDoStableDiffusion, getMessageIntent, getRegisteredChannels, getUsername, handleDiscordMessage, handleRemoveMessage, handleRengenerateMessage, setInterrupted } from '../controllers/DiscordController';
 import { ConstructInterface, SlashCommand } from '../types/types';
 import { assembleConstructFromData, base642Buffer } from '../helpers/helpers';
@@ -307,7 +307,7 @@ export async function doGlobalNicknameChange(newName: string){
     });
 }
 
-export async function setDiscordBotInfo(botName: string, base64Avatar: string): Promise<void> {
+export async function setDiscordBotInfo(botName: string, base64Avatar: any): Promise<void> {
     if(!isReady) return;
     if (!disClient.user) {
         console.error("Discord client user is not initialized.");
@@ -342,8 +342,14 @@ export async function setDiscordBotInfo(botName: string, base64Avatar: string): 
 
     // Change bot's avatar
     try {
-        const buffer = await base642Buffer(base64Avatar);
-        await disClient.user.setAvatar(buffer);
+        console.log('Setting new avatar...');
+        console.log(base64Avatar);
+        if(!base64Avatar.includes('/api/images/')){
+            base64Avatar = await base642Buffer(base64Avatar);
+        }else {
+            base64Avatar = uploadsPath + base64Avatar.replaceAll('/api/images/', '');
+        }
+        await disClient.user.setAvatar(base64Avatar);
         console.log('New avatar set!');
     } catch (error) {
         console.error('Failed to set avatar:', error);

@@ -6097,8 +6097,14 @@ async function setDiscordBotInfo(botName, base64Avatar) {
     }
   }
   try {
-    const buffer = await base642Buffer(base64Avatar);
-    await disClient.user.setAvatar(buffer);
+    console.log("Setting new avatar...");
+    console.log(base64Avatar);
+    if (!base64Avatar.includes("/api/images/")) {
+      base64Avatar = await base642Buffer(base64Avatar);
+    } else {
+      base64Avatar = uploadsPath + base64Avatar.replaceAll("/api/images/", "");
+    }
+    await disClient.user.setAvatar(base64Avatar);
     console.log("New avatar set!");
   } catch (error) {
     console.error("Failed to set avatar:", error);
