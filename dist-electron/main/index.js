@@ -3191,56 +3191,56 @@ async function regenerateUserMessageFromChatLog(chatLog, messageContent, message
 }
 function constructController() {
   ActiveConstructs = retrieveConstructs();
-  expressApp.post("/api/construct/add-to-active", (req, res) => {
+  expressApp.post("/api/constructs/add-to-active", (req, res) => {
     addConstruct(req.body.construct);
     ActiveConstructs = retrieveConstructs();
     res.json({ activeConstructs: ActiveConstructs });
   });
-  expressApp.post("/api/construct/remove-active", (req, res) => {
+  expressApp.post("/api/constructs/remove-active", (req, res) => {
     removeConstruct(req.body.construct);
     ActiveConstructs = retrieveConstructs();
     res.json({ activeConstructs: ActiveConstructs });
   });
-  expressApp.get("/api/construct/active-list", (req, res) => {
+  expressApp.get("/api/constructs/active-list", (req, res) => {
     ActiveConstructs = retrieveConstructs();
     res.json({ activeConstructs: ActiveConstructs });
   });
-  expressApp.post("/api/construct/is-active", (req, res) => {
+  expressApp.post("/api/constructs/is-active", (req, res) => {
     const isActive = isConstructActive(req.body.construct);
     res.json({ isActive });
   });
-  expressApp.post("/api/construct/remove-all-active", (req, res) => {
+  expressApp.post("/api/constructs/remove-all-active", (req, res) => {
     clearActiveConstructs();
     ActiveConstructs = retrieveConstructs();
     res.json({ activeConstructs: ActiveConstructs });
   });
-  expressApp.post("/api/construct/set-construct-primary", (req, res) => {
+  expressApp.post("/api/constructs/set-construct-primary", (req, res) => {
     const constructId = req.body.constructId;
     setAsPrimary(constructId);
     const activeConstructs = retrieveConstructs();
     res.json({ activeConstructs });
   });
-  expressApp.post("/api/construct/multi-line", (req, res) => {
+  expressApp.post("/api/constructs/multi-line", (req, res) => {
     const value = req.body.value;
     setDoMultiLine(value);
     const currentDoMultiLine = getDoMultiLine();
     res.json({ doMultiLine: currentDoMultiLine });
   });
-  expressApp.get("/api/construct/multi-line", (req, res) => {
+  expressApp.get("/api/constructs/multi-line", (req, res) => {
     const currentDoMultiLine = getDoMultiLine();
     res.json({ doMultiLine: currentDoMultiLine });
   });
-  expressApp.post("/api/construct/character-prompt", (req, res) => {
+  expressApp.post("/api/constructs/character-prompt", (req, res) => {
     const construct = req.body.construct;
     const prompt = getCharacterPromptFromConstruct(construct);
     res.json({ prompt });
   });
-  expressApp.post("/api/construct/assemble-prompt", (req, res) => {
+  expressApp.post("/api/constructs/assemble-prompt", (req, res) => {
     const { construct, chatLog, currentUser, messagesToInclude } = req.body;
     const prompt = assemblePrompt(construct, chatLog, currentUser, messagesToInclude);
     res.json({ prompt });
   });
-  expressApp.post("/api/construct/assemble-instruct-prompt", (req, res) => {
+  expressApp.post("/api/constructs/assemble-instruct-prompt", (req, res) => {
     const { construct, chatLog, currentUser, messagesToInclude } = req.body;
     const prompt = assembleInstructPrompt(construct, chatLog, currentUser);
     res.json({ prompt });

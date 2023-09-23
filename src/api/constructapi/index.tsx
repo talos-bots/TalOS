@@ -15,7 +15,7 @@ export async function constructIsActive(id: string): Promise<boolean> {
 
 export async function getActiveConstructList(): Promise<string[]> {
     try {
-        const response = await axios.get(`/api/construct/active-list`);
+        const response = await axios.get(`/api/constructs/active-list`);
         return response.data.activeConstructs;
     } catch (error) {
         console.error("Error retrieving active construct list:", error);
@@ -25,7 +25,7 @@ export async function getActiveConstructList(): Promise<string[]> {
 
 export async function addConstructToActive(id: string): Promise<void> {
     try {
-        await axios.post(`/api/construct/add-to-active`, { construct: id });
+        await axios.post(`/api/constructs/add-to-active`, { construct: id });
     } catch (error) {
         console.error("Error adding construct to active list:", error);
     }
@@ -33,7 +33,7 @@ export async function addConstructToActive(id: string): Promise<void> {
 
 export async function removeConstructFromActive(id: string): Promise<void> {
     try {
-        await axios.post(`/api/construct/remove-active`, { construct: id });
+        await axios.post(`/api/constructs/remove-active`, { construct: id });
     } catch (error) {
         console.error("Error removing construct from active list:", error);
     }
@@ -41,30 +41,30 @@ export async function removeConstructFromActive(id: string): Promise<void> {
 
 export async function removeAllActiveConstructs(): Promise<void> {
     try {
-        await axios.post(`/api/construct/remove-all-active`);
+        await axios.post(`/api/constructs/remove-all-active`);
     } catch (error) {
         console.error("Error removing all active constructs:", error);
     }
 }
 
 export async function setConstructAsPrimary(constructId: string): Promise<{ activeConstructs: any }> {
-    const response = await axios.post('/api/construct/set-construct-primary', { constructId });
+    const response = await axios.post('/api/constructs/set-construct-primary', { constructId });
     return response.data;
 }
 
 export async function setDoMultiLine(value: boolean): Promise<{ doMultiLine: boolean }> {
-    const response = await axios.post('/api/construct/multi-line', { value });
+    const response = await axios.post('/api/constructs/multi-line', { value });
     return response.data;
 }
 
 export async function getDoMultiLine(): Promise<{ doMultiLine: boolean }> {
-    const response = await axios.get('/api/construct/multi-line');
+    const response = await axios.get('/api/constructs/multi-line');
     return response.data;
 }
 
 export const getCharacterPromptFromConstruct = async (construct: Construct): Promise<string> => {
     try {
-        const response = await axios.post('/api/construct/character-prompt', { construct });
+        const response = await axios.post('/api/constructs/character-prompt', { construct });
         return response.data.prompt;
     } catch (error: any) {
         throw new Error(error);
@@ -73,7 +73,7 @@ export const getCharacterPromptFromConstruct = async (construct: Construct): Pro
 
 export const assemblePrompt = async (construct: Construct, chatLog: Chat, currentUser?: string, messagesToInclude?: number): Promise<string> => {
     try {
-        const response = await axios.post('/api/construct/assemble-prompt', {
+        const response = await axios.post('/api/constructs/assemble-prompt', {
             construct,
             chatLog,
             currentUser,
@@ -87,7 +87,7 @@ export const assemblePrompt = async (construct: Construct, chatLog: Chat, curren
 
 export const assembleInstructPrompt = async (construct: Construct, chatLog: Chat, currentUser?: string, messagesToInclude?: number): Promise<string> => {
     try {
-        const response = await axios.post('/api/construct/assemble-instruct-prompt', {
+        const response = await axios.post('/api/constructs/assemble-instruct-prompt', {
             construct,
             chatLog,
             currentUser,
@@ -180,7 +180,7 @@ export const breakUpCommands = async (charName: string, commandString: string, u
 
 export const generateThoughts = async (construct: Construct, chatLog: Chat, currentUser?: string, messagesToInclude?: number): Promise<string> => {
     try {
-        const response = await axios.post('/api/construct/thoughts', {
+        const response = await axios.post('/api/constructs/thoughts', {
             construct,
             chatLog,
             currentUser,
