@@ -258,6 +258,7 @@ const ConstructManagement = (props: ConstructManagementProps) => {
                 newConstruct.defaultConfig = constructDefaultChatConfig;
                 newConstruct.thoughtPattern = constructThoughtPattern;
                 await saveNewConstruct(newConstruct);
+                setConstructState(newConstruct);
             }
         }
     }
