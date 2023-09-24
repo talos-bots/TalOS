@@ -6,13 +6,13 @@ import extract from 'png-chunks-extract';
 // @ts-ignore
 import PNGtext from 'png-chunk-text';
 // @ts-ignore
-import { encode } from 'png-chunk-text';
-// @ts-ignore
-import encodePng from 'png-chunks-encode';
-import { TavernCardV2 } from "@/types";
 import { ipcRenderer } from "electron";
 import { uploadImage } from "../baseapi";
 import { url } from "@/App";
+// @ts-ignore
+import { encode } from 'png-chunk-text';
+// @ts-ignore
+import encodePng from 'png-chunks-encode';
 
 export const importTavernCharacter = (file: File): Promise<Construct> => {
     return new Promise((resolve, reject) => {
@@ -169,33 +169,30 @@ const decodeBase64 = (base64String: string) => {
     return decodeURIComponent(escape(text));
 };
 
-export async function createTavernCardV2(construct: Construct): Promise<TavernCardV2> {
-    // You might need to adjust the mapping based on the actual structure of the Construct class
+export async function createTavernCardV2(construct: Construct): Promise<any> {
     const data = {
-      name: construct.name,
-      description: "",
-      personality: construct.personality,
-      scenario: construct.background,
-      first_mes: construct.greetings[0], 
-      mes_example: "",
-      creator_notes: "", 
-      system_prompt: construct.authorsNote || "",
-      post_history_instructions: "", 
-      alternate_greetings: construct.greetings.slice(1), 
-      character_book: undefined, 
-      tags: [], 
-      creator: "", 
-      character_version: "", 
-      extensions: {},
+        name: construct.name,
+        description: "",
+        personality: construct.personality,
+        scenario: construct.background,
+        first_mes: construct.greetings[0],
+        mes_example: "",
+        creator_notes: "",
+        system_prompt: construct.authorsNote || "",
+        post_history_instructions: "",
+        alternate_greetings: construct.greetings.slice(1),
+        character_book: undefined,
+        tags: [],
+        creator: "",
+        character_version: "",
+        extensions: {},
     };
-  
-    const tavernCardV2: TavernCardV2 = {
-      spec: 'chara_card_v2',
-      spec_version: '2.0',
-      data,
+
+    return {
+        spec: 'chara_card_v2',
+        spec_version: '2.0',
+        data,
     };
-  
-    return tavernCardV2;
 }
 
 export async function saveTavernCardAsImage(construct: Construct) {
@@ -204,15 +201,24 @@ export async function saveTavernCardAsImage(construct: Construct) {
     const base64String = btoa(unescape(encodeURIComponent(jsonString)));
   
     // Convert data URI to Blob
-    const byteString = atob(construct.avatar.split(',')[1]);
-    const arrayBuffer = new ArrayBuffer(byteString.length);
+    const imageBlob = await fetch(url + construct.avatar).then((r) => r.blob());
+
+    // Convert Blob to ArrayBuffer
+    const arrayBuffer = await imageBlob.arrayBuffer();
+
+    // Convert ArrayBuffer to Uint8Array
     const int8Array = new Uint8Array(arrayBuffer);
-    for (let i = 0; i < byteString.length; i++) {
-      int8Array[i] = byteString.charCodeAt(i);
-    }
-  
+
     // Extract existing chunks from the PNG
     const chunks = extract(int8Array);
+  
+    // Check if the last chunk is the IEND chunk
+    let iendChunk;
+    if (chunks[chunks.length - 1].name === 'IEND') {
+        iendChunk = chunks.pop();
+    } else {
+        throw new Error("PNG Decode Error: PNG ended prematurely, missing IEND header");
+    }
   
     // Create a new text chunk
     const textChunk = encode('chara', base64String);
@@ -222,6 +228,11 @@ export async function saveTavernCardAsImage(construct: Construct) {
       name: 'tEXt',
       data: new Uint8Array(textChunk)
     });
+
+    // Re-add the IEND chunk
+    if (iendChunk) {
+        chunks.push(iendChunk);
+    }
   
     // Recompile the PNG with the new chunks
     const newData = encodePng(chunks);
@@ -230,8 +241,8 @@ export async function saveTavernCardAsImage(construct: Construct) {
     const newBlob = new Blob([newData], { type: 'image/png' });
   
     // Save the Blob to a file
-    const url = URL.createObjectURL(newBlob);
-    return url;
+    const download = URL.createObjectURL(newBlob);
+    return download;
 }
 
 export async function getDefaultCharacters(): Promise<string[]>{
