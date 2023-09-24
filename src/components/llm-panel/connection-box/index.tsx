@@ -1,4 +1,4 @@
-import { ConnectionPreset, OAI_Model, addLLMConnectionPreset, getCurrentLLMConnectionPreset, getLLMConnectionInformation, getLLMConnectionPresets, getStatus, setCurrentLLMConnectionPreset, setLLMConnectionInformation, setPaLMFilters, setPalmModel } from "@/api/llmapi";
+import { ConnectionPreset, OAI_Model, addLLMConnectionPreset, getCurrentLLMConnectionPreset, getLLMConnectionInformation, getLLMConnectionPresets, getStatus, removeLLMConnectionPreset, setCurrentLLMConnectionPreset, setLLMConnectionInformation, setPaLMFilters, setPalmModel } from "@/api/llmapi";
 import { EndpointType } from "@/types";
 import { useEffect, useState } from "react";
 import HordePanel from "../horde-panel";
@@ -168,6 +168,8 @@ const ConnectionBox = (props: ConnectionBoxProps) => {
                             setConnectionPreset(undefined);
                             setCurrentConnectionPreset("");
                             setCurrentLLMConnectionPreset("");
+                            removeLLMConnectionPreset(connectionPresets.find((preset) => preset._id === currentConnectionPreset) as ConnectionPreset);
+                            setConnectionPresets(connectionPresets.filter((preset) => preset._id !== currentConnectionPreset));
                         }}
                     >
                         <Trash/>

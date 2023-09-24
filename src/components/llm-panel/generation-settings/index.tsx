@@ -202,6 +202,7 @@ const GenerationSettings = () => {
                             setCurrentConnectionPreset("");
                             setCurrentLLMConnectionPreset("");
                             removeLLMSettingsPreset(connectionPresets.find((preset) => preset._id === connectionPreset?._id) as SettingsPreset);
+                            setConnectionPresets(connectionPresets.filter((preset) => preset._id !== connectionPreset?._id));
                         }}
                     >
                         <Trash/>
