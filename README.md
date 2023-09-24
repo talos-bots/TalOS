@@ -27,15 +27,15 @@ https://discord.com/invite/HNSaTjExYy
 ### Create Constructs
 - Export to V2 Cards **(Done)**
 - Create AI Assistants or RP Characters. **(Done)**
-- Use LLM to help you create persona details for your character.
+- Use LLM to help you create persona details for your character. **(Done)**
 - Use Stable Diffusion to create profile images for your character. **(Done)**
-### Thoughts **(In Progress)**
+### Thoughts **(Done)**
 - Have your Construct or RP Character think inside of Discord, or the chat window.
 - Adds depth to Characters, and will likely increase quality of RP and chat output.
 ### Multi-Construct Discord Bot
 - Have multiple Constructs speak through one discord bot. **(Done)**
 - Group ordering
-- Reply percentages, lurking, etc.
+- Reply percentages, lurking, etc. **(Done)**
 - GIF sending, web browsing, vector memories, and RP.
 ### Construct Chat Window
 - A way to test agent features, personalities, and other features. **(Done)**
