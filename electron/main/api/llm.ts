@@ -4,6 +4,7 @@ import Store from 'electron-store';
 import { instructPrompt, instructPromptWithContext, instructPromptWithExamples, instructPromptWithGuidance, instructPromptWithGuidanceAndContext, instructPromptWithGuidanceAndContextAndExamples, instructPromptWithGuidanceAndExamples } from '../types/prompts';
 import { getCaption, getClassification, getEmbedding, getEmbeddingSimilarity,  getQuestionAnswering } from '../model-pipeline/transformers';
 import { expressApp } from '..';
+import { detectIntent } from '../helpers/actions-helpers';
 
 const HORDE_API_URL = 'https://aihorde.net/api';
 
@@ -963,5 +964,13 @@ export function LanguageModelAPI(){
         } catch (error: any) {
             res.status(500).send({ error: error.message });
         }
+    });
+
+    expressApp.post('/api/chat/intent', (req, res) => {
+        detectIntent(req.body.text).then(result => {
+            res.json(result);
+        }).catch(error => {
+            res.status(500).send({ error: error.message });
+        });
     });
 }

@@ -410,6 +410,13 @@ const ChatLog = (props: ChatLogProps) => {
 		let wasMentioned = isConstructMentioned(chat.lastMessage.text, activeConstruct);
 		const wasMentionedByHuman = chat.lastMessage.isHuman && wasMentioned;
 		const wasHuman = chat.lastMessage.isHuman;
+		if((chat.lastMessage.userID === 'System') && (chat.lastMessage.user === 'System') && (chat.lastMessage.isCommand)){
+			let replyLog = await doBotReply(chat, activeConstruct, currentUser, config);
+			if(replyLog !== undefined){
+				chat = replyLog;
+			}
+			return chat;
+		}
 		if(wasMentionedByHuman){
 			if(config.replyToUserMention >= Math.random()){
 				let replyLog = await doBotReply(chat, activeConstruct, currentUser, config);

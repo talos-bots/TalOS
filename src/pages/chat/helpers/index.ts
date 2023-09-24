@@ -119,10 +119,11 @@ export async function doSlashCommand(message: string, chatLog: Chat | null, curr
                 let newMessage = createSystemMessage(args.join(' '));
                 if(!newMessage) return false;
                 setMessages && setMessages((messages) => [...messages, newMessage]);
-                chatLog.messages.push(newMessage);
+                chatLog.addMessage(newMessage);
+                let chat = chatLog;
                 setChatLog && setChatLog(chatLog);
                 updateChat && updateChat(chatLog);
-                handBotResponse && handBotResponse(chatLog, activeConstruct, currentUser);
+                handBotResponse && handBotResponse(chat, activeConstruct, currentUser);
                 return true;
         }
     }
