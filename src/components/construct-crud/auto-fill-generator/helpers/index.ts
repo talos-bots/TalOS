@@ -151,12 +151,6 @@ export async function getReturnValue(type: requestTypes, field: string, suggesti
             context += constructInfo;
         }
     }
-    if(extraContext){
-        if(context.length < 1){
-            context = "### Context:\n";
-        }
-        context += extraContext;
-    }
     prompt = prompt.replace("{request}", suggestion || "").replace("{context}", context).replace("{extracontext}", extraContext || "").replace("{field}", field || "");
     if(currentValues?.name !== undefined && currentValues?.name.length > 1 && useExisting){
         prompt = prompt.replaceAll('character', currentValues.name);
