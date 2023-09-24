@@ -109,7 +109,28 @@ async function processCharacterData(characterData: any, avatar64: string): Promi
             construct.addGreeting(greeting.replaceAll('\r', ''));
         });
     }
-    
+    if(characterData.thought_pattern && characterData.thought_pattern.trim().length > 0){
+        construct.thoughtPattern = characterData.thought_pattern.replaceAll('\r', '')
+    }
+
+    if(characterData.farewells && characterData.farewells.length > 0){
+        characterData.farewells.forEach((farewell: string) => {
+            construct.addFarewell(farewell.replaceAll('\r', ''));
+        });
+    }
+
+    if(characterData.interests && characterData.interests.length > 0){
+        construct.interests = characterData.interests;
+    }
+
+    if(characterData.relationships && characterData.relationships.length > 0){
+        construct.relationships = characterData.relationships;
+    }
+
+    if(characterData.visual_description && characterData.visual_description.trim().length > 0){
+        construct.visualDescription = characterData.visual_description.replaceAll('\r', '')
+    }
+
     if(characterData.system_prompt && characterData.system_prompt.trim().length > 0){
         construct.authorsNote = characterData.system_prompt.replaceAll('\r', '')
     }
@@ -176,6 +197,11 @@ export async function createTavernCardV2(construct: Construct): Promise<any> {
         personality: construct.personality,
         scenario: construct.background,
         first_mes: construct.greetings[0],
+        thought_pattern: construct.thoughtPattern || "",
+        farewells: construct.farewells || [],
+        interests: construct.interests || [],
+        relationships: construct.relationships || [],
+        visual_description: construct.visualDescription || "",
         mes_example: "",
         creator_notes: "",
         system_prompt: construct.authorsNote || "",
