@@ -84,6 +84,9 @@ export const importTavernCharacter = (file: File): Promise<Construct> => {
 
 async function processCharacterData(characterData: any, avatar64: string): Promise<Construct> {
     console.log(characterData);
+    if(characterData?.data !== undefined){
+        characterData = characterData.data;
+    }
     const construct = new Construct();
     construct.avatar = characterData.avatar;
     if (avatar64) {
