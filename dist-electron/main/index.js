@@ -5958,18 +5958,6 @@ function createClient() {
     }
     expressAppIO.emit("discord-message", message);
   });
-  disClient.on("messageUpdate", async (oldMessage, newMessage) => {
-    var _a, _b;
-    if (((_a = newMessage.author) == null ? void 0 : _a.id) === ((_b = disClient.user) == null ? void 0 : _b.id))
-      return;
-    expressAppIO.emit("discord-message-update", oldMessage, newMessage);
-  });
-  disClient.on("messageDelete", async (message) => {
-    var _a, _b;
-    if (((_a = message.author) == null ? void 0 : _a.id) === ((_b = disClient.user) == null ? void 0 : _b.id))
-      return;
-    expressAppIO.emit("discord-message-delete", message);
-  });
   disClient.on("messageReactionAdd", async (reaction, user) => {
     var _a, _b;
     if (user.id === ((_a = disClient.user) == null ? void 0 : _a.id))
@@ -6007,78 +5995,6 @@ function createClient() {
       console.error("Something went wrong when fetching the message:", error);
     }
   });
-  disClient.on("messageReactionRemove", async (reaction, user) => {
-    var _a;
-    if (user.id === ((_a = disClient.user) == null ? void 0 : _a.id))
-      return;
-    expressAppIO.emit("discord-message-reaction-remove", reaction, user);
-  });
-  disClient.on("messageReactionRemoveAll", async (message) => {
-    var _a, _b;
-    if (((_a = message.author) == null ? void 0 : _a.id) === ((_b = disClient.user) == null ? void 0 : _b.id))
-      return;
-    expressAppIO.emit("discord-message-reaction-remove-all", message);
-  });
-  disClient.on("messageReactionRemoveEmoji", async (reaction) => {
-    expressAppIO.emit("discord-message-reaction-remove-emoji", reaction);
-  });
-  disClient.on("channelCreate", async (channel) => {
-    expressAppIO.emit("discord-channel-create", channel);
-  });
-  disClient.on("channelDelete", async (channel) => {
-    expressAppIO.emit("discord-channel-delete", channel);
-  });
-  disClient.on("channelPinsUpdate", async (channel, time) => {
-    expressAppIO.emit("discord-channel-pins-update", channel, time);
-  });
-  disClient.on("channelUpdate", async (oldChannel, newChannel) => {
-    expressAppIO.emit("discord-channel-update", oldChannel, newChannel);
-  });
-  disClient.on("emojiCreate", async (emoji) => {
-    expressAppIO.emit("discord-emoji-create", emoji);
-  });
-  disClient.on("emojiDelete", async (emoji) => {
-    expressAppIO.emit("discord-emoji-delete", emoji);
-  });
-  disClient.on("emojiUpdate", async (oldEmoji, newEmoji) => {
-    expressAppIO.emit("discord-emoji-update", oldEmoji, newEmoji);
-  });
-  disClient.on("guildBanAdd", async (ban) => {
-    expressAppIO.emit("discord-guild-ban-add", ban);
-  });
-  disClient.on("guildBanRemove", async (ban) => {
-    expressAppIO.emit("discord-guild-ban-remove", ban);
-  });
-  disClient.on("guildCreate", async (guild) => {
-    expressAppIO.emit("discord-guild-create", guild);
-  });
-  disClient.on("guildDelete", async (guild) => {
-    expressAppIO.emit("discord-guild-delete", guild);
-  });
-  disClient.on("guildUnavailable", async (guild) => {
-    expressAppIO.emit("discord-guild-unavailable", guild);
-  });
-  disClient.on("guildIntegrationsUpdate", async (guild) => {
-    expressAppIO.emit("discord-guild-integrations-update", guild);
-  });
-  disClient.on("guildMemberAdd", async (member) => {
-    expressAppIO.emit("discord-guild-member-add", member);
-  });
-  disClient.on("guildMemberRemove", async (member) => {
-    expressAppIO.emit("discord-guild-member-remove", member);
-  });
-  disClient.on("guildMemberAvailable", async (member) => {
-    expressAppIO.emit("discord-guild-member-available", member);
-  });
-  disClient.on("guildMemberUpdate", async (oldMember, newMember) => {
-    expressAppIO.emit("discord-guild-member-update", oldMember, newMember);
-  });
-  disClient.on("guildMembersChunk", async (members, guild) => {
-    expressAppIO.emit("discord-guild-members-chunk", members, guild);
-  });
-  disClient.on("guildUpdate", async (oldGuild, newGuild) => {
-    expressAppIO.emit("discord-guild-update", oldGuild, newGuild);
-  });
   disClient.on("interactionCreate", async (interaction) => {
     if (!interaction.isCommand())
       return;
@@ -6096,15 +6012,6 @@ function createClient() {
       await interaction.reply({ content: "There was an error while executing this command!", ephemeral: true });
     }
     expressAppIO.emit("discord-interaction-create", interaction);
-  });
-  disClient.on("inviteCreate", async (invite) => {
-    expressAppIO.emit("discord-invite-create", invite);
-  });
-  disClient.on("inviteDelete", async (invite) => {
-    expressAppIO.emit("discord-invite-delete", invite);
-  });
-  disClient.on("presenceUpdate", async (oldPresence, newPresence) => {
-    expressAppIO.emit("discord-presence-update", oldPresence, newPresence);
   });
   disClient.on("ready", async () => {
     if (!disClient.user)
