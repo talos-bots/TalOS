@@ -377,13 +377,13 @@ export async function makeImage(prompt: string, negativePrompt?: string, steps?:
     if(!res){
         return null;
     }
-    let fileName = `image_${getTimestamp()}.jpeg`;
+    let fileName = `image_${getTimestamp()}.png`;
     const assemblePayload = JSON.parse(data);
     const attachment: AttachmentInferface = {
         _id: (new Date().getTime()).toString(),
         name: fileName,
-        type: 'image/jpeg',
-        fileext: 'jpeg',
+        type: 'image/png',
+        fileext: 'png',
         data: res.data.images[0].split(';base64,').pop(),
         metadata: {
             model: model,

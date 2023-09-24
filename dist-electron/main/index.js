@@ -3714,13 +3714,13 @@ async function makeImage(prompt, negativePrompt, steps, cfg, width, height, high
   if (!res) {
     return null;
   }
-  let fileName = `image_${getTimestamp()}.jpeg`;
+  let fileName = `image_${getTimestamp()}.png`;
   const assemblePayload = JSON.parse(data);
   const attachment = {
     _id: (/* @__PURE__ */ new Date()).getTime().toString(),
     name: fileName,
-    type: "image/jpeg",
-    fileext: "jpeg",
+    type: "image/png",
+    fileext: "png",
     data: res.data.images[0].split(";base64,").pop(),
     metadata: {
       model,

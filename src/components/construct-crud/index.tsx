@@ -123,11 +123,11 @@ const ConstructManagement = (props: ConstructManagementProps) => {
                     const byteArray = new Uint8Array(byteNumbers);
                     byteArrays.push(byteArray);
                 }
-                const blob = new Blob(byteArrays, { type: "image/jpeg" });
+                const blob = new Blob(byteArrays, { type: "image/png" });
     
                 // Create a File object
-                const newName = Date.now().toString() + '.jpg'; // Since it's JPEG, I'm assuming the extension here.
-                const file = new File([blob], newName, { type: "image/jpeg" });
+                const newName = Date.now().toString() + '.png'; 
+                const file = new File([blob], newName, { type: "image/png" });
     
                 // Add to FormData and upload
                 const formData = new FormData();

@@ -210,7 +210,7 @@ export async function saveTavernCardAsImage(construct: Construct) {
     const int8Array = new Uint8Array(arrayBuffer);
 
     // Extract existing chunks from the PNG
-    const chunks = extract(int8Array);
+    let chunks = extract(int8Array);
   
     // Check if the last chunk is the IEND chunk
     let iendChunk;
@@ -219,23 +219,18 @@ export async function saveTavernCardAsImage(construct: Construct) {
     } else {
         throw new Error("PNG Decode Error: PNG ended prematurely, missing IEND header");
     }
-  
-    // Create a new text chunk
-    const textChunk = encode('chara', base64String);
-  
-    // Add the new text chunk to the chunks array
-    chunks.push({
-      name: 'tEXt',
-      data: new Uint8Array(textChunk)
-    });
+    chunks = chunks.filter((chunk: Chunk) => chunk.name !== 'tEXt');
 
+    // Create a new text chunk
+    const textChunk = await encode('chara', base64String);
+    chunks.push(textChunk);
     // Re-add the IEND chunk
     if (iendChunk) {
         chunks.push(iendChunk);
     }
   
     // Recompile the PNG with the new chunks
-    const newData = encodePng(chunks);
+    const newData = await encodePng(chunks);
   
     // Convert the new data to a Blob
     const newBlob = new Blob([newData], { type: 'image/png' });
