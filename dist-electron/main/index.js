@@ -5006,8 +5006,14 @@ const ClearLogCommand = {
       });
       return;
     } else {
-      pulledChat.messages = [];
-      await updateChat(pulledChat);
+      if ((pulledChat == null ? void 0 : pulledChat.messages) === void 0) {
+        await interaction.editReply({
+          content: "No chat log for this channel."
+        });
+      } else {
+        pulledChat.messages = [];
+        await updateChat(pulledChat);
+      }
     }
     deleteIndex(interaction.channelId);
     setInterrupted();

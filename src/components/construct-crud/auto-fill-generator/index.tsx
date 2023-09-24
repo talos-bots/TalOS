@@ -48,7 +48,7 @@ const AutoFillGenerator = (props: AutoFillGeneratorProps) => {
     const [type, setType] = useState<requestTypes>('plaintext');
     const [extraContext, setExtraContext] = useState<string>('');
     const [useExisting, setUseExisting] = useState<boolean>(false);
-
+    const [appendToExisting, setAppendToExisting] = useState<boolean>(false);
     useEffect(() => {
         if(props.field === null) return;
         setRequest('');

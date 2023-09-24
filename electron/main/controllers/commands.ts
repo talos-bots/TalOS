@@ -176,8 +176,15 @@ export const ClearLogCommand: SlashCommand = {
             });
             return;
         }else{
-            pulledChat.messages = [];
-            await updateChat(pulledChat);
+            if(pulledChat?.messages === undefined){
+                await interaction.editReply({
+                    content: "No chat log for this channel.",
+                });
+            }else{
+                pulledChat.messages = [];
+                await updateChat(pulledChat);
+            }
+            
         }
         deleteIndex(interaction.channelId);
         setInterrupted();
