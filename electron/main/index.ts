@@ -65,6 +65,7 @@ async function createWindow() {
       nodeIntegration: true,
       contextIsolation: false,
       webSecurity: false,
+      spellcheck: true,
     },
     fullscreenable: true,
     frame: true,
@@ -99,6 +100,37 @@ async function createWindow() {
     if (url.startsWith("https:")) shell.openExternal(url);
     return { action: "deny" };
   });
+
+  win.webContents.session.setSpellCheckerLanguages(['en-US'])
+
+  const { Menu, MenuItem } = require('electron')
+
+  win.webContents.on('context-menu', (event, params) => {
+    const menu = new Menu()
+    if(win !== null){
+    // Add each spelling suggestion
+    for (const suggestion of params.dictionarySuggestions) {
+      menu.append(new MenuItem({
+        label: suggestion,
+        //@ts-ignore
+        click: () => win.webContents.replaceMisspelling(suggestion)
+      }))
+    }
+
+    // Allow users to add the misspelled word to the dictionary
+    if (params.misspelledWord) {
+      menu.append(
+        new MenuItem({
+          label: 'Add to dictionary',
+          //@ts-ignore
+          click: () => win.webContents.session.addWordToSpellCheckerDictionary(params.misspelledWord)
+        })
+      )
+    }
+
+    menu.popup()
+    }
+  })
 
   DiscordJSRoutes();
   PouchDBRoutes();
