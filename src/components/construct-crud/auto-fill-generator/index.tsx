@@ -58,6 +58,9 @@ const AutoFillGenerator = (props: AutoFillGeneratorProps) => {
         if(props.field === 'name' || props.field === 'nickname' || props.field === 'visualDescription' || props.field === 'thoughtpattern') {
             setType('plaintext');
         }
+        if(props.field === 'visualDescription'){
+            setRequest('Create a prompt for StableDiffusion using the danbooru 2019 dataset tags, comma separate them.');
+        }
     }, [props.field]);
 
     const handleRequest = async () => {
