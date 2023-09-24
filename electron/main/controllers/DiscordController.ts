@@ -305,7 +305,6 @@ export async function handleDiscordMessage(message: Message) {
         await updateChat(chatLog);
         return;
     }
-    expressAppIO.emit(`chat-message-${message.channel.id}`);
     if(chatLog.doVector){
         if(chatLog.global){
             for(let i = 0; i < constructArray.length; i++){

@@ -4010,7 +4010,6 @@ async function handleDiscordMessage(message) {
     await updateChat(chatLog);
     return;
   }
-  expressAppIO.emit(`chat-message-${message.channel.id}`);
   if (chatLog.doVector) {
     if (chatLog.global) {
       for (let i = 0; i < constructArray.length; i++) {
@@ -5954,9 +5953,7 @@ function createClient() {
       }
       messageQueue.push(message);
       await processQueue();
-      expressAppIO.emit(`chat-message-${message.channel.id}`);
     }
-    expressAppIO.emit("discord-message", message);
   });
   disClient.on("messageReactionAdd", async (reaction, user) => {
     var _a, _b;
@@ -5990,7 +5987,6 @@ function createClient() {
       if (reaction.emoji.name === "❓") {
         await getMessageIntent(message);
       }
-      expressAppIO.emit("discord-message-reaction-add", reaction, user);
     } catch (error) {
       console.error("Something went wrong when fetching the message:", error);
     }
@@ -6011,14 +6007,12 @@ function createClient() {
       console.error(error);
       await interaction.reply({ content: "There was an error while executing this command!", ephemeral: true });
     }
-    expressAppIO.emit("discord-interaction-create", interaction);
   });
   disClient.on("ready", async () => {
     if (!disClient.user)
       return;
     isReady = true;
     console.log(`Logged in as ${disClient.user.tag}!`);
-    expressAppIO.emit("discord-ready", disClient.user.tag);
     registerCommands();
     let constructs = retrieveConstructs();
     let constructRaw = await getConstruct(constructs[0]);
@@ -6515,7 +6509,6 @@ function DiscordJSRoutes() {
       messageQueue = [];
       disClient = new discord_js.Client(intents);
       console.log("Logged out!");
-      expressAppIO.emit("discord-disconnected");
       res.json({ success: true });
     } catch (error) {
       console.error("Failed to logout from Discord:", error);
