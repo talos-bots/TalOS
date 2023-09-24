@@ -1,5 +1,4 @@
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
-import { DiscordListeners } from './listeners/discord-listeners';
 import { useEffect, useState } from 'react';
 import { ipcMain, ipcRenderer } from 'electron';
 import { Steps, Hints } from 'intro.js-react';
@@ -38,7 +37,6 @@ function App() {
   }
 
   useEffect(() => {
-    DiscordListeners();
     getStorageValue('doneTutorial').then((value) => {
       if(value === null) {
         setDoneTutorial(false);
