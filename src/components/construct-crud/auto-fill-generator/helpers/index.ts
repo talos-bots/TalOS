@@ -36,13 +36,13 @@ Write the {field} for a character.
 
 const dialoguePrompt = `
 {{user}}: Appearance and clothing?
-{{char}}: I am tall, have long hair, and wear a dress.
+{{char}}: I am tall, have long hair, and wear a dress. *curtsies*
 {{user}}: Personality?
-{{char}}: I am kind, caring, and love to help others.
+{{char}}: *picks up coffee* I am kind, caring, and love to help others. *smiles and sips coffee* But, I have a hard time understanding people.
 {{user}}: Backstory?
-{{char}}: I was born in a small village, and I have always wanted to be a hero.
+{{char}}: I was born in a small village *shrugs*, and I have always wanted to be a hero.
 {{user}}: What is your goal?
-{{char}}: I want to save the world from the evil dragon.
+{{char}}: I want to save the world from the evil dragon. *sips coffee and waggles eyebrows* I am the chosen one, after all.
 
 {extracontext}
 
