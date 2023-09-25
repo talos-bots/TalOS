@@ -176,7 +176,7 @@ const ChatLog = (props: ChatLogProps) => {
 						if(construct.greetings.length < 1) return;
 						let randomGreeting = construct?.greetings[Math.floor(Math.random() * construct?.greetings.length)];
 						let newMessage = new Message();
-						newMessage.text = randomGreeting;
+						newMessage.text = randomGreeting.replaceAll("{{user}}", currentUser?.nickname ? (currentUser?.nickname || currentUser?.name) : (currentUser?.name || 'DefaultUser'));
 						newMessage.avatar = construct?.avatar;
 						newMessage.user = construct?.name;
 						newMessage.origin = 'ConstructOS';
