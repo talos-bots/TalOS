@@ -130,7 +130,7 @@ const ConstructsPage = () => {
                     <div className="flex flex-row w-95vw max-w-full gap-2 overflow-x-auto grow-0 lg:gap-2">
                         <div className="flex flex-row max-w-full gap-2 overflow-x-auto grow-0 lg:gap-2 overflow-y-hidden">
                             <Link
-                                className="themed-root-no-padding w-36 min-h-48 flex flex-col justify-center items-center cursor-pointer relative shrink-0"
+                                className="themed-root-no-padding w-36 min-h-48 flex flex-col justify-center items-center cursor-pointer relative shrink-0 min-h-48 h-48"
                                 to={"/constructs/new"}
                             >
                                 <div className="absolute inset-0 bg-themed-root hover:bg-theme-hover-pos flex items-center justify-center rounded-theme-border-radius">
@@ -141,7 +141,7 @@ const ConstructsPage = () => {
                                 </span>
                                 </div>
                             </Link>
-                            <label htmlFor="character-image-input" className="themed-root-no-padding w-36 min-h-48 flex flex-col justify-center items-center cursor-pointer relative shrink-0 grow-0 lg:w-[calc(100% - 2rem)] lg:h-[calc(100%)]" data-tooltip="Import Character Card" id="importCard">
+                            <label htmlFor="character-image-input" className="themed-root-no-padding w-36 min-h-48 flex flex-col justify-center items-center cursor-pointer relative shrink-0 grow-0 min-h-48 h-48" data-tooltip="Import Character Card" id="importCard">
                                 <div className="absolute inset-0 bg-themed-root hover:bg-theme-hover-pos flex items-center justify-center rounded-theme-border-radius">
                                     <span className="text-theme-text text-2xl font-bold justify-center items-center align-middle flex flex-col lg:text-2xl">
                                     Import Character Card
