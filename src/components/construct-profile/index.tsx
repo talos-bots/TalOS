@@ -21,7 +21,7 @@ const ConstructProfile: React.FC<Props> = ({ character, onClick, active }) => {
 
     return (
         <div
-            className={"themed-root-no-padding w-36 min-h-48 flex flex-col justify-center items-center cursor-pointer relative shrink-0 grow-0 pop-in"}
+            className={"themed-root-no-padding w-36 min-h-52 flex flex-col justify-center items-center cursor-pointer relative shrink-0 grow-0 pop-in min-h-52 h-52"}
             onMouseEnter={() => setIsHovered(true)} 
             onMouseLeave={() => setIsHovered(false)} 
             onClick={() => { if (onClick !== undefined) onClick(character) }}
@@ -36,7 +36,7 @@ const ConstructProfile: React.FC<Props> = ({ character, onClick, active }) => {
                     <span className="text-theme-text font-bold justify-center items-center align-middle flex flex-col">
                         New Chat
                         <br/>
-                        <PlusIcon size={48} className="text-theme-text"/>
+                        <PlusIcon size={52} className="text-theme-text"/>
                     </span>
                 </div>
             )}
