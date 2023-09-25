@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import ReactSwitch from "react-switch";
 
 const ChatSettings = () => {
-    const [doGreetings, setDoGreetings] = useState(true);
+    const [doGreetings, setDoGreetings] = useState(false);
     const [characterMode, setCharacterMode] = useState(false);
     const [doMultiline, setDoMultiline] = useState(false);
     const [messagesToSend, setMessagesToSend] = useState<number>(25);

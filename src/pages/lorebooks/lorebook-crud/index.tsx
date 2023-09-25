@@ -233,7 +233,7 @@ const LorebookCrud = (props: LorebookCrudProps) => {
                     <button className="themed-button-pos w-full" onClick={() => setLorebookEntries([...bookEntries, new LoreEntry()])}>Add Entry</button>
                     {Array.isArray(bookEntries) && bookEntries.map((entry, index) => {
                         return (
-                            <EntryCrud key={index} entry={entry} onSave={handleEntrySave} onDelete={handleEntryDelete} onEdit={handleEntryEdit}/>
+                            <EntryCrud key={index + Math.random()} entry={entry} onSave={handleEntrySave} onDelete={handleEntryDelete} onEdit={handleEntryEdit}/>
                         );
                     })}
                 </div>
