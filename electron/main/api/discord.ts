@@ -89,10 +89,6 @@ function createClient(){
                 console.log("Creating image...");
                 await doImageReaction(message as Message);
             }
-
-            if(reaction.emoji.name === '❓'){
-                await getMessageIntent(message as Message);
-            }
         } catch (error) {
             console.error('Something went wrong when fetching the message:', error);
         }
