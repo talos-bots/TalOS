@@ -8,6 +8,7 @@ import { addAttachment, addUser, getUser, updateUser } from "../api/pouchdb";
 import { encode } from 'gpt-tokenizer'
 import { getCaption } from "../model-pipeline/transformers";
 import { cleanEmotes } from "../api/discord";
+import { fillChatContextToLimit } from "./chat-helpers";
 
 export function assembleConstructFromData(data: any){
 	if(data === null) return null;
@@ -106,6 +107,7 @@ export function assembleUserFromData(data: any){
 
 export function assemblePromptFromLog(data: any, messagesToInclude: number = 25){
 	let prompt = '';
+	// let messages = fillChatContextToLimit(data, 2048);
 	let messages = data.messages;
 	messages = messages.slice(-messagesToInclude);
 	for(let i = 0; i < messages.length; i++){

@@ -4705,38 +4705,6 @@ async function doImageReaction(message) {
     message.reply({ files: [attachment] });
   }
 }
-async function getMessageIntent(message) {
-  const text = message.cleanContent;
-  if (text.length < 1)
-    return;
-  const intent = await detectIntent(text);
-  if (intent === null)
-    return;
-  if (intent === void 0)
-    return;
-  if (intent.intent === "none") {
-    message.reply("<@" + message.author.id + `> is not asking for anything.
-Scores are the following:
-**Search:** ${intent.searchScore}
-**Selfie:** ${intent.nudeScore}
-**Extracted Subject:** ${intent.subject}
-**Yes:** ${intent.compliance}`);
-  } else if (intent.intent === "search") {
-    message.reply("<@" + message.author.id + "> is asking to " + intent.intent + `.
-Scores are the following:
-**Search:** ${intent.searchScore}
-**Selfie:** ${intent.nudeScore}
-**Extracted Subject:** ${intent.subject}
-**Yes:** ${intent.compliance}`);
-  } else {
-    message.reply("<@" + message.author.id + "> is asking for an image of " + intent.intent + `.
-Scores are the following:
-**Search:** ${intent.searchScore}
-**Selfie:** ${intent.nudeScore}
-**Extracted Subject:** ${intent.subject}
-**Yes:** ${intent.compliance}`);
-  }
-}
 function DiscordController() {
   getDiscordSettings();
   expressApp.get("/api/discord/channels", (req, res) => {
@@ -5990,9 +5958,6 @@ function createClient() {
       if (reaction.emoji.name === "🖼️") {
         console.log("Creating image...");
         await doImageReaction(message);
-      }
-      if (reaction.emoji.name === "❓") {
-        await getMessageIntent(message);
       }
     } catch (error) {
       console.error("Something went wrong when fetching the message:", error);
