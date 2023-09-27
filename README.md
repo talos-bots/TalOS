@@ -1,5 +1,6 @@
 # ConstructOS
 ## Overview
+- Compatible with OAI keys, Kobold (Normal and CPP), Oobabooga Text Gen WebUI, PALM 2, and Claude and OAI proxies.
 - Chat with AI like in SillyTavern or any other LLM chat app.
 - Desktop app, one install, no NPM I or installation of Python.
 - VectorDB (Long Term Memories)
