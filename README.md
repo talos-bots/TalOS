@@ -46,7 +46,7 @@ https://discord.com/invite/HNSaTjExYy
 ### SMS Bot (with Twilo)
 - Everything the discord bot has, but on your phone's default messaging app.
 ### Stable Diffusion
-- Have your Construct make prompts for you, create images for you, or send you selfies.
+- Have your Construct make prompts for you, create images for you, or send you selfies. **(Done)**
 - Full Discord integration **(Done)**
 - - Use /cosimagine to connect to your local Automatic1111 WebUI instance to generate images on Discord! **(Done)**
   - React to any message with valid text with a 🖼️ and it will generate an image with that prompt! **(Done)**
