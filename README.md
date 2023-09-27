@@ -1,4 +1,4 @@
-![ChatHome](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/d90e2db9-5b9f-4d19-b8a7-a23c48156d90)# ConstructOS
+# ConstructOS
 ## Overview
 - Chat with AI like in SillyTavern or any other LLM chat app.
 - Desktop app, one install, no NPM I or installation of Python.
