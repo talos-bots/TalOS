@@ -1,4 +1,4 @@
-# ConstructOS
+![ChatHome](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/d90e2db9-5b9f-4d19-b8a7-a23c48156d90)# ConstructOS
 ## Overview
 - Chat with AI like in SillyTavern or any other LLM chat app.
 - Desktop app, one install, no NPM I or installation of Python.
@@ -56,25 +56,30 @@ https://discord.com/invite/HNSaTjExYy
 https://github.com/orgs/WaywardWyvernsSoftworks/projects/2
 ## Current State of UI
 ### Homepage
-![Homepage](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/2d0d7937-8f74-4dfc-a085-269e53e6da24)
+![Home](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/08677b3d-501a-46e5-9fd2-687d5173fa39)
 ### Chat Page
-![ChatPage](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/82f48905-0693-496a-bd74-4af142a035d0)
-![ChatSelectionPage](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/74b17b81-e2ce-4cae-824b-b3df4a4a100f)
+![ChatHome](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/9623abf8-0f9c-4c3f-89a1-b9999a5be716)
+![ChatWindow](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/d7fed060-2895-4001-b356-78a6704b09a4)
+![ChatWindow1](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/d8c7184f-c0be-407d-b49e-b3d3d002af72)
+![ChatWindow2](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/b8741460-d373-4a3e-b308-7bef1ed0bd25)
+
 ### Constructs Page
-![ConstructsPageClosed](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/6827b388-e248-4d7c-b295-d28d6cb2335b)
-![ConstructsPageOpen](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/ceab6a40-3efd-4629-9476-b1f68d399358)
-![ConstructCrud1](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/fbde6465-84fa-4033-a175-dc9d0319fdc4)
+![ConstructHome](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/8bfa1a65-0d61-46bf-b24f-98be21b03dbb)
+![ConstructExpand](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/446c8c57-ddbf-4ef0-8766-b69282f2d8ca)
+![ConstructEdit1](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/a5d6c55f-07d4-42e2-820f-8d2cc2558050)
+![ConstructEdit2](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/ca9dba52-f5ce-4e45-ae09-95963dfe4cab)
 ### Lorebooks Page
-![LorebooksPage](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/0a0c87b3-7921-4135-a069-56ea691eabc4)
-![LorebooksPage2](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/04f1cf3a-8da7-4c68-b922-07f486e17a29)
+![LorebookHome](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/3396d216-2d43-4d2d-a250-07333674afbb)
 ### Discord Bot Page
-![DiscordPage](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/58f550c0-ff68-4baa-877a-d1cfce367cea)
+![Discord](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/26ccc4db-ddc1-40b1-9d65-fc98ecaf7b5e)
 ### User Profiles Page
-![UserPage](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/d16c058a-0f77-4311-8582-77db16dfe034)
+![UserHome](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/1b9458fd-de85-4ea9-9459-24785eda5105)
 ### Settings Page
-![SettingsPage](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/acddb68a-18db-477b-8e25-09d0864cda10)
+![Settings](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/af87e37d-fb9d-4dbf-bdb5-a241572bb255)
 ### Atachments Page
-![AttachmentsPage](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/aba101df-86f3-4b79-a80d-dd059c70bb6b)
+![Attachments](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/0788cb50-cfc5-4a75-a1d6-788d57c198a8)
+### Zero Shot
+![ZeroShot](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/38d2599c-7e55-42ec-a490-d9bde82e1638)
 ### Themes
 **Dark Mode (Default)**
 ![Screenshot 2023-09-05 214252](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/9e6c2b91-133c-46b3-9d9f-9c1788199c6e)
