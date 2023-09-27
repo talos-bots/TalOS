@@ -213,3 +213,7 @@ export const getYesNo = async (message: string): Promise<any> => {
         throw new Error(error.response.data.error);
     }
 }
+
+export async function takeSelfie(construct: Construct, intent: string, subject: string): Promise<any> {
+    
+}

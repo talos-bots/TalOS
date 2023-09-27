@@ -289,3 +289,13 @@ export const setCurrentLLMSettingsPreset = async (preset: string): Promise<strin
     const response = await axios.post(`${url}/api/settings/current-preset`, { preset });
     return response.data;
 }
+
+export async function detectChatIntent(text: string): Promise<any> {
+    try {
+        const response = await axios.post('/api/chat/intent', { text });
+        return response.data;
+    } catch (error: any) {
+        console.error("Failed to detect intent:", error.response?.data || error.message);
+        throw error;
+    }
+}

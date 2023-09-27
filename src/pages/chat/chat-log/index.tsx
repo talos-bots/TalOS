@@ -10,7 +10,7 @@ import ChatInfo from "@/pages/chat/chat-info";
 import Loading from "@/components/loading";
 import { User } from "@/classes/User";
 import { addVectorFromMessage } from "@/api/vectorapi";
-import { getDoCaptioning, getDoEmotions, getImageCaption, getTextEmotion } from "@/api/llmapi";
+import { detectChatIntent, getDoCaptioning, getDoEmotions, getImageCaption, getTextEmotion } from "@/api/llmapi";
 import { Attachment } from "@/classes/Attachment";
 import ChatConfigPane from "../chat-config-pane";
 import { Link } from "react-router-dom";
@@ -46,6 +46,8 @@ const ChatLog = (props: ChatLogProps) => {
 	const [hasSentGreetings, setHasSentGreetings] = useState<boolean>(false);
 	const [stopList, setStopList] = useState<string[]>([]);
 	const [isInterrupted, setIsInterrupted] = useState<boolean>(false);
+	const [lastPositiveIntent, setLastPositiveIntent] = useState<any | null>(null);
+	const [botIntent, setBotIntent] = useState<any | null>(null);
 
 	const filteredMessages = messages.filter((message) => {
 		if(searchTerm === "") return true;
@@ -291,6 +293,10 @@ const ChatLog = (props: ChatLogProps) => {
 				constructList.push(construct);
 			}
 		}
+		//@ts-ignore
+		if(newMessage !== undefined && newMessage !== null){
+			handleMessageIntent(newMessage, constructList);
+		}
 		if(constructList.length < 1) return;
 		let mentionedConstruct = findFirstMention(chat.lastMessage.text, constructList);
 		if (mentionedConstruct !== false) {
@@ -451,6 +457,32 @@ const ChatLog = (props: ChatLogProps) => {
 		return chat;
 	}
 
+	// Determines if a user is asking for an action to be performed. Detects if any Constructs have actions enabled, and if so, prepares to get a consent message from the LLM.
+	// After the consent message is received, the action is performed.
+	async function handleMessageIntent(message: Message, constructList: Construct[]) {
+		const actionConstructs = constructList.filter((construct) => {
+			return construct.defaultConfig.doActions === true;
+		});
+		if (actionConstructs.length === 0) return;
+		const intentData = await detectChatIntent(message.text);
+		console.log(intentData);
+		if (intentData === null) return;
+		if(intentData.intent !== "none"){
+			setLastPositiveIntent(intentData);
+		}
+	}
+
+	async function handleBotIntent(message: Message, construct: Construct) {
+		if(lastPositiveIntent === null) return;
+		const actionConstruct = construct.defaultConfig.doActions === true;
+		if (actionConstruct === false) return;
+		const intentData = await detectChatIntent(message.text);
+		if (intentData === null) return;
+		console.log(intentData);
+		setBotIntent(intentData);
+	}
+
+	// Gets the user message data such as emotion, vector, etc.
 	const handlePostUserMessage = async (newMessage: Message) => {
 		if(doEmotions === true){
 			newMessage.emotion = await getTextEmotion(newMessage.text);
@@ -478,6 +510,7 @@ const ChatLog = (props: ChatLogProps) => {
 		}
 	};
 
+	// Calculates whether the bot should respond, and if so, sends a request to generate a response.
 	const doBotReply = async (chat: Chat, activeConstruct: Construct, currentUser: User | null, config: DefaultChatConfig | ConstructChatConfig) => {
 		let botMessage: Message | null = null;
 		if(config === undefined || config === null) return;
@@ -588,6 +621,8 @@ const ChatLog = (props: ChatLogProps) => {
 		}
 		if(botMessage === null){
 			setError("No response from LLM. Check your connection settings and try again.");
+		}else{
+			handleBotIntent(botMessage, activeConstruct);
 		}
 		setChatLog(chat);
 		await updateChat(chat);
