@@ -3,12 +3,13 @@ import { generateContinueChatLog, generateThoughts, getDoMultiLine, regenerateMe
 import { addChat, getChat, getConstruct, updateChat } from '../api/pouchdb';
 import { addUserFromDiscordMessage, assembleChatFromData, assembleConstructFromData, convertDiscordMessageToMessage } from '../helpers/helpers';
 import { AttachmentBuilder, CommandInteraction, EmbedBuilder, Message } from 'discord.js';
-import { deleteMessage, disClient, editMessage, getStopList, isAutoReplyMode, isMultiCharacterMode, registerCommands, sendEmbedAsCharacter, sendMessage, sendMessageAsCharacter, sendMessageEmbed, sendTyping } from '../api/discord';
-import { Alias, ChannelConfigInterface, ChatInterface, ConstructInterface } from '../types/types';
+import { deleteMessage, disClient, editMessage, getStopList, isAutoReplyMode, isMultiCharacterMode, registerCommands, sendAttachment, sendAttachmentAsCharacter, sendEmbedAsCharacter, sendMessage, sendMessageAsCharacter, sendMessageEmbed, sendTyping } from '../api/discord';
+import { Alias, AttachmentInferface, ChannelConfigInterface, ChatInterface, ConstructInterface, MessageInterface } from '../types/types';
 import { addVectorFromMessage } from '../api/vector';
 import { getDefaultCfg, getDefaultHeight, getDefaultHighresSteps, getDefaultNegativePrompt, getDefaultPrompt, getDefaultSteps, getDefaultWidth, makeImage } from '../api/sd';
 import { expressApp, expressAppIO, win } from '..';
 import { detectIntent } from '../helpers/actions-helpers';
+import { createSelfieForConstruct } from '../helpers/discord-helpers';
 
 const store = new Store({
     name: 'discordData',
@@ -24,6 +25,7 @@ let showDiffusionDetails = false;
 let doGeneralPurpose = false;
 let diffusionWhitelist: string[] = [];
 let replaceUser = true;
+let lastIntentData: any = null;
 
 function getDiscordSettings(){
     maxMessages = getMaxMessages();
@@ -301,6 +303,12 @@ export async function handleDiscordMessage(message: Message) {
             return;
         }
     }
+    const intentData = await detectIntent(newMessage.text);
+    if(intentData !== null){
+        if(intentData?.intent !== 'none'){
+            lastIntentData = intentData;
+        }
+    }
     if(message.content.startsWith('-')){
         await updateChat(chatLog);
         return;
@@ -506,6 +514,28 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
     chatLog.messages.push(replyMessage);
     chatLog.lastMessage = replyMessage;
     chatLog.lastMessageDate = replyMessage.timestamp;
+    if(lastIntentData !== null){
+        const currentIntentData = await detectIntent(reply);
+        if(currentIntentData !== null){
+            if(lastIntentData?.intent !== 'search'){
+                if(currentIntentData?.compliance === true){
+                    const imageData = await createSelfieForConstruct(construct, lastIntentData?.intent, currentIntentData?.subject);
+                    if(imageData !== null){
+                        const buffer = Buffer.from(imageData.base64, 'base64');
+                        let attachment = new AttachmentBuilder(buffer, {name: `${imageData.name}`});
+                        if(primaryConstruct === construct._id){
+                            await sendAttachment(message.channel.id, attachment);
+                        }else{
+                            await sendAttachmentAsCharacter(construct, message.channel.id, attachment);
+                        }
+                        lastIntentData = null;
+                        const selfieMessage = createSelfieMessage(imageData.name, construct);
+                        chatLog.messages.push(selfieMessage);
+                    }
+                }
+            }
+        }
+    }
     if(primaryConstruct === construct._id){
         await sendMessage(message.channel.id, reply);
     }else{
@@ -658,6 +688,33 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
         }
     }
     return chatLog;
+}
+
+export function createSelfieMessage(attachmentURL: string, construct: ConstructInterface){
+    const attachment: AttachmentInferface = {
+        _id: new Date().getTime().toString(),
+        name: 'Selfie taken by ' + construct.name,
+        type: 'image/png',
+        data: `/api/images/${attachmentURL}`,
+        fileext: 'png',
+        metadata: ''
+    }
+    const newMessage: MessageInterface = {
+        _id: new Date().getTime().toString(),
+        user: construct.name,
+        avatar: construct.avatar,
+        text: '',
+        userID: construct._id,
+        timestamp: new Date().getTime(),
+        origin: 'Selfie',
+        isHuman: false,
+        isCommand: false,
+        isPrivate: false,
+        participants: [construct._id],
+        attachments: [attachment],
+        isThought: false,
+    }
+    return newMessage;
 }
 
 export async function continueChatLog(interaction: CommandInteraction) {

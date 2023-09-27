@@ -24,7 +24,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
 const electron = require("electron");
 const node_os = require("node:os");
-const node_path = require("node:path");
+const path$1 = require("node:path");
 const path = require("path");
 const discord_js = require("discord.js");
 const Store = require("electron-store");
@@ -33,10 +33,11 @@ const LeveldbAdapter = require("pouchdb-adapter-leveldb");
 const axios = require("axios");
 const openai = require("openai");
 const promises = require("fs/promises");
+const fs = require("node:fs");
 const FormData = require("form-data");
 const vectra = require("vectra");
 require("gpt-tokenizer");
-const fs = require("fs");
+const fs$1 = require("fs");
 const express = require("express");
 const multer = require("multer");
 const cors = require("cors");
@@ -1730,7 +1731,7 @@ async function detectIntent(text) {
   const complianceScore = await determineCompliance(text);
   let nudeIntent = false;
   let nudeScore = 0;
-  const threshold = 0.4;
+  const threshold = 0.46;
   let scoreArray = [];
   for (let index = 0; index < selfieIntentExamples.length; index++) {
     const similarity = await getEmbeddingSimilarity(text, selfieIntentExamples[index]);
@@ -1777,8 +1778,7 @@ async function determineCompliance(text) {
   const yes = intent.labels.findIndex((element) => element === "yes");
   const no = intent.labels.findIndex((element) => element === "no");
   const maybe = intent.labels.findIndex((element) => element === "maybe");
-  console.log("Yes: " + intent.scores[yes] + " No: " + intent.scores[no] + " Maybe: " + intent.scores[maybe]);
-  if (intent.scores[yes] > intent.scores[no] && intent.scores[yes] > intent.scores[maybe]) {
+  if (intent.scores[yes] > intent.scores[no] && intent.scores[yes] > 0.35 && intent.scores[no] < 0.5 && intent.scores[maybe] > intent.scores[no]) {
     compliance = true;
   }
   return compliance;
@@ -3734,6 +3734,9 @@ async function makeImage(prompt, negativePrompt, steps, cfg, width, height, high
       ...assemblePayload
     }
   };
+  const newPath = path$1.join(uploadsPath, fileName);
+  const buffer = Buffer.from(res.data.images[0].split(";base64,").pop(), "base64");
+  await fs.promises.writeFile(newPath, buffer);
   addAttachment(attachment);
   return { name: fileName, base64: res.data.images[0].split(";base64,").pop(), model };
 }
@@ -3792,6 +3795,15 @@ function getTimestamp() {
   const seconds = String(now.getSeconds()).padStart(2, "0");
   return `${year}${month}${day}_${hours}${minutes}${seconds}`;
 }
+async function createSelfieForConstruct(construct, intent, subject) {
+  if (!construct)
+    return null;
+  let prompt = construct.visualDescription + ", " + intent + ", " + subject;
+  const imageData = await txt2img(prompt);
+  if (!imageData)
+    return null;
+  return imageData;
+}
 const store$2 = new Store({
   name: "discordData"
 });
@@ -3800,6 +3812,7 @@ let doStableReactions = false;
 let showDiffusionDetails = false;
 let diffusionWhitelist = [];
 let replaceUser = true;
+let lastIntentData = null;
 function getDiscordSettings() {
   maxMessages = getMaxMessages();
   getDoMultiLine();
@@ -4013,6 +4026,12 @@ async function handleDiscordMessage(message) {
       return;
     }
   }
+  const intentData = await detectIntent(newMessage.text);
+  if (intentData !== null) {
+    if ((intentData == null ? void 0 : intentData.intent) !== "none") {
+      lastIntentData = intentData;
+    }
+  }
   if (message.content.startsWith("-")) {
     await updateChat(chatLog);
     return;
@@ -4210,6 +4229,28 @@ async function doCharacterReply(construct, chatLog, message) {
   chatLog.messages.push(replyMessage);
   chatLog.lastMessage = replyMessage;
   chatLog.lastMessageDate = replyMessage.timestamp;
+  if (lastIntentData !== null) {
+    const currentIntentData = await detectIntent(reply);
+    if (currentIntentData !== null) {
+      if ((lastIntentData == null ? void 0 : lastIntentData.intent) !== "search") {
+        if ((currentIntentData == null ? void 0 : currentIntentData.compliance) === true) {
+          const imageData = await createSelfieForConstruct(construct, lastIntentData == null ? void 0 : lastIntentData.intent, currentIntentData == null ? void 0 : currentIntentData.subject);
+          if (imageData !== null) {
+            const buffer = Buffer.from(imageData.base64, "base64");
+            let attachment = new discord_js.AttachmentBuilder(buffer, { name: `${imageData.name}` });
+            if (primaryConstruct === construct._id) {
+              await sendAttachment(message.channel.id, attachment);
+            } else {
+              await sendAttachmentAsCharacter(construct, message.channel.id, attachment);
+            }
+            lastIntentData = null;
+            const selfieMessage = createSelfieMessage(imageData.name, construct);
+            chatLog.messages.push(selfieMessage);
+          }
+        }
+      }
+    }
+  }
   if (primaryConstruct === construct._id) {
     await sendMessage(message.channel.id, reply);
   } else {
@@ -4361,6 +4402,32 @@ async function doRoundRobin(constructArray, chatLog, message) {
     }
   }
   return chatLog;
+}
+function createSelfieMessage(attachmentURL, construct) {
+  const attachment = {
+    _id: (/* @__PURE__ */ new Date()).getTime().toString(),
+    name: "Selfie taken by " + construct.name,
+    type: "image/png",
+    data: `/api/images/${attachmentURL}`,
+    fileext: "png",
+    metadata: ""
+  };
+  const newMessage = {
+    _id: (/* @__PURE__ */ new Date()).getTime().toString(),
+    user: construct.name,
+    avatar: construct.avatar,
+    text: "",
+    userID: construct._id,
+    timestamp: (/* @__PURE__ */ new Date()).getTime(),
+    origin: "Selfie",
+    isHuman: false,
+    isCommand: false,
+    isPrivate: false,
+    participants: [construct._id],
+    attachments: [attachment],
+    isThought: false
+  };
+  return newMessage;
 }
 async function continueChatLog(interaction) {
   var _a, _b, _c;
@@ -6206,6 +6273,22 @@ async function sendMessage(channelID, message) {
     return channel.send(message);
   }
 }
+async function sendAttachment(channelID, attachment) {
+  if (!isReady)
+    return;
+  if (!disClient.user) {
+    console.error("Discord client user is not initialized.");
+    return;
+  }
+  const channel = await disClient.channels.fetch(channelID);
+  if (!channel)
+    return;
+  if (!attachment)
+    return;
+  if (channel instanceof discord_js.TextChannel || channel instanceof discord_js.DMChannel || channel instanceof discord_js.NewsChannel) {
+    return channel.send({ files: [attachment] });
+  }
+}
 async function sendMessageEmbed(channelID, embed) {
   if (!isReady)
     return;
@@ -6263,6 +6346,22 @@ async function sendEmbedAsCharacter(char, channelID, embed) {
   if (!embed)
     return;
   await webhook.send({ embeds: [embed] });
+}
+async function sendAttachmentAsCharacter(char, channelID, embed) {
+  if (!isReady)
+    return;
+  let webhook = await getWebhookForCharacter(char.name, channelID);
+  if (!webhook) {
+    webhook = await createWebhookForChannel(channelID, char);
+  }
+  if (!webhook) {
+    console.error("Failed to create webhook.");
+    sendMessage(channelID, "*Failed to create webhook. Check the number of webhooks in channel, if it is at 15, run /clearallwebhooks. Otherwise, ask your server adminstrator to give you the permissions they removed like a twat.*");
+    return;
+  }
+  if (!embed)
+    return;
+  await webhook.send({ files: [embed] });
 }
 async function clearWebhooksFromChannel(channelID) {
   if (!isReady)
@@ -7912,8 +8011,8 @@ function requireNode() {
           }
           break;
         case "FILE":
-          var fs$1 = fs;
-          stream2 = new fs$1.SyncWriteStream(fd2, { autoClose: false });
+          var fs2 = fs$1;
+          stream2 = new fs2.SyncWriteStream(fd2, { autoClose: false });
           stream2._type = "fs";
           break;
         case "PIPE":
@@ -7974,7 +8073,7 @@ function requireDestroy() {
     return destroy_1;
   hasRequiredDestroy = 1;
   var EventEmitter = require$$0$5.EventEmitter;
-  var ReadStream = fs.ReadStream;
+  var ReadStream = fs$1.ReadStream;
   var Stream = require$$1$3;
   var Zlib = require$$3$2;
   destroy_1 = destroy;
@@ -42933,9 +43032,9 @@ function requireUrlencoded() {
 })(bodyParser$1, bodyParser$1.exports);
 var bodyParserExports = bodyParser$1.exports;
 const bodyParser = /* @__PURE__ */ getDefaultExportFromCjs(bodyParserExports);
-process.env.DIST_ELECTRON = node_path.join(__dirname, "../");
-process.env.DIST = node_path.join(process.env.DIST_ELECTRON, "../dist");
-process.env.VITE_PUBLIC = process.env.VITE_DEV_SERVER_URL ? node_path.join(process.env.DIST_ELECTRON, "../public") : process.env.DIST;
+process.env.DIST_ELECTRON = path$1.join(__dirname, "../");
+process.env.DIST = path$1.join(process.env.DIST_ELECTRON, "../dist");
+process.env.VITE_PUBLIC = process.env.VITE_DEV_SERVER_URL ? path$1.join(process.env.DIST_ELECTRON, "../public") : process.env.DIST;
 if (node_os.release().startsWith("6.1"))
   electron.app.disableHardwareAcceleration();
 if (process.platform === "win32")
@@ -42948,22 +43047,22 @@ process.env["ELECTRON_DISABLE_SECURITY_WARNINGS"] = "true";
 let isDarwin = process.platform === "darwin";
 exports.win = null;
 const url = process.env.VITE_DEV_SERVER_URL;
-const indexHtml = node_path.join(process.env.DIST, "index.html");
-const modelsPath = node_path.join(process.env.VITE_PUBLIC, "models/");
-const wasmPath = node_path.join(process.env.VITE_PUBLIC, "wasm/");
-const backgroundsPath = node_path.join(process.env.VITE_PUBLIC, "backgrounds/");
-const charactersPath = node_path.join(process.env.VITE_PUBLIC, "defaults/characters/");
+const indexHtml = path$1.join(process.env.DIST, "index.html");
+const modelsPath = path$1.join(process.env.VITE_PUBLIC, "models/");
+const wasmPath = path$1.join(process.env.VITE_PUBLIC, "wasm/");
+const backgroundsPath = path$1.join(process.env.VITE_PUBLIC, "backgrounds/");
+const charactersPath = path$1.join(process.env.VITE_PUBLIC, "defaults/characters/");
 const dataPath = path.join(electron.app.getPath("userData"), "data/");
 const imagesPath = path.join(dataPath, "images/");
 const uploadsPath = path.join(dataPath, "uploads/");
-fs.mkdirSync(dataPath, { recursive: true });
-fs.mkdirSync(imagesPath, { recursive: true });
-fs.mkdirSync(uploadsPath, { recursive: true });
+fs$1.mkdirSync(dataPath, { recursive: true });
+fs$1.mkdirSync(imagesPath, { recursive: true });
+fs$1.mkdirSync(uploadsPath, { recursive: true });
 const store = new Store();
 async function createWindow() {
   exports.win = new electron.BrowserWindow({
     title: "ConstructOS - AI Sandbox",
-    icon: node_path.join(process.env.VITE_PUBLIC, "favicon.ico"),
+    icon: path$1.join(process.env.VITE_PUBLIC, "favicon.ico"),
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
@@ -43124,11 +43223,11 @@ expressApp.post("/api/save-background", (req, res) => {
   const { imageData, name, fileType } = req.body;
   const imagePath = path.join(backgroundsPath, `${name}.${fileType}`);
   const data = Buffer.from(imageData, "base64");
-  fs.writeFileSync(imagePath, data);
+  fs$1.writeFileSync(imagePath, data);
   res.send({ fileName: `${name}.${fileType}` });
 });
 expressApp.get("/api/get-backgrounds", (req, res) => {
-  fs.readdir(backgroundsPath, (err, files) => {
+  fs$1.readdir(backgroundsPath, (err, files) => {
     if (err) {
       res.send({ files: [] });
       return;
@@ -43137,7 +43236,7 @@ expressApp.get("/api/get-backgrounds", (req, res) => {
   });
 });
 expressApp.delete("/api/delete-background/:name", (req, res) => {
-  fs.unlink(path.join(backgroundsPath, req.params.name), (err) => {
+  fs$1.unlink(path.join(backgroundsPath, req.params.name), (err) => {
     if (err) {
       res.send({ success: false });
       return;
@@ -43148,7 +43247,7 @@ expressApp.delete("/api/delete-background/:name", (req, res) => {
 expressApp.get("/api/get-default-characters", (req, res) => {
   const characters = [];
   try {
-    fs.readdirSync(charactersPath).forEach((file) => {
+    fs$1.readdirSync(charactersPath).forEach((file) => {
       if (file.endsWith(".png")) {
         characters.push(file);
       }
@@ -43170,7 +43269,7 @@ electron.ipcMain.on("open-external-url", (event, url2) => {
 async function requestFullDiskAccess() {
   if (process.platform === "darwin") {
     try {
-      fs.readdirSync("/Library/Application Support/com.apple.TCC");
+      fs$1.readdirSync("/Library/Application Support/com.apple.TCC");
     } catch (e) {
       const { response } = await electron.dialog.showMessageBox({
         type: "info",

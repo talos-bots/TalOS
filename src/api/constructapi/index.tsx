@@ -2,6 +2,8 @@ import { url } from "@/App";
 import { Chat } from "@/classes/Chat";
 import { Construct } from "@/classes/Construct";
 import axios from "axios";
+import { uploadImage } from "../baseapi";
+import { sendTxt2Img } from "../sdapi";
 
 export async function constructIsActive(id: string): Promise<boolean> {
     try {
@@ -215,5 +217,35 @@ export const getYesNo = async (message: string): Promise<any> => {
 }
 
 export async function takeSelfie(construct: Construct, intent: string, subject: string): Promise<any> {
-    
+    let visualPrompt = construct.visualDescription;
+    let returnURL = '';
+    visualPrompt += ', ' + intent + ', ' + subject;
+    const imageData = await sendTxt2Img(visualPrompt);
+    if (imageData !== null) {
+        console.log(imageData);
+        // Convert base64 to blob
+        const byteCharacters = atob(imageData.base64);
+        const byteArrays = [];
+        for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+            const slice = byteCharacters.slice(offset, offset + 512);
+            const byteNumbers = new Array(slice.length);
+            for (let i = 0; i < slice.length; i++) {
+                byteNumbers[i] = slice.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            byteArrays.push(byteArray);
+        }
+        const blob = new Blob(byteArrays, { type: "image/png" });
+
+        // Create a File object
+        const newName = Date.now().toString() + '.png'; 
+        const file = new File([blob], newName, { type: "image/png" });
+
+        // Add to FormData and upload
+        const formData = new FormData();
+        formData.append('image', file, newName);
+        uploadImage(formData);
+        returnURL = `/api/images/${newName}`;
+    }
+    return returnURL;
 }

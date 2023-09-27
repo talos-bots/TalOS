@@ -146,6 +146,29 @@ export function createSystemMessage(action: string){
     return newMessage;
 }
 
+export function createSelfieMessage(attachmentURL: string, construct: Construct){
+    const attachment = new Attachment();
+    attachment.type = 'image/png';
+    attachment.data = attachmentURL;
+    attachment.name = 'Selfie taken by ' + construct.name;
+    attachment.fileext = 'png';
+    const newMessage = new Message();
+    newMessage.origin = 'ConstructOS';
+    newMessage.text = '';
+    newMessage.user = construct.name;
+    newMessage.avatar = construct.avatar;
+    newMessage.timestamp = new Date().getTime();
+    newMessage.isCommand = false;
+    newMessage.isPrivate = true;
+    newMessage.isHuman = false;
+    newMessage.participants = [construct._id];
+    newMessage.userID = construct._id;
+    newMessage.emotion = 'neutral';
+    newMessage.isThought = false;
+    newMessage.attachments = [attachment];
+    return newMessage;
+}
+
 export function isConstructMentioned(message: string, char: Construct){
     if((message.toLowerCase().trim().includes(char.name.toLowerCase().trim()) && char.name !== '') || ((message.toLowerCase().trim().includes(char.nickname.toLowerCase().trim()) && char.nickname !== ''))){
 

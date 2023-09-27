@@ -4,7 +4,7 @@ import { Chat } from "@/classes/Chat";
 import { Message } from "@/classes/Message";
 import { getChat, getConstruct, getStorageValue, getUser, saveNewAttachment, saveNewChat, updateChat } from "@/api/dbapi";
 import MessageComponent from "@/pages/chat/chat-log/message";
-import { addUserMessage, createSystemMessage, doSlashCommand, findFirstMention, getLoadingMessage, isConstructMentioned, regenerateMessage, regenerateUserMessage, sendMessage, sendThoughts, wait } from "../helpers";
+import { addUserMessage, createSelfieMessage, createSystemMessage, doSlashCommand, findFirstMention, getLoadingMessage, isConstructMentioned, regenerateMessage, regenerateUserMessage, sendMessage, sendThoughts, wait } from "../helpers";
 import { Alert } from "@material-tailwind/react";
 import ChatInfo from "@/pages/chat/chat-info";
 import Loading from "@/components/loading";
@@ -17,6 +17,8 @@ import { Link } from "react-router-dom";
 import SpriteDisplay from "@/components/sprite";
 import { Construct, ConstructChatConfig, DefaultChatConfig } from "@/classes/Construct";
 import { socket } from "@/App";
+import { takeSelfie } from "@/api/constructapi";
+import e from "express";
 interface ChatLogProps {
 	chatLogID?: string;
 	goBack: () => void;
@@ -47,7 +49,6 @@ const ChatLog = (props: ChatLogProps) => {
 	const [stopList, setStopList] = useState<string[]>([]);
 	const [isInterrupted, setIsInterrupted] = useState<boolean>(false);
 	const [lastPositiveIntent, setLastPositiveIntent] = useState<any | null>(null);
-	const [botIntent, setBotIntent] = useState<any | null>(null);
 
 	const filteredMessages = messages.filter((message) => {
 		if(searchTerm === "") return true;
@@ -295,7 +296,7 @@ const ChatLog = (props: ChatLogProps) => {
 		}
 		//@ts-ignore
 		if(newMessage !== undefined && newMessage !== null){
-			handleMessageIntent(newMessage, constructList);
+			await handleMessageIntent(newMessage, constructList);
 		}
 		if(constructList.length < 1) return;
 		let mentionedConstruct = findFirstMention(chat.lastMessage.text, constructList);
@@ -466,20 +467,38 @@ const ChatLog = (props: ChatLogProps) => {
 		if (actionConstructs.length === 0) return;
 		const intentData = await detectChatIntent(message.text);
 		console.log(intentData);
-		if (intentData === null) return;
+		if (intentData === null) return console.log("No intent data");
 		if(intentData.intent !== "none"){
-			setLastPositiveIntent(intentData);
+			setLastPositiveIntent(intentData)
+			await (async () => {
+				await wait(2000);
+			})();
 		}
 	}
 
 	async function handleBotIntent(message: Message, construct: Construct) {
-		if(lastPositiveIntent === null) return;
+		if(message.isThought === true) return console.log("Message is thought");
 		const actionConstruct = construct.defaultConfig.doActions === true;
-		if (actionConstruct === false) return;
+		if (actionConstruct === false) return console.log("Construct does not do actions");
 		const intentData = await detectChatIntent(message.text);
-		if (intentData === null) return;
+		if (intentData === null) return console.log("No intent data");
 		console.log(intentData);
-		setBotIntent(intentData);
+		if(intentData.compliance === true){
+			if(lastPositiveIntent?.intent !== 'none' && lastPositiveIntent?.intent !== 'search'){
+				const selfieURL = await takeSelfie(construct, lastPositiveIntent.intent, intentData.subject);
+				if(selfieURL !== ''){
+					const selfieMessage = createSelfieMessage(selfieURL, construct);
+					chatLog?.addMessage(selfieMessage);
+					setMessages(prevMessages => [...prevMessages, selfieMessage]);
+					if(chatLog !== null)
+					await updateChat(chatLog);
+					setChatLog(chatLog);
+					setLastPositiveIntent(null);
+				}else{
+					console.log("No selfie URL");
+				}
+			}
+		}
 	}
 
 	// Gets the user message data such as emotion, vector, etc.

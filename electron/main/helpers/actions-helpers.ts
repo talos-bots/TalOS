@@ -81,7 +81,7 @@ async function detectIntent(text: string){
     let intent: string = 'none'
     let nudeIntent: boolean = false;
     let nudeScore: number = 0;
-    const threshold: number = 0.4;
+    const threshold: number = 0.46;
     let scoreArray: number[]= [];
     for(let index = 0; index < selfieIntentExamples.length; index++){
         const similarity = await getEmbeddingSimilarity(text, selfieIntentExamples[index])
@@ -128,8 +128,7 @@ async function determineCompliance(text: string){
     const yes = intent.labels.findIndex((element: string) => element === 'yes');
     const no = intent.labels.findIndex((element: string) => element === 'no');
     const maybe = intent.labels.findIndex((element: string) => element === 'maybe');
-    console.log('Yes: ' + intent.scores[yes] + ' No: ' + intent.scores[no] + ' Maybe: ' + intent.scores[maybe])
-    if(intent.scores[yes] > intent.scores[no] && intent.scores[yes] > intent.scores[maybe]){
+    if(intent.scores[yes] > intent.scores[no] && intent.scores[yes] > 0.35 && intent.scores[no] < 0.5 && intent.scores[maybe] > intent.scores[no]){
         compliance = true;
     }
     return compliance;
