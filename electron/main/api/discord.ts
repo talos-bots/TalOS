@@ -359,6 +359,21 @@ export async function sendMessage(channelID: Snowflake, message: string){
     }
 }
 
+export async function sendAttachment(channelID: Snowflake, attachment: any){
+    if(!isReady) return;
+    if (!disClient.user) {
+        console.error("Discord client user is not initialized.");
+        return;
+    }
+    const channel = await disClient.channels.fetch(channelID);
+    if(!channel) return;
+    if(!attachment) return;
+    // Check if the channel is one of the types that can send messages
+    if (channel instanceof TextChannel || channel instanceof DMChannel || channel instanceof NewsChannel) {
+        return channel.send({files: [attachment]});
+    }
+}
+
 export async function sendReply(message: Message | CommandInteraction, reply: string){
     if(!isReady) return;
     if (!disClient.user) {
@@ -430,6 +445,22 @@ export async function sendEmbedAsCharacter(char: ConstructInterface, channelID: 
     }
     if(!embed) return;
     await webhook.send({embeds: [embed]});
+}
+
+export async function sendAttachmentAsCharacter(char: ConstructInterface, channelID: Snowflake, embed: any){
+    if(!isReady) return;
+    let webhook = await getWebhookForCharacter(char.name, channelID);
+    
+    if (!webhook) {
+        webhook = await createWebhookForChannel(channelID, char);
+    }
+    if (!webhook) {
+        console.error("Failed to create webhook.");
+        sendMessage(channelID, '*Failed to create webhook. Check the number of webhooks in channel, if it is at 15, run /clearallwebhooks. Otherwise, ask your server adminstrator to give you the permissions they removed like a twat.*');
+        return;
+    }
+    if(!embed) return;
+    await webhook.send({files: [embed]})
 }
 
 export async function clearWebhooksFromChannel(channelID: Snowflake): Promise<void> {

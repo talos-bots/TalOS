@@ -2,7 +2,9 @@ import axios from 'axios';
 import Store from 'electron-store';
 import { AttachmentInferface } from '../types/types';
 import { addAttachment } from './pouchdb';
-import { expressApp } from '..';
+import { expressApp, uploadsPath } from '..';
+import path from 'node:path';
+import fs from 'node:fs';
 const store = new Store({
     name: 'stableDiffusionData',
 });
@@ -378,6 +380,7 @@ export async function makeImage(prompt: string, negativePrompt?: string, steps?:
         return null;
     }
     let fileName = `image_${getTimestamp()}.png`;
+
     const assemblePayload = JSON.parse(data);
     const attachment: AttachmentInferface = {
         _id: (new Date().getTime()).toString(),
@@ -390,6 +393,10 @@ export async function makeImage(prompt: string, negativePrompt?: string, steps?:
             ...assemblePayload
         }
     }
+    // Save image to uploads folder
+    const newPath = path.join(uploadsPath, fileName);
+    const buffer = Buffer.from(res.data.images[0].split(';base64,').pop(), 'base64');
+    await fs.promises.writeFile(newPath, buffer);
     addAttachment(attachment);
     return {name: fileName, base64: res.data.images[0].split(';base64,').pop(), model: model};
 }

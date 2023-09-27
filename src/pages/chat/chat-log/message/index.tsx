@@ -139,19 +139,20 @@ const MessageComponent = ({ message, onDelete, onEdit, onRegenerate, onSplit, on
                             <div className="flex flex-row gap-2">
                                 {attachments.map((attachment, index) => {
                                     let newData = attachment.data;
-                                    if(attachment.type === "image/png") {
+                                    if(attachment.type === "image/png" && !attachment.data.startsWith("/api")) {
                                         newData = "data:image/png;base64," + newData;
-                                    } else if(attachment.type === "image/jpeg") {
+                                    } else if(attachment.type === "image/jpeg" && !attachment.data.startsWith("/api")) {
                                         newData = "data:image/jpeg;base64," + newData;
-                                    } else if(attachment.type === "image/gif") {
+                                    } else if(attachment.type === "image/gif" && !attachment.data.startsWith("/api")) {
                                         newData = "data:image/gif;base64," + newData;
-                                    } else if(attachment.type === "image/webp") {
+                                    } else if(attachment.type === "image/webp" && !attachment.data.startsWith("/api")) {
                                         newData = "data:image/webp;base64," + newData;
-                                    }else if(!attachment.data.startsWith("http")){
+                                    }else if(!attachment.data.startsWith("http") && !attachment.data.startsWith("/api")){
                                         newData = `data:${attachment.type};base64,` + newData;
                                     }else{
                                         newData = attachment.data;
                                     }
+                                    console.log(newData);
                                     if(attachment.type === "image/png" || attachment.type === "image/jpeg" || attachment.type === "image/gif" || attachment.type === "image/webp"){
                                         return (
                                             <div key={index}>
