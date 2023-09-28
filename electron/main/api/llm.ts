@@ -283,7 +283,7 @@ export async function getStatus(testEndpoint?: string, testEndpointType?: string
         case 'Ooba':
             endpointURLObject = new URL(endpointUrl);
             try{
-                response = await axios.get(`${endpointURLObject.protocol}//${endpointURLObject.hostname}:5000/api/v1/model`);
+                response = await axios.get(`${endpointURLObject.protocol}//${endpointURLObject.hostname}:${endpointURLObject.port}/api/v1/model`);
                 if (response.status === 200) {
                     return response.data.result;
                 } else {
@@ -405,7 +405,7 @@ export const generateText = async (
                 'stopping_strings': stops
                 }
                 console.log(oobaPayload)
-                response = await axios.post(`${endpointURLObject.protocol}//${endpointURLObject.hostname}:5000/api/v1/generate`, oobaPayload);
+                response = await axios.post(`${endpointURLObject.protocol}//${endpointURLObject.hostname}:${endpointURLObject.port}/api/v1/generate`, oobaPayload);
                 console.log(response.data)
                 if (response.status === 200) {
                     results = response.data['results'][0]['text'];
