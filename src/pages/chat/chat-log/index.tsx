@@ -49,6 +49,7 @@ const ChatLog = (props: ChatLogProps) => {
 	const [stopList, setStopList] = useState<string[]>([]);
 	const [isInterrupted, setIsInterrupted] = useState<boolean>(false);
 	const [lastPositiveIntent, setLastPositiveIntent] = useState<any | null>(null);
+	const [isTyping, setIsTyping] = useState<boolean>(false);
 
 	const filteredMessages = messages.filter((message) => {
 		if(searchTerm === "") return true;
@@ -402,6 +403,7 @@ const ChatLog = (props: ChatLogProps) => {
 	};	
 
 	const getBotResponse = async (chat: Chat, activeConstruct: Construct, currentUser: User | null) => {
+		setIsTyping(true);
 		let config = activeConstruct?.defaultConfig;
 		if(config === undefined || config === null) return;
 		for(let i = 0; i < chat.chatConfigs.length; i++){
@@ -455,6 +457,7 @@ const ChatLog = (props: ChatLogProps) => {
 				}
 			}
 		}
+		setIsTyping(false);
 		return chat;
 	}
 
@@ -675,6 +678,7 @@ const ChatLog = (props: ChatLogProps) => {
 
 	const onRegenerate = async (messageID: string, messageText: string) => {
 		if(chatLog === null) return;
+		setIsTyping(true);
 		await regenerateMessage(chatLog, messageText, messageID).then((newMessage) => {
 			if(newMessage === null) return;
 			chatLog.editMessageText(messageID, newMessage);
@@ -687,6 +691,7 @@ const ChatLog = (props: ChatLogProps) => {
 			});
 			setMessages(newMessages);
 		});
+		setIsTyping(false);
 	}
 
 	const userRegenerate = async (messageID: string, messageText: string) => {

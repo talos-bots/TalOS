@@ -42,7 +42,9 @@ export function addUserMessage(messageText: string, user: User | null, attachmen
 
 export async function sendMessage(chatlog: Chat, construct: Construct, user: User | null, multiline?: boolean, numberOfMessagesToSend: number = 25) {
     if (!chatlog.constructs || chatlog.constructs.length === 0) return null;
-    let response = await generateContinueChatLog(construct, chatlog, user ? (user.nickname || user.name) : 'DefaultUser', numberOfMessagesToSend, undefined, undefined, undefined, multiline);
+    let username = user ? (user.nickname || user.name) : 'DefaultUser';
+    console.log('Sending message from ' + username);
+    let response = await generateContinueChatLog(construct, chatlog, username, numberOfMessagesToSend, undefined, undefined, undefined, multiline);
     if (!response) return null;
     let newMessage = new Message();
     newMessage.origin = 'ConstructOS';
