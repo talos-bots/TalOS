@@ -299,8 +299,6 @@ export async function handleDiscordMessage(message: Message) {
         }
         if(chatLog.messages.length > 0){
             await addChat(chatLog);
-        }else{
-            return;
         }
     }
     const intentData = await detectIntent(newMessage.text);

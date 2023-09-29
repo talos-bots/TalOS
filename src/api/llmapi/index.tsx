@@ -299,3 +299,28 @@ export async function detectChatIntent(text: string): Promise<any> {
         throw error;
     }
 }
+
+export type TokenType = 'LLaMA' | 'GPT'
+interface TokenizerResponse {
+    tokenizer: TokenType;
+}
+
+export async function setTokenizer(tokenizer: string): Promise<TokenType> {
+    try {
+        const response = await axios.post('/api/settings/tokenizer', { tokenizer });
+        return response.data.tokenizer;
+    } catch (error: any) {
+        console.error("Failed to set tokenizer:", error.response?.data || error.message);
+        throw error;
+    }
+}
+
+export async function getTokenizer(): Promise<TokenType> {
+    try {
+        const response = await axios.get('/api/settings/tokenizer');
+        return response.data.tokenizer;
+    } catch (error: any) {
+        console.error("Failed to retrieve tokenizer:", error.response?.data || error.message);
+        throw error;
+    }
+}

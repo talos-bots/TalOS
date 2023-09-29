@@ -1887,6 +1887,7 @@ let connectionPresets = store$5.get("connectionPresets", []);
 let currentConnectionPreset = store$5.get("currentConnectionPreset", "");
 let settingsPresets = store$5.get("settingsPresets", []);
 let currentSettingsPreset = store$5.get("currentSettingsPreset", "");
+let selectedTokenizer = store$5.get("selectedTokenizer", "LLaMA");
 const getLLMConnectionInformation = () => {
   return { endpoint, endpointType, password, settings, hordeModel, stopBrackets };
 };
@@ -1994,6 +1995,13 @@ const setCurrentSettingsPreset = (newCurrentSettingsPreset) => {
 };
 const getCurrentSettingsPreset = () => {
   return currentSettingsPreset;
+};
+const getSelectedTokenizer = () => {
+  return selectedTokenizer;
+};
+const setSelectedTokenizer = (newSelectedTokenizer) => {
+  store$5.set("selectedTokenizer", newSelectedTokenizer);
+  selectedTokenizer = newSelectedTokenizer;
 };
 async function getStatus(testEndpoint, testEndpointType) {
   var _a, _b, _c;
@@ -2639,6 +2647,22 @@ function LanguageModelAPI() {
       res.status(500).send({ error: error.message });
     });
   });
+  expressApp.post("/api/settings/tokenizer", (req, res) => {
+    try {
+      setSelectedTokenizer(req.body.tokenizer);
+      res.json({ tokenizer: getSelectedTokenizer() });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
+  });
+  expressApp.get("/api/settings/tokenizer", (req, res) => {
+    try {
+      const tokenizer = getSelectedTokenizer();
+      res.json({ tokenizer });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
+  });
 }
 async function getAllVectors(schemaName) {
   try {
@@ -3152,7 +3176,7 @@ function breakUpCommands(charName, commandString, user = "You", stopList = [], d
     if (lineToTest.startsWith(`${charName}:`)) {
       isFirstLine = false;
       if (currentCommand !== "") {
-        currentCommand = currentCommand.replace(new RegExp(`${charName}:`, "g"), "");
+        currentCommand = currentCommand.replaceAll(`${charName}:`, "");
         formattedCommands.push(currentCommand.trim());
       }
       currentCommand = lines[i];
@@ -3165,7 +3189,7 @@ function breakUpCommands(charName, commandString, user = "You", stopList = [], d
     }
   }
   if (currentCommand !== "") {
-    formattedCommands.push(currentCommand);
+    formattedCommands.push(currentCommand.replaceAll(`${charName}:`, ""));
   }
   let final = formattedCommands.join("\n");
   return final;
@@ -4022,8 +4046,6 @@ async function handleDiscordMessage(message) {
     };
     if (chatLog.messages.length > 0) {
       await addChat(chatLog);
-    } else {
-      return;
     }
   }
   const intentData = await detectIntent(newMessage.text);

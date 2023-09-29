@@ -18,7 +18,7 @@ type ContextRatio = {
     lorebook: number;
     construct: number;
 }
-
+type TokenType = 'LLaMA' | 'GPT';
 type EndpointType = 'Kobold' | 'Ooba' | 'OAI' | 'Horde' | 'P-OAI' | 'P-Claude' | 'PaLM';
 
 type OAI_Model = 'gpt-3.5-turbo-16k' | 'gpt-4' | 'gpt-3.5-turbo' | 'gpt-3.5-turbo-16k-0613' | 'gpt-3.5-turbo-0613' | 'gpt-3.5-turbo-0301' | 'gpt-4-0314' | 'gpt-4-0613';
@@ -127,6 +127,7 @@ let connectionPresets = store.get('connectionPresets', []) as ConnectionPreset[]
 let currentConnectionPreset = store.get('currentConnectionPreset', '') as string;
 let settingsPresets = store.get('settingsPresets', []) as SettingsPreset[];
 let currentSettingsPreset = store.get('currentSettingsPreset', '') as string;
+let selectedTokenizer = store.get('selectedTokenizer', 'LLaMA') as TokenType;
 
 const getLLMConnectionInformation = () => {
     return { endpoint, endpointType, password, settings, hordeModel, stopBrackets };
@@ -257,6 +258,15 @@ export const setCurrentSettingsPreset = (newCurrentSettingsPreset: string) => {
 export const getCurrentSettingsPreset = () => {
     return currentSettingsPreset;
 };
+
+export const getSelectedTokenizer = () => {
+    return selectedTokenizer;
+}
+
+export const setSelectedTokenizer = (newSelectedTokenizer: TokenType) => {
+    store.set('selectedTokenizer', newSelectedTokenizer);
+    selectedTokenizer = newSelectedTokenizer;
+}
 
 export async function getStatus(testEndpoint?: string, testEndpointType?: string){
     let endpointUrl = testEndpoint ? testEndpoint : endpoint;
@@ -972,5 +982,23 @@ export function LanguageModelAPI(){
         }).catch(error => {
             res.status(500).send({ error: error.message });
         });
+    });
+
+    expressApp.post('/api/settings/tokenizer', (req, res) => {
+        try {
+            setSelectedTokenizer(req.body.tokenizer);
+            res.json({ tokenizer: getSelectedTokenizer() });
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
+    });
+
+    expressApp.get('/api/settings/tokenizer', (req, res) => {
+        try {
+            const tokenizer = getSelectedTokenizer();
+            res.json({ tokenizer });
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
     });
 }

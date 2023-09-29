@@ -7,7 +7,7 @@ import { sendTxt2Img } from "../sdapi";
 
 export async function constructIsActive(id: string): Promise<boolean> {
     try {
-        const response = await axios.post(`${url}/api/construct/is-active`, { construct: id });
+        const response = await axios.post(`${url}/api/constructs/is-active`, { construct: id });
         return response.data.isActive;
     } catch (error) {
         console.error("Error checking if construct is active:", error);

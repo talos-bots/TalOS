@@ -18,6 +18,7 @@ import { confirmModal } from "../confirm-modal";
 import Loading from "../loading";
 import { getImageURL, uploadImage } from "@/api/baseapi";
 import AutoFillGenerator, { fieldTypes } from "./auto-fill-generator";
+import { getGPTTokens, getLlamaTokens, getTokenizer } from "@/api/llmapi";
 
 const commandTypes = [
     {
@@ -85,24 +86,60 @@ const ConstructManagement = (props: ConstructManagementProps) => {
     const [showAutoComplete, setShowAutoComplete] = useState<boolean>(false);
     const [selectedField, setSelectedField] = useState<fieldTypes | null>(null);
     const [currentState, setCurrentState] = useState<Construct | null>(null);
+    const [totalTokens, setTotalTokens] = useState<number>(0);
 
     const makeActive = async () => {
         if(constructState !== null) {
             await addConstructToActive(constructState._id);
+            setIsActive(true);
         }
     }
 
     const makePrimary = async () => {
         if(constructState !== null) {
             await setConstructAsPrimary(constructState._id);
+            setIsActive(true);
+            setIsPrimary(true);
         }
     }
 
     const makeInactive = async () => {
         if(constructState !== null) {
             await removeConstructFromActive(constructState._id);
+            setIsActive(false);
+            setIsPrimary(false);
         }
     }
+    async function getTokenCount() {
+        let totalText = '';
+        totalText += constructBackground;
+        totalText += constructPersonality;
+        totalText += constructThoughtPattern;
+        totalText += constructVisualDescription;
+        totalText += constructAuthorsNote;
+        totalText += constructCommands.join(' ');
+        totalText += constructFarewells.join(' ');
+        totalText += constructGreetings.join(' ');
+        totalText += constructInterests.join(' ');
+        let tokenizer = await getTokenizer();
+        let tokens: number;
+        switch (tokenizer) {
+            case "LLaMA":
+                tokens = getLlamaTokens(totalText);
+                break;
+            case "GPT":
+                tokens = getGPTTokens(totalText);
+                break;
+            default:
+                tokens = getLlamaTokens(totalText);
+                break;
+        }
+        setTotalTokens(tokens);
+    }
+
+    useEffect(() => {
+        getTokenCount();
+    }, [constructBackground, constructPersonality, constructThoughtPattern, constructVisualDescription, constructAuthorsNote, constructCommands, constructFarewells, constructGreetings, constructInterests]);
 
     const generateConstructImage = async () => {
         setWaitingForImage(true);
@@ -449,6 +486,10 @@ const ConstructManagement = (props: ConstructManagementProps) => {
                                     value={constructName}
                                     onChange={(event) => setConstructName(event.target.value)}
                                 />
+                                <div className="text-left w-full">
+                                    <p className="font-semibold gap-2 flex pb-1">Total Tokens</p>
+                                    <input disabled={true} className="themed-input w-full h-1/2" value={totalTokens}/>
+                                </div>
                             </div>
                             <div className="flex flex-col h-3/6 w-full items-center justify-center">
                             <label htmlFor="image-upload" className="relative">

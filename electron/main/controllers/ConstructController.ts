@@ -436,7 +436,7 @@ export function breakUpCommands(charName: string, commandString: string, user = 
             isFirstLine = false;
             if (currentCommand !== '') {
                 // Push the current command to the formattedCommands array
-                currentCommand = currentCommand.replace(new RegExp(`${charName}:`, 'g'), '')
+                currentCommand = currentCommand.replaceAll(`${charName}:`, '')
                 formattedCommands.push(currentCommand.trim());
             }
             currentCommand = lines[i];
@@ -450,7 +450,7 @@ export function breakUpCommands(charName: string, commandString: string, user = 
     
     // Don't forget to add the last command
     if (currentCommand !== '') {
-        formattedCommands.push(currentCommand);
+        formattedCommands.push(currentCommand.replaceAll(`${charName}:`, ''));
     }
     
     let final = formattedCommands.join('\n');
