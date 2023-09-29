@@ -6467,7 +6467,16 @@ async function sendMessage(channelID, message) {
   if (message.trim().length < 1)
     return;
   if (channel instanceof discord_js.TextChannel || channel instanceof discord_js.DMChannel || channel instanceof discord_js.NewsChannel) {
-    return channel.send(message);
+    if (message.length > 1900) {
+      const messageParts = message.match(/[\s\S]{1,1900}/g);
+      if (messageParts) {
+        for (const part of messageParts) {
+          await channel.send(part);
+        }
+      }
+    } else {
+      await channel.send(message);
+    }
   }
 }
 async function sendAttachment(channelID, attachment) {
@@ -6526,7 +6535,16 @@ async function sendMessageAsCharacter(char, channelID, message) {
   }
   if (message.trim().length < 1)
     return;
-  await webhook.send(message);
+  if (message.length > 1900) {
+    const messageParts = message.match(/[\s\S]{1,1900}/g);
+    if (messageParts) {
+      for (let part in messageParts) {
+        await webhook.send(part);
+      }
+    }
+  } else {
+    await webhook.send(message);
+  }
 }
 async function sendEmbedAsCharacter(char, channelID, embed) {
   if (!isReady)

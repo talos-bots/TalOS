@@ -358,9 +358,20 @@ export async function sendMessage(channelID: Snowflake, message: string){
     if(message.trim().length < 1) return;
     // Check if the channel is one of the types that can send messages
     if (channel instanceof TextChannel || channel instanceof DMChannel || channel instanceof NewsChannel) {
-        return channel.send(message);
+        // if the message is longer than 1900 characters, split it into multiple messages
+        if (message.length > 1900) {
+            const messageParts = message.match(/[\s\S]{1,1900}/g);
+            if (messageParts) {
+                for (const part of messageParts) {
+                    await channel.send(part);
+                }
+            }
+        } else {
+            await channel.send(message);
+        }
     }
 }
+
 
 export async function sendAttachment(channelID: Snowflake, attachment: any){
     if(!isReady) return;
@@ -431,7 +442,18 @@ export async function sendMessageAsCharacter(char: ConstructInterface, channelID
         return;
     }
     if(message.trim().length < 1) return;
-    await webhook.send(message);
+    // if the message is longer than 1900 characters send multiple
+
+    if(message.length > 1900){
+        const messageParts = message.match(/[\s\S]{1,1900}/g);
+        if(messageParts){
+            for(let part in messageParts){
+                await webhook.send(part)
+            }
+        }
+    }else{
+        await webhook.send(message)
+    }
 }
 
 export async function sendEmbedAsCharacter(char: ConstructInterface, channelID: Snowflake, embed: any): Promise<void> {
