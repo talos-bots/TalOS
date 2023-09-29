@@ -46,7 +46,10 @@ function createClient(){
         }
         if(message.content.startsWith('.') && !message.content.startsWith('...')) return;
         if(isRegistered || message.channel.isDMBased()){
-            if(message.channelId === processingMessage?.channelId){
+            console.log("Message received...");
+            console.log("Message ID:", message.id);
+            if(message.channelId === processingMessage?.channelId && message.id !== processingMessage?.id){
+                console.log("Message is not the same as the one being processed, ignoring...");
                 setInterrupted();
             }
             messageQueue.push(message);

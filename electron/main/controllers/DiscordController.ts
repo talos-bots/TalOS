@@ -251,11 +251,13 @@ export const isChannelRegistered = (channel: string): boolean => {
     }
     return false;
 }
+
 export function setInterrupted(){
     isInterrupted = true;
 }
 
 let isInterrupted = false;
+
 export async function handleDiscordMessage(message: Message) {
     const activeConstructs = retrieveConstructs();
     if(activeConstructs.length < 1) return;
@@ -300,6 +302,12 @@ export async function handleDiscordMessage(message: Message) {
         if(chatLog.messages.length > 0){
             await addChat(chatLog);
         }
+    }
+    if(chatLog.messages.length === 1){
+        isInterrupted = false;
+    }
+    if(!chatLog.messages.includes(newMessage)){
+        chatLog.messages.push(newMessage);
     }
     const intentData = await detectIntent(newMessage.text);
     if(intentData !== null){
@@ -411,6 +419,7 @@ export async function handleDiscordMessage(message: Message) {
                 }
             }
         }else{
+            console.log('single character mode')
             let config = constructArray[0].defaultConfig;
             if(chatLog.chatConfigs !== undefined && chatLog.chatConfigs.length > 0){
                 for(let j = 0; j < chatLog.chatConfigs.length; j++){
@@ -420,11 +429,13 @@ export async function handleDiscordMessage(message: Message) {
                     }
                 }
             }
-            if(!config.doLurk === true){
+            if(!config.doLurk){
+                console.log('not lurking')
                 let wasMentioned = isMentioned(chatLog.lastMessage.text, constructArray[0]) && chatLog.lastMessage.isHuman;
                 if(wasMentioned){
                     if(config.replyToUserMention >= Math.random()){
                         sendTyping(message);
+                        console.log('replying to user mention')
                         let replyLog = await doCharacterReply(constructArray[0], chatLog, message);
                         if(replyLog !== undefined){
                             chatLog = replyLog;
@@ -432,6 +443,7 @@ export async function handleDiscordMessage(message: Message) {
                     }
                 }else{
                     if(config.replyToUser >= Math.random()){
+                        console.log('replying to user')
                         sendTyping(message);
                         let replyLog = await doCharacterReply(constructArray[0], chatLog, message);
                         if(replyLog !== undefined){
@@ -439,6 +451,8 @@ export async function handleDiscordMessage(message: Message) {
                         }
                     }
                 }
+            }else{
+                console.log('lurking')
             }
         }
     }else if (mode === 'Construct'){
@@ -451,6 +465,7 @@ export async function handleDiscordMessage(message: Message) {
 
 async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInterface, message: Message | CommandInteraction){
     if(isInterrupted){
+        console.log('interrupted')
         return chatLog;
     }
     let stopList = undefined;
@@ -481,7 +496,10 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
             }
         }
     }
-    if(message.channel === null) return;
+    if(message.channel === null){
+        console.log('channel is null')
+        return chatLog;
+    }
     sendTyping(message);
     const result = await generateContinueChatLog(construct, chatLog, username, maxMessages, stopList, undefined, undefined, getDoMultiLine(), replaceUser);
     let reply: string;
@@ -489,9 +507,11 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
         reply = result;
     } else {
         if(isInterrupted){
+            console.log('interrupted')
             return chatLog;
         }
         sendMessage(message.channel.id, '**No response from LLM. Check your endpoint or settings and try again.**');
+        console.log('no response from LLM')
         return chatLog;
     }
     const replyMessage = {
@@ -535,13 +555,16 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
         }
     }
     if(primaryConstruct === construct._id){
+        console.log('sending message as primary')
         await sendMessage(message.channel.id, reply);
     }else{
+        console.log('sending message as character')
         await sendMessageAsCharacter(construct, message.channel.id, reply);
     }
     if(construct.defaultConfig.haveThoughts && !construct.defaultConfig.thinkBeforeChat){
         if(construct.defaultConfig.thoughtChance >= Math.random()){
             sendTyping(message);
+            console.log('thinking after chat')
             let thoughtChatLog = await doCharacterThoughts(construct, chatLog, message);
             if(thoughtChatLog !== undefined){
                 chatLog = thoughtChatLog;
@@ -570,10 +593,12 @@ async function doCharacterThoughts(construct: ConstructInterface, chatLog: ChatI
     }
     if(message.channel === null) return;
     if(isInterrupted){
+        console.log('interrupted')
         return chatLog;
     }
     const result = await generateThoughts(construct, chatLog, username, maxMessages, getDoMultiLine(), replaceUser);
     if(isInterrupted){
+        console.log('interrupted')
         return chatLog;
     }
     let reply: string;
@@ -581,6 +606,7 @@ async function doCharacterThoughts(construct: ConstructInterface, chatLog: ChatI
         reply = result;
     } else {
         if(isInterrupted){
+            console.log('interrupted')
             return chatLog;
         }
         sendMessage(message.channel.id, '**No response from LLM. Check your endpoint or settings and try again.**');
@@ -622,7 +648,10 @@ async function doCharacterThoughts(construct: ConstructInterface, chatLog: ChatI
 }
 
 async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatInterface, message: Message | CommandInteraction){
-    if(message.channel === null) return;
+    if(message.channel === null){
+        console.log('channel is null')
+        return chatLog;
+    }
     for(let i = 0; i < constructArray.length; i++){
         if(isInterrupted){
             break;
@@ -644,6 +673,7 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
         if(wasMentionedByHuman){
             if(config.replyToUserMention >= Math.random()){
                 if(isInterrupted){
+                    console.log('interrupted')
                     return chatLog;
                 }
                 let replyLog = await doCharacterReply(constructArray[i], chatLog, message);
@@ -654,6 +684,7 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
         }else if(wasMentioned && chatLog.lastMessage.userID !== constructArray[i]._id){
             if(config.replyToConstructMention >= Math.random()){
                 if(isInterrupted){
+                    console.log('interrupted')
                     return chatLog;
                 }
                 let replyLog = await doCharacterReply(constructArray[i], chatLog, message);
@@ -665,6 +696,7 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
             if(wasHuman){
                 if(config.replyToUser >= Math.random()){
                     if(isInterrupted){
+                        console.log('interrupted')
                         return chatLog;
                     }
                     let replyLog = await doCharacterReply(constructArray[i], chatLog, message);
@@ -675,6 +707,7 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
             }else{
                 if(config.replyToConstruct >= Math.random()){
                     if(isInterrupted){
+                        console.log('interrupted')
                         return chatLog;
                     }
                     let replyLog = await doCharacterReply(constructArray[i], chatLog, message);
