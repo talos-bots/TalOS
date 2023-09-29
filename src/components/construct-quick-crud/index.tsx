@@ -171,7 +171,7 @@ const ConstructQuickCrud = (props: ConstructManagementProps) => {
     }
 
     useEffect(() => {
-        if(currentState !== null) {
+        if(passedConstruct !== null) {
             saveConstruct();
         }
     }, [constructName, constructImage, constructNickname, constructCommands, constructVisualDescription, constructPersonality, constructBackground, constructRelationships, constructInterests, constructGreetings, constructFarewells, constructAuthorsNote, constructSprites, constructDefaultChatConfig, constructThoughtPattern]);

@@ -27,7 +27,7 @@ const ChatConfigPane = (props: ChatConfigPaneProps) => {
     const [messagesToSend, setMessagesToSend] = useState<number>(25);
     const [page, setPage] = useState<number>(1);
     const [swipeDirection, setSwipeDirection] = useState<string>("none");
-    const [selectedConstructID, setSelectedConstructID] = useState<string>("");
+    const [selectedConstructID, setSelectedConstructID] = useState<Construct | null>(null);
 
     useEffect(() => {
         if(chat?._id === 'activePool'){
@@ -204,18 +204,18 @@ const ChatConfigPane = (props: ChatConfigPaneProps) => {
                     <h3 className="font-bold text-center">Construct Details</h3>
                     <select
                         className="themed-input"
-                        value={selectedConstructID}
-                        onChange={(e) => setSelectedConstructID(e.target.value)}
-                    >
+                        value={selectedConstructID?._id || "none"}
+                        onChange={(e) => setSelectedConstructID(e.target.value === "none" ? null : constructsList.find((construct) => construct._id === e.target.value) as Construct)}
+                    >   
+                        <option value="none">Select a Construct</option>
                         {constructsList.map((construct) => {
                             return (
                                 <option key={construct._id} value={construct._id}>{construct.name}</option>
                             )
                         })}
                     </select>
-                    {selectedConstructID !== "" && constructsList.find((construct) => construct._id === selectedConstructID) && (
-                        //@ts-ignore
-                        <ConstructQuickCrud passedConstruct={constructsList.find((construct) => construct._id === selectedConstructID)}/>
+                    {selectedConstructID && (
+                        <ConstructQuickCrud passedConstruct={selectedConstructID}/>
                     )}
                 </div>
             )}
