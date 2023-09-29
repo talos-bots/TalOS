@@ -542,7 +542,7 @@ const ConstructManagement = (props: ConstructManagementProps) => {
                     </div>
                     <div className="col-span-2 gap-2 grid grid-rows-2">
                         <div className="row-span-1 flex flex-col gap-2 flex-grow-0">
-                        <div className="flex flex-col h-1/2 flex-grow-0">
+                            <div className="flex flex-col h-1/2 flex-grow-0">
                                 <label htmlFor="construct-background" className="font-semibold gap-2 flex pb-1">Background
                                     <button className="themed-button-small" onClick={() => {assembleState().then(() => {setSelectedField('background'); setShowAutoComplete(true)})}}>
                                         <RefreshCw size={'1rem'}/>

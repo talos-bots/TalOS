@@ -136,6 +136,135 @@ export function assemblePromptFromLog(data: any, messagesToInclude: number = 25)
 	return prompt;
 }
 
+export function assembleAlpacaPromptFromLog(data: any, messagesToInclude: number = 25, constructName: string = 'Bot'){
+    let prompt = '';
+
+    // Getting the last few messages based on 'messagesToInclude'
+    let messages = data.messages.slice(-messagesToInclude);
+    for(let i = 0; i < messages.length; i++){
+        let messageText = messages[i].text.trim();
+
+        if(messages[i].isCommand === true){
+            prompt += `### Instruction:\n${messageText}\n`;
+            continue;
+        } else if (messages[i].isThought === true) {
+			prompt += `### Response:\n${messages[i].user}'s Thoughts: ${messageText}\n`;
+        } else {
+            let captionText = '';
+
+            if(messages[i].attachments.length > 0){
+                for(let j = 0; j < messages[i].attachments.length; j++) {
+                    let attachmentCaption = messages[i].attachments[j]?.metadata?.caption;
+                    if(attachmentCaption){
+                        captionText += `[${messages[i].user} sent an image of ${attachmentCaption}] `;
+                    } else {
+                        captionText += `[${messages[i].user} sent a file called ${messages[i].attachments[j]?.name}] `;
+                    }
+                }
+            }
+            
+            if (messages[i].isHuman) {
+                prompt += `### Instruction:\n${messages[i].user}: ${messageText}${captionText.trim()}\n`;
+            } else {
+                prompt += `### Response:\n${messages[i].user}: ${messageText}${captionText.trim()}\n`;
+            }
+        }
+    }
+
+    // If the last message was not from the bot, we append an empty response for the bot
+    if (messages.length > 0 && messages[messages.length - 1].user !== 'Bot') {
+        prompt += `### Response:\n${constructName}:`;
+    }
+
+    return prompt;
+}
+
+export function assembleVicunaPromptFromLog(data: any, messagesToInclude: number = 25, constructName: string = 'Bot'){
+    let prompt = '';
+
+    // Getting the last few messages based on 'messagesToInclude'
+    let messages = data.messages.slice(-messagesToInclude);
+    for(let i = 0; i < messages.length; i++){
+        let messageText = messages[i].text.trim();
+
+        if(messages[i].isCommand === true){
+            prompt += `SYSTEM: ${messageText}\n`;
+            continue;
+        } else if (messages[i].isThought === true) {
+			prompt += `ASSISTANT: ${messages[i].user}'s Thoughts: ${messageText}\n`;
+        } else {
+            let captionText = '';
+
+            if(messages[i].attachments && messages[i].attachments.length > 0){
+                for(let j = 0; j < messages[i].attachments.length; j++) {
+                    let attachmentCaption = messages[i].attachments[j]?.metadata?.caption;
+                    if(attachmentCaption){
+                        captionText += `[${messages[i].user} sent an image of ${attachmentCaption}] `;
+                    } else {
+                        captionText += `[${messages[i].user} sent a file called ${messages[i].attachments[j]?.name}] `;
+                    }
+                }
+            }
+            
+            if (messages[i].isHuman) {
+                prompt += `USER: ${messages[i].user}: ${messageText}${captionText.trim()}\n`;
+            } else {
+                prompt += `ASSISTANT: ${messages[i].user}: ${messageText}${captionText.trim()}\n`;
+            }
+        }
+    }
+
+    // If the last message was not from the bot, we append an empty response for the bot
+    if (messages.length > 0 && messages[messages.length - 1].isHuman) {
+        prompt += `ASSISTANT: ${constructName}:`;
+    }
+
+    return prompt;
+}
+
+export function assembleMetharmePromptFromLog(data: any, messagesToInclude: number = 25, constructName: string = 'Bot'){
+    let prompt = '';
+
+    // Getting the last few messages based on 'messagesToInclude'
+    let messages = data.messages.slice(-messagesToInclude);
+    for(let i = 0; i < messages.length; i++){
+        let messageText = messages[i].text.trim();
+
+        if(messages[i].isCommand === true){
+            prompt += `<|user|>${messageText}`;
+            continue;
+        } else if (messages[i].isThought === true) {
+			prompt += `<|model|>${messages[i].user}'s Thoughts: ${messageText}`;
+        } else {
+            let captionText = '';
+
+            if(messages[i].attachments && messages[i].attachments.length > 0){
+                for(let j = 0; j < messages[i].attachments.length; j++) {
+                    let attachmentCaption = messages[i].attachments[j]?.metadata?.caption;
+                    if(attachmentCaption){
+                        captionText += `[${messages[i].user} sent an image of ${attachmentCaption}] `;
+                    } else {
+                        captionText += `[${messages[i].user} sent a file called ${messages[i].attachments[j]?.name}] `;
+                    }
+                }
+            }
+            
+            if (messages[i].isHuman) {
+                prompt += `<|user|>${messages[i].user}: ${messageText}${captionText.trim()}`;
+            } else {
+                prompt += `<|model|>${messages[i].user}: ${messageText}${captionText.trim()}`;
+            }
+        }
+    }
+
+    // If the last message was not from the bot, we append an empty response for the bot
+    if (messages.length > 0 && messages[messages.length - 1].isHuman) {
+        prompt += `<|model|>${constructName}:`;
+    }
+
+    return prompt;
+}
+
 export async function convertDiscordMessageToMessage(message: Message, activeConstructs: string[]){
 	let attachments: AttachmentInferface[] = [];
 	let username = await getUsername(message.author.id, message.channelId)

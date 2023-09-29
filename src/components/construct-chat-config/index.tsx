@@ -1,4 +1,4 @@
-import { ConstructChatConfig, DefaultChatConfig } from "@/classes/Construct";
+import { ConstructChatConfig, DefaultChatConfig, InstructType } from "@/classes/Construct";
 import { useEffect, useState } from "react";
 import ReactSwitch from "react-switch";
 
@@ -24,9 +24,12 @@ const ConstructChatConfigPanel = (props: ConstructChatConfigProps) => {
     const [replyToUser, setReplyToUser] = useState<number>(chatConfig.replyToUser);
     const [replyToUserMention, setReplyToUserMention] = useState<number>(chatConfig.replyToUserMention);
     const [thoughtChance, setThoughtChance] = useState<number>(chatConfig.thoughtChance);
+    const [instructType, setInstructType] = useState<InstructType>(chatConfig.instructType);
+    const types = ['Alpaca', 'Metharme', 'Vicuna']
 
     const handleEdit = () => {
         chatConfig.doInstruct = doInstruct;
+        chatConfig.instructType = instructType;
         chatConfig.doMemories = doMemories;
         chatConfig.doActions = doActions;
         chatConfig.doSprites = doSprites;
@@ -47,7 +50,7 @@ const ConstructChatConfigPanel = (props: ConstructChatConfigProps) => {
 
     useEffect(() => {
         handleEdit();
-    }, [doInstruct, doMemories, doActions, doSprites, doVoice, doLurk, doRandomGreeting, doRandomFarewell, doRandomThought, haveThoughts, thinkBeforeChat, replyToConstruct, replyToConstructMention, replyToUser, replyToUserMention, thoughtChance]);
+    }, [doInstruct, doMemories, doActions, doSprites, doVoice, doLurk, doRandomGreeting, doRandomFarewell, doRandomThought, haveThoughts, thinkBeforeChat, replyToConstruct, replyToConstructMention, replyToUser, replyToUserMention, thoughtChance, instructType]);
     
     return (
         <div className="w-full h-full max-h-full max-w-full themed-input overflow-y-auto">
@@ -115,6 +118,18 @@ const ConstructChatConfigPanel = (props: ConstructChatConfigProps) => {
                     checkedIcon={true}
                     id="doInstruct"
                 />
+            </div>
+            <label className="font-semibold">Instruct Type</label>
+            <div className="themed-input flex flex-col items-center w-full flex-grow gap-2 text-left">
+                <select
+                    className="themed-input"
+                    value={instructType}
+                    onChange={(e) => {setInstructType(e.target.value as InstructType);}}
+                >
+                    {types.map((type) => (
+                        <option key={type} value={type}>{type}</option>
+                    ))}
+                </select>
             </div>
             <label className="font-semibold">Memories</label>
             <div className="themed-input flex flex-col items-center w-full flex-grow gap-2 text-left">

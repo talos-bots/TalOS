@@ -390,7 +390,7 @@ export async function makeImage(prompt: string, negativePrompt?: string, steps?:
         data: res.data.images[0].split(';base64,').pop(),
         metadata: {
             model: model,
-            ...assemblePayload
+            assemblePayload
         }
     }
     // Save image to uploads folder

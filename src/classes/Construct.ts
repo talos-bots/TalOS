@@ -213,10 +213,11 @@ export class Construct{
         }
     }
 }
-
+export type InstructType = 'Alpaca' | 'Metharme' | 'Vicuna';
 export class DefaultChatConfig{
     constructor(
         public doInstruct: boolean = false,
+        public instructType: InstructType = 'Alpaca',
         public doMemories: boolean = false,
         public doActions: boolean = false,
         public doSprites: boolean = false,
@@ -280,6 +281,7 @@ export class ConstructChatConfig{
     constructor(
         public _id: string = '',
         public doInstruct: boolean = false,
+        public instructType: InstructType = 'Alpaca',
         public doMemories: boolean = false,
         public doActions: boolean = false,
         public doSprites: boolean = false,

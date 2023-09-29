@@ -2,6 +2,7 @@ import { getImageURL } from "@/api/baseapi";
 import { getConstructs, getStorageValue, setStorageValue } from "@/api/dbapi";
 import { Chat } from "@/classes/Chat";
 import { Construct, ConstructChatConfig } from "@/classes/Construct";
+import ConstructQuickCrud from "@/components/construct-quick-crud";
 import ConnectionBox from "@/components/llm-panel/connection-box";
 import GenerationSettings from "@/components/llm-panel/generation-settings";
 import { ArrowBigLeft, ArrowBigRight } from "lucide-react";
@@ -26,6 +27,7 @@ const ChatConfigPane = (props: ChatConfigPaneProps) => {
     const [messagesToSend, setMessagesToSend] = useState<number>(25);
     const [page, setPage] = useState<number>(1);
     const [swipeDirection, setSwipeDirection] = useState<string>("none");
+    const [selectedConstructID, setSelectedConstructID] = useState<string>("");
 
     useEffect(() => {
         if(chat?._id === 'activePool'){
@@ -200,6 +202,21 @@ const ChatConfigPane = (props: ChatConfigPaneProps) => {
             {page === 3 && (
                 <div className={"flex flex-col w-full flex-grow gap-2 text-left " + ((swipeDirection === "right" && " slide-out-left " || swipeDirection === "left" && " slide-out-right "))}>
                     <h3 className="font-bold text-center">Construct Details</h3>
+                    <select
+                        className="themed-input"
+                        value={selectedConstructID}
+                        onChange={(e) => setSelectedConstructID(e.target.value)}
+                    >
+                        {constructsList.map((construct) => {
+                            return (
+                                <option key={construct._id} value={construct._id}>{construct.name}</option>
+                            )
+                        })}
+                    </select>
+                    {selectedConstructID !== "" && constructsList.find((construct) => construct._id === selectedConstructID) && (
+                        //@ts-ignore
+                        <ConstructQuickCrud passedConstruct={constructsList.find((construct) => construct._id === selectedConstructID)}/>
+                    )}
                 </div>
             )}
         </div>

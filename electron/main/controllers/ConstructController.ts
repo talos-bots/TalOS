@@ -1,5 +1,5 @@
 import Store from 'electron-store';
-import { assembleConstructFromData, assembleLorebookFromData, assemblePromptFromLog, assembleUserFromData } from '../helpers/helpers';
+import { assembleAlpacaPromptFromLog, assembleConstructFromData, assembleLorebookFromData, assembleMetharmePromptFromLog, assemblePromptFromLog, assembleUserFromData, assembleVicunaPromptFromLog } from '../helpers/helpers';
 import { generateText } from '../api/llm';
 import { isReady, setDiscordBotInfo } from '../api/discord';
 import { getConstruct, getLorebooks, getUser, updateChat } from '../api/pouchdb';
@@ -121,6 +121,33 @@ export function getUserPromptFromUser(user: UserInterface, replaceUser: boolean 
     }
     if(replaceUser === true){
         return prompt.replaceAll('{{char}}', `${user ? (user?.nickname || user.name) : 'DefaultUser'}`);
+    }else{
+        return prompt;
+    }
+}
+
+export type InstructType = 'Alpaca' | 'Metharme' | 'Vicuna';
+
+export function assembleInstructPrompt(construct: ConstructInterface, chatLog: ChatInterface, currentUser: string = 'you', messagesToInclude?: any, replaceUser: boolean = true){
+    let prompt = '';
+    const type = construct.defaultConfig.instructType;
+    prompt += getCharacterPromptFromConstruct(construct);
+    switch(type){
+        case 'Alpaca':
+            prompt += assembleAlpacaPromptFromLog(chatLog, messagesToInclude, construct.name);
+            break;
+        case 'Metharme':
+            prompt += assembleMetharmePromptFromLog(chatLog, messagesToInclude, construct.name);
+            break;
+        case 'Vicuna':
+            prompt += assembleVicunaPromptFromLog(chatLog, messagesToInclude, construct.name);
+            break;
+        default:
+            prompt += assembleAlpacaPromptFromLog(chatLog, messagesToInclude, construct.name);
+            break;
+    }
+    if(replaceUser === true){
+        return prompt.replaceAll('{{user}}', `${currentUser}`).replaceAll('{{char}}', `${construct.name}`);
     }else{
         return prompt;
     }
@@ -273,12 +300,6 @@ export async function handleLorebookPrompt(construct: ConstructInterface, prompt
     return newPrompt;    
 }
 
-export function assembleInstructPrompt(construct: any, chatLog: ChatInterface, currentUser: string = 'you', messagesToInclude?: any){
-    let prompt = '';
-    
-    return prompt.replaceAll('{{user}}', `${currentUser}`);
-}
-
 export async function generateThoughts(construct: ConstructInterface, chat: ChatInterface, currentUser: string = 'you', messagesToInclude: number = 25, doMultiLine?: boolean, replaceUser: boolean = true){
     let messagesExceptLastTwo = chat.messages.slice(-messagesToInclude);
     let prompt = '';
@@ -316,8 +337,13 @@ export async function generateThoughts(construct: ConstructInterface, chat: Chat
     }
 }
 
-export async function generateContinueChatLog(construct: any, chatLog: ChatInterface, currentUser?: string, messagesToInclude?: any, stopList?: string[], authorsNote?: string | string[], authorsNoteDepth?: number, doMultiLine?: boolean, replaceUser: boolean = true) {
-    let prompt = assemblePrompt(construct, chatLog, currentUser, messagesToInclude);
+export async function generateContinueChatLog(construct: ConstructInterface, chatLog: ChatInterface, currentUser?: string, messagesToInclude?: any, stopList?: string[], authorsNote?: string | string[], authorsNoteDepth?: number, doMultiLine?: boolean, replaceUser: boolean = true) {
+    let prompt = '';
+    if(construct.defaultConfig.doInstruct){
+        prompt += assembleInstructPrompt(construct, chatLog, currentUser, messagesToInclude, replaceUser);
+    }else{
+        prompt += assemblePrompt(construct, chatLog, currentUser, messagesToInclude, replaceUser);
+    }
     if ((construct.authorsNote !== undefined && construct.authorsNote !== '' && construct.authorsNote !== null) ||
     (authorsNote !== undefined && authorsNote !== '' && authorsNote !== null)) {
         if (!authorsNote) {
@@ -471,7 +497,7 @@ export async function removeMessagesFromChatLog(chatLog: ChatInterface, messageC
     return newChatLog;
 }
 
-export async function regenerateMessageFromChatLog(chatLog: ChatInterface, messageContent: string, messageID?: string, authorsNote?: string, authorsNoteDepth?: number, doMultiLine?: boolean){
+export async function regenerateMessageFromChatLog(chatLog: ChatInterface, messageContent: string, messageID?: string, authorsNote?: string, authorsNoteDepth?: number, doMultiLine?: boolean, doInstruction?: boolean, instructType?: InstructType){
     let messages = chatLog.messages;
     let beforeMessages: MessageInterface[] = [];
     let afterMessages: MessageInterface[] = [];
@@ -514,7 +540,7 @@ export async function regenerateMessageFromChatLog(chatLog: ChatInterface, messa
         console.log('Could not assemble construct from data');
         return;
     }
-    let newReply = await generateContinueChatLog(construct, chatLog, foundMessage.participants[0], undefined, undefined, authorsNote, authorsNoteDepth, doMultiLine);
+    let newReply = await generateContinueChatLog(construct, chatLog, foundMessage.participants[0], undefined, undefined, authorsNote, authorsNoteDepth, doMultiLine, true);
     if(newReply === null){
         console.log('Could not generate new reply');
         return;
@@ -672,13 +698,13 @@ function constructController() {
     });
     
     expressApp.post('/api/constructs/assemble-instruct-prompt', (req, res) => {
-        const { construct, chatLog, currentUser, messagesToInclude } = req.body;
-        const prompt = assembleInstructPrompt(construct, chatLog, currentUser, messagesToInclude);
+        const { construct, chatLog, currentUser, messagesToInclude, instructType } = req.body;
+        const prompt = assembleInstructPrompt(construct, chatLog, currentUser, messagesToInclude, true);
         res.json({ prompt });
     });    
 
     expressApp.post('/api/chat/continue', (req, res) => {
-        const { construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth, doMultiline, replaceUser } = req.body;
+        const { construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth, doMultiline, replaceUser} = req.body;
         generateContinueChatLog(construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth, doMultiline, replaceUser).then(response => {
             res.json({ response });
         }).catch(error => {

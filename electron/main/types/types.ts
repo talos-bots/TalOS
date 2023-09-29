@@ -1,4 +1,5 @@
 import { CommandInteraction } from 'discord.js';
+import { InstructType } from '../controllers/ConstructController';
 
 export type ChatInterface = {
     _id: string;
@@ -109,6 +110,7 @@ export type UserInterface = {
 export type ConstructChatConfig = {
     _id: string;
     doInstruct: boolean;
+    instructType: InstructType;
     doMemories: boolean;
     doActions: boolean;
     doSprites: boolean;
@@ -160,6 +162,7 @@ export interface LoreEntryInterface {
 
 export type DefaultChatConfig = {
     doInstruct: boolean;
+    instructType: InstructType;
     doMemories: boolean;
     doActions: boolean;
     doSprites: boolean;

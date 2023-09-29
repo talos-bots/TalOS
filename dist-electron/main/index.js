@@ -1449,6 +1449,124 @@ function assemblePromptFromLog(data, messagesToInclude = 25) {
   }
   return prompt;
 }
+function assembleAlpacaPromptFromLog(data, messagesToInclude = 25, constructName = "Bot") {
+  var _a, _b, _c;
+  let prompt = "";
+  let messages = data.messages.slice(-messagesToInclude);
+  for (let i = 0; i < messages.length; i++) {
+    let messageText = messages[i].text.trim();
+    if (messages[i].isCommand === true) {
+      prompt += `### Instruction:
+${messageText}
+`;
+      continue;
+    } else if (messages[i].isThought === true) {
+      prompt += `### Response:
+${messages[i].user}'s Thoughts: ${messageText}
+`;
+    } else {
+      let captionText = "";
+      if (messages[i].attachments.length > 0) {
+        for (let j = 0; j < messages[i].attachments.length; j++) {
+          let attachmentCaption = (_b = (_a = messages[i].attachments[j]) == null ? void 0 : _a.metadata) == null ? void 0 : _b.caption;
+          if (attachmentCaption) {
+            captionText += `[${messages[i].user} sent an image of ${attachmentCaption}] `;
+          } else {
+            captionText += `[${messages[i].user} sent a file called ${(_c = messages[i].attachments[j]) == null ? void 0 : _c.name}] `;
+          }
+        }
+      }
+      if (messages[i].isHuman) {
+        prompt += `### Instruction:
+${messages[i].user}: ${messageText}${captionText.trim()}
+`;
+      } else {
+        prompt += `### Response:
+${messages[i].user}: ${messageText}${captionText.trim()}
+`;
+      }
+    }
+  }
+  if (messages.length > 0 && messages[messages.length - 1].user !== "Bot") {
+    prompt += `### Response:
+${constructName}:`;
+  }
+  return prompt;
+}
+function assembleVicunaPromptFromLog(data, messagesToInclude = 25, constructName = "Bot") {
+  var _a, _b, _c;
+  let prompt = "";
+  let messages = data.messages.slice(-messagesToInclude);
+  for (let i = 0; i < messages.length; i++) {
+    let messageText = messages[i].text.trim();
+    if (messages[i].isCommand === true) {
+      prompt += `SYSTEM: ${messageText}
+`;
+      continue;
+    } else if (messages[i].isThought === true) {
+      prompt += `ASSISTANT: ${messages[i].user}'s Thoughts: ${messageText}
+`;
+    } else {
+      let captionText = "";
+      if (messages[i].attachments && messages[i].attachments.length > 0) {
+        for (let j = 0; j < messages[i].attachments.length; j++) {
+          let attachmentCaption = (_b = (_a = messages[i].attachments[j]) == null ? void 0 : _a.metadata) == null ? void 0 : _b.caption;
+          if (attachmentCaption) {
+            captionText += `[${messages[i].user} sent an image of ${attachmentCaption}] `;
+          } else {
+            captionText += `[${messages[i].user} sent a file called ${(_c = messages[i].attachments[j]) == null ? void 0 : _c.name}] `;
+          }
+        }
+      }
+      if (messages[i].isHuman) {
+        prompt += `USER: ${messages[i].user}: ${messageText}${captionText.trim()}
+`;
+      } else {
+        prompt += `ASSISTANT: ${messages[i].user}: ${messageText}${captionText.trim()}
+`;
+      }
+    }
+  }
+  if (messages.length > 0 && messages[messages.length - 1].isHuman) {
+    prompt += `ASSISTANT: ${constructName}:`;
+  }
+  return prompt;
+}
+function assembleMetharmePromptFromLog(data, messagesToInclude = 25, constructName = "Bot") {
+  var _a, _b, _c;
+  let prompt = "";
+  let messages = data.messages.slice(-messagesToInclude);
+  for (let i = 0; i < messages.length; i++) {
+    let messageText = messages[i].text.trim();
+    if (messages[i].isCommand === true) {
+      prompt += `<|user|>${messageText}`;
+      continue;
+    } else if (messages[i].isThought === true) {
+      prompt += `<|model|>${messages[i].user}'s Thoughts: ${messageText}`;
+    } else {
+      let captionText = "";
+      if (messages[i].attachments && messages[i].attachments.length > 0) {
+        for (let j = 0; j < messages[i].attachments.length; j++) {
+          let attachmentCaption = (_b = (_a = messages[i].attachments[j]) == null ? void 0 : _a.metadata) == null ? void 0 : _b.caption;
+          if (attachmentCaption) {
+            captionText += `[${messages[i].user} sent an image of ${attachmentCaption}] `;
+          } else {
+            captionText += `[${messages[i].user} sent a file called ${(_c = messages[i].attachments[j]) == null ? void 0 : _c.name}] `;
+          }
+        }
+      }
+      if (messages[i].isHuman) {
+        prompt += `<|user|>${messages[i].user}: ${messageText}${captionText.trim()}`;
+      } else {
+        prompt += `<|model|>${messages[i].user}: ${messageText}${captionText.trim()}`;
+      }
+    }
+  }
+  if (messages.length > 0 && messages[messages.length - 1].isHuman) {
+    prompt += `<|model|>${constructName}:`;
+  }
+  return prompt;
+}
 async function convertDiscordMessageToMessage(message, activeConstructs) {
   var _a;
   let attachments = [];
@@ -2877,6 +2995,30 @@ function getUserPromptFromUser(user, replaceUser2 = true) {
     return prompt;
   }
 }
+function assembleInstructPrompt(construct, chatLog, currentUser = "you", messagesToInclude, replaceUser2 = true) {
+  let prompt = "";
+  const type = construct.defaultConfig.instructType;
+  prompt += getCharacterPromptFromConstruct(construct);
+  switch (type) {
+    case "Alpaca":
+      prompt += assembleAlpacaPromptFromLog(chatLog, messagesToInclude, construct.name);
+      break;
+    case "Metharme":
+      prompt += assembleMetharmePromptFromLog(chatLog, messagesToInclude, construct.name);
+      break;
+    case "Vicuna":
+      prompt += assembleVicunaPromptFromLog(chatLog, messagesToInclude, construct.name);
+      break;
+    default:
+      prompt += assembleAlpacaPromptFromLog(chatLog, messagesToInclude, construct.name);
+      break;
+  }
+  if (replaceUser2 === true) {
+    return prompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${construct.name}`);
+  } else {
+    return prompt;
+  }
+}
 function assemblePrompt(construct, chatLog, currentUser = "you", messagesToInclude, replaceUser2 = true) {
   let prompt = "";
   prompt += getCharacterPromptFromConstruct(construct);
@@ -3020,10 +3162,6 @@ async function handleLorebookPrompt(construct, prompt, chatLog) {
   }
   return newPrompt;
 }
-function assembleInstructPrompt(construct, chatLog, currentUser = "you", messagesToInclude) {
-  let prompt = "";
-  return prompt.replaceAll("{{user}}", `${currentUser}`);
-}
 async function generateThoughts(construct, chat, currentUser = "you", messagesToInclude = 25, doMultiLine, replaceUser2 = true) {
   var _a, _b, _c, _d, _e, _f, _g, _h, _i;
   let messagesExceptLastTwo = chat.messages.slice(-messagesToInclude);
@@ -3071,7 +3209,12 @@ async function generateThoughts(construct, chat, currentUser = "you", messagesTo
 }
 async function generateContinueChatLog(construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth, doMultiLine, replaceUser2 = true) {
   var _a;
-  let prompt = assemblePrompt(construct, chatLog, currentUser, messagesToInclude);
+  let prompt = "";
+  if (construct.defaultConfig.doInstruct) {
+    prompt += assembleInstructPrompt(construct, chatLog, currentUser, messagesToInclude, replaceUser2);
+  } else {
+    prompt += assemblePrompt(construct, chatLog, currentUser, messagesToInclude, replaceUser2);
+  }
   if (construct.authorsNote !== void 0 && construct.authorsNote !== "" && construct.authorsNote !== null || authorsNote !== void 0 && authorsNote !== "" && authorsNote !== null) {
     if (!authorsNote) {
       authorsNote = [construct.authorsNote];
@@ -3207,7 +3350,7 @@ async function removeMessagesFromChatLog(chatLog, messageContent) {
   await updateChat(newChatLog);
   return newChatLog;
 }
-async function regenerateMessageFromChatLog(chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, doMultiLine) {
+async function regenerateMessageFromChatLog(chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, doMultiLine, doInstruction, instructType) {
   let messages = chatLog.messages;
   let beforeMessages = [];
   let afterMessages = [];
@@ -3248,7 +3391,7 @@ async function regenerateMessageFromChatLog(chatLog, messageContent, messageID, 
     console.log("Could not assemble construct from data");
     return;
   }
-  let newReply = await generateContinueChatLog(construct, chatLog, foundMessage.participants[0], void 0, void 0, authorsNote, authorsNoteDepth, doMultiLine);
+  let newReply = await generateContinueChatLog(construct, chatLog, foundMessage.participants[0], void 0, void 0, authorsNote, authorsNoteDepth, doMultiLine, true);
   if (newReply === null) {
     console.log("Could not generate new reply");
     return;
@@ -3391,8 +3534,8 @@ function constructController() {
     res.json({ prompt });
   });
   expressApp.post("/api/constructs/assemble-instruct-prompt", (req, res) => {
-    const { construct, chatLog, currentUser, messagesToInclude } = req.body;
-    const prompt = assembleInstructPrompt(construct, chatLog, currentUser);
+    const { construct, chatLog, currentUser, messagesToInclude, instructType } = req.body;
+    const prompt = assembleInstructPrompt(construct, chatLog, currentUser, messagesToInclude, true);
     res.json({ prompt });
   });
   expressApp.post("/api/chat/continue", (req, res) => {
@@ -3755,7 +3898,7 @@ async function makeImage(prompt, negativePrompt, steps, cfg, width, height, high
     data: res.data.images[0].split(";base64,").pop(),
     metadata: {
       model,
-      ...assemblePayload
+      assemblePayload
     }
   };
   const newPath = path$1.join(uploadsPath, fileName);
