@@ -1,6 +1,6 @@
 # ConstructOS
 ## Development Build Setup
-1. Step One - Download the Repo using ```git clone https://github.com/WaywardWyvernsSoftworks/ConstructOS.git```
+1. Download the Repo using ```git clone https://github.com/WaywardWyvernsSoftworks/ConstructOS.git```
 2. Ensure you have needed dependencies, which luckily for this application only includes Node.JS which can be downloaded here (downloading the LTS build is reccommended): https://nodejs.org/en
 3. Go inside of the root of the cloned repo, and run the 'dev-run.bat' or 'dev-run.sh'.
 ### You're done! The app will open up a window, and you can explore the rest from there.
