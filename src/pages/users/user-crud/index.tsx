@@ -19,6 +19,7 @@ const UserCrud = (props: UserCrudProps) => {
     const [userName, setUserName] = useState<string>('');
     const [userImage, setUserImage] = useState<string>('');
     const [userNickname, setUserNick] = useState<string>('');
+    const [userPronouns, setUserPronouns] = useState<string>('');
     const [userBackground, setUserBackground] = useState<string>('');
     const [userPersonality, setUserPersonality] = useState<string>('');
     const [userInterests, setUserInterests] = useState<string[]>(['']);
@@ -30,6 +31,7 @@ const UserCrud = (props: UserCrudProps) => {
             setUserName(user.name);
             setUserImage(user.avatar);
             setUserNick(user.nickname);
+            setUserPronouns(user.pronouns)
             setUserBackground(user.background);
             setUserPersonality(user.personality);
             setUserInterests(user.interests);
@@ -40,6 +42,7 @@ const UserCrud = (props: UserCrudProps) => {
             setUserImage('');
             setUserName('');
             setUserNick('');
+            setUserPronouns('');
             setUserPersonality('');
             setUserRelationships(['']);
             setUserInterests(['']);
@@ -62,6 +65,7 @@ const UserCrud = (props: UserCrudProps) => {
             user.name = userName;
             user.avatar = userImage;
             user.nickname = userNickname;
+            user.pronouns = userPronouns;
             user.background = userBackground;
             user.personality = userPersonality;
             user.interests = userInterests;
@@ -74,6 +78,7 @@ const UserCrud = (props: UserCrudProps) => {
             newUser.name = userName;
             newUser.avatar = userImage;
             newUser.nickname = userNickname;
+            newUser.pronouns = userPronouns;
             newUser.background = userBackground;
             newUser.personality = userPersonality;
             newUser.interests = userInterests;
@@ -95,6 +100,7 @@ const UserCrud = (props: UserCrudProps) => {
             setUserImage('');
             setUserName('');
             setUserNick('');
+            setUserPronouns('');
             setUserPersonality('');
             setUserRelationships(['']);
             setUserInterests(['']);
@@ -135,7 +141,7 @@ const UserCrud = (props: UserCrudProps) => {
                             onChange={(event) => setUserName(event.target.value)}
                         />
                     </div>
-                    <div className="flex flex-col flex-grow-0 w-full h-1/12">
+                    <div className="flex flex-col flex-grow-0 w-full h-2/12">
                         <label htmlFor="user-role" className="font-semibold">Nickname</label>
                         <input
                             type="text"
@@ -144,6 +150,15 @@ const UserCrud = (props: UserCrudProps) => {
                             className="themed-input w-full"
                             value={userNickname}
                             onChange={(event) => setUserNick(event.target.value)}
+                        />
+                        <label htmlFor="user-role" className="font-semibold">Pronouns</label>
+                        <input
+                            type="text"
+                            required={false}
+                            id="user-role"
+                            className="themed-input w-full"
+                            value={userPronouns}
+                            onChange={(event) => setUserPronouns(event.target.value)}
                         />
                     </div>
                     <div className="flex flex-col flex-grow-0 w-full h-1/6">

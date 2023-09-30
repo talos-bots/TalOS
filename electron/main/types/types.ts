@@ -99,6 +99,7 @@ export interface SlashCommand {
 export type UserInterface = {
     _id: string;
     name: string;
+    pronouns: string;
     nickname: string;
     avatar: string;
     personality: string;

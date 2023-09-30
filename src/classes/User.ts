@@ -3,6 +3,7 @@ export class User{
         public _id: string = (new Date().getTime()).toString(),
         public name: string = '',
         public nickname: string = '',
+        public pronouns: string = '',
         public avatar: string = '',
         public personality: string = '',
         public background: string = '',
@@ -10,9 +11,10 @@ export class User{
         public interests: string[] = []
     ) {}
 
-    setUser(name: string, nickname: string, avatar: string, personality: string, background: string, relationships: string[], interests: string[]){
+    setUser(name: string, nickname: string, pronouns: string, avatar: string, personality: string, background: string, relationships: string[], interests: string[]){
         this.name = name;
         this.nickname = nickname;
+        this.pronouns = pronouns;
         this.avatar = avatar;
         this.personality = personality;
         this.background = background;
@@ -24,6 +26,7 @@ export class User{
         return {
             name: this.name,
             nickname: this.nickname,
+            pronouns: this.pronouns,
             avatar: this.avatar,
             personality: this.personality,
             background: this.background,
