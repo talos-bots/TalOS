@@ -4,7 +4,7 @@ const HomePage = () => {
         <div className="grid grid-cols-2 w-full h-full gap-2">
             <div className="col-span-1 themed-root gap-2 h-full overflow-y-auto flex flex-col slide-in-left">
                 <h2 id='titlePage' className="font-semibold">Welcome to TalOS!</h2>
-                <p className="text-left">TalOS is intended to be the one shop stop for all things LLM, and some things Stable Diffusion. You can create Constructs, which is a type character. You can import Constructs from Traditional Character cards, in both V1 and V2 format, but a lot of fields will be missing, and I'd highly reccomend taking the time to expore the edit UI for all imported cards. Thought patterns, sprites, greetings, farewells, relationships, and interests are all unique to  and if you intended to do more than RP with your character, it will be highly beneficial to fully flesh out your construct.</p>
+                <p className="text-left">TalOS is intended to be the one shop stop for all things LLM, and some things Stable Diffusion. You can create Constructs, which is a type character. You can import Constructs from Traditional Character cards, in both V1 and V2 format, but a lot of fields will be missing, and I'd highly reccomend taking the time to expore the edit UI for all imported cards. Thought patterns, sprites, greetings, farewells, relationships, and interests are all unique to TalOS and if you intended to do more than RP with your character, it will be highly beneficial to fully flesh out your construct.</p>
                 <h3 className="font-semibold text-left">What is a Construct?</h3>
                 <p className="text-left">
                 </p>

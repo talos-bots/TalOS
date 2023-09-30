@@ -60,7 +60,7 @@ export const store = new Store();
 async function createWindow() {
   win = new BrowserWindow({
     title: "TalOS - AI Sandbox",
-    icon: join(process.env.VITE_PUBLIC, "favicon.ico"),
+    icon: join(process.env.VITE_PUBLIC, "talos-icon.ico"),
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,

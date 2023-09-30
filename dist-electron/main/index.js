@@ -43295,8 +43295,8 @@ fs$1.mkdirSync(uploadsPath, { recursive: true });
 const store = new Store();
 async function createWindow() {
   exports.win = new electron.BrowserWindow({
-    title: "ConstructOS - AI Sandbox",
-    icon: path$1.join(process.env.VITE_PUBLIC, "favicon.ico"),
+    title: "TalOS - AI Sandbox",
+    icon: path$1.join(process.env.VITE_PUBLIC, "talos-icon.ico"),
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
