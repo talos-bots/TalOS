@@ -57,6 +57,46 @@ function createClient(){
         }
     });
 
+    disClient.on('error', (error) => {
+        console.error('Discord client error:', error);
+    });
+
+    disClient.on('warn', (warning) => {
+        console.warn('Discord client warning:', warning);
+    });
+
+    disClient.on('shardError', (error) => {
+        console.error('Discord client shard error:', error);
+    });
+
+    disClient.on('shardWarn', (warning) => {
+        console.warn('Discord client shard warning:', warning);
+    });
+
+    disClient.on('invalidated', () => {
+        console.warn('Discord client invalidated.');
+    });
+
+    disClient.on('rateLimit', (rateLimitInfo) => {
+        console.warn('Discord client rate limit:', rateLimitInfo);
+    });
+
+    disClient.on('debug', (debugInfo) => {
+        console.log('Discord client debug:', debugInfo);
+    });
+
+    disClient.on('guildCreate', (guild) => {
+        console.log(`Joined guild: ${guild.name}`);
+    });
+
+    disClient.on('guildDelete', (guild) => {
+        console.log(`Left guild: ${guild.name}`);
+    });
+
+    disClient.on('guildUnavailable', (guild) => {
+        console.log(`Guild unavailable: ${guild.name}`);
+    });
+    
     disClient.on("messageReactionAdd", async (reaction, user) => {
         if (user.id === disClient.user?.id) return;
         console.log("Reaction added...");
