@@ -1,5 +1,5 @@
 import { CommandInteraction } from 'discord.js';
-import { InstructType } from '../controllers/ConstructController';
+import { InstructType } from '../controllers/ChatController';
 
 export type ChatInterface = {
     _id: string;

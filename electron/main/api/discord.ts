@@ -5,7 +5,7 @@ import { doImageReaction, getDoStableDiffusion, getMessageIntent, getRegisteredC
 import { ConstructInterface, SlashCommand } from '../types/types';
 import { assembleConstructFromData, base642Buffer } from '../helpers/helpers';
 import { DefaultCommands, stableDiffusionCommands } from '../controllers/commands';
-import { retrieveConstructs } from '../controllers/ConstructController';
+import { retrieveConstructs } from '../controllers/ChatController';
 import { getConstruct } from './pouchdb';
 
 const intents = { 

@@ -3,7 +3,7 @@ import { Alias, ChatInterface, MessageInterface, SlashCommand } from "../types/t
 import { addAlias, addDiffusionWhitelist, addRegisteredChannel, continueChatLog, getDiffusionWhitelist, getRegisteredChannels, getShowDiffusionDetails, getUsername, removeDiffusionWhitelist, removeRegisteredChannel, setDoAutoReply, setInterrupted, setMaxMessages, setReplaceUser } from "./DiscordController";
 import { addChat, getChat, getConstruct, removeChat, updateChat } from "../api/pouchdb";
 import { assembleChatFromData, assembleConstructFromData } from "../helpers/helpers";
-import { retrieveConstructs, setDoMultiLine } from "./ConstructController";
+import { retrieveConstructs, setDoMultiLine } from "./ChatController";
 import { cleanEmotes, clearMessageQueue, clearWebhooksFromChannel, doGlobalNicknameChange } from "../api/discord";
 import { doInstruct, generateText, getStatus } from "../api/llm";
 import { deleteIndex } from "../api/vector";

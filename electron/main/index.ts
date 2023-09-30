@@ -7,7 +7,7 @@ import { PouchDBRoutes } from "./api/pouchdb";
 import Store from "electron-store";
 import { LanguageModelAPI } from "./api/llm";
 import { SDRoutes } from "./api/sd";
-import constructController from "./controllers/ConstructController";
+import constructController from "./controllers/ChatController";
 import fs from "fs";
 import DiscordController from "./controllers/DiscordController";
 import { ElectronDBRoutes } from "./api/electrondb";
