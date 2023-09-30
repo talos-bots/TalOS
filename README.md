@@ -1,4 +1,5 @@
 # TalOS
+![TalOSLinesLogoClean](https://github.com/WaywardWyvernsSoftworks/TalOS/assets/26259870/d43eb0d1-dcdd-4b4c-abf9-3ecda3b2d996)
 ## Development Build Setup
 1. Download the Repo using ```git clone https://github.com/WaywardWyvernsSoftworks/TalOS.git```
 2. Ensure you have needed dependencies, which luckily for this application only includes Node.JS which can be downloaded here (downloading the LTS build is reccommended): https://nodejs.org/en
