@@ -4435,7 +4435,11 @@ async function doCharacterReply(construct, chatLog, message) {
   }
   if (primaryConstruct === construct._id) {
     console.log("sending message as primary");
-    await sendMessage(message.channel.id, reply);
+    if (0.5 >= Math.random() && !message.channel.isDMBased()) {
+      await sendReply(message, reply);
+    } else {
+      await sendMessage(message.channel.id, reply);
+    }
   } else {
     console.log("sending message as character");
     await sendMessageAsCharacter(construct, message.channel.id, reply);
@@ -6493,6 +6497,26 @@ async function sendAttachment(channelID, attachment) {
     return;
   if (channel instanceof discord_js.TextChannel || channel instanceof discord_js.DMChannel || channel instanceof discord_js.NewsChannel) {
     return channel.send({ files: [attachment] });
+  }
+}
+async function sendReply(message, reply) {
+  if (!isReady)
+    return;
+  if (!disClient.user) {
+    console.error("Discord client user is not initialized.");
+    return;
+  }
+  if (reply.length < 1)
+    return;
+  if (reply.length > 1900) {
+    const messageParts = reply.match(/[\s\S]{1,1900}/g);
+    if (messageParts) {
+      for (const part of messageParts) {
+        await message.reply(part);
+      }
+    }
+  } else {
+    await message.reply(reply);
   }
 }
 async function sendMessageEmbed(channelID, embed) {

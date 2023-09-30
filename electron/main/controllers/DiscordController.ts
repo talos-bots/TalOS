@@ -3,7 +3,7 @@ import { generateContinueChatLog, generateThoughts, getDoMultiLine, regenerateMe
 import { addChat, getChat, getConstruct, updateChat } from '../api/pouchdb';
 import { addUserFromDiscordMessage, assembleChatFromData, assembleConstructFromData, convertDiscordMessageToMessage } from '../helpers/helpers';
 import { AttachmentBuilder, CommandInteraction, EmbedBuilder, Message } from 'discord.js';
-import { deleteMessage, disClient, editMessage, getStopList, isAutoReplyMode, isMultiCharacterMode, registerCommands, sendAttachment, sendAttachmentAsCharacter, sendEmbedAsCharacter, sendMessage, sendMessageAsCharacter, sendMessageEmbed, sendTyping } from '../api/discord';
+import { deleteMessage, disClient, editMessage, getStopList, isAutoReplyMode, isMultiCharacterMode, registerCommands, sendAttachment, sendAttachmentAsCharacter, sendEmbedAsCharacter, sendMessage, sendMessageAsCharacter, sendMessageEmbed, sendReply, sendTyping } from '../api/discord';
 import { Alias, AttachmentInferface, ChannelConfigInterface, ChatInterface, ConstructInterface, MessageInterface } from '../types/types';
 import { addVectorFromMessage } from '../api/vector';
 import { getDefaultCfg, getDefaultHeight, getDefaultHighresSteps, getDefaultNegativePrompt, getDefaultPrompt, getDefaultSteps, getDefaultWidth, makeImage } from '../api/sd';
@@ -556,7 +556,11 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
     }
     if(primaryConstruct === construct._id){
         console.log('sending message as primary')
-        await sendMessage(message.channel.id, reply);
+        if(0.5 >= Math.random() && !message.channel.isDMBased()){
+            await sendReply(message, reply);
+        }else{
+            await sendMessage(message.channel.id, reply);
+        }
     }else{
         console.log('sending message as character')
         await sendMessageAsCharacter(construct, message.channel.id, reply);
