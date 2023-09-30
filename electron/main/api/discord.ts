@@ -395,10 +395,16 @@ export async function sendReply(message: Message | CommandInteraction, reply: st
         return;
     }
     if(reply.length < 1) return;
-    if(message instanceof Message){
-        return message.reply(reply);
-    }else if(message instanceof CommandInteraction){
-        return message.reply(reply);
+    // if the message is longer than 1900 characters, split it into multiple messages
+    if (reply.length > 1900) {
+        const messageParts = reply.match(/[\s\S]{1,1900}/g);
+        if (messageParts) {
+            for (const part of messageParts) {
+                await message.reply(part);
+            }
+        }
+    } else {
+        await message.reply(reply);
     }
 }
 
