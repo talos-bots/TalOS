@@ -3991,10 +3991,6 @@ function getDiscordSettings() {
   showDiffusionDetails = getShowDiffusionDetails();
   replaceUser = getReplaceUser();
 }
-const getDiscordMode = () => {
-  console.log(store$2.get("mode"));
-  return store$2.get("mode");
-};
 const setDoAutoReply = (doAutoReply2) => {
   store$2.set("doAutoReply", doAutoReply2);
 };
@@ -4218,125 +4214,120 @@ async function handleDiscordMessage(message) {
   }
   await updateChat(chatLog);
   expressAppIO.emit(`chat-message-${message.channel.id}`);
-  const mode = getDiscordMode();
-  if (mode === "Character") {
-    if (isMultiCharacterMode() && !message.channel.isDMBased()) {
-      let lastMessageContent = chatLog.lastMessage.text;
-      let shuffledConstructs = constructArray;
-      for (let i = shuffledConstructs.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffledConstructs[i], shuffledConstructs[j]] = [shuffledConstructs[j], shuffledConstructs[i]];
+  if (isMultiConstructMode() && !message.channel.isDMBased()) {
+    let lastMessageContent = chatLog.lastMessage.text;
+    let shuffledConstructs = constructArray;
+    for (let i = shuffledConstructs.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffledConstructs[i], shuffledConstructs[j]] = [shuffledConstructs[j], shuffledConstructs[i]];
+    }
+    let mentionedConstruct = containsName(lastMessageContent, constructArray);
+    if (mentionedConstruct) {
+      let mentionedIndex = shuffledConstructs.findIndex((construct) => construct.name === mentionedConstruct);
+      if (mentionedIndex !== -1) {
+        const [mentioned] = shuffledConstructs.splice(mentionedIndex, 1);
+        shuffledConstructs.unshift(mentioned);
       }
-      let mentionedConstruct = containsName(lastMessageContent, constructArray);
-      if (mentionedConstruct) {
-        let mentionedIndex = shuffledConstructs.findIndex((construct) => construct.name === mentionedConstruct);
-        if (mentionedIndex !== -1) {
-          const [mentioned] = shuffledConstructs.splice(mentionedIndex, 1);
-          shuffledConstructs.unshift(mentioned);
-        }
+    }
+    chatLog = await doRoundRobin(shuffledConstructs, chatLog, message);
+    if (chatLog === void 0)
+      return;
+    let hasBeenMention = true;
+    let lastMessageText = (_e = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _e.text;
+    let iterations = 0;
+    do {
+      if (isInterrupted) {
+        break;
       }
-      chatLog = await doRoundRobin(shuffledConstructs, chatLog, message);
-      if (chatLog === void 0)
-        return;
-      let hasBeenMention = true;
-      let lastMessageText = (_e = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _e.text;
-      let iterations = 0;
-      do {
+      if (((_f = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _f.text) === void 0)
+        break;
+      if (iterations > 0 && lastMessageText === chatLog.lastMessage.text)
+        break;
+      iterations++;
+      hasBeenMention = false;
+      for (let i = 0; i < shuffledConstructs.length; i++) {
         if (isInterrupted) {
           break;
         }
-        if (((_f = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _f.text) === void 0)
+        if (isMentioned(lastMessageText, shuffledConstructs[i]) && chatLog.lastMessage.isHuman && !chatLog.lastMessage.isThought && chatLog.lastMessage.userID !== shuffledConstructs[i]._id) {
+          hasBeenMention = true;
           break;
-        if (iterations > 0 && lastMessageText === chatLog.lastMessage.text)
-          break;
-        iterations++;
-        hasBeenMention = false;
-        for (let i = 0; i < shuffledConstructs.length; i++) {
-          if (isInterrupted) {
-            break;
-          }
-          if (isMentioned(lastMessageText, shuffledConstructs[i]) && chatLog.lastMessage.isHuman && !chatLog.lastMessage.isThought && chatLog.lastMessage.userID !== shuffledConstructs[i]._id) {
-            hasBeenMention = true;
-            break;
-          }
         }
-        if (hasBeenMention) {
-          chatLog = await doRoundRobin(shuffledConstructs, chatLog, message);
-        }
-      } while (hasBeenMention);
-      while (true) {
-        let shouldContinue = false;
-        if ((chatLog == null ? void 0 : chatLog.lastMessage.text) === void 0)
-          break;
+      }
+      if (hasBeenMention) {
+        chatLog = await doRoundRobin(shuffledConstructs, chatLog, message);
+      }
+    } while (hasBeenMention);
+    while (true) {
+      let shouldContinue = false;
+      if ((chatLog == null ? void 0 : chatLog.lastMessage.text) === void 0)
+        break;
+      if (isInterrupted) {
+        break;
+      }
+      for (let i = 0; i < shuffledConstructs.length; i++) {
         if (isInterrupted) {
           break;
         }
-        for (let i = 0; i < shuffledConstructs.length; i++) {
-          if (isInterrupted) {
-            break;
-          }
-          let config = shuffledConstructs[i].defaultConfig;
-          if ((_g = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _g.isHuman) {
-            if (config.replyToUser >= Math.random()) {
-              let replyLog = await doCharacterReply(shuffledConstructs[i], chatLog, message);
-              if (replyLog !== void 0) {
-                chatLog = replyLog;
-              }
-              shouldContinue = true;
-            }
-          } else {
-            if (config.replyToConstruct >= Math.random() && chatLog.lastMessage.userID !== shuffledConstructs[i]._id) {
-              let replyLog = await doCharacterReply(shuffledConstructs[i], chatLog, message);
-              if (replyLog !== void 0) {
-                chatLog = replyLog;
-              }
-              shouldContinue = true;
-            }
-          }
-        }
-        if (!shouldContinue) {
-          break;
-        }
-      }
-    } else {
-      console.log("single character mode");
-      let config = constructArray[0].defaultConfig;
-      if (chatLog.chatConfigs !== void 0 && chatLog.chatConfigs.length > 0) {
-        for (let j = 0; j < chatLog.chatConfigs.length; j++) {
-          if (chatLog.chatConfigs[j]._id === constructArray[0]._id) {
-            config = chatLog.chatConfigs[j];
-            break;
-          }
-        }
-      }
-      if (!config.doLurk) {
-        console.log("not lurking");
-        let wasMentioned = isMentioned(chatLog.lastMessage.text, constructArray[0]) && chatLog.lastMessage.isHuman;
-        if (wasMentioned) {
-          if (config.replyToUserMention >= Math.random()) {
-            sendTyping(message);
-            console.log("replying to user mention");
-            let replyLog = await doCharacterReply(constructArray[0], chatLog, message);
+        let config = shuffledConstructs[i].defaultConfig;
+        if ((_g = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _g.isHuman) {
+          if (config.replyToUser >= Math.random()) {
+            let replyLog = await doCharacterReply(shuffledConstructs[i], chatLog, message);
             if (replyLog !== void 0) {
               chatLog = replyLog;
             }
+            shouldContinue = true;
           }
         } else {
-          if (config.replyToUser >= Math.random()) {
-            console.log("replying to user");
-            sendTyping(message);
-            let replyLog = await doCharacterReply(constructArray[0], chatLog, message);
+          if (config.replyToConstruct >= Math.random() && chatLog.lastMessage.userID !== shuffledConstructs[i]._id) {
+            let replyLog = await doCharacterReply(shuffledConstructs[i], chatLog, message);
             if (replyLog !== void 0) {
               chatLog = replyLog;
             }
+            shouldContinue = true;
+          }
+        }
+      }
+      if (!shouldContinue) {
+        break;
+      }
+    }
+  } else {
+    console.log("single character mode");
+    let config = constructArray[0].defaultConfig;
+    if (chatLog.chatConfigs !== void 0 && chatLog.chatConfigs.length > 0) {
+      for (let j = 0; j < chatLog.chatConfigs.length; j++) {
+        if (chatLog.chatConfigs[j]._id === constructArray[0]._id) {
+          config = chatLog.chatConfigs[j];
+          break;
+        }
+      }
+    }
+    if (!config.doLurk) {
+      console.log("not lurking");
+      let wasMentioned = isMentioned(chatLog.lastMessage.text, constructArray[0]) && chatLog.lastMessage.isHuman;
+      if (wasMentioned) {
+        if (config.replyToUserMention >= Math.random()) {
+          sendTyping(message);
+          console.log("replying to user mention");
+          let replyLog = await doCharacterReply(constructArray[0], chatLog, message);
+          if (replyLog !== void 0) {
+            chatLog = replyLog;
           }
         }
       } else {
-        console.log("lurking");
+        if (config.replyToUser >= Math.random()) {
+          console.log("replying to user");
+          sendTyping(message);
+          let replyLog = await doCharacterReply(constructArray[0], chatLog, message);
+          if (replyLog !== void 0) {
+            chatLog = replyLog;
+          }
+        }
       }
+    } else {
+      console.log("lurking");
     }
-  } else if (mode === "Construct") {
-    await sendMessage(message.channel.id, "Construct Mode is not yet implemented.");
   }
   if (isInterrupted) {
     isInterrupted = false;
@@ -4663,119 +4654,114 @@ async function continueChatLog(interaction) {
   if (chatLog.messages.length < 1) {
     return;
   }
-  const mode = getDiscordMode();
-  if (mode === "Character") {
-    if (isMultiCharacterMode() && !interaction.channel.isDMBased()) {
-      let lastMessageContent = chatLog.lastMessage.text;
-      let shuffledConstructs = constructArray;
-      for (let i = shuffledConstructs.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffledConstructs[i], shuffledConstructs[j]] = [shuffledConstructs[j], shuffledConstructs[i]];
+  if (isMultiConstructMode() && !interaction.channel.isDMBased()) {
+    let lastMessageContent = chatLog.lastMessage.text;
+    let shuffledConstructs = constructArray;
+    for (let i = shuffledConstructs.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffledConstructs[i], shuffledConstructs[j]] = [shuffledConstructs[j], shuffledConstructs[i]];
+    }
+    let mentionedConstruct = containsName(lastMessageContent, constructArray);
+    if (mentionedConstruct) {
+      let mentionedIndex = shuffledConstructs.findIndex((construct) => construct.name === mentionedConstruct);
+      if (mentionedIndex !== -1) {
+        const [mentioned] = shuffledConstructs.splice(mentionedIndex, 1);
+        shuffledConstructs.unshift(mentioned);
       }
-      let mentionedConstruct = containsName(lastMessageContent, constructArray);
-      if (mentionedConstruct) {
-        let mentionedIndex = shuffledConstructs.findIndex((construct) => construct.name === mentionedConstruct);
-        if (mentionedIndex !== -1) {
-          const [mentioned] = shuffledConstructs.splice(mentionedIndex, 1);
-          shuffledConstructs.unshift(mentioned);
-        }
+    }
+    chatLog = await doRoundRobin(shuffledConstructs, chatLog, interaction);
+    if (chatLog === void 0)
+      return;
+    let hasBeenMention = true;
+    let lastMessageText = (_a = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _a.text;
+    let iterations = 0;
+    do {
+      if (isInterrupted) {
+        break;
       }
-      chatLog = await doRoundRobin(shuffledConstructs, chatLog, interaction);
-      if (chatLog === void 0)
-        return;
-      let hasBeenMention = true;
-      let lastMessageText = (_a = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _a.text;
-      let iterations = 0;
-      do {
+      if (((_b = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _b.text) === void 0)
+        break;
+      if (iterations > 0 && lastMessageText === chatLog.lastMessage.text)
+        break;
+      iterations++;
+      hasBeenMention = false;
+      for (let i = 0; i < shuffledConstructs.length; i++) {
         if (isInterrupted) {
           break;
         }
-        if (((_b = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _b.text) === void 0)
+        if (isMentioned(lastMessageText, shuffledConstructs[i]) && chatLog.lastMessage.isHuman && !chatLog.lastMessage.isThought && chatLog.lastMessage.userID !== shuffledConstructs[i]._id) {
+          hasBeenMention = true;
           break;
-        if (iterations > 0 && lastMessageText === chatLog.lastMessage.text)
-          break;
-        iterations++;
-        hasBeenMention = false;
-        for (let i = 0; i < shuffledConstructs.length; i++) {
-          if (isInterrupted) {
-            break;
-          }
-          if (isMentioned(lastMessageText, shuffledConstructs[i]) && chatLog.lastMessage.isHuman && !chatLog.lastMessage.isThought && chatLog.lastMessage.userID !== shuffledConstructs[i]._id) {
-            hasBeenMention = true;
-            break;
-          }
         }
-        if (hasBeenMention) {
-          chatLog = await doRoundRobin(shuffledConstructs, chatLog, interaction);
-        }
-      } while (hasBeenMention);
-      while (true) {
-        let shouldContinue = false;
-        if ((chatLog == null ? void 0 : chatLog.lastMessage.text) === void 0)
-          break;
+      }
+      if (hasBeenMention) {
+        chatLog = await doRoundRobin(shuffledConstructs, chatLog, interaction);
+      }
+    } while (hasBeenMention);
+    while (true) {
+      let shouldContinue = false;
+      if ((chatLog == null ? void 0 : chatLog.lastMessage.text) === void 0)
+        break;
+      if (isInterrupted) {
+        break;
+      }
+      for (let i = 0; i < shuffledConstructs.length; i++) {
         if (isInterrupted) {
           break;
         }
-        for (let i = 0; i < shuffledConstructs.length; i++) {
-          if (isInterrupted) {
-            break;
-          }
-          let config = shuffledConstructs[i].defaultConfig;
-          if ((_c = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _c.isHuman) {
-            if (config.replyToUser >= Math.random()) {
-              let replyLog = await doCharacterReply(shuffledConstructs[i], chatLog, interaction);
-              if (replyLog !== void 0) {
-                chatLog = replyLog;
-              }
-              shouldContinue = true;
-            }
-          } else {
-            if (config.replyToConstruct >= Math.random() && chatLog.lastMessage.userID !== shuffledConstructs[i]._id) {
-              let replyLog = await doCharacterReply(shuffledConstructs[i], chatLog, interaction);
-              if (replyLog !== void 0) {
-                chatLog = replyLog;
-              }
-              shouldContinue = true;
-            }
-          }
-        }
-        if (!shouldContinue) {
-          break;
-        }
-      }
-    } else {
-      let config = constructArray[0].defaultConfig;
-      if (chatLog.chatConfigs !== void 0 && chatLog.chatConfigs.length > 0) {
-        for (let j = 0; j < chatLog.chatConfigs.length; j++) {
-          if (chatLog.chatConfigs[j]._id === constructArray[0]._id) {
-            config = chatLog.chatConfigs[j];
-            break;
-          }
-        }
-      }
-      if (!config.doLurk === true) {
-        let wasMentioned = isMentioned(chatLog.lastMessage.text, constructArray[0]) && chatLog.lastMessage.isHuman;
-        if (wasMentioned) {
-          if (config.replyToUserMention >= Math.random()) {
-            sendTyping(interaction);
-            let replyLog = await doCharacterReply(constructArray[0], chatLog, interaction);
+        let config = shuffledConstructs[i].defaultConfig;
+        if ((_c = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _c.isHuman) {
+          if (config.replyToUser >= Math.random()) {
+            let replyLog = await doCharacterReply(shuffledConstructs[i], chatLog, interaction);
             if (replyLog !== void 0) {
               chatLog = replyLog;
             }
+            shouldContinue = true;
           }
         } else {
-          if (config.replyToUser >= Math.random()) {
-            sendTyping(interaction);
-            let replyLog = await doCharacterReply(constructArray[0], chatLog, interaction);
+          if (config.replyToConstruct >= Math.random() && chatLog.lastMessage.userID !== shuffledConstructs[i]._id) {
+            let replyLog = await doCharacterReply(shuffledConstructs[i], chatLog, interaction);
             if (replyLog !== void 0) {
               chatLog = replyLog;
             }
+            shouldContinue = true;
+          }
+        }
+      }
+      if (!shouldContinue) {
+        break;
+      }
+    }
+  } else {
+    let config = constructArray[0].defaultConfig;
+    if (chatLog.chatConfigs !== void 0 && chatLog.chatConfigs.length > 0) {
+      for (let j = 0; j < chatLog.chatConfigs.length; j++) {
+        if (chatLog.chatConfigs[j]._id === constructArray[0]._id) {
+          config = chatLog.chatConfigs[j];
+          break;
+        }
+      }
+    }
+    if (!config.doLurk === true) {
+      let wasMentioned = isMentioned(chatLog.lastMessage.text, constructArray[0]) && chatLog.lastMessage.isHuman;
+      if (wasMentioned) {
+        if (config.replyToUserMention >= Math.random()) {
+          sendTyping(interaction);
+          let replyLog = await doCharacterReply(constructArray[0], chatLog, interaction);
+          if (replyLog !== void 0) {
+            chatLog = replyLog;
+          }
+        }
+      } else {
+        if (config.replyToUser >= Math.random()) {
+          sendTyping(interaction);
+          let replyLog = await doCharacterReply(constructArray[0], chatLog, interaction);
+          if (replyLog !== void 0) {
+            chatLog = replyLog;
           }
         }
       }
     }
-  } else if (mode === "Construct") {
-    await sendMessage(interaction.channel.id, "Construct Mode is not yet implemented.");
   }
   if (isInterrupted) {
     isInterrupted = false;
@@ -6168,7 +6154,7 @@ const commands = [...DefaultCommands];
 let isReady = false;
 let token = "";
 let applicationID = "";
-let multiCharacterMode = false;
+let multiConstructMode = false;
 getDiscordData();
 function createClient() {
   disClient.on("messageCreate", async (message) => {
@@ -6287,8 +6273,8 @@ async function registerCommands() {
     console.error(error);
   }
 }
-function isMultiCharacterMode() {
-  return multiCharacterMode;
+function isMultiConstructMode() {
+  return multiConstructMode;
 }
 async function doGlobalNicknameChange(newName) {
   disClient.guilds.cache.forEach((guild) => {
@@ -6668,20 +6654,6 @@ async function getDiscordData() {
   } else {
     appId = "";
   }
-  let discordCharacterMode;
-  const storedDiscordCharacterMode = store$1.get("discordCharacterMode");
-  if (storedDiscordCharacterMode !== void 0 && typeof storedDiscordCharacterMode === "boolean") {
-    discordCharacterMode = storedDiscordCharacterMode;
-  } else {
-    discordCharacterMode = false;
-  }
-  let discordMultiCharacterMode;
-  const storedDiscordMultiCharacterMode = store$1.get("discordMultiCharacterMode");
-  if (storedDiscordMultiCharacterMode !== void 0 && typeof storedDiscordMultiCharacterMode === "boolean") {
-    discordMultiCharacterMode = storedDiscordMultiCharacterMode;
-  } else {
-    discordMultiCharacterMode = false;
-  }
   let discordMultiConstructMode;
   const storedDiscordMultiConstructMode = store$1.get("discordMultiConstructMode");
   if (storedDiscordMultiConstructMode !== void 0 && typeof storedDiscordMultiConstructMode === "boolean") {
@@ -6691,10 +6663,10 @@ async function getDiscordData() {
   }
   token = savedToken;
   applicationID = appId;
-  multiCharacterMode = discordMultiCharacterMode;
-  return { savedToken, appId, discordCharacterMode, discordMultiCharacterMode, discordMultiConstructMode };
+  multiConstructMode = discordMultiConstructMode;
+  return { savedToken, appId, discordMultiConstructMode };
 }
-function saveDiscordData(newToken, newAppId, discordCharacterMode, discordMultiCharacterMode, discordMultiConstructMode) {
+function saveDiscordData(newToken, newAppId, discordMultiConstructMode) {
   if (newToken === "") {
     const storedToken = store$1.get("discordToken");
     if (storedToken !== void 0 && typeof storedToken === "string") {
@@ -6717,14 +6689,7 @@ function saveDiscordData(newToken, newAppId, discordCharacterMode, discordMultiC
     applicationID = newAppId;
     store$1.set("discordAppId", newAppId);
   }
-  multiCharacterMode = discordMultiCharacterMode;
-  store$1.set("discordCharacterMode", discordCharacterMode);
-  if (!discordCharacterMode) {
-    store$1.set("mode", "Construct");
-  } else {
-    store$1.set("mode", "Character");
-  }
-  store$1.set("discordMultiCharacterMode", discordMultiCharacterMode);
+  multiConstructMode = discordMultiConstructMode;
   store$1.set("discordMultiConstructMode", discordMultiConstructMode);
 }
 let messageQueue = [];
@@ -6759,8 +6724,8 @@ function DiscordJSRoutes() {
     res.json(data);
   });
   expressApp.post("/api/discord/data", async (req, res) => {
-    const { newToken, newAppId, discordCharacterMode, discordMultiCharacterMode, discordMultiConstructMode } = req.body;
-    saveDiscordData(newToken, newAppId, discordCharacterMode, discordMultiCharacterMode, discordMultiConstructMode);
+    const { newToken, newAppId, discordMultiConstructMode } = req.body;
+    saveDiscordData(newToken, newAppId, discordMultiConstructMode);
     res.json({ token, applicationID });
   });
   expressApp.get("/api/discord/application-id", (req, res) => {

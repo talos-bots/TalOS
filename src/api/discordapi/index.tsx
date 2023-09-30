@@ -150,16 +150,12 @@ export const getSavedDiscordData = async (): Promise<any> => {
 export const saveDiscordData = async (
     token: string,
     appID: string,
-    discordCharacterMode: boolean,
-    discordMultiCharacterMode: boolean,
     discordMultiConstructMode: boolean
 ): Promise<boolean> => {
     try {
         await axios.post(`${url}/api/discord/data`, {
             newToken: token,
             newAppId: appID,
-            discordCharacterMode,
-            discordMultiCharacterMode,
             discordMultiConstructMode
         });
         return true;

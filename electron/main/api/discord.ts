@@ -551,7 +551,7 @@ export async function setDiscordAppId(appId: string): Promise<void> {
     store.set('discordAppId', appId);
 }
 
-export async function getDiscordData(): Promise<{savedToken: string, appId: string, discordCharacterMode: boolean, discordMultiCharacterMode: boolean, discordMultiConstructMode: boolean}> {
+export async function getDiscordData(): Promise<{savedToken: string, appId: string, discordMultiConstructMode: boolean}> {
     let savedToken;
     const storedToken = store.get('discordToken');
     if (storedToken !== undefined && typeof storedToken === 'string') {
@@ -568,22 +568,6 @@ export async function getDiscordData(): Promise<{savedToken: string, appId: stri
         appId = '';
     }
 
-    let discordCharacterMode;
-    const storedDiscordCharacterMode = store.get('discordCharacterMode');
-    if (storedDiscordCharacterMode !== undefined && typeof storedDiscordCharacterMode === 'boolean') {
-        discordCharacterMode = storedDiscordCharacterMode;
-    } else {
-        discordCharacterMode = false;
-    }
-
-    let discordMultiCharacterMode;
-    const storedDiscordMultiCharacterMode = store.get('discordMultiCharacterMode');
-    if (storedDiscordMultiCharacterMode !== undefined && typeof storedDiscordMultiCharacterMode === 'boolean') {
-        discordMultiCharacterMode = storedDiscordMultiCharacterMode;
-    } else {
-        discordMultiCharacterMode = false;
-    }
-
     let discordMultiConstructMode;
     const storedDiscordMultiConstructMode = store.get('discordMultiConstructMode');
     if (storedDiscordMultiConstructMode !== undefined && typeof storedDiscordMultiConstructMode === 'boolean') {
@@ -594,13 +578,11 @@ export async function getDiscordData(): Promise<{savedToken: string, appId: stri
 
     token = savedToken;
     applicationID = appId;
-    characterMode = discordCharacterMode;
-    multiCharacterMode = discordMultiCharacterMode;
     multiConstructMode = discordMultiConstructMode;
-    return {savedToken, appId, discordCharacterMode, discordMultiCharacterMode, discordMultiConstructMode};
+    return {savedToken, appId, discordMultiConstructMode};
 }
 
-export function saveDiscordData(newToken: string, newAppId: string, discordCharacterMode: boolean, discordMultiCharacterMode: boolean, discordMultiConstructMode: boolean){
+export function saveDiscordData(newToken: string, newAppId: string, discordMultiConstructMode: boolean){
     if (newToken === '') {
         const storedToken = store.get('discordToken');
         
@@ -627,17 +609,7 @@ export function saveDiscordData(newToken: string, newAppId: string, discordChara
         store.set('discordAppId', newAppId);
     }
     
-    characterMode = discordCharacterMode;
-    multiCharacterMode = discordMultiCharacterMode;
     multiConstructMode = discordMultiConstructMode;
-
-    store.set('discordCharacterMode', discordCharacterMode);
-    if(!discordCharacterMode){
-        store.set('mode', 'Construct');
-    }else{
-        store.set('mode', 'Character');
-    }
-    store.set('discordMultiCharacterMode', discordMultiCharacterMode);
     store.set('discordMultiConstructMode', discordMultiConstructMode);
 }
 
@@ -683,8 +655,8 @@ export function DiscordJSRoutes(){
 
     // Equivalent to 'discord-save-data' handler
     expressApp.post('/api/discord/data', async (req, res) => {
-        const { newToken, newAppId, discordCharacterMode, discordMultiCharacterMode, discordMultiConstructMode } = req.body;
-        saveDiscordData(newToken, newAppId, discordCharacterMode, discordMultiCharacterMode, discordMultiConstructMode);
+        const { newToken, newAppId, discordMultiConstructMode } = req.body;
+        saveDiscordData(newToken, newAppId, discordMultiConstructMode);
         res.json({ token, applicationID });
     });
 

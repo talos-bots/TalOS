@@ -4,18 +4,12 @@ import ReactSwitch from "react-switch";
 
 const ChatSettings = () => {
     const [doGreetings, setDoGreetings] = useState(false);
-    const [characterMode, setCharacterMode] = useState(false);
     const [doMultiline, setDoMultiline] = useState(false);
     const [messagesToSend, setMessagesToSend] = useState<number>(25);
 
     useEffect(() => {
         getStorageValue('doGreetings').then((value) => {
             setDoGreetings(JSON.parse(value) ? JSON.parse(value) : true);
-        }).catch((err) => {
-            console.error(err);
-        });
-        getStorageValue('characterMode').then((value) => {
-            setCharacterMode(JSON.parse(value)? JSON.parse(value) : false);
         }).catch((err) => {
             console.error(err);
         });
@@ -35,15 +29,6 @@ const ChatSettings = () => {
         setDoGreetings(newValue);
         try {
             await setStorageValue('doGreetings', JSON.stringify(newValue));
-        } catch (err) {
-            console.error(err);
-        }
-    };
-
-    const handleCharacterModeChange = async (newValue: boolean) => {
-        setCharacterMode(newValue);
-        try {
-            await setStorageValue('characterMode', JSON.stringify(newValue));
         } catch (err) {
             console.error(err);
         }
@@ -82,23 +67,6 @@ const ChatSettings = () => {
                             uncheckedIcon={false}
                             checkedIcon={true}
                             id="doGreetings"
-                        />
-                    </div>
-                </div>
-            </div>
-            <div className="flex flex-col col-span-1 w-full h-full flex-grow">
-                <div className="col-span-1 flex flex-col text-left flex-grow">
-                    <label className="text-theme-text font-semibold">Character Mode</label>
-                    <div className="themed-input flex flex-col items-center w-full flex-grow gap-2">
-                        <i className="text-sm">Use character mode instead of Construct mode.</i>
-                        <ReactSwitch
-                            checked={characterMode}
-                            onChange={() => handleCharacterModeChange(!characterMode)}
-                            handleDiameter={30}
-                            width={60}
-                            uncheckedIcon={false}
-                            checkedIcon={true}
-                            id="characterMode"
                         />
                     </div>
                 </div>

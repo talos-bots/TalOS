@@ -10,10 +10,8 @@ import ChannelManager from "./channel-manager";
 import { Plus, Save, Trash } from "lucide-react";
 
 const DiscordPage = () => {
-    const [discordCharacterMode, setDiscordCharacterMode] = useState(false);
     const [discordBotToken, setDiscordBotToken] = useState("");
     const [discordApplicationID, setDiscordApplicationID] = useState("");
-    const [discordMultiCharacterMode, setDiscordMultiCharacterMode] = useState(false);
     const [discordMultiConstructMode, setDiscordMultiConstructMode] = useState(false);
     const [discordActiveConstructs, setDiscordActiveConstructs] = useState<Construct[]>([]);
     const [discordActiveGuilds, setDiscordActiveGuilds] = useState<any[]>([]); // TODO: Type this as a guild object [] when we know what that looks like
@@ -30,8 +28,6 @@ const DiscordPage = () => {
             const data = await getSavedDiscordData();
             setDiscordBotToken(data.savedToken);
             setDiscordApplicationID(data.appId);
-            setDiscordCharacterMode(data.discordCharacterMode);
-            setDiscordMultiCharacterMode(data.discordMultiCharacterMode);
             setDiscordMultiConstructMode(data.discordMultiConstructMode);
             getDoStableDiffusionStatus().then(setDiscordStableDiffusion).catch(console.error);
             getDoStableDiffusionReactsStatus().then(setDiscordStableReacts).catch(console.error);
@@ -49,19 +45,6 @@ const DiscordPage = () => {
         getActiveConstructs();
         isBotActive();
     }, []);
-
-    useEffect(() => {
-        if(discordCharacterMode) {
-            setDiscordMultiConstructMode(false);
-        }
-        if(discordMultiCharacterMode) {
-            setDiscordMultiConstructMode(false);
-        }
-        if(discordMultiConstructMode) {
-            setDiscordCharacterMode(false);
-            setDiscordMultiCharacterMode(false);
-        }
-    }, [discordCharacterMode, discordMultiCharacterMode, discordMultiConstructMode]);
 
     const toggleBotActive = async (e: boolean) => {
         if (e) {
@@ -97,7 +80,7 @@ const DiscordPage = () => {
     }
 
     const saveDiscordConfig = async () => {
-        await saveDiscordData(discordBotToken, discordApplicationID, discordCharacterMode, discordMultiCharacterMode, discordMultiConstructMode);
+        await saveDiscordData(discordBotToken, discordApplicationID, discordMultiConstructMode);
         setStorageValue("discordNotifications", JSON.stringify(discordDesktopNotifications));
     }
 
@@ -141,7 +124,7 @@ const DiscordPage = () => {
                                 <div className="themed-input flex flex-col items-center w-full overflow-y-auto flex-grow">
                                     <i className="text-sm">When enabled, the bot will operate as a Multi-Construct bot, and will attempt to maintain mutliple personas through one bot. Turning this off and on will require a bot restart.</i>
                                     <ReactSwitch
-                                        disabled={discordCharacterMode || isBotActive}
+                                        disabled={isBotActive}
                                         checked={discordMultiConstructMode}
                                         onChange={() => setDiscordMultiConstructMode(!discordMultiConstructMode)}
                                         handleDiameter={30}
@@ -149,38 +132,6 @@ const DiscordPage = () => {
                                         uncheckedIcon={false}
                                         checkedIcon={true}
                                         id="discordMultiConstructMode"
-                                    />
-                                </div>
-                            </div>
-                            <div className="col-span-1 flex flex-col text-left">
-                                <label className="text-theme-text font-semibold">Character Mode</label>
-                                <div className="themed-input flex flex-col items-center w-full flex-grow">
-                                    <i className="text-sm">When enabled, the bot will operate as a Character Chat bot, and will not perform Agent tasks. Turning this off and on will require a bot restart.</i>
-                                    <ReactSwitch
-                                        disabled={discordMultiConstructMode || isBotActive}
-                                        checked={discordCharacterMode}
-                                        onChange={() => setDiscordCharacterMode(!discordCharacterMode)}
-                                        handleDiameter={30}
-                                        width={60}
-                                        uncheckedIcon={false}
-                                        checkedIcon={true}
-                                        id="discordCharacterMode"
-                                    />
-                                </div>
-                            </div>
-                            <div className="col-span-1 flex flex-col text-left">
-                                <label className="text-theme-text font-semibold">Multi-Character Mode</label>
-                                <div className="themed-input flex flex-col items-center w-full flex-grow">
-                                    <i className="text-sm">Can only be activated when in Character Chat Mode. This is distinct from the multi-construct mode. Turning this off and on will require a bot restart.</i>
-                                    <ReactSwitch
-                                        disabled={!discordCharacterMode || isBotActive}
-                                        checked={discordMultiCharacterMode}
-                                        onChange={() => setDiscordMultiCharacterMode(!discordMultiCharacterMode)}
-                                        handleDiameter={30}
-                                        width={60}
-                                        uncheckedIcon={false}
-                                        checkedIcon={true}
-                                        id="discordMultiCharacterMode"
                                     />
                                 </div>
                             </div>
