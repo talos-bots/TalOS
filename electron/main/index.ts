@@ -59,7 +59,7 @@ fs.mkdirSync(uploadsPath, { recursive: true });
 export const store = new Store();
 async function createWindow() {
   win = new BrowserWindow({
-    title: "ConstructOS - AI Sandbox",
+    title: "TalOS - AI Sandbox",
     icon: join(process.env.VITE_PUBLIC, "favicon.ico"),
     webPreferences: {
       nodeIntegration: true,
