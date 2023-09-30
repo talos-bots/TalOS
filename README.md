@@ -62,44 +62,44 @@ https://discord.com/invite/HNSaTjExYy
 https://github.com/orgs/WaywardWyvernsSoftworks/projects/2
 ## Current State of UI
 ### Homepage
-![Home](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/08677b3d-501a-46e5-9fd2-687d5173fa39)
+![Home](https://github.com/WaywardWyvernsSoftworks/TalOS/assets/26259870/08677b3d-501a-46e5-9fd2-687d5173fa39)
 ### Chat Page
-![ChatHome](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/9623abf8-0f9c-4c3f-89a1-b9999a5be716)
-![ChatWindow](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/d7fed060-2895-4001-b356-78a6704b09a4)
-![ChatWindow1](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/d8c7184f-c0be-407d-b49e-b3d3d002af72)
-![ChatWindow2](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/b8741460-d373-4a3e-b308-7bef1ed0bd25)
+![ChatHome](https://github.com/WaywardWyvernsSoftworks/TalOS/assets/26259870/9623abf8-0f9c-4c3f-89a1-b9999a5be716)
+![ChatWindow](https://github.com/WaywardWyvernsSoftworks/TalOS/assets/26259870/d7fed060-2895-4001-b356-78a6704b09a4)
+![ChatWindow1](https://github.com/WaywardWyvernsSoftworks/TalOS/assets/26259870/d8c7184f-c0be-407d-b49e-b3d3d002af72)
+![ChatWindow2](https://github.com/WaywardWyvernsSoftworks/TalOS/assets/26259870/b8741460-d373-4a3e-b308-7bef1ed0bd25)
 
 ### Constructs Page
-![ConstructHome](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/8bfa1a65-0d61-46bf-b24f-98be21b03dbb)
-![ConstructExpand](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/446c8c57-ddbf-4ef0-8766-b69282f2d8ca)
-![ConstructEdit1](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/a5d6c55f-07d4-42e2-820f-8d2cc2558050)
-![ConstructEdit2](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/ca9dba52-f5ce-4e45-ae09-95963dfe4cab)
+![ConstructHome](https://github.com/WaywardWyvernsSoftworks/TalOS/assets/26259870/8bfa1a65-0d61-46bf-b24f-98be21b03dbb)
+![ConstructExpand](https://github.com/WaywardWyvernsSoftworks/TalOS/assets/26259870/446c8c57-ddbf-4ef0-8766-b69282f2d8ca)
+![ConstructEdit1](https://github.com/WaywardWyvernsSoftworks/TalOS/assets/26259870/a5d6c55f-07d4-42e2-820f-8d2cc2558050)
+![ConstructEdit2](https://github.com/WaywardWyvernsSoftworks/TalOS/assets/26259870/ca9dba52-f5ce-4e45-ae09-95963dfe4cab)
 ### Lorebooks Page
-![LorebookHome](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/3396d216-2d43-4d2d-a250-07333674afbb)
+![LorebookHome](https://github.com/WaywardWyvernsSoftworks/TalOS/assets/26259870/3396d216-2d43-4d2d-a250-07333674afbb)
 ### Discord Bot Page
-![Discord](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/26ccc4db-ddc1-40b1-9d65-fc98ecaf7b5e)
+![Discord](https://github.com/WaywardWyvernsSoftworks/TalOS/assets/26259870/26ccc4db-ddc1-40b1-9d65-fc98ecaf7b5e)
 ### User Profiles Page
-![UserHome](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/1b9458fd-de85-4ea9-9459-24785eda5105)
+![UserHome](https://github.com/WaywardWyvernsSoftworks/TalOS/assets/26259870/1b9458fd-de85-4ea9-9459-24785eda5105)
 ### Settings Page
-![Settings](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/af87e37d-fb9d-4dbf-bdb5-a241572bb255)
+![Settings](https://github.com/WaywardWyvernsSoftworks/TalOS/assets/26259870/af87e37d-fb9d-4dbf-bdb5-a241572bb255)
 ### Atachments Page
-![Attachments](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/0788cb50-cfc5-4a75-a1d6-788d57c198a8)
+![Attachments](https://github.com/WaywardWyvernsSoftworks/TalOS/assets/26259870/0788cb50-cfc5-4a75-a1d6-788d57c198a8)
 ### Zero Shot
-![ZeroShot](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/38d2599c-7e55-42ec-a490-d9bde82e1638)
+![ZeroShot](https://github.com/WaywardWyvernsSoftworks/TalOS/assets/26259870/38d2599c-7e55-42ec-a490-d9bde82e1638)
 ### Themes
 **Dark Mode (Default)**
-![Screenshot 2023-09-05 214252](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/9e6c2b91-133c-46b3-9d9f-9c1788199c6e)
+![Screenshot 2023-09-05 214252](https://github.com/WaywardWyvernsSoftworks/TalOS/assets/26259870/9e6c2b91-133c-46b3-9d9f-9c1788199c6e)
 **Light Mode**
-![Screenshot 2023-09-05 214350](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/e6e30b34-bf44-44ad-893d-41c2e777bfb3)
+![Screenshot 2023-09-05 214350](https://github.com/WaywardWyvernsSoftworks/TalOS/assets/26259870/e6e30b34-bf44-44ad-893d-41c2e777bfb3)
 **Green**
-![Screenshot 2023-09-05 214410](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/61182e3c-0a61-4d32-b3c5-0ef081ccab27)
+![Screenshot 2023-09-05 214410](https://github.com/WaywardWyvernsSoftworks/TalOS/assets/26259870/61182e3c-0a61-4d32-b3c5-0ef081ccab27)
 **Blue**
-![Screenshot 2023-09-05 214427](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/56f9e563-774f-4afd-903f-be65c7a4465f)
+![Screenshot 2023-09-05 214427](https://github.com/WaywardWyvernsSoftworks/TalOS/assets/26259870/56f9e563-774f-4afd-903f-be65c7a4465f)
 **Red**
-![Screenshot 2023-09-05 214453](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/aa2ec91f-7ae6-4833-99eb-528b3d492f89)
+![Screenshot 2023-09-05 214453](https://github.com/WaywardWyvernsSoftworks/TalOS/assets/26259870/aa2ec91f-7ae6-4833-99eb-528b3d492f89)
 **Purple**
-![Screenshot 2023-09-05 214511](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/39e5c357-f5f4-419b-ae26-ee0096747c08)
+![Screenshot 2023-09-05 214511](https://github.com/WaywardWyvernsSoftworks/TalOS/assets/26259870/39e5c357-f5f4-419b-ae26-ee0096747c08)
 **Mustard**
-![Screenshot 2023-09-05 214535](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/06e61cdf-75b8-426e-bc69-bafc12f5ce50)
+![Screenshot 2023-09-05 214535](https://github.com/WaywardWyvernsSoftworks/TalOS/assets/26259870/06e61cdf-75b8-426e-bc69-bafc12f5ce50)
 **Orange**
-![Screenshot 2023-09-05 214556](https://github.com/WaywardWyvernsSoftworks/ConstructOS/assets/26259870/72392e09-4171-46d9-8084-f4b377519586)
+![Screenshot 2023-09-05 214556](https://github.com/WaywardWyvernsSoftworks/TalOS/assets/26259870/72392e09-4171-46d9-8084-f4b377519586)
