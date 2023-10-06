@@ -26,7 +26,6 @@
     "make": "electron-forge make"
   },
   "dependencies": {
-    "@azure/cognitiveservices-websearch": "^3.0.1",
     "@azure/ms-rest-azure-js": "^2.1.0",
     "@emoji-mart/data": "^1.1.2",
     "@emoji-mart/react": "^1.1.1",
@@ -60,7 +59,7 @@
     "msedge-tts": "^1.1.1",
     "multer": "^1.4.5-lts.1",
     "node-llama-cpp": "^2.3.2",
-    "openai": "^3.3.0",
+    "openai": "^4.11.1",
     "png-chunk-text": "^1.0.0",
     "png-chunks-encode": "^1.0.0",
     "png-chunks-extract": "^1.0.0",

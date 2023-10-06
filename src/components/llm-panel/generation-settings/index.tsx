@@ -2,7 +2,6 @@ import { SettingsPreset, addLLMSettingsPreset, getCurrentLLMSettingsPreset, getL
 import { EndpointType, Settings } from "@/types";
 import { Save, Trash } from "lucide-react";
 import { useEffect, useState } from "react";
-import ReactSwitch from "react-switch";
 
 const GenerationSettings = () => {
     const [maxContextLength, setMaxContextLength] = useState<number>(2048);
@@ -313,34 +312,12 @@ const GenerationSettings = () => {
                         <input className="w-1/3 themed-input" id='input-container' type="number" min='0' max='512' step='2' value={minLength} onChange={async (e) => {setMinLength(parseInt(e.target.value));}} />
                     </div>
                 </div>
-                {/* <div className="flex flex-col">
-                    <span className=" font-semibold">Max Token Output</span>
-                    <div className="w-full flex flex-row">
-                        <input className="w-2/3 themed-input" type="range" min='0' max='2048' step='16' value={maxTokens} onChange={async (e) => {setMaxTokens(parseInt(e.target.value));}} />
-                        <input className="w-1/3 themed-input" id='input-container' type="number" min='0' max='2048' step='16' value={maxTokens} onChange={async (e) => {setMaxTokens(parseInt(e.target.value));}} />
-                    </div>
-                </div> */}
                 <div>
                     <span><i>The order by which all 7 samplers are applied, separated by commas. 0=top_k, 1=top_a, 2=top_p, 3=tfs, 4=typ, 5=temp, 6=rep_pen</i></span>
                 </div>
                 <div className="flex flex-col">
                     <span className=" font-semibold">Sampler Order</span>
                     <input className="themed-input" type="text" value={samplerOrder.toString()} onChange={async (e) => {setSamplerOrder(e.target.value.split(',').map(Number))}} />
-                </div>
-                <div className="flex flex-col w-full text-left">
-                    <label className="text-theme-text text-shadow-xl font-semibold">Stop Brackets</label>
-                    <div className="flex flex-col w-full text-left">
-                        <i>Adds brackets to the stop list.</i>
-                        <ReactSwitch
-                            checked={stopBrackets}
-                            onChange={() => setStopBrackets(!stopBrackets)}
-                            handleDiameter={30}
-                            width={60}
-                            uncheckedIcon={false}
-                            checkedIcon={true}
-                            id="stopBrackets"
-                        />
-                    </div>
                 </div>
             </div>
             <button className="themed-button-pos w-full justify-center items-center flex"

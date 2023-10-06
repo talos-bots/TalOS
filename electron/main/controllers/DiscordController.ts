@@ -10,6 +10,7 @@ import { getDefaultCfg, getDefaultHeight, getDefaultHighresSteps, getDefaultNega
 import { expressApp, expressAppIO, win } from '..';
 import { detectIntent } from '../helpers/actions-helpers';
 import { createSelfieForConstruct } from '../helpers/discord-helpers';
+import { cancelGeneration } from '../api/llm';
 
 const store = new Store({
     name: 'discordData',
@@ -239,6 +240,7 @@ export const isChannelRegistered = (channel: string): boolean => {
 }
 
 export function setInterrupted(){
+    cancelGeneration();
     isInterrupted = true;
 }
 
