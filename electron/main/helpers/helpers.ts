@@ -95,6 +95,7 @@ export function assembleUserFromData(data: any){
 	const user: UserInterface = {
 		_id: data._id,
 		name: data.name,
+		pronouns: data.pronouns,
 		nickname: data.nickname,
 		avatar: data.avatar,
 		personality: data.personality,
@@ -374,6 +375,7 @@ export function assembleUserFromDiscordAuthor(message: Message){
 	const user: UserInterface = {
 		_id: message.author.id,
 		name: message.author.username,
+		pronouns: '',
 		nickname: message.author.displayName,
 		avatar: avatar,
 		personality: '',

@@ -5,6 +5,7 @@ import { instructPrompt, instructPromptWithContext, instructPromptWithExamples, 
 import { getCaption, getClassification, getEmbedding, getEmbeddingSimilarity,  getQuestionAnswering } from '../model-pipeline/transformers';
 import { expressApp } from '..';
 import { detectIntent } from '../helpers/actions-helpers';
+import { ConstructInterface } from '../types/types';
 
 const HORDE_API_URL = 'https://aihorde.net/api';
 
@@ -363,6 +364,7 @@ export const generateText = async (
     prompt: string,
     configuredName: string = 'You',
     stopList: string[] | null = null,
+    construct?: ConstructInterface,
   ): Promise<any> => {
     let response: any;
     let char = 'Character';
@@ -375,6 +377,15 @@ export const generateText = async (
   
     if (stopBrackets) {
       stops.push('[', ']');
+    }
+    if(construct){
+        if(construct?.defaultConfig.instructType === 'Metharme'){
+            stops.push('<|user|>');
+        }else if (construct?.defaultConfig.instructType === 'Alpaca'){
+            stops.push('### Instruction:');
+        }else if (construct?.defaultConfig.instructType === 'Vicuna'){
+            stops.push('USER:');
+        }
     }
     let endpointURLObject;
     switch (endpointType) {

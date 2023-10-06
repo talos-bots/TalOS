@@ -328,7 +328,7 @@ export async function generateThoughts(construct: ConstructInterface, chat: Chat
         prompt = prompt.replaceAll('{{user}}', `${currentUser}`).replaceAll('{{char}}', `${construct.name}`);
     }
     console.log(prompt);
-    const response = await generateText(prompt, currentUser);
+    const response = await generateText(prompt, currentUser, undefined, construct);
     if (response && response.results && response.results[0]) {
         return breakUpCommands(construct.name, response.results[0].replaceAll(`${construct.name.trim()}'s Thoughts:`, ''), currentUser, undefined, doMultiLine);
     } else {
@@ -404,7 +404,7 @@ export async function generateContinueChatLog(construct: ConstructInterface, cha
         }
         prompt = memoryText + prompt;
     }
-    const response = await generateText(prompt, currentUser, stopList).then((response) => {
+    const response = await generateText(prompt, currentUser, undefined, construct).then((response) => {
         return response;
     }).catch((error) => {
         console.log('Error from GenerateText:', error);

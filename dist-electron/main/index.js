@@ -1407,6 +1407,7 @@ function assembleUserFromData(data) {
   const user = {
     _id: data._id,
     name: data.name,
+    pronouns: data.pronouns,
     nickname: data.nickname,
     avatar: data.avatar,
     personality: data.personality,
@@ -1665,6 +1666,7 @@ function assembleUserFromDiscordAuthor(message) {
   const user = {
     _id: message.author.id,
     name: message.author.username,
+    pronouns: "",
     nickname: message.author.displayName,
     avatar,
     personality: "",
@@ -2213,7 +2215,7 @@ async function getStatus(testEndpoint, testEndpointType) {
     return "There was an issue checking the endpoint status. Please try again.";
   }
 }
-const generateText = async (prompt, configuredName = "You", stopList = null) => {
+const generateText = async (prompt, configuredName = "You", stopList = null, construct) => {
   var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r;
   let response;
   let char = "Character";
@@ -2223,6 +2225,15 @@ const generateText = async (prompt, configuredName = "You", stopList = null) => 
   let stops = stopList ? ["You:", "<START>", "<END>", ...stopList] : [`${configuredName}:`, "You:", "<START>", "<END>"];
   if (stopBrackets) {
     stops.push("[", "]");
+  }
+  if (construct) {
+    if ((construct == null ? void 0 : construct.defaultConfig.instructType) === "Metharme") {
+      stops.push("<|user|>");
+    } else if ((construct == null ? void 0 : construct.defaultConfig.instructType) === "Alpaca") {
+      stops.push("### Instruction:");
+    } else if ((construct == null ? void 0 : construct.defaultConfig.instructType) === "Vicuna") {
+      stops.push("USER:");
+    }
   }
   let endpointURLObject;
   switch (endpointType) {
@@ -3289,7 +3300,7 @@ async function generateThoughts(construct, chat, currentUser = "you", messagesTo
     prompt = prompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${construct.name}`);
   }
   console.log(prompt);
-  const response = await generateText(prompt, currentUser);
+  const response = await generateText(prompt, currentUser, void 0, construct);
   if (response && response.results && response.results[0]) {
     return breakUpCommands(construct.name, response.results[0].replaceAll(`${construct.name.trim()}'s Thoughts:`, ""), currentUser, void 0, doMultiLine);
   } else {
@@ -3359,7 +3370,7 @@ async function generateContinueChatLog(construct, chatLog, currentUser, messages
     }
     prompt = memoryText + prompt;
   }
-  const response = await generateText(prompt, currentUser, stopList).then((response2) => {
+  const response = await generateText(prompt, currentUser, void 0, construct).then((response2) => {
     return response2;
   }).catch((error) => {
     console.log("Error from GenerateText:", error);
