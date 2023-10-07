@@ -379,19 +379,13 @@ export async function generateContinueChatLog(construct: ConstructInterface, cha
                 newPrompt += splitPrompt[i];
             }
         }
-        if(replaceUser === true){
-            prompt = newPrompt.replaceAll('{{user}}', `${currentUser}`).replaceAll('{{char}}', `${construct.name}`);
-        }else{
-            prompt = newPrompt;
-        }
+        prompt = newPrompt.replaceAll('{{user}}', `${currentUser}`).replaceAll('{{char}}', `${construct.name}`);
     }
     let promptWithWorldInfo = await handleLorebookPrompt(construct, prompt, chatLog);
     if(promptWithWorldInfo !== null && promptWithWorldInfo !== undefined){
         prompt = promptWithWorldInfo;
     }
-    if(replaceUser === true){
-        prompt = prompt.replaceAll('{{user}}', `${currentUser}`).replaceAll('{{char}}', `${construct.name}`);
-    }
+    prompt = prompt.replaceAll('{{user}}', `${currentUser}`).replaceAll('{{char}}', `${construct.name}`);
     if(chatLog.doVector === true){
         let memoryText = ''
         const memories = await getRelaventMemories(chatLog._id, chatLog.lastMessage.text)
@@ -420,7 +414,7 @@ export async function generateContinueChatLog(construct: ConstructInterface, cha
 
 export async function generateContinueChatLogAsUser(user: UserInterface, chatLog: ChatInterface, currentUser?: string, messagesToInclude?: any, stopList?: string[], authorsNote?: string | string[], authorsNoteDepth?: number, doMultiLine?: boolean, replaceUser: boolean = true) {
     let prompt = assembleUserPrompt(user, chatLog, currentUser, messagesToInclude);
-    prompt = prompt.replaceAll('{{char}}', `${user ? (user?.nickname || user.name) : 'DefaultUser'}`);
+    prompt = prompt.replaceAll('{{user}}', `${user ? (user?.nickname || user.name) : 'DefaultUser'}`);
     const response = await generateText(prompt, currentUser, stopList);
     if (response && response.results && response.results[0]) {
         return breakUpCommands(`${user ? (user?.nickname || user.name) : 'DefaultUser'}`, response.results[0], currentUser, stopList, doMultiLine);

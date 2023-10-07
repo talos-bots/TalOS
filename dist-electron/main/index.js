@@ -3344,19 +3344,13 @@ async function generateContinueChatLog(construct, chatLog, currentUser, messages
         newPrompt += splitPrompt[i];
       }
     }
-    if (replaceUser2 === true) {
-      prompt = newPrompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${construct.name}`);
-    } else {
-      prompt = newPrompt;
-    }
+    prompt = newPrompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${construct.name}`);
   }
   let promptWithWorldInfo = await handleLorebookPrompt(construct, prompt, chatLog);
   if (promptWithWorldInfo !== null && promptWithWorldInfo !== void 0) {
     prompt = promptWithWorldInfo;
   }
-  if (replaceUser2 === true) {
-    prompt = prompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${construct.name}`);
-  }
+  prompt = prompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${construct.name}`);
   if (chatLog.doVector === true) {
     let memoryText = "";
     const memories = await getRelaventMemories(chatLog._id, chatLog.lastMessage.text);
@@ -3386,7 +3380,7 @@ async function generateContinueChatLog(construct, chatLog, currentUser, messages
 async function generateContinueChatLogAsUser(user, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth, doMultiLine, replaceUser2 = true) {
   var _a;
   let prompt = assembleUserPrompt(user, chatLog, currentUser, messagesToInclude);
-  prompt = prompt.replaceAll("{{char}}", `${user ? (user == null ? void 0 : user.nickname) || user.name : "DefaultUser"}`);
+  prompt = prompt.replaceAll("{{user}}", `${user ? (user == null ? void 0 : user.nickname) || user.name : "DefaultUser"}`);
   const response = await generateText(prompt, currentUser, stopList);
   if (response && response.results && response.results[0]) {
     return breakUpCommands(`${user ? (user == null ? void 0 : user.nickname) || user.name : "DefaultUser"}`, response.results[0], currentUser, stopList, doMultiLine);

@@ -17,6 +17,7 @@ import ConstructManagement from './components/construct-crud';
 import ZeroPage from './pages/zero';
 import NavBar from './components/shared/NavBar';
 import { io } from 'socket.io-client';
+import NetworkPage from './pages/network';
 
 export const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, url: string) => {
   e.preventDefault();
@@ -80,6 +81,7 @@ function App() {
         <div className='main-content'>
           <Routes>
             <Route path='/*' element={<Navigate to='/constructs' />} />
+            <Route path='/network' element={<NetworkPage/>} />
             <Route path='/constructs' element={<ConstructsPage/>} />
             <Route path='/constructs/:id' element={<ConstructManagement/>} />
             <Route path='/constructs/new' element={<ConstructManagement/>} />

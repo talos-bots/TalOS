@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useLocation, NavLink } from 'react-router-dom';
 import { HashLink } from 'react-router-hash-link';
-import { HomeIcon, MessageCircle, Cog, Sparkles, Users, Bot, User, Book, File, Text, MoreHorizontalIcon, Menu, Paperclip } from 'lucide-react';
+import { HomeIcon, MessageCircle, Cog, Sparkles, Users, Bot, User, Book, File, Text, MoreHorizontalIcon, Menu, Paperclip, BrainCircuitIcon } from 'lucide-react';
 import Clock from '../clock';
 
 const NavBar: React.FC = () => {
@@ -24,6 +24,9 @@ const NavBar: React.FC = () => {
 						<Bot style={location.pathname === "/discord" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }} size={'1.5rem'}/>
 					</NavLink>
 				</Dropdown>
+				<NavLink to="/network" title="Construct Matrix" className={`p-1 transition-all duration-125 hover:opacity-50`}>
+					<BrainCircuitIcon style={location.pathname === "/network" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }} size={'1.5rem'}/>
+				</NavLink>
 				<Dropdown 
 					icon={  
 					<NavLink to="/chat" title="Chat" className={`p-1 transition-all duration-125 hover:opacity-50`} >
