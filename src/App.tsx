@@ -1,4 +1,4 @@
-import { HashRouter as Router, Routes, Route } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { ipcMain, ipcRenderer } from 'electron';
 import { Steps, Hints } from 'intro.js-react';
@@ -79,7 +79,7 @@ function App() {
         <NavBar />
         <div className='main-content'>
           <Routes>
-            <Route path='/*' element={<ConstructsPage/>} />
+            <Route path='/*' element={<Navigate to='/constructs' />} />
             <Route path='/constructs' element={<ConstructsPage/>} />
             <Route path='/constructs/:id' element={<ConstructManagement/>} />
             <Route path='/constructs/new' element={<ConstructManagement/>} />
