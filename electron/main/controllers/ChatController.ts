@@ -1,6 +1,6 @@
 import Store from 'electron-store';
-import { assembleAlpacaPromptFromLog, assembleConstructFromData, assembleLorebookFromData, assembleMetharmePromptFromLog, assemblePromptFromLog, assembleUserFromData, assembleVicunaPromptFromLog } from '../helpers/helpers';
-import { generateText } from '../api/llm';
+import { assembleAlpacaPromptFromLog, assembleConstructFromData, assembleLorebookFromData, assembleMetharmePromptFromLog, assemblePromptFromLog, assembleUserFromData, assembleVicunaPromptFromLog, getGPTTokens } from '../helpers/helpers';
+import { generateText, getCurrentSettingsPreset, settings } from '../api/llm';
 import { isReady, setDiscordBotInfo } from '../api/discord';
 import { getConstruct, getLorebooks, getUser, updateChat } from '../api/pouchdb';
 import { ChatInterface, ConstructInterface, LoreEntryInterface, MessageInterface, UserInterface } from '../types/types';
@@ -9,6 +9,7 @@ import { detectIntent } from '../helpers/actions-helpers';
 import { expressApp } from '..';
 import { getYesNoMaybe } from '../model-pipeline/transformers';
 import { getDoSystemInfo, setDoSystemInfo } from './ActiveConstructController';
+import { fillChatContextToLimit } from '../helpers/chat-helpers';
 const store = new Store({
     name: 'constructData',
 });
@@ -131,8 +132,12 @@ export type InstructType = 'Alpaca' | 'Metharme' | 'Vicuna';
 
 export function assembleInstructPrompt(construct: ConstructInterface, chatLog: ChatInterface, currentUser: string = 'you', messagesToInclude?: any, replaceUser: boolean = true){
     let prompt = '';
+    const currentSettings = settings;
     const type = construct.defaultConfig.instructType;
     prompt += getCharacterPromptFromConstruct(construct);
+    let leftOverTokens = currentSettings.max_context_length - getGPTTokens(prompt + construct.authorsNote);
+    const chatsToSend = fillChatContextToLimit(chatLog, leftOverTokens);
+    chatLog.messages = chatsToSend;
     switch(type){
         case 'Alpaca':
             prompt += assembleAlpacaPromptFromLog(chatLog, messagesToInclude, construct.name);
@@ -156,8 +161,12 @@ export function assembleInstructPrompt(construct: ConstructInterface, chatLog: C
 
 export function assemblePrompt(construct: ConstructInterface, chatLog: ChatInterface, currentUser: string = 'you', messagesToInclude?: any, replaceUser: boolean = true){
     let prompt = '';
+    const currentSettings = settings;
     prompt += getCharacterPromptFromConstruct(construct);
-    prompt += assemblePromptFromLog(chatLog, messagesToInclude);
+    let leftOverTokens = currentSettings.max_context_length - getGPTTokens(prompt + construct.authorsNote);
+    const chatsToSend = fillChatContextToLimit(chatLog, leftOverTokens);
+    chatLog.messages = chatsToSend;
+    prompt += assemblePromptFromLog(chatLog);
     prompt += `${construct.name}:`;
     if(replaceUser === true){
         return prompt.replaceAll('{{user}}', `${currentUser}`).replaceAll('{{char}}', `${construct.name}`);
@@ -169,7 +178,7 @@ export function assemblePrompt(construct: ConstructInterface, chatLog: ChatInter
 export function assembleUserPrompt(user: UserInterface, chatLog: ChatInterface, currentUser: string = 'you', messagesToInclude?: any, replaceUser: boolean = true){
     let prompt = '';
     prompt += getUserPromptFromUser(user);
-    prompt += assemblePromptFromLog(chatLog, messagesToInclude);
+    prompt += assemblePromptFromLog(chatLog);
     prompt += `${user ? (user?.nickname || user.name) : 'DefaultUser'}:`; 
     if(replaceUser === true){
         return prompt.replaceAll('{{user}}', `${currentUser}`).replaceAll('{{char}}', `${user ? (user?.nickname || user.name) : 'DefaultUser'}`);

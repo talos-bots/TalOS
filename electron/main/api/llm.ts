@@ -116,7 +116,7 @@ interface ConnectionPreset {
 let endpoint: string = store.get('endpoint', '') as string;
 let endpointType: EndpointType = store.get('endpointType', '') as EndpointType;
 let password: string = store.get('password', '') as string;
-let settings: Settings = store.get('settings', defaultSettings) as Settings;
+export let settings: Settings = store.get('settings', defaultSettings) as Settings;
 let hordeModel = store.get('hordeModel', '');
 let stopBrackets = store.get('stopBrackets', true);
 let openaiModel = store.get('openaiModel', 'gpt-3.5-turbo-16k') as OAI_Model;

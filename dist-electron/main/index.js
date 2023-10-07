@@ -36,7 +36,7 @@ const promises = require("fs/promises");
 const fs = require("node:fs");
 const FormData = require("form-data");
 const vectra = require("vectra");
-require("gpt-tokenizer");
+const gptTokenizer = require("gpt-tokenizer");
 const fs$1 = require("fs");
 const express = require("express");
 const multer = require("multer");
@@ -1417,11 +1417,10 @@ function assembleUserFromData(data) {
   };
   return user;
 }
-function assemblePromptFromLog(data, messagesToInclude = 25) {
+function assemblePromptFromLog(data) {
   var _a, _b, _c;
   let prompt = "";
   let messages = data.messages;
-  messages = messages.slice(-messagesToInclude);
   for (let i = 0; i < messages.length; i++) {
     if (messages[i].isCommand === true) {
       prompt += `${messages[i].text.trim()}
@@ -1711,6 +1710,10 @@ function assembleLorebookFromData(data) {
     entries: data.entries || []
   };
   return lorebook;
+}
+function getGPTTokens(text) {
+  const tokens = gptTokenizer.encode(text).length;
+  return tokens;
 }
 const instructPromptWithGuidance = `
 {{guidance}}
@@ -3008,6 +3011,26 @@ function getDoSystemInfo() {
 function setDoSystemInfo(doSystemSettings) {
   constructSettings.set("doSystemInfo", doSystemSettings);
 }
+function fillChatContextToLimit(chatLog, tokenLimit, tokenizer = "LLaMA") {
+  const messagesToInclude = [];
+  let tokenCount = 0;
+  for (let i = chatLog.messages.length - 1; i >= 0; i--) {
+    const message = chatLog.messages[i];
+    let tokens;
+    if (tokenizer === "OpenAI") {
+      tokens = getGPTTokens(message.text);
+    } else {
+      tokens = getGPTTokens(message.text);
+    }
+    if (tokens + tokenCount <= tokenLimit) {
+      messagesToInclude.unshift(message);
+      tokenCount += tokens;
+    } else {
+      break;
+    }
+  }
+  return messagesToInclude;
+}
 const store$4 = new Store({
   name: "constructData"
 });
@@ -3112,8 +3135,12 @@ function getUserPromptFromUser(user, replaceUser2 = true) {
 }
 function assembleInstructPrompt(construct, chatLog, currentUser = "you", messagesToInclude, replaceUser2 = true) {
   let prompt = "";
+  const currentSettings = settings;
   const type = construct.defaultConfig.instructType;
   prompt += getCharacterPromptFromConstruct(construct);
+  let leftOverTokens = currentSettings.max_context_length - getGPTTokens(prompt + construct.authorsNote);
+  const chatsToSend = fillChatContextToLimit(chatLog, leftOverTokens);
+  chatLog.messages = chatsToSend;
   switch (type) {
     case "Alpaca":
       prompt += assembleAlpacaPromptFromLog(chatLog, messagesToInclude, construct.name);
@@ -3136,8 +3163,12 @@ function assembleInstructPrompt(construct, chatLog, currentUser = "you", message
 }
 function assemblePrompt(construct, chatLog, currentUser = "you", messagesToInclude, replaceUser2 = true) {
   let prompt = "";
+  const currentSettings = settings;
   prompt += getCharacterPromptFromConstruct(construct);
-  prompt += assemblePromptFromLog(chatLog, messagesToInclude);
+  let leftOverTokens = currentSettings.max_context_length - getGPTTokens(prompt + construct.authorsNote);
+  const chatsToSend = fillChatContextToLimit(chatLog, leftOverTokens);
+  chatLog.messages = chatsToSend;
+  prompt += assemblePromptFromLog(chatLog);
   prompt += `${construct.name}:`;
   if (replaceUser2 === true) {
     return prompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${construct.name}`);
@@ -3148,7 +3179,7 @@ function assemblePrompt(construct, chatLog, currentUser = "you", messagesToInclu
 function assembleUserPrompt(user, chatLog, currentUser = "you", messagesToInclude, replaceUser2 = true) {
   let prompt = "";
   prompt += getUserPromptFromUser(user);
-  prompt += assemblePromptFromLog(chatLog, messagesToInclude);
+  prompt += assemblePromptFromLog(chatLog);
   prompt += `${user ? (user == null ? void 0 : user.nickname) || user.name : "DefaultUser"}:`;
   if (replaceUser2 === true) {
     return prompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${user ? (user == null ? void 0 : user.nickname) || user.name : "DefaultUser"}`);
@@ -3411,7 +3442,7 @@ async function generateContinueChatLog(construct, chatLog, currentUser, messages
 }
 async function generateContinueChatLogAsUser(user, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth, doMultiLine, replaceUser2 = true) {
   var _a;
-  let prompt = assembleUserPrompt(user, chatLog, currentUser, messagesToInclude);
+  let prompt = assembleUserPrompt(user, chatLog, currentUser);
   prompt = prompt.replaceAll("{{user}}", `${user ? (user == null ? void 0 : user.nickname) || user.name : "DefaultUser"}`);
   const response = await generateText(prompt, currentUser, stopList);
   if (response && response.results && response.results[0]) {
@@ -3699,7 +3730,7 @@ function constructController() {
   });
   expressApp.post("/api/constructs/assemble-prompt", (req, res) => {
     const { construct, chatLog, currentUser, messagesToInclude } = req.body;
-    const prompt = assemblePrompt(construct, chatLog, currentUser, messagesToInclude);
+    const prompt = assemblePrompt(construct, chatLog, currentUser);
     res.json({ prompt });
   });
   expressApp.post("/api/constructs/assemble-instruct-prompt", (req, res) => {
