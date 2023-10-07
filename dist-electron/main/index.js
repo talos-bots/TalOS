@@ -2994,6 +2994,20 @@ function VectorDBRoutes() {
     }
   });
 }
+const constructSettings = new Store(
+  {
+    name: "constructSettings",
+    defaults: {
+      doSystemInfo: true
+    }
+  }
+);
+function getDoSystemInfo() {
+  return constructSettings.get("doSystemInfo") || true;
+}
+function setDoSystemInfo(doSystemSettings) {
+  constructSettings.set("doSystemInfo", doSystemSettings);
+}
 const store$4 = new Store({
   name: "constructData"
 });
@@ -3316,6 +3330,24 @@ async function generateContinueChatLog(construct, chatLog, currentUser, messages
   } else {
     prompt += assemblePrompt(construct, chatLog, currentUser, messagesToInclude, replaceUser2);
   }
+  if (getDoSystemInfo() === true) {
+    let splitPrompt = prompt.split("\n");
+    let newPrompt = "";
+    let depth = 2;
+    let insertHere = splitPrompt.length < depth ? 0 : splitPrompt.length - depth;
+    for (let i = 0; i < splitPrompt.length; i++) {
+      if (i === insertHere) {
+        newPrompt += getSystemInformation(chatLog);
+      }
+      if (i !== splitPrompt.length - 1) {
+        newPrompt += splitPrompt[i] + "\n";
+      } else {
+        newPrompt += splitPrompt[i];
+      }
+    }
+    prompt = newPrompt;
+    console.log("Prompt with system info:", prompt);
+  }
   if (construct.authorsNote !== void 0 && construct.authorsNote !== "" && construct.authorsNote !== null || authorsNote !== void 0 && authorsNote !== "" && authorsNote !== null) {
     if (!authorsNote) {
       authorsNote = [construct.authorsNote];
@@ -3577,6 +3609,39 @@ async function regenerateUserMessageFromChatLog(chatLog, messageContent, message
   await updateChat(chatLog);
   return newReply;
 }
+function getSystemInformation(chatLog) {
+  const now = /* @__PURE__ */ new Date();
+  const currentTimeString = `${now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true })}, ${now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}`;
+  try {
+    const lastMessageDate = new Date(chatLog.messages[chatLog.messages.length - 2].timestamp);
+    const chatStartDate = new Date(chatLog.messages[0].timestamp);
+    if (isNaN(chatStartDate.getTime()) || isNaN(lastMessageDate.getTime())) {
+      throw new Error("Invalid date data in chatLog");
+    }
+    const timeSinceLastMessageString = getTimeDifferenceString(now, lastMessageDate);
+    if (timeSinceLastMessageString === "" || timeSinceLastMessageString === null || timeSinceLastMessageString === void 0)
+      return `[Current Time: ${currentTimeString}. Chat started on ${chatStartDate.toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}]`;
+    return `[Current Time: ${currentTimeString}. Time since last sent message: ${timeSinceLastMessageString}. Chat started on ${chatStartDate.toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}]`;
+  } catch (error) {
+    console.error(error);
+    return `[Current Time: ${currentTimeString}.]`;
+  }
+}
+function getTimeDifferenceString(now, past) {
+  const diffMs = now.getTime() - past.getTime();
+  const diffDays = Math.floor(diffMs / (1e3 * 60 * 60 * 24));
+  const diffHours = Math.floor(diffMs % (1e3 * 60 * 60 * 24) / (1e3 * 60 * 60));
+  const diffMinutes = Math.floor(diffMs % (1e3 * 60 * 60) / (1e3 * 60));
+  let result = "";
+  if (diffDays > 0) {
+    result += `${diffDays} days, `;
+  }
+  if (diffDays > 0 || diffHours > 0) {
+    result += `${diffHours} hours, and `;
+  }
+  result += `${diffMinutes} minutes`;
+  return result;
+}
 function constructController() {
   ActiveConstructs = retrieveConstructs();
   expressApp.post("/api/constructs/add-to-active", (req, res) => {
@@ -3607,6 +3672,15 @@ function constructController() {
     setAsPrimary(constructId);
     const activeConstructs = retrieveConstructs();
     res.json({ activeConstructs });
+  });
+  expressApp.post("/api/constructs/set/systeminfo", (req, res) => {
+    setDoSystemInfo(req.body.value);
+    const currentDoSystemInfo = getDoSystemInfo();
+    res.json({ doSystemInfo: currentDoSystemInfo });
+  });
+  expressApp.get("/api/constructs/systeminfo", (req, res) => {
+    const currentDoSystemInfo = getDoSystemInfo();
+    res.json({ doSystemInfo: currentDoSystemInfo });
   });
   expressApp.post("/api/constructs/multi-line", (req, res) => {
     const value = req.body.value;

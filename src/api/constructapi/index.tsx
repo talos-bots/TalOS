@@ -5,6 +5,18 @@ import axios from "axios";
 import { uploadImage } from "../baseapi";
 import { sendTxt2Img } from "../sdapi";
 
+// POST to set system info
+export const setSystemInfo = async (value: boolean): Promise<{ doSystemInfo: boolean }> => {
+    const response = await axios.post('/api/constructs/set/systeminfo', { value });
+    return response.data;
+}
+  
+// GET to retrieve system info
+export const getSystemInfo = async (): Promise<{ doSystemInfo: boolean }> => {
+    const response = await axios.get('/api/constructs/systeminfo');
+    return response.data;
+}
+
 export async function constructIsActive(id: string): Promise<boolean> {
     try {
         const response = await axios.post(`${url}/api/constructs/is-active`, { construct: id });
