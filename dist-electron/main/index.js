@@ -3370,7 +3370,7 @@ async function generateContinueChatLog(construct, chatLog, currentUser, messages
   if (getDoSystemInfo() === true) {
     let splitPrompt = prompt.split("\n");
     let newPrompt = "";
-    let depth = 2;
+    let depth = 4;
     let insertHere = splitPrompt.length < depth ? 0 : splitPrompt.length - depth;
     for (let i = 0; i < splitPrompt.length; i++) {
       if (i === insertHere) {
