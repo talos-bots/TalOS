@@ -227,9 +227,11 @@ const GenerationSettings = () => {
                     })}
                 </select>
             </div>
-            <div className="flex flex-col w-full overflow-y-auto text-left themed-box flex-grow">
+            <div className="flex flex-col w-full overflow-y-auto text-left themed-box max-h-[600px]">
                 <div className="flex flex-col ">
                     <span className=" font-semibold">Max Context Length</span>
+                    <i className="text-sm">Controls how many 'tokens' are sent to the LLM. This will affect the speed of generation, the cohherrence of conversation flow, and the amount of memory used.
+                (All endpoints, will not override model's max context length)</i>
                     <div className="w-full flex flex-row">
                         <input className="w-2/3 themed-input" type="range" min='512' max="8192" step="16" value={maxContextLength} onChange={async (e) => {setMaxContextLength(parseInt(e.target.value));}} />
                         <input className="w-1/3 themed-input" id='input-container' type="number" min='512' max="8192" step="16" value={maxContextLength} onChange={async (e) => {setMaxContextLength(parseInt(e.target.value))}} />
@@ -237,13 +239,35 @@ const GenerationSettings = () => {
                 </div>
                 <div className="flex flex-col ">
                     <span className=" font-semibold">Max Generation Length</span>
+                    <i className="text-sm">            Controls the maximum amount of return 'tokens' the LLM can send in reply to your prompt. This is <b>not</b> a gaurantor of length, but rather a limit.
+                    (All endpoints, will not override model's max generation length)</i>
                     <div className="w-full flex flex-row">
                         <input className="w-2/3 themed-input" type="range" min='16' max='512' step="2" value={maxLength} onChange={async (e) => {setMaxLength(parseInt(e.target.value));}} />
                         <input className="w-1/3 themed-input" id='themed-input' type="number" min='16' max='512' step="2" value={maxLength} onChange={async (e) => {setMaxLength(parseInt(e.target.value))}} />
                     </div>
                 </div>
+                <div className="flex flex-col">
+                    <span className=" font-semibold">Min Length</span>
+                    <i className="text-sm">This controls how many tokens the LLM will always generate. (Ooba, OpenAI, Claude, PaLM)</i>
+                    <div className="w-full flex flex-row">
+                        <input className="w-2/3 themed-input" type="range" min='0' max='512' step='2' value={minLength} onChange={async (e) => {setMinLength(parseInt(e.target.value));}} />
+                        <input className="w-1/3 themed-input" id='input-container' type="number" min='0' max='512' step='2' value={minLength} onChange={async (e) => {setMinLength(parseInt(e.target.value));}} />
+                    </div>
+                </div>
+                <div className="flex flex-col ">
+                    <span className=" font-semibold">Temperature</span>
+                    <i className="text-sm">Controls the randomness of the LLM. Lower values will make the LLM more predictable, higher values will make the LLM more random. (All endpoints)</i>
+                    <div className="w-full flex flex-row">
+                        <input className="w-2/3 themed-input" type="range" min="0.10" max="2.00" step="0.01" value={temperature} onChange={async (e) => {setTemperature(parseFloat(e.target.value));}} />
+                        <input className="w-1/3 themed-input" id='input-container' type="number" min="0.10" max="2.00" step="0.01" value={temperature} onChange={async (e) => {setTemperature(parseFloat(e.target.value));}} />
+                    </div>
+                </div>
                 <div className="flex flex-col ">
                     <span className=" font-semibold">Repetition Penalty</span>
+                    <i className="text-sm">
+                        Higher values make the output less repetitive. Lower values make the output more repetitive.
+                        (Ooba, Kobold, Horde)
+                    </i>
                     <div className="w-full flex flex-row">
                         <input className="w-2/3 themed-input" type="range" step="0.01" min='1' max="1.50" value={repPen} onChange={async (e) => {setRepPen(parseFloat(e.target.value));}} />
                         <input className="w-1/3 themed-input" step="0.01" min='1' max="1.50" id='input-container' type="number" value={repPen} onChange={async (e) => {setRepPen(parseFloat(e.target.value))}} />
@@ -251,6 +275,10 @@ const GenerationSettings = () => {
                 </div>
                 <div className="flex flex-col ">
                     <span className=" font-semibold">Repetition Pen Range</span>
+                    <i className="text-sm">                
+                        Defines the number of tokens that will be checked for repetitions, starting from the last token generated. The larger the range, the more tokens are checked.
+                        (Ooba, Kobold, Horde)
+                    </i>
                     <div className="w-full flex flex-row">
                         <input className="w-2/3 themed-input" type="range" min='0' step="16" max="8192" value={repPenRange} onChange={async (e) => {setRepPenRange(parseInt(e.target.value));}} />
                         <input className="w-1/3 themed-input" id='input-container' type="number" min='0' step="16" max="8192" value={repPenRange} onChange={async (e) => {setRepPenRange(parseInt(e.target.value))}} />
@@ -258,20 +286,24 @@ const GenerationSettings = () => {
                 </div>
                 <div className="flex flex-col ">
                     <span className=" font-semibold">Repetition Pen Slope</span>
+                    <i className="text-sm">                
+                        The penalty to repeated tokens is applied differently based on distance from the final token. The distribution of that penalty follows a S-shaped curve. 
+                        If the sloping is set to 0, that curve will be completely flat. All tokens will be penalized equally. 
+                        If it is set to a very high value, it'll act more like two steps: Early tokens will receive little to no penalty, but later ones will be considerably penalized.
+                        (Ooba, Kobold, Horde)
+                    </i>
                     <div className="w-full flex flex-row">
                         <input className="w-2/3 themed-input" type="range" min='0.0' max="10" step="0.1" value={repPenSlope} onChange={async (e) => {setRepPenSlope(parseFloat(e.target.value));}} />
                         <input className="w-1/3 themed-input" id='input-container' type="number" min='0.0' max="10" step="0.1" value={repPenSlope} onChange={async (e) => {setRepPenSlope(parseFloat(e.target.value));}} />
                     </div>
                 </div>
                 <div className="flex flex-col ">
-                    <span className=" font-semibold">Temperature</span>
-                    <div className="w-full flex flex-row">
-                        <input className="w-2/3 themed-input" type="range" min="0.10" max="2.00" step="0.01" value={temperature} onChange={async (e) => {setTemperature(parseFloat(e.target.value));}} />
-                        <input className="w-1/3 themed-input" id='input-container' type="number" min="0.10" max="2.00" step="0.01" value={temperature} onChange={async (e) => {setTemperature(parseFloat(e.target.value));}} />
-                    </div>
-                </div>
-                <div className="flex flex-col ">
                     <span className=" font-semibold">Top A</span>
+                    <i className="text-sm">                
+                        Increasing A sets a stricter limit on output, narrowing down the choices, while decreasing A makes the limit more lenient, allowing for a wider range of outputs. 
+                        This ensures that if there's a token with a very high likelihood, the choices will be limited, ensuring structured outputs, while also allowing creativity where possible.
+                        (Ooba, Kobold, Horde)
+                    </i>
                     <div className="w-full flex flex-row">
                         <input className="w-2/3 themed-input" type="range" min='0.00' max="1.00" step="0.01" value={topA} onChange={async (e) => {setTopA(parseFloat(e.target.value));}} />
                         <input className="w-1/3 themed-input" id='input-container' type="number" min='0.00' max="1.00" step="0.01" value={topA} onChange={async (e) => {setTopA(parseFloat(e.target.value));}} />
@@ -279,6 +311,12 @@ const GenerationSettings = () => {
                 </div>
                 <div className="flex flex-col ">
                     <span className=" font-semibold">Top K</span>
+                    <i className="text-sm">                
+                        Top K sampling is like picking from a list of most likely next words in a sentence. 
+                        If you set the number higher, you consider more words as options, leading to diverse but possibly odd outputs. 
+                        If you set it lower, you focus on just a few top choices, making outputs more predictable but potentially less creative.
+                        (Ooba, Kobold, Horde)
+                    </i>
                     <div className="w-full flex flex-row">
                         <input className="w-2/3 themed-input" type="range" min='0' max="120" step="1" value={topK} onChange={async (e) => {setTopK(parseInt(e.target.value));}} />
                         <input className="w-1/3 themed-input" id='input-container' type="number" min='0' max="120" step="1" value={topK} onChange={async (e) => {setTopK(parseInt(e.target.value));}} />
@@ -286,6 +324,10 @@ const GenerationSettings = () => {
                 </div>
                 <div className="flex flex-col ">
                     <span className=" font-semibold">Top P</span>
+                    <i className="text-sm">                
+                        Top P is like setting a budget for unpredictability in word choices. If you set Top P higher (closer to 1), you allow more diverse word choices, including less common ones. Set it lower (closer to 0), and you're sticking to the very most likely words, making outputs more focused but potentially less creative.
+                        (OpenAI, Kobold, Horde, Ooba, Claude)
+                    </i>
                     <div className="w-full flex flex-row">
                         <input className="w-2/3 themed-input" type="range" min='0.00' max='1' step='0.01' value={topP} onChange={async (e) => {setTopP(parseFloat(e.target.value));}} />
                         <input className="w-1/3 themed-input" id='input-container' type="number" min='0.00' max='1' step='0.01' value={topP} onChange={async (e) => {setTopP(parseFloat(e.target.value))}} />
@@ -293,27 +335,32 @@ const GenerationSettings = () => {
                 </div>
                 <div className="flex flex-col ">
                     <span className=" font-semibold">Typical</span>
+                    <i className="text-sm">                
+                        Typical Sampling removes words based on how much they deviate from an expected "average randomness" measure.
+                        Higher settings: Allow more words, loosening the filter.
+                        Lower settings: Filter out more words, making the selection stricter.
+                        (Kobold, Horde, Ooba)
+                    </i>
                     <div className="w-full flex flex-row">
                         <input className="w-2/3 themed-input" type="range" min='0.00' max='1' step='0.01' value={typical} onChange={async (e) => {setTypical(parseFloat(e.target.value));}} />
                         <input className="w-1/3 themed-input" id='input-container' type="number" min='0.00' max='1' step='0.01' value={typical} onChange={async (e) => {setTypical(parseFloat(e.target.value));}} />
                     </div>
                 </div>
                 <div className="flex flex-col ">
-                    <span className=" font-semibold">TFS</span>
+                    <span className=" font-semibold">Tail Free Sampling</span>
+                    <i className="text-sm">                
+                        Tail Free Sampling trims the least likely words from being chosen. It aims to balance creativity with consistency.
+                        Higher settings: Keep more word options (larger token pools).
+                        Lower settings: Trim more unlikely words.
+                        (Kobold, Horde, Ooba)
+                    </i>
                     <div className="w-full flex flex-row">
                         <input className="w-2/3 themed-input" type="range" min='0.00' max='1' step='0.01' value={tfs} onChange={async (e) => {setTfs(parseFloat(e.target.value))}} />
                         <input className="w-1/3 themed-input" id='input-container' type="number" min='0.00' max='1' step='0.01' value={tfs} onChange={async (e) => {setTfs(parseFloat(e.target.value))}} />
                     </div>
                 </div>
-                <div className="flex flex-col">
-                    <span className=" font-semibold">Min Length</span>
-                    <div className="w-full flex flex-row">
-                        <input className="w-2/3 themed-input" type="range" min='0' max='512' step='2' value={minLength} onChange={async (e) => {setMinLength(parseInt(e.target.value));}} />
-                        <input className="w-1/3 themed-input" id='input-container' type="number" min='0' max='512' step='2' value={minLength} onChange={async (e) => {setMinLength(parseInt(e.target.value));}} />
-                    </div>
-                </div>
                 <div>
-                    <span><i>The order by which all 7 samplers are applied, separated by commas. 0=top_k, 1=top_a, 2=top_p, 3=tfs, 4=typ, 5=temp, 6=rep_pen</i></span>
+                    <span><i>The order by which all 7 samplers are applied, separated by commas. 0=top_k, 1=top_a, 2=top_p, 3=tfs, 4=typ, 5=temp, 6=rep_pen (Kobold, Horde)</i></span>
                 </div>
                 <div className="flex flex-col">
                     <span className=" font-semibold">Sampler Order</span>
