@@ -3001,7 +3001,13 @@ const constructSettings = new Store(
   {
     name: "constructSettings",
     defaults: {
-      doSystemInfo: true
+      doSystemInfo: true,
+      doRandomMessages: true,
+      doRandomThoughts: true,
+      doRandomActions: true,
+      thoughtInterval: 10,
+      actionInterval: 10,
+      messageInterval: 10
     }
   }
 );
@@ -4205,9 +4211,9 @@ const setDoStableDiffusion = (doStableDiffusion2) => {
 const getDoStableDiffusion = () => {
   return store$2.get("doStableDiffusion", false);
 };
-const setDoStableReactions = (doStableReactions2) => {
-  store$2.set("doStableReactions", doStableReactions2);
-  doStableReactions2 = doStableReactions2;
+const setDoStableReactions = (newStatus) => {
+  store$2.set("doStableReactions", newStatus);
+  doStableReactions = newStatus;
 };
 const getDoStableReactions = () => {
   return store$2.get("doStableReactions", false);
@@ -5219,6 +5225,7 @@ function DiscordController() {
   expressApp.post("/api/discord/diffusion-reactions", (req, res) => {
     try {
       setDoStableReactions(req.body.value);
+      console.log("Set Diffusion Reacts", req.body.value);
       res.send({ message: "Updated successfully." });
     } catch (error) {
       res.status(500).send({ error: error.message });
@@ -43494,9 +43501,11 @@ const charactersPath = path$1.join(process.env.VITE_PUBLIC, "defaults/characters
 const dataPath = path.join(electron.app.getPath("userData"), "data/");
 const imagesPath = path.join(dataPath, "images/");
 const uploadsPath = path.join(dataPath, "uploads/");
+const actionLogsPath = path.join(dataPath, "action-logs/");
 fs$1.mkdirSync(dataPath, { recursive: true });
 fs$1.mkdirSync(imagesPath, { recursive: true });
 fs$1.mkdirSync(uploadsPath, { recursive: true });
+fs$1.mkdirSync(actionLogsPath, { recursive: true });
 const store = new Store();
 async function createWindow() {
   exports.win = new electron.BrowserWindow({
@@ -43725,6 +43734,7 @@ async function requestFullDiskAccess() {
     }
   }
 }
+exports.actionLogsPath = actionLogsPath;
 exports.backgroundsPath = backgroundsPath;
 exports.charactersPath = charactersPath;
 exports.dataPath = dataPath;

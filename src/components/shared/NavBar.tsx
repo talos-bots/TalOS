@@ -13,19 +13,15 @@ const NavBar: React.FC = () => {
 				<p className="text-theme-text text-[18px] font-bold">Tal<span className="text-theme-flavor-text">OS</span> - AI Sandbox</p>
 				<Clock/>
 			</div>
-			<div className="hidden md:flex gap-5">
-				<Dropdown
-					icon={				
-					<NavLink to="/constructs" title="Constructs" className={`p-1 transition-all duration-125 hover:opacity-50`}>
-						<Users style={location.pathname === "/constructs" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }} id='constructsPage' size={'1.5rem'}/>
-					</NavLink>
-				}>
-					<NavLink to="/discord" title="Discord Bot" className={`p-1 transition-all duration-125 hover:opacity-50`} >
-						<Bot style={location.pathname === "/discord" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }} size={'1.5rem'}/>
-					</NavLink>
-				</Dropdown>
+			<div className="hidden md:flex gap-5">			
+				<NavLink to="/constructs" title="Constructs" className={`p-1 transition-all duration-125 hover:opacity-50`}>
+					<Users style={location.pathname === "/constructs" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }} id='constructsPage' size={'1.5rem'}/>
+				</NavLink>
 				<NavLink to="/network" title="Construct Matrix" className={`p-1 transition-all duration-125 hover:opacity-50`}>
 					<BrainCircuitIcon style={location.pathname === "/network" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }} size={'1.5rem'}/>
+				</NavLink>
+				<NavLink to="/discord" title="Discord Bot" className={`p-1 transition-all duration-125 hover:opacity-50`} >
+					<Bot style={location.pathname === "/discord" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }} size={'1.5rem'}/>
 				</NavLink>
 				<Dropdown 
 					icon={  

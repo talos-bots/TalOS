@@ -58,9 +58,9 @@ export const getDoStableDiffusion =  (): boolean => {
     return store.get('doStableDiffusion', false) as boolean;
 }
 
-export const setDoStableReactions = (doStableReactions: boolean): void => {
-    store.set('doStableReactions', doStableReactions);
-    doStableReactions = doStableReactions;
+export const setDoStableReactions = (newStatus: boolean): void => {
+    store.set('doStableReactions', newStatus);
+    doStableReactions = newStatus;
 }
 
 export const getDoStableReactions =  (): boolean => {
@@ -1172,6 +1172,7 @@ function DiscordController(){
     expressApp.post('/api/discord/diffusion-reactions', (req, res) => {
         try {
             setDoStableReactions(req.body.value);
+            console.log('Set Diffusion Reacts', req.body.value);
             res.send({ message: "Updated successfully." });
         } catch (error: any) {
             res.status(500).send({ error: error.message });

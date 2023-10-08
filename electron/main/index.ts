@@ -52,10 +52,11 @@ export const charactersPath = join(process.env.VITE_PUBLIC, "defaults/characters
 export const dataPath = path.join(app.getPath("userData"), "data/");
 export const imagesPath = path.join(dataPath, "images/");
 export const uploadsPath = path.join(dataPath, "uploads/");
+export const actionLogsPath = path.join(dataPath, "action-logs/");
 fs.mkdirSync(dataPath, { recursive: true });
 fs.mkdirSync(imagesPath, { recursive: true });
 fs.mkdirSync(uploadsPath, { recursive: true });
-
+fs.mkdirSync(actionLogsPath, { recursive: true });
 export const store = new Store();
 async function createWindow() {
   win = new BrowserWindow({
