@@ -380,7 +380,7 @@ export const generateText = async (
     }
     if(construct){
         if(construct?.defaultConfig.instructType === 'Metharme'){
-            stops.push('<|user|>'), '<|model|>';
+            stops.push('<|user|>', '<|model|>');
         }else if (construct?.defaultConfig.instructType === 'Alpaca'){
             stops.push('### Instruction:');
         }else if (construct?.defaultConfig.instructType === 'Vicuna'){

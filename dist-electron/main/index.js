@@ -2231,7 +2231,7 @@ const generateText = async (prompt, configuredName = "You", stopList = null, con
   }
   if (construct) {
     if ((construct == null ? void 0 : construct.defaultConfig.instructType) === "Metharme") {
-      stops.push("<|user|>");
+      stops.push("<|user|>", "<|model|>");
     } else if ((construct == null ? void 0 : construct.defaultConfig.instructType) === "Alpaca") {
       stops.push("### Instruction:");
     } else if ((construct == null ? void 0 : construct.defaultConfig.instructType) === "Vicuna") {
