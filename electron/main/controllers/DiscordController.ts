@@ -539,7 +539,7 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
     }
     if(primaryConstruct === construct._id){
         console.log('sending message as primary')
-        if(0.5 >= Math.random() && !message.channel.isDMBased()){
+        if(0.5 >= Math.random() && !message.channel.isDMBased() && message instanceof Message){
             await sendReply(message, reply);
         }else{
             await sendMessage(message.channel.id, reply);
