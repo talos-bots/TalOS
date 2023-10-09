@@ -2,7 +2,7 @@ import Store from 'electron-store';
 import { generateContinueChatLog, generateThoughts, getDoMultiLine, regenerateMessageFromChatLog, removeMessagesFromChatLog, retrieveConstructs } from './ChatController';
 import { addChat, getChat, getConstruct, updateChat } from '../api/pouchdb';
 import { addUserFromDiscordMessage, assembleChatFromData, assembleConstructFromData, convertDiscordMessageToMessage } from '../helpers/helpers';
-import { AttachmentBuilder, CommandInteraction, EmbedBuilder, Message } from 'discord.js';
+import { AttachmentBuilder, CommandInteraction, EmbedBuilder, GuildMember, Message } from 'discord.js';
 import { deleteMessage, disClient, editMessage, getStopList, isAutoReplyMode, isMultiCharacterMode, isMultiConstructMode, registerCommands, sendAttachment, sendAttachmentAsCharacter, sendEmbedAsCharacter, sendMessage, sendMessageAsCharacter, sendMessageEmbed, sendReply, sendTyping } from '../api/discord';
 import { Alias, AttachmentInferface, ChannelConfigInterface, ChatInterface, ConstructInterface, MessageInterface } from '../types/types';
 import { addVectorFromMessage } from '../api/vector';
@@ -11,6 +11,7 @@ import { expressApp, expressAppIO, win } from '..';
 import { detectIntent } from '../helpers/actions-helpers';
 import { createSelfieForConstruct } from '../helpers/discord-helpers';
 import { cancelGeneration } from '../api/llm';
+import { getShowDiscordUserInfo } from './ActiveConstructController';
 
 const store = new Store({
     name: 'discordData',
@@ -483,8 +484,15 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
         console.log('channel is null')
         return chatLog;
     }
+    let dataString = '';
     sendTyping(message);
-    const result = await generateContinueChatLog(construct, chatLog, username, maxMessages, stopList, undefined, undefined, getDoMultiLine(), replaceUser);
+    if(getShowDiscordUserInfo() && !message.channel.isDMBased() && message instanceof Message && message.guildId !== null){
+        const userData = await assembleUserProfile(message.guildId, message.author.id);
+        if(userData !== null && userData !== undefined){
+            dataString = userData;
+        }
+    }
+    const result = await generateContinueChatLog(construct, chatLog, username, maxMessages, stopList, undefined, undefined, getDoMultiLine(), replaceUser, dataString);
     let reply: string;
     if (result !== null) {
         reply = result;
@@ -966,6 +974,58 @@ function isMentioned(message: string, char: ConstructInterface){
         return true;
     }
     return false;
+}
+
+export async function assembleUserProfile(ServerID: string, userID: string, isDM = false){
+    if(!isDM){
+        let userData;
+        let userRoles: string[] = [];
+        let serverData;
+        serverData = await disClient.guilds.fetch(ServerID);
+        if(!serverData){
+            console.log('Server not found');
+            return;
+        }
+        userData = await serverData.members.fetch(userID) as GuildMember;
+        if(!userData){
+            console.log('User not found');
+            return;
+        }
+        userData.roles.cache.forEach(role => {
+            userRoles.push(role.name);
+        });
+        let status = '';
+        if(userData?.presence === undefined || userData?.presence === null) return;
+        if(userData?.presence.activities === undefined){
+            status = 'No status';
+        }else if(userData?.presence.activities.length > 0){
+            switch (userData?.presence.activities[0].type) {
+                case 0:
+                    status = `Playing ${userData.presence.activities[0].name}`;
+                break;
+                case 2:
+                    status = `Listening to ${userData.presence.activities[0].details} by ${userData.presence.activities[0].state} on ${userData.presence.activities[0].name}`;
+                break;
+                default:
+                    status = `${userData?.presence.activities[0].name}`;
+                break;
+            }
+        }else{
+            status = 'No status';
+        }
+        const userObject = {
+            username: userData.user.username ? userData.user.username : 'No username',
+            nickname: userData.nickname ? userData.nickname : 'No nickname',
+            roles: userRoles,
+            joined: userData.joinedAt ? userData.joinedAt : 'Not inside a server.',
+            created: userData.user.createdAt ? userData.user.createdAt : 'Not inside a server.',
+            status : status,
+        }
+        let userString = `[{{char}} is speaking to ${userObject.username} ${userObject.nickname !== 'No nickname' ? `(${userObject.nickname})` : ''} in ${serverData.name}. ${userObject.username} is ${userObject.status}. ${userObject.username} joined the server on ${userObject.joined}. ${userObject.username} created their account on ${userObject.created}. ${userObject.username} has the following roles: ${userObject.roles.join(', ')}.]`;
+        return userString;
+    }else{
+        return null;
+    }
 }
 
 export async function doImageReaction(message: Message){

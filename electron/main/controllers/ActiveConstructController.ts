@@ -9,6 +9,7 @@ const constructSettings = new Store(
             doRandomMessages: true,
             doRandomThoughts: true,
             doRandomActions: true,
+            showDiscordUserInfo: false,
             thoughtInterval: 10,
             actionInterval: 10,
             messageInterval: 10,
@@ -78,6 +79,14 @@ export function getDoSystemInfo(): boolean{
 
 export function setDoSystemInfo(doSystemSettings: boolean){
     constructSettings.set('doSystemInfo', doSystemSettings);
+}
+
+export function getShowDiscordUserInfo(): boolean{
+    return constructSettings.get('showDiscordUserInfo') as boolean || false;
+}
+
+export function setShowDiscordUserInfo(showDiscordUserInfo: boolean){
+    constructSettings.set('showDiscordUserInfo', showDiscordUserInfo);
 }
 
 export async function ActiveConstructController(){
@@ -158,4 +167,16 @@ export async function ActiveConstructController(){
         const currentMessageInterval = getMessageInterval();
         res.json({ messageInterval: currentMessageInterval });
     });
+
+    expressApp.post('/api/constructs/set/showdiscorduserinfo', (req, res) => {
+        setShowDiscordUserInfo(req.body.value);
+        const currentShowDiscordUserInfo = getShowDiscordUserInfo();
+        res.json({ showDiscordUserInfo: currentShowDiscordUserInfo });
+    });
+
+    expressApp.get('/api/constructs/showdiscorduserinfo', (req, res) => {
+        const currentShowDiscordUserInfo = getShowDiscordUserInfo();
+        res.json({ showDiscordUserInfo: currentShowDiscordUserInfo });
+    });
+    
 }

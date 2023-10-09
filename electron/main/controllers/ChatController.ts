@@ -347,7 +347,7 @@ export async function generateThoughts(construct: ConstructInterface, chat: Chat
     }
 }
 
-export async function generateContinueChatLog(construct: ConstructInterface, chatLog: ChatInterface, currentUser?: string, messagesToInclude?: any, stopList?: string[], authorsNote?: string | string[], authorsNoteDepth?: number, doMultiLine?: boolean, replaceUser: boolean = true) {
+export async function generateContinueChatLog(construct: ConstructInterface, chatLog: ChatInterface, currentUser?: string, messagesToInclude?: any, stopList?: string[], authorsNote?: string | string[], authorsNoteDepth?: number, doMultiLine?: boolean, replaceUser: boolean = true, userData?: string) {
     let prompt = '';
     if(construct.defaultConfig.doInstruct){
         prompt += assembleInstructPrompt(construct, chatLog, currentUser, messagesToInclude, replaceUser);
@@ -363,7 +363,7 @@ export async function generateContinueChatLog(construct: ConstructInterface, cha
 
         for (let i = 0; i < splitPrompt.length; i++) {
             if (i === insertHere) {
-                newPrompt += getSystemInformation(chatLog);
+                newPrompt += getSystemInformation(chatLog) + '\n';
             }
 
             if (i !== splitPrompt.length - 1) {
@@ -373,7 +373,26 @@ export async function generateContinueChatLog(construct: ConstructInterface, cha
             }
         }
         prompt = newPrompt;
-        console.log('Prompt with system info:', prompt);
+    }
+    if(userData !== undefined && userData !== null && userData !== ''){
+        // add the system info to the second to last line of the prompt
+        let splitPrompt = prompt.split('\n');
+        let newPrompt = '';
+        let depth = 3;
+        let insertHere = (splitPrompt.length < depth) ? 0 : splitPrompt.length - depth;
+
+        for (let i = 0; i < splitPrompt.length; i++) {
+            if (i === insertHere) {
+                newPrompt += userData + '\n';
+            }
+
+            if (i !== splitPrompt.length - 1) {
+                newPrompt += splitPrompt[i] + '\n';
+            } else {
+                newPrompt += splitPrompt[i];
+            }
+        }
+        prompt = newPrompt;
     }
     if ((construct.authorsNote !== undefined && construct.authorsNote !== '' && construct.authorsNote !== null) ||
     (authorsNote !== undefined && authorsNote !== '' && authorsNote !== null)) {
