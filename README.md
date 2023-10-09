@@ -84,8 +84,6 @@ https://github.com/orgs/WaywardWyvernsSoftworks/projects/2
 ![UserHome](https://github.com/WaywardWyvernsSoftworks/TalOS/assets/26259870/1b9458fd-de85-4ea9-9459-24785eda5105)
 ### Settings Page
 ![Settings](https://github.com/WaywardWyvernsSoftworks/TalOS/assets/26259870/af87e37d-fb9d-4dbf-bdb5-a241572bb255)
-### Atachments Page
-![Attachments](https://github.com/WaywardWyvernsSoftworks/TalOS/assets/26259870/0788cb50-cfc5-4a75-a1d6-788d57c198a8)
 ### Zero Shot
 ![ZeroShot](https://github.com/WaywardWyvernsSoftworks/TalOS/assets/26259870/38d2599c-7e55-42ec-a490-d9bde82e1638)
 ### Themes
