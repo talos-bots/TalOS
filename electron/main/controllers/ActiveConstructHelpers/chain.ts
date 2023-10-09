@@ -1,3 +1,7 @@
-function determineAction(){
+function engageChain(){
+
+}
+
+function engageThoughtProtocol(){
     
 }

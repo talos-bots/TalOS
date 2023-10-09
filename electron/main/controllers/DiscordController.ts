@@ -631,7 +631,7 @@ async function doCharacterThoughts(construct: ConstructInterface, chatLog: ChatI
     const newEmbed = new EmbedBuilder()
     .setTitle('Thoughts')
     .setDescription(reply)
-    .setFooter({text: 'Powered by ConstructOS'})
+    .setFooter({text: 'Powered by TalOS'})
     .setTimestamp();
     if(primaryConstruct === construct._id){
         await sendMessageEmbed(message.channel.id, newEmbed);

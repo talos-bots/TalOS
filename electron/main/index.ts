@@ -141,6 +141,7 @@ async function createWindow() {
   constructController();
   DiscordController();
   VectorDBRoutes();
+  ActiveConstructController();
   // update(win)
 }
 
@@ -193,6 +194,7 @@ ipcMain.handle("open-win", (_, arg) => {
 export const expressApp = express();
 import bodyParser from 'body-parser';
 import { Server } from 'socket.io';
+import { ActiveConstructController } from "./controllers/ActiveConstructController";
 const port = 3003;
 
 expressApp.use(express.static('public'));

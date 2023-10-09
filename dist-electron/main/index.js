@@ -3005,17 +3005,134 @@ const constructSettings = new Store(
       doRandomMessages: true,
       doRandomThoughts: true,
       doRandomActions: true,
+      showDiscordUserInfo: false,
       thoughtInterval: 10,
       actionInterval: 10,
       messageInterval: 10
     }
   }
 );
+function getDoRandomMessages() {
+  return constructSettings.get("doRandomMessages") || true;
+}
+function setDoRandomMessages(doRandomMessages) {
+  constructSettings.set("doRandomMessages", doRandomMessages);
+}
+function getDoRandomThoughts() {
+  return constructSettings.get("doRandomThoughts") || true;
+}
+function setDoRandomThoughts(doRandomThoughts) {
+  constructSettings.set("doRandomThoughts", doRandomThoughts);
+}
+function getDoRandomActions() {
+  return constructSettings.get("doRandomActions") || true;
+}
+function setDoRandomActions(doRandomActions) {
+  constructSettings.set("doRandomActions", doRandomActions);
+}
+function getThoughtInterval() {
+  return constructSettings.get("thoughtInterval") || 10;
+}
+function setThoughtInterval(thoughtInterval) {
+  constructSettings.set("thoughtInterval", thoughtInterval);
+}
+function getActionInterval() {
+  return constructSettings.get("actionInterval") || 10;
+}
+function setActionInterval(actionInterval) {
+  constructSettings.set("actionInterval", actionInterval);
+}
+function getMessageInterval() {
+  return constructSettings.get("messageInterval") || 10;
+}
+function setMessageInterval(messageInterval) {
+  constructSettings.set("messageInterval", messageInterval);
+}
 function getDoSystemInfo() {
   return constructSettings.get("doSystemInfo") || true;
 }
 function setDoSystemInfo(doSystemSettings) {
   constructSettings.set("doSystemInfo", doSystemSettings);
+}
+function getShowDiscordUserInfo() {
+  return constructSettings.get("showDiscordUserInfo") || false;
+}
+function setShowDiscordUserInfo(showDiscordUserInfo) {
+  constructSettings.set("showDiscordUserInfo", showDiscordUserInfo);
+}
+async function ActiveConstructController() {
+  expressApp.post("/api/constructs/set/systeminfo", (req, res) => {
+    setDoSystemInfo(req.body.value);
+    const currentDoSystemInfo = getDoSystemInfo();
+    res.json({ doSystemInfo: currentDoSystemInfo });
+  });
+  expressApp.get("/api/constructs/systeminfo", (req, res) => {
+    const currentDoSystemInfo = getDoSystemInfo();
+    res.json({ doSystemInfo: currentDoSystemInfo });
+  });
+  expressApp.post("/api/constructs/set/randommessages", (req, res) => {
+    setDoRandomMessages(req.body.value);
+    const currentDoRandomMessages = getDoRandomMessages();
+    res.json({ doRandomMessages: currentDoRandomMessages });
+  });
+  expressApp.get("/api/constructs/randommessages", (req, res) => {
+    const currentDoRandomMessages = getDoRandomMessages();
+    res.json({ doRandomMessages: currentDoRandomMessages });
+  });
+  expressApp.post("/api/constructs/set/randomthoughts", (req, res) => {
+    setDoRandomThoughts(req.body.value);
+    const currentDoRandomThoughts = getDoRandomThoughts();
+    res.json({ doRandomThoughts: currentDoRandomThoughts });
+  });
+  expressApp.get("/api/constructs/randomthoughts", (req, res) => {
+    const currentDoRandomThoughts = getDoRandomThoughts();
+    res.json({ doRandomThoughts: currentDoRandomThoughts });
+  });
+  expressApp.post("/api/constructs/set/randomactions", (req, res) => {
+    setDoRandomActions(req.body.value);
+    const currentDoRandomActions = getDoRandomActions();
+    res.json({ doRandomActions: currentDoRandomActions });
+  });
+  expressApp.get("/api/constructs/randomactions", (req, res) => {
+    const currentDoRandomActions = getDoRandomActions();
+    res.json({ doRandomActions: currentDoRandomActions });
+  });
+  expressApp.post("/api/constructs/set/thoughtinterval", (req, res) => {
+    setThoughtInterval(req.body.value);
+    const currentThoughtInterval = getThoughtInterval();
+    res.json({ thoughtInterval: currentThoughtInterval });
+  });
+  expressApp.get("/api/constructs/thoughtinterval", (req, res) => {
+    const currentThoughtInterval = getThoughtInterval();
+    res.json({ thoughtInterval: currentThoughtInterval });
+  });
+  expressApp.post("/api/constructs/set/actioninterval", (req, res) => {
+    setActionInterval(req.body.value);
+    const currentActionInterval = getActionInterval();
+    res.json({ actionInterval: currentActionInterval });
+  });
+  expressApp.get("/api/constructs/actioninterval", (req, res) => {
+    const currentActionInterval = getActionInterval();
+    res.json({ actionInterval: currentActionInterval });
+  });
+  expressApp.post("/api/constructs/set/messageinterval", (req, res) => {
+    setMessageInterval(req.body.value);
+    const currentMessageInterval = getMessageInterval();
+    res.json({ messageInterval: currentMessageInterval });
+  });
+  expressApp.get("/api/constructs/messageinterval", (req, res) => {
+    const currentMessageInterval = getMessageInterval();
+    res.json({ messageInterval: currentMessageInterval });
+  });
+  expressApp.post("/api/constructs/set/showdiscorduserinfo", (req, res) => {
+    setShowDiscordUserInfo(req.body.value);
+    const currentShowDiscordUserInfo = getShowDiscordUserInfo();
+    res.json({ showDiscordUserInfo: currentShowDiscordUserInfo });
+  });
+  expressApp.get("/api/constructs/showdiscorduserinfo", (req, res) => {
+    const currentShowDiscordUserInfo = getShowDiscordUserInfo();
+    res.json({ showDiscordUserInfo: currentShowDiscordUserInfo });
+  });
 }
 function fillChatContextToLimit(chatLog, tokenLimit, tokenizer = "LLaMA") {
   const messagesToInclude = [];
@@ -3359,7 +3476,7 @@ async function generateThoughts(construct, chat, currentUser = "you", messagesTo
     return null;
   }
 }
-async function generateContinueChatLog(construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth, doMultiLine, replaceUser2 = true) {
+async function generateContinueChatLog(construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth, doMultiLine, replaceUser2 = true, userData) {
   var _a;
   let prompt = "";
   if (construct.defaultConfig.doInstruct) {
@@ -3374,7 +3491,7 @@ async function generateContinueChatLog(construct, chatLog, currentUser, messages
     let insertHere = splitPrompt.length < depth ? 0 : splitPrompt.length - depth;
     for (let i = 0; i < splitPrompt.length; i++) {
       if (i === insertHere) {
-        newPrompt += getSystemInformation(chatLog);
+        newPrompt += getSystemInformation(chatLog) + "\n";
       }
       if (i !== splitPrompt.length - 1) {
         newPrompt += splitPrompt[i] + "\n";
@@ -3383,7 +3500,23 @@ async function generateContinueChatLog(construct, chatLog, currentUser, messages
       }
     }
     prompt = newPrompt;
-    console.log("Prompt with system info:", prompt);
+  }
+  if (userData !== void 0 && userData !== null && userData !== "") {
+    let splitPrompt = prompt.split("\n");
+    let newPrompt = "";
+    let depth = 3;
+    let insertHere = splitPrompt.length < depth ? 0 : splitPrompt.length - depth;
+    for (let i = 0; i < splitPrompt.length; i++) {
+      if (i === insertHere) {
+        newPrompt += userData + "\n";
+      }
+      if (i !== splitPrompt.length - 1) {
+        newPrompt += splitPrompt[i] + "\n";
+      } else {
+        newPrompt += splitPrompt[i];
+      }
+    }
+    prompt = newPrompt;
   }
   if (construct.authorsNote !== void 0 && construct.authorsNote !== "" && construct.authorsNote !== null || authorsNote !== void 0 && authorsNote !== "" && authorsNote !== null) {
     if (!authorsNote) {
@@ -4577,8 +4710,15 @@ async function doCharacterReply(construct, chatLog, message) {
     console.log("channel is null");
     return chatLog;
   }
+  let dataString = "";
   sendTyping(message);
-  const result = await generateContinueChatLog(construct, chatLog, username, maxMessages, stopList, void 0, void 0, getDoMultiLine(), replaceUser);
+  if (getShowDiscordUserInfo() && !message.channel.isDMBased() && message instanceof discord_js.Message && message.guildId !== null) {
+    const userData = await assembleUserProfile(message.guildId, message.author.id);
+    if (userData !== null && userData !== void 0) {
+      dataString = userData;
+    }
+  }
+  const result = await generateContinueChatLog(construct, chatLog, username, maxMessages, stopList, void 0, void 0, getDoMultiLine(), replaceUser, dataString);
   let reply;
   if (result !== null) {
     reply = result;
@@ -4715,7 +4855,7 @@ async function doCharacterThoughts(construct, chatLog, message) {
   chatLog.messages.push(replyMessage);
   chatLog.lastMessage = replyMessage;
   chatLog.lastMessageDate = replyMessage.timestamp;
-  const newEmbed = new discord_js.EmbedBuilder().setTitle("Thoughts").setDescription(reply).setFooter({ text: "Powered by ConstructOS" }).setTimestamp();
+  const newEmbed = new discord_js.EmbedBuilder().setTitle("Thoughts").setDescription(reply).setFooter({ text: "Powered by TalOS" }).setTimestamp();
   if (primaryConstruct === construct._id) {
     await sendMessageEmbed(message.channel.id, newEmbed);
   } else {
@@ -5051,6 +5191,58 @@ function isMentioned(message, char) {
     return true;
   }
   return false;
+}
+async function assembleUserProfile(ServerID, userID, isDM = false) {
+  if (!isDM) {
+    let userData;
+    let userRoles = [];
+    let serverData;
+    serverData = await disClient.guilds.fetch(ServerID);
+    if (!serverData) {
+      console.log("Server not found");
+      return;
+    }
+    userData = await serverData.members.fetch(userID);
+    if (!userData) {
+      console.log("User not found");
+      return;
+    }
+    userData.roles.cache.forEach((role) => {
+      userRoles.push(role.name);
+    });
+    let status = "";
+    if ((userData == null ? void 0 : userData.presence) === void 0 || (userData == null ? void 0 : userData.presence) === null)
+      return;
+    if ((userData == null ? void 0 : userData.presence.activities) === void 0) {
+      status = "No status";
+    } else if ((userData == null ? void 0 : userData.presence.activities.length) > 0) {
+      switch (userData == null ? void 0 : userData.presence.activities[0].type) {
+        case 0:
+          status = `Playing ${userData.presence.activities[0].name}`;
+          break;
+        case 2:
+          status = `Listening to ${userData.presence.activities[0].details} by ${userData.presence.activities[0].state} on ${userData.presence.activities[0].name}`;
+          break;
+        default:
+          status = `${userData == null ? void 0 : userData.presence.activities[0].name}`;
+          break;
+      }
+    } else {
+      status = "No status";
+    }
+    const userObject = {
+      username: userData.user.username ? userData.user.username : "No username",
+      nickname: userData.nickname ? userData.nickname : "No nickname",
+      roles: userRoles,
+      joined: userData.joinedAt ? userData.joinedAt : "Not inside a server.",
+      created: userData.user.createdAt ? userData.user.createdAt : "Not inside a server.",
+      status
+    };
+    let userString = `[{{char}} is speaking to ${userObject.username} ${userObject.nickname !== "No nickname" ? `(${userObject.nickname})` : ""} in ${serverData.name}. ${userObject.username} is ${userObject.status}. ${userObject.username} joined the server on ${userObject.joined}. ${userObject.username} created their account on ${userObject.created}. ${userObject.username} has the following roles: ${userObject.roles.join(", ")}.]`;
+    return userString;
+  } else {
+    return null;
+  }
 }
 async function doImageReaction(message) {
   var _a, _b;
@@ -43579,6 +43771,7 @@ async function createWindow() {
   constructController();
   DiscordController();
   VectorDBRoutes();
+  ActiveConstructController();
 }
 electron.app.whenReady().then(createWindow);
 electron.app.on("window-all-closed", () => {
