@@ -42,9 +42,9 @@ https://discord.com/invite/HNSaTjExYy
 - Adds depth to Characters, and will likely increase quality of RP and chat output.
 ### Multi-Construct Discord Bot
 - Have multiple Constructs speak through one discord bot. **(Done)**
-- Group ordering
+- Group ordering **(Done)**
 - Reply percentages, lurking, etc. **(Done)**
-- GIF sending, web browsing, vector memories, and RP.
+- GIF sending, web browsing, vector memories, and RP. **(Done)**
 ### Construct Chat Window
 - A way to test agent features, personalities, and other features. **(Done)**
 - Lorebooks (World Info) **(Done)**
