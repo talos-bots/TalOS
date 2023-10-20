@@ -49,6 +49,9 @@ const NavBar: React.FC = () => {
 					<NavLink to="/zero" title="Zero" className={`p-1 transition-all duration-125 hover:opacity-50`}>
 						<Sparkles style={location.pathname === "/zero" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }} size={'1.5rem'}/>
 					</NavLink>
+					<NavLink to="/completions" title='Completions' className={`p-1 transition-all duration-125 hover:opacity-50`}>
+						<File style={location.pathname === "/completions" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }} size={'1.5rem'}/>
+					</NavLink>
 				</Dropdown>
 				<NavLink to="/settings" title="Settings" className={`p-1 transition-all duration-125 hover:opacity-50`}>
 					<Cog style={location.pathname === "/settings" ? { color: 'text-theme-italic' } : { color: 'text-theme-text' }} size={'1.5rem'}/>

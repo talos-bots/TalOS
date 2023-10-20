@@ -24,7 +24,6 @@ const ChatConfigPane = (props: ChatConfigPaneProps) => {
     const [constructsList, setConstructsList] = useState<Construct[]>([]);
     const [chatConfigs, setChatConfigs] = useState<ConstructChatConfig[]>(chat.chatConfigs);
     const [doMultiline, setDoMultiline] = useState<boolean>(false);
-    const [messagesToSend, setMessagesToSend] = useState<number>(25);
     const [page, setPage] = useState<number>(1);
     const [swipeDirection, setSwipeDirection] = useState<string>("none");
     const [selectedConstructID, setSelectedConstructID] = useState<Construct | null>(null);
@@ -44,11 +43,6 @@ const ChatConfigPane = (props: ChatConfigPaneProps) => {
         });
         getStorageValue('doMultiline').then((value) => {
             setDoMultiline(JSON.parse(value)? JSON.parse(value) : false);
-        }).catch((err) => {
-            console.error(err);
-        });
-        getStorageValue('messagesToSend').then((value) => {
-            setMessagesToSend(JSON.parse(value)? JSON.parse(value) : 25);
         }).catch((err) => {
             console.error(err);
         });
@@ -76,15 +70,6 @@ const ChatConfigPane = (props: ChatConfigPaneProps) => {
             console.error(err);
         }
     };
-
-    const handleMessagesToSendChange = async (newValue: number) => {
-        setMessagesToSend(newValue);
-        try {
-            await setStorageValue('messagesToSend', JSON.stringify(newValue));
-        } catch (err) {
-            console.error(err);
-        }
-    };  
 
     const pageChangeRight = async (page: number) => {
         setSwipeDirection("right");
@@ -163,11 +148,6 @@ const ChatConfigPane = (props: ChatConfigPaneProps) => {
                             checkedIcon={true}
                             id="doMultiline"
                         />
-                    </div>
-                    <label className="font-semibold">Messages to Send</label>
-                    <div className="themed-input flex flex-col items-center w-full flex-grow gap-2 text-left">
-                        <i className="text-sm">The number of messages to send in the prompt.</i>
-                        <input type="number" className="themed-input" value={messagesToSend} onChange={(e) => {handleMessagesToSendChange(parseInt(e.target.value)); handleEdit();}}/>
                     </div>
                     <label className="font-semibold">Constructs in Chat</label>
                     <div className="flex flex-col items-center w-full flex-grow gap-2 text-left">

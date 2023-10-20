@@ -18,7 +18,8 @@ import SpriteDisplay from "@/components/sprite";
 import { Construct, ConstructChatConfig, DefaultChatConfig } from "@/classes/Construct";
 import { socket } from "@/App";
 import { takeSelfie } from "@/api/constructapi";
-import e from "express";
+import ThinkingMessage from "./thinking";
+
 interface ChatLogProps {
 	chatLogID?: string;
 	goBack: () => void;
@@ -147,7 +148,7 @@ const ChatLog = (props: ChatLogProps) => {
 			// console.error(err);
 		});
 		findLastBotMessage();
-	}, [messages]);
+	}, [messages, isTyping]);
 
 	useEffect(() => {
 		if(chatLog !== null){
@@ -180,7 +181,7 @@ const ChatLog = (props: ChatLogProps) => {
 						if(construct.greetings.length < 1) return;
 						let randomGreeting = construct?.greetings[Math.floor(Math.random() * construct?.greetings.length)];
 						let newMessage = new Message();
-						newMessage.text = randomGreeting.replaceAll("{{user}}", currentUser?.nickname ? (currentUser?.nickname || currentUser?.name) : (currentUser?.name || 'DefaultUser'));
+						newMessage.text = randomGreeting.replaceAll("{{user}}", currentUser?.nickname ? (currentUser?.nickname || currentUser?.name) : (currentUser?.name || 'DefaultUser')).replaceAll('{{char}}', construct?.name || 'ConstructOS');
 						newMessage.avatar = construct?.avatar;
 						newMessage.user = construct?.name;
 						newMessage.origin = 'ConstructOS';
@@ -285,6 +286,7 @@ const ChatLog = (props: ChatLogProps) => {
 		setChatLog(chat);
 		if(isInterrupted === true){
 			setIsInterrupted(false);
+			setIsTyping(false);
 		}
 		await wait(750);
 		let constructList: Construct[] = [];
@@ -322,6 +324,8 @@ const ChatLog = (props: ChatLogProps) => {
 		for (let i = 0; i < constructList.length; i++) {
 			if(isInterrupted === true){
 				setIsInterrupted(false);
+				setIsTyping(false);
+				break;
 			}
 			let replyChat = await getBotResponse(chat, constructList[i], currentUser);
 			if(replyChat !== undefined){
@@ -812,6 +816,9 @@ const ChatLog = (props: ChatLogProps) => {
 								<MessageComponent key={message._id} message={message} onDelete={deleteMessage} onEdit={editMessage} onRegenerate={onRegenerate} onSplit={splitChatLogAtMessage} onUserRegenerate={userRegenerate}/>
 							);
 						})}
+						{isTyping === true && (
+							<ThinkingMessage/>
+						)}
 						<div ref={messagesEndRef}></div>
 					</div>
 				</div>

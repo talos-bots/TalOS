@@ -4,7 +4,7 @@ import { Completion } from "./Completion";
 export class CompletionLog{
     constructor(
         public _id: string = (new Date().getTime()).toString(),
-        public name: string = '',
+        public name: string = 'New Completion Log',
         public type: CompletionType = 'novel',
         public completions: Completion[] = [],
         public lastCompletion: Completion = new Completion(),

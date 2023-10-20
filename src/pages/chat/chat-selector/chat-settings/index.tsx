@@ -6,7 +6,6 @@ import ReactSwitch from "react-switch";
 const ChatSettings = () => {
     const [doGreetings, setDoGreetings] = useState(false);
     const [doMultiline, setDoMultiline] = useState(false);
-    const [messagesToSend, setMessagesToSend] = useState<number>(25);
     const [doSystemInfo, setDoSystemInfo] = useState<boolean>(false);
 
     useEffect(() => {
@@ -17,11 +16,6 @@ const ChatSettings = () => {
         });
         getStorageValue('doMultiline').then((value) => {
             setDoMultiline(JSON.parse(value)? JSON.parse(value) : false);
-        }).catch((err) => {
-            console.error(err);
-        });
-        getStorageValue('messagesToSend').then((value) => {
-            setMessagesToSend(JSON.parse(value)? JSON.parse(value) : 25);
         }).catch((err) => {
             console.error(err);
         });
@@ -45,15 +39,6 @@ const ChatSettings = () => {
         setDoMultiline(newValue);
         try {
             await setStorageValue('doMultiline', JSON.stringify(newValue));
-        } catch (err) {
-            console.error(err);
-        }
-    };
-
-    const handleMessagesToSendChange = async (newValue: number) => {
-        setMessagesToSend(newValue);
-        try {
-            await setStorageValue('messagesToSend', JSON.stringify(newValue));
         } catch (err) {
             console.error(err);
         }
@@ -100,22 +85,6 @@ const ChatSettings = () => {
                             uncheckedIcon={false}
                             checkedIcon={true}
                             id="doMultiline"
-                        />
-                    </div>
-                </div>
-            </div>
-            <div className="flex flex-col col-span-1 w-full h-full flex-grow">
-                <div className="col-span-1 flex flex-col text-left flex-grow">
-                    <label className="text-theme-text font-semibold">Messages to Send</label>
-                    <div className="themed-input flex flex-col items-center w-full flex-grow gap-2 text-left">
-                        <i className="text-sm">The number of messages to send in the prompt.</i>
-                        <input
-                            className="themed-input"
-                            type="number"
-                            value={messagesToSend}
-                            onChange={(e) => handleMessagesToSendChange(parseInt(e.target.value))}
-                            min={4}
-                            max={100}
                         />
                     </div>
                 </div>

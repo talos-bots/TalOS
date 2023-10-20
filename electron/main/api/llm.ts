@@ -518,14 +518,16 @@ export const generateText = async (
                     temperature: settings.temperature ? settings.temperature : 0.9,
                     max_tokens: settings.max_length ? settings.max_length : 350,
                     stop: [`${configuredName}:`],
+                }).then((response) => {
+                    return response;
                 }).catch((error) => {
                     throw error;
                 });
-                if(response.data.choices[0].message.content === undefined){
-                    console.log(response.data)
+                if(response.choices[0].message.content === undefined){
+                    console.log(response)
                     return results = { results: null, error: response.data, prompt: prompt};
                 }else{
-                    return results = { results: [response.data.choices[0].message.content], prompt: prompt};
+                    return results = { results: [response.choices[0].message.content], prompt: prompt};
                 }
             } catch (error) {
                 throw error;

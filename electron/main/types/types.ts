@@ -184,3 +184,24 @@ export type Sprite = {
     moood: string;
     image: string;
 }
+
+export interface CompletionLogInterface {
+    _id: string;
+    name: string;
+    type: CompletionType;
+    completions: CompletionInterface[];
+    lastCompletion: CompletionInterface;
+    lastCompletionDate: number;
+}
+
+export interface CompletionInterface  {
+    _id: string;
+    type: CompletionType;
+    content: string;
+    author: AuthorType;
+    dateCreated: number;
+    lastEdited: number;
+}
+
+export type AuthorType = 'AI' | 'User';
+export type CompletionType = 'code' | 'novel' | 'song' | 'script' | 'other';
