@@ -26,7 +26,6 @@ const commands: SlashCommand[] = [...DefaultCommands];
 export let isReady = false;
 let token = '';
 let applicationID = '';
-let characterMode = false;
 let multiCharacterMode = false;
 let multiConstructMode = false;
 

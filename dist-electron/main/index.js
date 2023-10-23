@@ -2222,6 +2222,8 @@ const generateText = async (prompt, configuredName = "You", stopList = null, con
   var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r;
   let response;
   let char = "Character";
+  prompt = prompt.toString().replaceAll(/<br>/g, "").replaceAll(/\\/g, "");
+  prompt = prompt.toString().replaceAll("\n\n", "\n");
   let results;
   if (endpoint.length < 3 && endpointType !== "Horde")
     return { error: "Invalid endpoint." };
@@ -3137,6 +3139,7 @@ async function ActiveConstructController() {
   });
 }
 function fillChatContextToLimit(chatLog, tokenLimit, tokenizer = "LLaMA") {
+  console.log(`Filling chat context to ${tokenLimit} tokens.`);
   const messagesToInclude = [];
   let tokenCount = 0;
   for (let i = chatLog.messages.length - 1; i >= 0; i--) {
@@ -3154,6 +3157,7 @@ function fillChatContextToLimit(chatLog, tokenLimit, tokenizer = "LLaMA") {
       break;
     }
   }
+  console.log(`Including ${messagesToInclude.length} messages with ${tokenCount} tokens.`);
   return messagesToInclude;
 }
 const store$4 = new Store({

@@ -3,6 +3,7 @@ import { getGPTTokens } from "./helpers";
 type Tokenizer = 'OpenAI' | 'LLaMA';
 
 export function fillChatContextToLimit(chatLog: ChatInterface, tokenLimit: number, tokenizer: Tokenizer = 'LLaMA'){
+    console.log(`Filling chat context to ${tokenLimit} tokens.`);
     const messagesToInclude: MessageInterface[] = [];
     let tokenCount = 0;
     for(let i = chatLog.messages.length - 1; i >= 0; i--){
@@ -20,5 +21,6 @@ export function fillChatContextToLimit(chatLog: ChatInterface, tokenLimit: numbe
             break;
         }
     }
+    console.log(`Including ${messagesToInclude.length} messages with ${tokenCount} tokens.`);
     return messagesToInclude;
 }

@@ -368,7 +368,8 @@ export const generateText = async (
   ): Promise<any> => {
     let response: any;
     let char = 'Character';
-  
+    prompt = prompt.toString().replaceAll(/<br>/g, '').replaceAll(/\\/g, "");
+    prompt = prompt.toString().replaceAll('\n\n', '\n')
     let results: any;
     if(endpoint.length < 3 && endpointType !== 'Horde') return { error: 'Invalid endpoint.' };
     let stops: string[] = stopList 
