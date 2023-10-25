@@ -565,6 +565,9 @@ export async function createWebhookForChannel(channelID: string, char: Construct
     let webhook = webhooks.find(webhook => webhook.name === char.name);
     let charImage = await base642Buffer(char.avatar);
     if(!webhook){
+        console.log("Creating webhook...");
+        console.log(char.name);
+        console.log(charImage);
         webhook = await channel.createWebhook({
             name: char.name,
             avatar: charImage

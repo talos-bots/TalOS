@@ -9,6 +9,10 @@ import { encode } from 'gpt-tokenizer'
 import { getCaption } from "../model-pipeline/transformers";
 import { cleanEmotes } from "../api/discord";
 import { fillChatContextToLimit } from "./chat-helpers";
+import { imagesPath, uploadsPath } from "..";
+import fetch from 'node-fetch';
+import fs from 'fs';
+import path from 'path';
 
 export function assembleConstructFromData(data: any){
 	if(data === null) return null;
@@ -320,8 +324,10 @@ export async function convertDiscordMessageToMessage(message: Message, activeCon
 
 export async function base642Buffer(base64: string): Promise<string| Buffer> {
 	let buffer: Buffer;
-
 	// Check if the input is in data URL format
+	if(base64.includes('/images')){
+		base64= await getImageFromURL(base64);
+	}
 	const match = base64.match(/^data:image\/[^;]+;base64,(.+)/);
 
 	if (match) {
@@ -332,11 +338,11 @@ export async function base642Buffer(base64: string): Promise<string| Buffer> {
 	} else {
 		// If the input is not in data URL format, assume it is already a plain base64 string
 		try {
-		buffer = Buffer.from(base64, 'base64');
+			buffer = Buffer.from(base64, 'base64');
 		} catch (error) {
-		// Handle errors (e.g., invalid base64 string)
-		console.error('Invalid base64 string:', error);
-		return base64;
+			// Handle errors (e.g., invalid base64 string)
+			console.error('Invalid base64 string:', error);
+			return base64;
 		}
 	}
 
@@ -425,4 +431,14 @@ export function assembleLorebookFromData(data: any) {
 export function getGPTTokens(text: string): number{
 	const tokens: number = encode(text).length;
 	return tokens;
+}
+
+export async function getImageFromURL(url: string): Promise<string> {
+    const filePath = path.join(uploadsPath, url.split('/images/')[1]);
+    if (!fs.existsSync(filePath)) {
+        throw new Error(`File not found: ${filePath}`);
+    }
+
+    const buffer = await fs.promises.readFile(filePath);
+    return buffer.toString('base64');
 }

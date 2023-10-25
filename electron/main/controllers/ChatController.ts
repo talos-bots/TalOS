@@ -448,7 +448,7 @@ export async function generateContinueChatLog(construct: ConstructInterface, cha
         }
         prompt = memoryText + prompt;
     }
-    const response = await generateText(prompt, currentUser, undefined, construct).then((response) => {
+    const response = await generateText(prompt, currentUser, stopList, construct).then((response) => {
         return response;
     }).catch((error) => {
         console.log('Error from GenerateText:', error);

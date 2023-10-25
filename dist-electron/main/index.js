@@ -33,11 +33,11 @@ const LeveldbAdapter = require("pouchdb-adapter-leveldb");
 const axios = require("axios");
 const OpenAI = require("openai");
 const promises = require("fs/promises");
-const fs = require("node:fs");
+const fs$1 = require("node:fs");
 const FormData = require("form-data");
 const vectra = require("vectra");
 const gptTokenizer = require("gpt-tokenizer");
-const fs$1 = require("fs");
+const fs = require("fs");
 const express = require("express");
 const multer = require("multer");
 const cors = require("cors");
@@ -1620,6 +1620,9 @@ async function convertDiscordMessageToMessage(message, activeConstructs) {
 }
 async function base642Buffer(base64) {
   let buffer;
+  if (base64.includes("/images")) {
+    base64 = await getImageFromURL(base64);
+  }
   const match = base64.match(/^data:image\/[^;]+;base64,(.+)/);
   if (match) {
     const actualBase64 = match[1];
@@ -1714,6 +1717,14 @@ function assembleLorebookFromData(data) {
 function getGPTTokens(text) {
   const tokens = gptTokenizer.encode(text).length;
   return tokens;
+}
+async function getImageFromURL(url2) {
+  const filePath = path.join(uploadsPath, url2.split("/images/")[1]);
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`File not found: ${filePath}`);
+  }
+  const buffer = await fs.promises.readFile(filePath);
+  return buffer.toString("base64");
 }
 const instructPromptWithGuidance = `
 {{guidance}}
@@ -2227,17 +2238,23 @@ const generateText = async (prompt, configuredName = "You", stopList = null, con
   let results;
   if (endpoint.length < 3 && endpointType !== "Horde")
     return { error: "Invalid endpoint." };
-  let stops = stopList ? ["You:", "<START>", "<END>", ...stopList] : [`${configuredName}:`, "You:", "<START>", "<END>"];
+  let stops = stopList ? ["You:", ...stopList] : [`${configuredName}:`, "You:"];
   if (stopBrackets) {
     stops.push("[", "]");
   }
   if (construct) {
-    if ((construct == null ? void 0 : construct.defaultConfig.instructType) === "Metharme") {
-      stops.push("<|user|>", "<|model|>");
-    } else if ((construct == null ? void 0 : construct.defaultConfig.instructType) === "Alpaca") {
-      stops.push("### Instruction:");
-    } else if ((construct == null ? void 0 : construct.defaultConfig.instructType) === "Vicuna") {
-      stops.push("USER:");
+    if (construct == null ? void 0 : construct.defaultConfig.doInstruct) {
+      if ((construct == null ? void 0 : construct.defaultConfig.instructType) === "Metharme") {
+        stops.push("<|user|>", "<|model|>");
+      } else if ((construct == null ? void 0 : construct.defaultConfig.instructType) === "Alpaca") {
+        stops.push("### Instruction:");
+      } else if ((construct == null ? void 0 : construct.defaultConfig.instructType) === "Vicuna") {
+        stops.push("USER:");
+      }
+    }
+    if (construct == null ? void 0 : construct.name) {
+      stops.push(`${construct.name}:`);
+      stops.push(`${construct.name}'s Thoughts:`);
     }
   }
   let endpointURLObject;
@@ -3572,7 +3589,7 @@ async function generateContinueChatLog(construct, chatLog, currentUser, messages
     }
     prompt = memoryText + prompt;
   }
-  const response = await generateText(prompt, currentUser, void 0, construct).then((response2) => {
+  const response = await generateText(prompt, currentUser, stopList, construct).then((response2) => {
     return response2;
   }).catch((error) => {
     console.log("Error from GenerateText:", error);
@@ -4248,7 +4265,7 @@ async function makeImage(prompt, negativePrompt, steps, cfg, width, height, high
   };
   const newPath = path$1.join(uploadsPath, fileName);
   const buffer = Buffer.from(res.data.images[0].split(";base64,").pop(), "base64");
-  await fs.promises.writeFile(newPath, buffer);
+  await fs$1.promises.writeFile(newPath, buffer);
   addAttachment(attachment);
   return { name: fileName, base64: res.data.images[0].split(";base64,").pop(), model };
 }
@@ -6932,17 +6949,22 @@ async function sendReply(message, reply) {
     console.error("Discord client user is not initialized.");
     return;
   }
-  if (reply.length < 1)
-    return;
-  if (reply.length > 1900) {
-    const messageParts = reply.match(/[\s\S]{1,1900}/g);
-    if (messageParts) {
-      for (const part of messageParts) {
-        await message.reply(part);
+  try {
+    if (reply.length < 1)
+      return;
+    if (reply.length > 1900) {
+      const messageParts = reply.match(/[\s\S]{1,1900}/g);
+      if (messageParts) {
+        for (const part of messageParts) {
+          await message.reply(part);
+        }
       }
+    } else {
+      await message.reply(reply);
     }
-  } else {
-    await message.reply(reply);
+  } catch (error) {
+    console.log(error);
+    sendMessage(message.channelId, reply);
   }
 }
 async function sendMessageEmbed(channelID, embed) {
@@ -7060,6 +7082,9 @@ async function createWebhookForChannel(channelID, char) {
   let webhook = webhooks.find((webhook2) => webhook2.name === char.name);
   let charImage = await base642Buffer(char.avatar);
   if (!webhook) {
+    console.log("Creating webhook...");
+    console.log(char.name);
+    console.log(charImage);
     webhook = await channel.createWebhook({
       name: char.name,
       avatar: charImage
@@ -8655,8 +8680,8 @@ function requireNode() {
           }
           break;
         case "FILE":
-          var fs2 = fs$1;
-          stream2 = new fs2.SyncWriteStream(fd2, { autoClose: false });
+          var fs$12 = fs;
+          stream2 = new fs$12.SyncWriteStream(fd2, { autoClose: false });
           stream2._type = "fs";
           break;
         case "PIPE":
@@ -8717,7 +8742,7 @@ function requireDestroy() {
     return destroy_1;
   hasRequiredDestroy = 1;
   var EventEmitter = require$$0$5.EventEmitter;
-  var ReadStream = fs$1.ReadStream;
+  var ReadStream = fs.ReadStream;
   var Stream = require$$1$3;
   var Zlib = require$$3$2;
   destroy_1 = destroy;
@@ -43700,10 +43725,10 @@ const dataPath = path.join(electron.app.getPath("userData"), "data/");
 const imagesPath = path.join(dataPath, "images/");
 const uploadsPath = path.join(dataPath, "uploads/");
 const actionLogsPath = path.join(dataPath, "action-logs/");
-fs$1.mkdirSync(dataPath, { recursive: true });
-fs$1.mkdirSync(imagesPath, { recursive: true });
-fs$1.mkdirSync(uploadsPath, { recursive: true });
-fs$1.mkdirSync(actionLogsPath, { recursive: true });
+fs.mkdirSync(dataPath, { recursive: true });
+fs.mkdirSync(imagesPath, { recursive: true });
+fs.mkdirSync(uploadsPath, { recursive: true });
+fs.mkdirSync(actionLogsPath, { recursive: true });
 const store = new Store();
 async function createWindow() {
   exports.win = new electron.BrowserWindow({
@@ -43870,11 +43895,11 @@ expressApp.post("/api/save-background", (req, res) => {
   const { imageData, name, fileType } = req.body;
   const imagePath = path.join(backgroundsPath, `${name}.${fileType}`);
   const data = Buffer.from(imageData, "base64");
-  fs$1.writeFileSync(imagePath, data);
+  fs.writeFileSync(imagePath, data);
   res.send({ fileName: `${name}.${fileType}` });
 });
 expressApp.get("/api/get-backgrounds", (req, res) => {
-  fs$1.readdir(backgroundsPath, (err, files) => {
+  fs.readdir(backgroundsPath, (err, files) => {
     if (err) {
       res.send({ files: [] });
       return;
@@ -43883,7 +43908,7 @@ expressApp.get("/api/get-backgrounds", (req, res) => {
   });
 });
 expressApp.delete("/api/delete-background/:name", (req, res) => {
-  fs$1.unlink(path.join(backgroundsPath, req.params.name), (err) => {
+  fs.unlink(path.join(backgroundsPath, req.params.name), (err) => {
     if (err) {
       res.send({ success: false });
       return;
@@ -43894,7 +43919,7 @@ expressApp.delete("/api/delete-background/:name", (req, res) => {
 expressApp.get("/api/get-default-characters", (req, res) => {
   const characters = [];
   try {
-    fs$1.readdirSync(charactersPath).forEach((file) => {
+    fs.readdirSync(charactersPath).forEach((file) => {
       if (file.endsWith(".png")) {
         characters.push(file);
       }
@@ -43916,7 +43941,7 @@ electron.ipcMain.on("open-external-url", (event, url2) => {
 async function requestFullDiskAccess() {
   if (process.platform === "darwin") {
     try {
-      fs$1.readdirSync("/Library/Application Support/com.apple.TCC");
+      fs.readdirSync("/Library/Application Support/com.apple.TCC");
     } catch (e) {
       const { response } = await electron.dialog.showMessageBox({
         type: "info",

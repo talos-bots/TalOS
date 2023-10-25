@@ -373,19 +373,25 @@ export const generateText = async (
     let results: any;
     if(endpoint.length < 3 && endpointType !== 'Horde') return { error: 'Invalid endpoint.' };
     let stops: string[] = stopList 
-      ? ['You:', '<START>', '<END>', ...stopList] 
-      : [`${configuredName}:`, 'You:', '<START>', '<END>'];
+      ? ['You:', ...stopList] 
+      : [`${configuredName}:`, 'You:'];
   
     if (stopBrackets) {
       stops.push('[', ']');
     }
     if(construct){
-        if(construct?.defaultConfig.instructType === 'Metharme'){
-            stops.push('<|user|>', '<|model|>');
-        }else if (construct?.defaultConfig.instructType === 'Alpaca'){
-            stops.push('### Instruction:');
-        }else if (construct?.defaultConfig.instructType === 'Vicuna'){
-            stops.push('USER:');
+        if(construct?.defaultConfig.doInstruct){
+            if(construct?.defaultConfig.instructType === 'Metharme'){
+                stops.push('<|user|>', '<|model|>');
+            }else if (construct?.defaultConfig.instructType === 'Alpaca'){
+                stops.push('### Instruction:');
+            }else if (construct?.defaultConfig.instructType === 'Vicuna'){
+                stops.push('USER:');
+            }
+        }
+        if(construct?.name){
+            stops.push(`${construct.name}:`);
+            stops.push(`${construct.name}'s Thoughts:`);
         }
     }
     let endpointURLObject;
