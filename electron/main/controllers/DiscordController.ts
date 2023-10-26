@@ -1,8 +1,8 @@
 import Store from 'electron-store';
 import { generateContinueChatLog, generateThoughts, getDoMultiLine, regenerateMessageFromChatLog, removeMessagesFromChatLog, retrieveConstructs } from './ChatController';
-import { addChat, getChat, getConstruct, updateChat } from '../api/pouchdb';
+import { addChat, getAllConstructs, getChat, getConstruct, updateChat } from '../api/pouchdb';
 import { addUserFromDiscordMessage, assembleChatFromData, assembleConstructFromData, convertDiscordMessageToMessage } from '../helpers/helpers';
-import { AttachmentBuilder, CommandInteraction, EmbedBuilder, GuildMember, Message } from 'discord.js';
+import { AttachmentBuilder, CommandInteraction, EmbedBuilder, GuildMember, Message, MessageComponentInteraction } from 'discord.js';
 import { deleteMessage, disClient, editMessage, getStopList, isAutoReplyMode, isMultiCharacterMode, isMultiConstructMode, registerCommands, sendAttachment, sendAttachmentAsCharacter, sendEmbedAsCharacter, sendMessage, sendMessageAsCharacter, sendMessageEmbed, sendReply, sendTyping } from '../api/discord';
 import { Alias, AttachmentInferface, ChannelConfigInterface, ChatInterface, ConstructInterface, MessageInterface } from '../types/types';
 import { addVectorFromMessage } from '../api/vector';
@@ -249,16 +249,9 @@ let isInterrupted = false;
 
 export async function handleDiscordMessage(message: Message) {
     const activeConstructs = retrieveConstructs();
-    if(activeConstructs.length < 1) return;
     const newMessage = await convertDiscordMessageToMessage(message, activeConstructs);
     addUserFromDiscordMessage(message);
     let constructArray = [];
-    for (let i = 0; i < activeConstructs.length; i++) {
-        let constructDoc = await getConstruct(activeConstructs[i]);
-        let construct = assembleConstructFromData(constructDoc);
-        if(construct === null) continue;
-        constructArray.push(construct);
-    }
     let chatLogData = await getChat(message.channel.id);
     let chatLog;
     if (chatLogData) {
@@ -291,6 +284,12 @@ export async function handleDiscordMessage(message: Message) {
         if(chatLog.messages.length > 0){
             await addChat(chatLog);
         }
+    }
+    for (let i = 0; i < chatLog.constructs.length; i++) {
+        let constructDoc = await getConstruct(chatLog.constructs[i]);
+        let construct = assembleConstructFromData(constructDoc);
+        if(construct === null) continue;
+        constructArray.push(construct);
     }
     if(chatLog.messages.length === 1){
         isInterrupted = false;
@@ -754,15 +753,7 @@ export async function continueChatLog(interaction: CommandInteraction) {
         }
     }
     if(!registered) return;
-    const activeConstructs = retrieveConstructs();
-    if(activeConstructs.length < 1) return;
     let constructArray = [];
-    for (let i = 0; i < activeConstructs.length; i++) {
-        let constructDoc = await getConstruct(activeConstructs[i]);
-        let construct = assembleConstructFromData(constructDoc);
-        if(construct === null) continue;
-        constructArray.push(construct);
-    }
     let chatLogData = await getChat(interaction.channel.id);
     let chatLog;
     if (chatLogData) {
@@ -773,6 +764,12 @@ export async function continueChatLog(interaction: CommandInteraction) {
     }
     if(chatLog.messages.length < 1){
         return;
+    }
+    for (let i = 0; i < chatLog.constructs.length; i++) {
+        let constructDoc = await getConstruct(chatLog.constructs[i]);
+        let construct = assembleConstructFromData(constructDoc);
+        if(construct === null) continue;
+        constructArray.push(construct);
     }
     if(isMultiConstructMode() && !interaction.channel.isDMBased()){
         let lastMessageContent = chatLog.lastMessage.text;
@@ -1158,6 +1155,38 @@ export async function getMessageIntent(message: Message){
     }else{
         message.reply('<@' + message.author.id + '> is asking for an image of ' + intent.intent + `.\nScores are the following:\n**Search:** ${intent.searchScore}\n**Selfie:** ${intent.nudeScore}\n**Extracted Subject:** ${intent.subject}\n**Yes:** ${intent.compliance}`);
     }
+}
+
+export async function removeConstructFromChatLog(constructID: string, chatLogID: string){
+    const currentLogData = await getChat(chatLogID);
+    if(currentLogData === null){
+        return;
+    }
+    let currentLog = assembleChatFromData(currentLogData);
+    if(currentLog === null){
+        return;
+    }
+    if(!currentLog.constructs.includes(constructID)){
+        return;
+    }
+    currentLog.constructs = currentLog.constructs.filter(item => item !== constructID);
+    await updateChat(currentLog);
+}
+
+export async function addConstructToChatLog(constructID: string, chatLogID: string){
+    const currentLogData = await getChat(chatLogID);
+    if(currentLogData === null){
+        return;
+    }
+    let currentLog = assembleChatFromData(currentLogData);
+    if(currentLog === null){
+        return;
+    }
+    if(currentLog.constructs.includes(constructID)){
+        return;
+    }
+    currentLog.constructs.push(constructID);
+    await updateChat(currentLog);
 }
 
 function DiscordController(){

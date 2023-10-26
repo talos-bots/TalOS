@@ -1356,6 +1356,8 @@ async function getYesNoMaybe(text) {
 function assembleConstructFromData(data) {
   if (data === null)
     return null;
+  if ((data == null ? void 0 : data.doc) !== void 0)
+    data = data.doc;
   if ((data == null ? void 0 : data._id) === void 0)
     return null;
   const construct = {
@@ -1725,6 +1727,19 @@ async function getImageFromURL(url2) {
   }
   const buffer = await fs.promises.readFile(filePath);
   return buffer.toString("base64");
+}
+async function getIntactChatLog(interaction) {
+  let logData = await getChat(interaction.channelId);
+  if (logData === null) {
+    await interaction.reply("No chat log found.");
+    return null;
+  }
+  let chatLog = assembleChatFromData(logData);
+  if (chatLog === null) {
+    await interaction.reply("No chat log found.");
+    return null;
+  }
+  return chatLog;
 }
 const instructPromptWithGuidance = `
 {{guidance}}
@@ -3643,6 +3658,9 @@ function breakUpCommands(charName, commandString, user = "You", stopList = [], d
         formattedCommands.push(currentCommand.trim());
       }
       currentCommand = lines[i];
+    }
+    if (lineToTest.includes(":") && i >= 1) {
+      return formattedCommands.join("\n");
     } else {
       if (currentCommand !== "" || isFirstLine) {
         currentCommand += (isFirstLine ? "" : "\n") + lines[i];
@@ -4353,9 +4371,6 @@ function getDiscordSettings() {
   showDiffusionDetails = getShowDiffusionDetails();
   replaceUser = getReplaceUser();
 }
-const setDoAutoReply = (doAutoReply2) => {
-  store$2.set("doAutoReply", doAutoReply2);
-};
 const getDoAutoReply = () => {
   return store$2.get("doAutoReply", false);
 };
@@ -4457,9 +4472,6 @@ const addAlias = (newAlias, channelID) => {
   }
   store$2.set("channels", channels);
 };
-const setMaxMessages = (max) => {
-  store$2.set("maxMessages", max);
-};
 const getMaxMessages = () => {
   return store$2.get("maxMessages", 25);
 };
@@ -4504,18 +4516,9 @@ let isInterrupted = false;
 async function handleDiscordMessage(message) {
   var _a, _b, _c, _d, _e, _f, _g;
   const activeConstructs = retrieveConstructs();
-  if (activeConstructs.length < 1)
-    return;
   const newMessage = await convertDiscordMessageToMessage(message, activeConstructs);
   addUserFromDiscordMessage(message);
   let constructArray = [];
-  for (let i = 0; i < activeConstructs.length; i++) {
-    let constructDoc = await getConstruct(activeConstructs[i]);
-    let construct = assembleConstructFromData(constructDoc);
-    if (construct === null)
-      continue;
-    constructArray.push(construct);
-  }
   let chatLogData = await getChat(message.channel.id);
   let chatLog;
   if (chatLogData) {
@@ -4549,6 +4552,13 @@ async function handleDiscordMessage(message) {
     if (chatLog.messages.length > 0) {
       await addChat(chatLog);
     }
+  }
+  for (let i = 0; i < chatLog.constructs.length; i++) {
+    let constructDoc = await getConstruct(chatLog.constructs[i]);
+    let construct = assembleConstructFromData(constructDoc);
+    if (construct === null)
+      continue;
+    constructArray.push(construct);
   }
   if (chatLog.messages.length === 1) {
     isInterrupted = false;
@@ -5002,17 +5012,7 @@ async function continueChatLog(interaction) {
   }
   if (!registered)
     return;
-  const activeConstructs = retrieveConstructs();
-  if (activeConstructs.length < 1)
-    return;
   let constructArray = [];
-  for (let i = 0; i < activeConstructs.length; i++) {
-    let constructDoc = await getConstruct(activeConstructs[i]);
-    let construct = assembleConstructFromData(constructDoc);
-    if (construct === null)
-      continue;
-    constructArray.push(construct);
-  }
   let chatLogData = await getChat(interaction.channel.id);
   let chatLog;
   if (chatLogData) {
@@ -5023,6 +5023,13 @@ async function continueChatLog(interaction) {
   }
   if (chatLog.messages.length < 1) {
     return;
+  }
+  for (let i = 0; i < chatLog.constructs.length; i++) {
+    let constructDoc = await getConstruct(chatLog.constructs[i]);
+    let construct = assembleConstructFromData(constructDoc);
+    if (construct === null)
+      continue;
+    constructArray.push(construct);
   }
   if (isMultiConstructMode() && !interaction.channel.isDMBased()) {
     let lastMessageContent = chatLog.lastMessage.text;
@@ -5378,6 +5385,36 @@ async function doImageReaction(message) {
     message.reply({ files: [attachment] });
   }
 }
+async function removeConstructFromChatLog(constructID, chatLogID) {
+  const currentLogData = await getChat(chatLogID);
+  if (currentLogData === null) {
+    return;
+  }
+  let currentLog = assembleChatFromData(currentLogData);
+  if (currentLog === null) {
+    return;
+  }
+  if (!currentLog.constructs.includes(constructID)) {
+    return;
+  }
+  currentLog.constructs = currentLog.constructs.filter((item) => item !== constructID);
+  await updateChat(currentLog);
+}
+async function addConstructToChatLog(constructID, chatLogID) {
+  const currentLogData = await getChat(chatLogID);
+  if (currentLogData === null) {
+    return;
+  }
+  let currentLog = assembleChatFromData(currentLogData);
+  if (currentLog === null) {
+    return;
+  }
+  if (currentLog.constructs.includes(constructID)) {
+    return;
+  }
+  currentLog.constructs.push(constructID);
+  await updateChat(currentLog);
+}
 function DiscordController() {
   getDiscordSettings();
   expressApp.get("/api/discord/channels", (req, res) => {
@@ -5496,7 +5533,22 @@ const RegisterCommand = {
   name: "register",
   description: "Registers the current channel.",
   execute: async (interaction) => {
+    var _a, _b, _c, _d;
     await interaction.deferReply({ ephemeral: true });
+    let constructs = await getAllConstructs();
+    console.log(constructs);
+    if (constructs === null) {
+      await interaction.reply("No constructs found.");
+      return;
+    }
+    let constructArray = [];
+    for (let i = 0; i < constructs.length; i++) {
+      let assembledConstruct = assembleConstructFromData(constructs[i]);
+      console.log(assembledConstruct);
+      if (assembledConstruct === null)
+        continue;
+      constructArray.push(assembledConstruct);
+    }
     if (interaction.channelId === null) {
       await interaction.editReply({
         content: "This command can only be used in a server channel."
@@ -5531,9 +5583,92 @@ const RegisterCommand = {
       authorsNotes: [],
       authorsNoteDepth: 0
     });
-    await interaction.editReply({
-      content: "Channel registered."
+    let currentPage = 0;
+    const itemsPerPage = 10;
+    const constructEmbed = new discord_js.EmbedBuilder().setTitle("Choose which Constructs to add to the ChatLog").setDescription("React with the number of the construct to add or remove it from the chat log.").addFields([{ name: "Constructs", value: "Loading..." }]);
+    let chatLog = {
+      _id: interaction.channelId,
+      name: 'Discord "' + (((_a = interaction == null ? void 0 : interaction.channel) == null ? void 0 : _a.isDMBased()) ? `DM ${interaction.user.displayName}` : `${(_b = interaction == null ? void 0 : interaction.channel) == null ? void 0 : _b.id}`) + `" Chat`,
+      type: "Discord",
+      messages: [],
+      // @ts-ignore
+      lastMessage: null,
+      // @ts-ignore
+      lastMessageDate: null,
+      // @ts-ignore
+      firstMessageDate: null,
+      constructs: [],
+      humans: [interaction.user.id],
+      chatConfigs: [],
+      doVector: ((_c = interaction == null ? void 0 : interaction.channel) == null ? void 0 : _c.isDMBased()) ? true : false,
+      global: ((_d = interaction == null ? void 0 : interaction.channel) == null ? void 0 : _d.isDMBased()) ? true : false
+    };
+    await addChat(chatLog);
+    const menuMessage = await interaction.reply({ embeds: [constructEmbed], fetchReply: true });
+    const updateMenu = async (page) => {
+      chatLog = await getIntactChatLog(interaction);
+      if (chatLog === null)
+        return;
+      const start = page * itemsPerPage;
+      const end = start + itemsPerPage;
+      let fields = [];
+      let number = 1;
+      for (let i = start; i < end && i < constructArray.length; i++) {
+        console.log(constructArray[i]);
+        fields.push({
+          name: `${getEmojiByNumber(number)} ${constructArray[i].name}`,
+          value: `${(chatLog == null ? void 0 : chatLog.constructs.includes(constructArray[i]._id)) ? "(Currently in Chat) ✅" : "(Not in Chat) ❎"}`
+        });
+        number++;
+      }
+      const newEmbed = new discord_js.EmbedBuilder().setTitle("Choose a Construct").setFields(fields).setDescription("React with the number of the construct to add or remove it from the chat log.");
+      await menuMessage.edit({ embeds: [newEmbed] });
+      await menuMessage.reactions.removeAll();
+      if (currentPage > 0)
+        await menuMessage.react("◀");
+      if ((currentPage + 1) * itemsPerPage < constructArray.length)
+        await menuMessage.react("▶");
+      for (let i = start; i < end && i < constructArray.length; i++) {
+        await menuMessage.react(["1️⃣", `2️⃣`, "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"][i % 10]);
+      }
+    };
+    const collector = menuMessage.createReactionCollector({ time: 6e4 });
+    collector.on("collect", async (reaction, user) => {
+      if (user.bot)
+        return;
+      if (!reaction.message.guild)
+        return;
+      if (!reaction)
+        return;
+      if (!reaction.emoji)
+        return;
+      if (!reaction.emoji.name)
+        return;
+      const index = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"].indexOf(reaction.emoji.name);
+      if (index !== -1) {
+        const constructIndex = currentPage * itemsPerPage + index;
+        if (constructIndex < constructArray.length) {
+          if (!(chatLog == null ? void 0 : chatLog.constructs.includes(constructArray[constructIndex]._id))) {
+            await addConstructToChatLog(constructArray[constructIndex]._id, interaction.channelId);
+          } else {
+            await removeConstructFromChatLog(constructArray[constructIndex]._id, interaction.channelId);
+          }
+        }
+        await updateMenu(currentPage);
+      } else if (reaction.emoji.name === "◀" && currentPage > 0) {
+        currentPage--;
+        await updateMenu(currentPage);
+      } else if (reaction.emoji.name === "▶" && (currentPage + 1) * itemsPerPage < constructArray.length) {
+        currentPage++;
+        await updateMenu(currentPage);
+      }
+      await reaction.users.remove(user.id);
     });
+    try {
+      updateMenu(0);
+    } catch (e) {
+      console.log(e);
+    }
   }
 };
 const UnregisterCommand = {
@@ -5761,72 +5896,6 @@ const SetMultiLineCommand = {
     setDoMultiLine(multiline);
     await interaction.editReply({
       content: `Set multiline to ${multiline}`
-    });
-  }
-};
-const SetMaxMessagesCommand = {
-  name: "hismessages",
-  description: "Sets the maximum number of messages to include in the prompt.",
-  options: [
-    {
-      name: "maxmessages",
-      description: "The maximum number of messages to include in the prompt.",
-      type: 4,
-      required: true
-    }
-  ],
-  execute: async (interaction) => {
-    var _a;
-    await interaction.deferReply({ ephemeral: true });
-    if (interaction.channelId === null) {
-      await interaction.editReply({
-        content: "This command can only be used in a server channel."
-      });
-      return;
-    }
-    if (interaction.guildId === null) {
-      await interaction.editReply({
-        content: "This command can only be used in a server channel."
-      });
-      return;
-    }
-    const maxMessages2 = (_a = interaction.options.get("maxmessages")) == null ? void 0 : _a.value;
-    setMaxMessages(maxMessages2);
-    await interaction.editReply({
-      content: `Set max messages to ${maxMessages2}`
-    });
-  }
-};
-const SetDoAutoReply = {
-  name: "setautoreply",
-  description: "Sets whether the bot will automatically reply to messages.",
-  options: [
-    {
-      name: "autoreply",
-      description: "Whether to automatically reply to messages.",
-      type: 5,
-      required: true
-    }
-  ],
-  execute: async (interaction) => {
-    var _a;
-    await interaction.deferReply({ ephemeral: true });
-    if (interaction.channelId === null) {
-      await interaction.editReply({
-        content: "This command can only be used in a server channel."
-      });
-      return;
-    }
-    if (interaction.guildId === null) {
-      await interaction.editReply({
-        content: "This command can only be used in a server channel."
-      });
-      return;
-    }
-    const autoreply = (_a = interaction.options.get("autoreply")) == null ? void 0 : _a.value;
-    setDoAutoReply(autoreply);
-    await interaction.editReply({
-      content: `Set auto reply to ${autoreply}`
     });
   }
 };
@@ -6333,6 +6402,149 @@ const stopCommand = {
     });
   }
 };
+const manageConstructsCommand = {
+  name: "channelconstructs",
+  description: "Manages the constructs for the current channel.",
+  execute: async (interaction) => {
+    let constructs = await getAllConstructs();
+    console.log(constructs);
+    if (constructs === null) {
+      await interaction.reply("No constructs found.");
+      return;
+    }
+    let constructArray = [];
+    for (let i = 0; i < constructs.length; i++) {
+      let assembledConstruct = assembleConstructFromData(constructs[i]);
+      console.log(assembledConstruct);
+      if (assembledConstruct === null)
+        continue;
+      constructArray.push(assembledConstruct);
+    }
+    if (interaction.channelId === null) {
+      await interaction.reply({
+        content: "This command can only be used in a server."
+      });
+      return;
+    }
+    if (interaction.guildId === null) {
+      await interaction.reply({
+        content: "This command can only be used in a server."
+      });
+      return;
+    }
+    let registeredChannels = getRegisteredChannels();
+    let registered = false;
+    for (let i = 0; i < registeredChannels.length; i++) {
+      if (registeredChannels[i]._id === interaction.channelId) {
+        registered = true;
+        break;
+      }
+    }
+    if (!registered) {
+      await interaction.reply({
+        content: "This channel is not registered."
+      });
+      return;
+    }
+    let chatLog = await getIntactChatLog(interaction);
+    if (chatLog === null)
+      return;
+    let currentPage = 0;
+    const itemsPerPage = 10;
+    const constructEmbed = new discord_js.EmbedBuilder().setTitle("Choose a Construct").setDescription("React with the number of the construct to add or remove it from the chat log.").addFields([{ name: "Constructs", value: "Loading..." }]);
+    const menuMessage = await interaction.reply({ embeds: [constructEmbed], fetchReply: true });
+    const updateMenu = async (page) => {
+      chatLog = await getIntactChatLog(interaction);
+      if (chatLog === null)
+        return;
+      const start = page * itemsPerPage;
+      const end = start + itemsPerPage;
+      let fields = [];
+      let number = 1;
+      for (let i = start; i < end && i < constructArray.length; i++) {
+        console.log(constructArray[i]);
+        fields.push({
+          name: `${getEmojiByNumber(number)} ${constructArray[i].name}`,
+          value: `${(chatLog == null ? void 0 : chatLog.constructs.includes(constructArray[i]._id)) ? "(Currently in Chat) ✅" : "(Not in Chat) ❎"}`
+        });
+        number++;
+      }
+      const newEmbed = new discord_js.EmbedBuilder().setTitle("Choose a Construct").setFields(fields).setDescription("React with the number of the construct to add or remove it from the chat log.");
+      await menuMessage.edit({ embeds: [newEmbed] });
+      await menuMessage.reactions.removeAll();
+      if (currentPage > 0)
+        await menuMessage.react("◀");
+      if ((currentPage + 1) * itemsPerPage < constructArray.length)
+        await menuMessage.react("▶");
+      for (let i = start; i < end && i < constructArray.length; i++) {
+        await menuMessage.react(["1️⃣", `2️⃣`, "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"][i % 10]);
+      }
+    };
+    const collector = menuMessage.createReactionCollector({ time: 6e4 });
+    collector.on("collect", async (reaction, user) => {
+      if (user.bot)
+        return;
+      if (!reaction.message.guild)
+        return;
+      if (!reaction)
+        return;
+      if (!reaction.emoji)
+        return;
+      if (!reaction.emoji.name)
+        return;
+      const index = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"].indexOf(reaction.emoji.name);
+      if (index !== -1) {
+        const constructIndex = currentPage * itemsPerPage + index;
+        if (constructIndex < constructArray.length) {
+          if (!(chatLog == null ? void 0 : chatLog.constructs.includes(constructArray[constructIndex]._id))) {
+            await addConstructToChatLog(constructArray[constructIndex]._id, interaction.channelId);
+          } else {
+            await removeConstructFromChatLog(constructArray[constructIndex]._id, interaction.channelId);
+          }
+        }
+        await updateMenu(currentPage);
+      } else if (reaction.emoji.name === "◀" && currentPage > 0) {
+        currentPage--;
+        await updateMenu(currentPage);
+      } else if (reaction.emoji.name === "▶" && (currentPage + 1) * itemsPerPage < constructArray.length) {
+        currentPage++;
+        await updateMenu(currentPage);
+      }
+      await reaction.users.remove(user.id);
+    });
+    try {
+      updateMenu(0);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+};
+function getEmojiByNumber(input) {
+  switch (input) {
+    case 1:
+      return "1️⃣";
+    case 2:
+      return "2️⃣";
+    case 3:
+      return "3️⃣";
+    case 4:
+      return "4️⃣";
+    case 5:
+      return "5️⃣";
+    case 6:
+      return "6️⃣";
+    case 7:
+      return "7️⃣";
+    case 8:
+      return "8️⃣";
+    case 9:
+      return "9️⃣";
+    case 10:
+      return "🔟";
+    default:
+      return "❎";
+  }
+}
 const DefaultCommands = [
   PingCommand,
   RegisterCommand,
@@ -6343,8 +6555,6 @@ const DefaultCommands = [
   ContinueChatCommand,
   SetBotNameCommand,
   SetMultiLineCommand,
-  SetMaxMessagesCommand,
-  SetDoAutoReply,
   SetAliasCommand,
   ClearAllWebhooksCommand,
   DoCharacterGreetingsCommand,
@@ -6353,7 +6563,8 @@ const DefaultCommands = [
   completeString,
   instructCommand,
   replaceUserCommand,
-  stopCommand
+  stopCommand,
+  manageConstructsCommand
 ];
 const constructImagine = {
   name: "cosimagine",

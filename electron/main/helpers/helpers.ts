@@ -1,9 +1,9 @@
-import { Message } from "discord.js";
+import { CommandInteraction, Message } from "discord.js";
 import { AttachmentInferface, ChatInterface, ConstructInterface, LorebookInterface, MessageInterface, UserInterface } from "../types/types";
 import FormData from 'form-data';
 import axios from "axios";
 import { getUsername } from "../controllers/DiscordController";
-import { addAttachment, addUser, getUser, updateUser } from "../api/pouchdb";
+import { addAttachment, addUser, getChat, getUser, updateUser } from "../api/pouchdb";
 // @ts-ignore
 import { encode } from 'gpt-tokenizer'
 import { getCaption } from "../model-pipeline/transformers";
@@ -16,6 +16,7 @@ import path from 'path';
 
 export function assembleConstructFromData(data: any){
 	if(data === null) return null;
+	if(data?.doc !== undefined) data = data.doc;
 	if(data?._id === undefined) return null;
 	const construct: ConstructInterface = {
 		_id: data._id,
@@ -441,4 +442,18 @@ export async function getImageFromURL(url: string): Promise<string> {
 
     const buffer = await fs.promises.readFile(filePath);
     return buffer.toString('base64');
+}
+
+export async function getIntactChatLog(interaction: CommandInteraction): Promise<ChatInterface|null>{
+	let logData = await getChat(interaction.channelId);
+	if(logData === null){
+		await interaction.reply('No chat log found.');
+		return null;
+	}
+	let chatLog = assembleChatFromData(logData);
+	if(chatLog === null){
+		await interaction.reply('No chat log found.');
+		return null;
+	}
+	return chatLog;
 }

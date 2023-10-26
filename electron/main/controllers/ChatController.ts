@@ -510,6 +510,8 @@ export function breakUpCommands(charName: string, commandString: string, user = 
                 formattedCommands.push(currentCommand.trim());
             }
             currentCommand = lines[i];
+        } if(lineToTest.includes(':') && i >= 1){ // if the line has a colon, it's a new message from a different user. Return commands up to this point
+            return formattedCommands.join('\n');
         } else {
             if (currentCommand !== '' || isFirstLine){
                 currentCommand += (isFirstLine ? '' : '\n') + lines[i];
