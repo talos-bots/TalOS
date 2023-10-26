@@ -5634,6 +5634,8 @@ const RegisterCommand = {
       for (let i = start; i < end && i < constructArray.length; i++) {
         await menuMessage.react(["1️⃣", `2️⃣`, "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"][i % 10]);
       }
+      await menuMessage.react("❎");
+      await menuMessage.react("🗑️");
     };
     const collector = menuMessage.createReactionCollector({ time: 6e4 });
     collector.on("collect", async (reaction, user) => {
@@ -5664,6 +5666,14 @@ const RegisterCommand = {
       } else if (reaction.emoji.name === "▶" && (currentPage + 1) * itemsPerPage < constructArray.length) {
         currentPage++;
         await updateMenu(currentPage);
+      } else if (reaction.emoji.name === "❎") {
+        if (chatLog === null)
+          return;
+        chatLog.constructs = [];
+        await updateChat(chatLog);
+      } else if (reaction.emoji.name === "🗑️") {
+        menuMessage.delete();
+        collector.stop();
       }
       await reaction.users.remove(user.id);
     });
@@ -6486,6 +6496,8 @@ const manageConstructsCommand = {
       for (let i = start; i < end && i < constructArray.length; i++) {
         await menuMessage.react(["1️⃣", `2️⃣`, "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"][i % 10]);
       }
+      await menuMessage.react("❎");
+      await menuMessage.react("🗑️");
     };
     const collector = menuMessage.createReactionCollector({ time: 6e4 });
     collector.on("collect", async (reaction, user) => {
@@ -6516,6 +6528,14 @@ const manageConstructsCommand = {
       } else if (reaction.emoji.name === "▶" && (currentPage + 1) * itemsPerPage < constructArray.length) {
         currentPage++;
         await updateMenu(currentPage);
+      } else if (reaction.emoji.name === "❎") {
+        if (chatLog === null)
+          return;
+        chatLog.constructs = [];
+        await updateChat(chatLog);
+      } else if (reaction.emoji.name === "🗑️") {
+        menuMessage.delete();
+        collector.stop();
       }
       await reaction.users.remove(user.id);
     });

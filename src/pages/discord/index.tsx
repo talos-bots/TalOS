@@ -105,21 +105,6 @@ const DiscordPage = () => {
                     <Accordian title="Construct Chat Configuration" className="slide-in-left">
                         <div className="grid grid-cols-2 gap-2">
                             <div className="col-span-1 flex flex-col text-left">
-                                <label className="text-theme-text font-semibold">Active Constructs</label>
-                                <div className="themed-input flex flex-col items-center w-full h-15vh overflow-y-auto gap-2">
-                                        <div className="flex flex-row w-full gap-2">
-                                            <button className="themed-button-pos flex justify-center items-center flex-grow" onClick={() => {}} title="Add Construct to Active"><Plus/></button>
-                                        </div>
-                                    {Array.isArray(discordActiveConstructs) && discordActiveConstructs.length > 0 && discordActiveConstructs.map((construct, index) => {
-                                        return(
-                                            <div className="flex flex-row w-full gap-2" key={construct._id}>
-                                                <span className="text-theme-text font-semibold themed-button-pos flex-grow">{construct.name} {index === 0 ? '(Primary)' : '(Secondary)'}</span>
-                                                <button className="themed-button-neg flex justify-center items-center" onClick={() => {removeActive(construct._id)}}><Trash/></button>
-                                            </div>
-                                    )})}
-                                </div>
-                            </div>
-                            <div className="col-span-1 flex flex-col text-left">
                                 <label className="text-theme-text font-semibold">Multiple Construct Mode</label>
                                 <div className="themed-input flex flex-col items-center w-full overflow-y-auto flex-grow">
                                     <i className="text-sm">When enabled, the bot will operate as a Multi-Construct bot, and will attempt to maintain mutliple personas through one bot. Turning this off and on will require a bot restart.</i>
