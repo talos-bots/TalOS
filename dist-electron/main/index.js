@@ -6483,6 +6483,28 @@ const stopCommand = {
     });
   }
 };
+const toggleSystemInfo = {
+  name: "sysinfotoggle",
+  description: "Toggles whether system info is shown inside of the prompt.",
+  options: [
+    {
+      name: "toggle",
+      description: "Whether to show system info.",
+      type: 5,
+      // Boolean type
+      required: true
+    }
+  ],
+  execute: async (interaction) => {
+    var _a;
+    await interaction.deferReply({ ephemeral: false });
+    const toggle = (_a = interaction.options.get("toggle")) == null ? void 0 : _a.value;
+    setDoSystemInfo(toggle);
+    await interaction.editReply({
+      content: `Set show system info to ${toggle}`
+    });
+  }
+};
 const manageConstructsCommand = {
   name: "channelconstructs",
   description: "Manages the constructs for the current channel.",
@@ -6659,7 +6681,8 @@ const DefaultCommands = [
   instructCommand,
   replaceUserCommand,
   stopCommand,
-  manageConstructsCommand
+  manageConstructsCommand,
+  toggleSystemInfo
 ];
 const constructImagine = {
   name: "cosimagine",

@@ -9,6 +9,7 @@ import { doInstruct, generateText, getStatus } from "../api/llm";
 import { deleteIndex } from "../api/vector";
 import { getDefaultCfg, getDefaultHeight, getDefaultHighresSteps, getDefaultNegativePrompt, getDefaultSteps, getDefaultWidth, txt2img, getDefaultPrompt } from "../api/sd";
 import { cat } from "@xenova/transformers";
+import { setDoSystemInfo } from "./ActiveConstructController";
 
 export const RegisterCommand: SlashCommand = {
     name: 'register',
@@ -915,6 +916,27 @@ const stopCommand: SlashCommand = {
     }
 };
 
+const toggleSystemInfo: SlashCommand = {
+    name: 'sysinfotoggle',
+    description: 'Toggles whether system info is shown inside of the prompt.',
+    options: [
+        {
+            name: 'toggle',
+            description: 'Whether to show system info.',
+            type: 5,  // Boolean type
+            required: true,
+        }
+    ],
+    execute: async (interaction: CommandInteraction) => {
+        await interaction.deferReply({ephemeral: false});
+        const toggle = interaction.options.get('toggle')?.value as boolean;
+        setDoSystemInfo(toggle);
+        await interaction.editReply({
+            content: `Set show system info to ${toggle}`,
+        });
+    }
+}
+
 const manageConstructsCommand: SlashCommand = {
     name: 'channelconstructs',
     description: 'Manages the constructs for the current channel.',
@@ -1091,7 +1113,8 @@ export const DefaultCommands = [
     instructCommand,
     replaceUserCommand,
     stopCommand,
-    manageConstructsCommand
+    manageConstructsCommand,
+    toggleSystemInfo
 ];
 
 export const constructImagine: SlashCommand = {
