@@ -988,8 +988,6 @@ const manageConstructsCommand: SlashCommand = {
             const newEmbed = new EmbedBuilder().setTitle("Choose a Construct").setFields(fields).setDescription('React with the number of the construct to add or remove it from the chat log.');
             await menuMessage.edit({ embeds: [newEmbed] });
 
-            // Clear reactions and re-add them for current page
-            await menuMessage.reactions.removeAll();
             if (currentPage > 0) await menuMessage.react('◀');
             if ((currentPage + 1) * itemsPerPage < constructArray.length) await menuMessage.react('▶');
             // Add number reactions based on items in current page

@@ -6488,7 +6488,6 @@ const manageConstructsCommand = {
       });
       const newEmbed = new discord_js.EmbedBuilder().setTitle("Choose a Construct").setFields(fields).setDescription("React with the number of the construct to add or remove it from the chat log.");
       await menuMessage.edit({ embeds: [newEmbed] });
-      await menuMessage.reactions.removeAll();
       if (currentPage > 0)
         await menuMessage.react("◀");
       if ((currentPage + 1) * itemsPerPage < constructArray.length)
