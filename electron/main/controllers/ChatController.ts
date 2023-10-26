@@ -438,15 +438,22 @@ export async function generateContinueChatLog(construct: ConstructInterface, cha
     prompt = prompt.replaceAll('{{user}}', `${currentUser}`).replaceAll('{{char}}', `${construct.name}`);
     if(chatLog.doVector === true){
         let memoryText = ''
-        const memories = await getRelaventMemories(chatLog._id, chatLog.lastMessage.text)
-        for(let i = 0; i < memories.length; i++){
-            if(memories[i] !== undefined){
-                if(memories[i].item.metadata.text !== undefined && memories[i].item.metadata.text !== null && memories[i].item.metadata.text !== '' && memories[i].item.metadata.text !== chatLog.lastMessage.text){
-                    memoryText += `${memories[i].item.metadata.user}: ${memories[i].item.metadata.text}\n`;
+        const memories = await getRelaventMemories(chatLog._id, chatLog.lastMessage.text).then((memories) => {
+            return memories;
+        }).catch((error) => {
+            console.log('Error from GetRelaventMemories:', error);
+            return null;
+        });
+        if(memories !== null && memories !== undefined){
+            for(let i = 0; i < memories.length; i++){
+                if(memories[i] !== undefined){
+                    if(memories[i].item.metadata.text !== undefined && memories[i].item.metadata.text !== null && memories[i].item.metadata.text !== '' && memories[i].item.metadata.text !== chatLog.lastMessage.text){
+                        memoryText += `${memories[i].item.metadata.user}: ${memories[i].item.metadata.text}\n`;
+                    }
                 }
             }
+            prompt = memoryText + prompt;
         }
-        prompt = memoryText + prompt;
     }
     const response = await generateText(prompt, currentUser, stopList, construct).then((response) => {
         return response;
@@ -686,8 +693,8 @@ export function getSystemInformation(chatLog: ChatInterface): string {
     const currentTimeString = `${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}, ${now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}`;
 
     try {    
-        const lastMessageDate = new Date(chatLog.messages[chatLog.messages.length - 2].timestamp);
-        const chatStartDate = new Date(chatLog.messages[0].timestamp);
+        const lastMessageDate = new Date(chatLog?.messages[chatLog.messages.length - 2]?.timestamp);
+        const chatStartDate = new Date(chatLog?.messages[0]?.timestamp);
 
         if (isNaN(chatStartDate.getTime()) || isNaN(lastMessageDate.getTime())) {
             throw new Error("Invalid date data in chatLog");
