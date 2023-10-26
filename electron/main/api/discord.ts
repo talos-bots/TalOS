@@ -1,7 +1,7 @@
 import { ActivityType, Client, GatewayIntentBits, Collection, REST, Routes, Partials, TextChannel, DMChannel, NewsChannel, Snowflake, Webhook, Message, CommandInteraction, Events, PartialGroupDMChannel } from 'discord.js';
 import Store from 'electron-store';
 import { expressApp, uploadsPath } from '..';
-import { doImageReaction, getDoStableDiffusion, getMessageIntent, getRegisteredChannels, getUsername, handleDiscordMessage, handleRemoveMessage, handleRengenerateMessage, setInterrupted } from '../controllers/DiscordController';
+import { doImageReaction, getDelay, getDoDelay, getDoStableDiffusion, getMessageIntent, getRegisteredChannels, getUsername, handleDiscordMessage, handleRemoveMessage, handleRengenerateMessage, makeDelay, setInterrupted } from '../controllers/DiscordController';
 import { ConstructInterface, SlashCommand } from '../types/types';
 import { assembleConstructFromData, base642Buffer } from '../helpers/helpers';
 import { DefaultCommands, stableDiffusionCommands } from '../controllers/commands';
@@ -663,8 +663,12 @@ export function saveDiscordData(newToken: string, newAppId: string, discordMulti
 let messageQueue: Message[] = [];
 let isProcessing = false;
 let processingMessage: Message | undefined;
+export const { waitFor, cancel, isDelaying } = makeDelay();
 async function processQueue() {
     // If the bot is already processing a message, do not start processing this one
+    if(isDelaying){
+        cancel();
+    }
     if (isProcessing) return;
 
     while (messageQueue.length > 0) {

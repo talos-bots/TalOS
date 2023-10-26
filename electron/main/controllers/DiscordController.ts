@@ -3,7 +3,7 @@ import { generateContinueChatLog, generateThoughts, getDoMultiLine, regenerateMe
 import { addChat, getAllConstructs, getChat, getConstruct, updateChat } from '../api/pouchdb';
 import { addUserFromDiscordMessage, assembleChatFromData, assembleConstructFromData, convertDiscordMessageToMessage } from '../helpers/helpers';
 import { AttachmentBuilder, CommandInteraction, EmbedBuilder, GuildMember, Message, MessageComponentInteraction } from 'discord.js';
-import { deleteMessage, disClient, editMessage, getStopList, isAutoReplyMode, isMultiCharacterMode, isMultiConstructMode, registerCommands, sendAttachment, sendAttachmentAsCharacter, sendEmbedAsCharacter, sendMessage, sendMessageAsCharacter, sendMessageEmbed, sendReply, sendTyping } from '../api/discord';
+import { cancel, deleteMessage, disClient, editMessage, getStopList, isAutoReplyMode, isMultiCharacterMode, isMultiConstructMode, registerCommands, sendAttachment, sendAttachmentAsCharacter, sendEmbedAsCharacter, sendMessage, sendMessageAsCharacter, sendMessageEmbed, sendReply, sendTyping, waitFor } from '../api/discord';
 import { Alias, AttachmentInferface, ChannelConfigInterface, ChatInterface, ConstructInterface, MessageInterface } from '../types/types';
 import { addVectorFromMessage } from '../api/vector';
 import { getDefaultCfg, getDefaultHeight, getDefaultHighresSteps, getDefaultNegativePrompt, getDefaultPrompt, getDefaultSteps, getDefaultWidth, makeImage } from '../api/sd';
@@ -28,6 +28,8 @@ let doGeneralPurpose = false;
 let diffusionWhitelist: string[] = [];
 let replaceUser = true;
 let lastIntentData: any = null;
+let delay = 0;
+let doDelay = false;
 
 function getDiscordSettings(){
     maxMessages = getMaxMessages();
@@ -120,6 +122,24 @@ export const setReplaceUser = (replace: boolean): void => {
 
 export const getReplaceUser = (): boolean => {
     return store.get('replaceUser', false) as boolean;
+}
+
+export const setDelay = (delay: number): void => {
+    store.set('delay', delay);
+    delay = delay;
+}
+
+export const getDelay = (): number => {
+    return store.get('delay', 0) as number;
+}
+
+export const setDoDelay = (doDelay: boolean): void => {
+    store.set('doDelay', doDelay);
+    doDelay = doDelay;
+}
+
+export const getDoDelay = (): boolean => {
+    return store.get('doDelay', false) as boolean;
 }
 
 export async function getUsername(userID: string, channelID: string){
@@ -1189,6 +1209,27 @@ export async function addConstructToChatLog(constructID: string, chatLogID: stri
     await updateChat(currentLog);
 }
 
+export function makeDelay() {
+    let timeoutId: NodeJS.Timeout | null = null;
+  
+    const waitFor = (seconds: number): Promise<void> => {
+        isDelaying = true;
+        return new Promise((resolve, reject) => {
+            timeoutId = setTimeout(resolve, seconds * 1000);
+        });
+    };
+    
+    let isDelaying = false;
+    const cancel = () => {
+        isDelaying = false;
+        if (timeoutId !== null) {
+            clearTimeout(timeoutId);
+        }
+    };
+  
+    return { waitFor, cancel, isDelaying };
+}
+
 function DiscordController(){
     getDiscordSettings();
 
@@ -1317,6 +1358,44 @@ function DiscordController(){
     expressApp.get('/api/discord/diffusion-channels', (req, res) => {
         try {
             res.json({ channels: getDiffusionWhitelist() });
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
+    });
+
+    //route for getting delay value
+    expressApp.get('/api/discord/delay', (req, res) => {
+        try {
+            res.json({ value: getDelay() });
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
+    });
+
+    //route for setting delay value
+    expressApp.post('/api/discord/delay', (req, res) => {
+        try {
+            setDelay(req.body.value);
+            res.send({ message: "Delay updated successfully." });
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
+    });
+
+    //route for setting doDelay value
+    expressApp.get('/api/discord/delay-enabled', (req, res) => {
+        try {
+            res.json({ value: getDoDelay() });
+        } catch (error: any) {
+            res.status(500).send({ error: error.message });
+        }
+    });
+
+    //route for setting doDelay value
+    expressApp.post('/api/discord/delay-enabled', (req, res) => {
+        try {
+            setDoDelay(req.body.value);
+            res.send({ message: "Delay setting updated successfully." });
         } catch (error: any) {
             res.status(500).send({ error: error.message });
         }

@@ -249,3 +249,43 @@ export const checkIfDiscordChannelIsRegistered = async (channel: string): Promis
         throw error.response.data.error;
     }
 };
+
+// Get delay value
+export const getDelayValue = async (): Promise<number> => {
+    try {
+        const response = await axios.get(`${url}/api/discord/delay`);
+        return response.data.value;
+    } catch (error: any) {
+        throw error.response.data.error;
+    }
+};
+
+// Set delay value
+export const setDelayValue = async (value: number): Promise<string> => {
+    try {
+        const response = await axios.post(`${url}/api/discord/delay`, { value });
+        return response.data.message;
+    } catch (error: any) {
+        throw error.response.data.error;
+    }
+};
+
+// Get doDelay value
+export const getDoDelayValue = async (): Promise<boolean> => {
+    try {
+        const response = await axios.get(`${url}/api/discord/delay-enabled`);
+        return response.data.value;
+    } catch (error: any) {
+        throw error.response.data.error;
+    }
+};
+
+// Set doDelay value
+export const setDoDelayValue = async (value: boolean): Promise<string> => {
+    try {
+        const response = await axios.post(`${url}/api/discord/delay-enabled`, { value });
+        return response.data.message;
+    } catch (error: any) {
+        throw error.response.data.error;
+    }
+};

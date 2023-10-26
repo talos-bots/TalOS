@@ -1,7 +1,7 @@
 import { handleLinkClick } from "@/App";
 import { getActiveConstructList, removeConstructFromActive } from "@/api/constructapi";
 import { getConstruct, getStorageValue, setStorageValue } from "@/api/dbapi";
-import { getBotStatus, getDoStableDiffusionReactsStatus, getDoStableDiffusionStatus, getSavedDiscordData, getShowDiffusionDetailsStatus, loginToDiscord, logoutFromDiscord, saveDiscordData, setDoStableDiffusionReactsStatus, setDoStableDiffusionStatus, setShowDiffusionDetailsStatus } from "@/api/discordapi";
+import { getBotStatus, getDelayValue, getDoDelayValue, getDoStableDiffusionReactsStatus, getDoStableDiffusionStatus, getSavedDiscordData, getShowDiffusionDetailsStatus, loginToDiscord, logoutFromDiscord, saveDiscordData, setDelayValue, setDoDelayValue, setDoStableDiffusionReactsStatus, setDoStableDiffusionStatus, setShowDiffusionDetailsStatus } from "@/api/discordapi";
 import { Construct } from "@/classes/Construct";
 import Accordian from "@/components/accordion";
 import { useEffect, useState } from "react";
@@ -21,6 +21,8 @@ const DiscordPage = () => {
     const [discordStableReacts, setDiscordStableReacts] = useState<boolean>(false);
     const [discordShowDiffusionDetails, setDiscordShowDiffusionDetails] = useState<boolean>(false);
     const [discordDesktopNotifications, setDiscordDesktopNotifications] = useState<boolean>(false);
+    const [discordDelay, setDiscordDelay] = useState<number>(0); // TODO: Implement this in the future
+    const [discorDoDelay, setDiscordDoDelay] = useState<boolean>(false); // TODO: Implement this in the future
     const [isBotActive, setIsBotActive] = useState(false);
 
     useEffect(() => {
@@ -36,6 +38,8 @@ const DiscordPage = () => {
                 const isEnabled = JSON.parse(value)? true : false;
                 setDiscordDesktopNotifications(isEnabled);
             });
+            getDoDelayValue().then(setDiscordDoDelay).catch(console.error);
+            getDelayValue().then(setDiscordDelay).catch(console.error);
         }
         const isBotActive = async () => {
             const status = await getBotStatus();
@@ -82,6 +86,8 @@ const DiscordPage = () => {
     const saveDiscordConfig = async () => {
         await saveDiscordData(discordBotToken, discordApplicationID, discordMultiConstructMode);
         setStorageValue("discordNotifications", JSON.stringify(discordDesktopNotifications));
+        await setDoDelayValue(discorDoDelay);
+        await setDelayValue(discordDelay);
     }
 
     const saveDiffusionConfig = async () => {
@@ -119,6 +125,35 @@ const DiscordPage = () => {
                                         id="discordMultiConstructMode"
                                     />
                                 </div>
+                            </div>
+                            <div className="col-span-1 flex flex-col text-left">
+                                <label className="text-theme-text font-semibold">Do Delay</label>
+                                <div className="themed-input flex flex-col items-center w-full flex-grow">
+                                    <i className="text-sm">When set to on, the bot will delay it's processing of a response by x amount of seconds.</i>
+                                    <ReactSwitch
+                                        checked={discorDoDelay}
+                                        onChange={(e) => {
+                                            setDiscordDoDelay(e);
+                                        }}
+                                        handleDiameter={30}
+                                        width={60}
+                                        uncheckedIcon={false}
+                                        checkedIcon={true}
+                                        id="doDelay"
+                                    />
+                                </div>
+                            </div>
+                            <div className="col-span-1 flex flex-col text-left">
+                                <label className="text-theme-text font-semibold">Delay (Seconds)</label>
+                                <input 
+                                    type="number" 
+                                    className="themed-input flex-grow"
+                                    max={45}
+                                    min={0}
+                                    aria-required
+                                    value={discordDelay}
+                                    onChange={(e) => setDiscordDelay(parseInt(e.target.value))}
+                                />
                             </div>
                             <div className="col-span-2 flex flex-row text-left gap-2 mt-2">
                                 <button className="themed-button-pos w-full justify-center items-center flex" onClick={() => saveDiscordConfig()}><Save/></button>

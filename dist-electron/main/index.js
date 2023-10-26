@@ -4425,6 +4425,20 @@ const setReplaceUser = (replace) => {
 const getReplaceUser = () => {
   return store$2.get("replaceUser", false);
 };
+const setDelay = (delay2) => {
+  store$2.set("delay", delay2);
+  delay2 = delay2;
+};
+const getDelay = () => {
+  return store$2.get("delay", 0);
+};
+const setDoDelay = (doDelay2) => {
+  store$2.set("doDelay", doDelay2);
+  doDelay2 = doDelay2;
+};
+const getDoDelay = () => {
+  return store$2.get("doDelay", false);
+};
 async function getUsername(userID, channelID) {
   var _a, _b;
   const channels = getRegisteredChannels();
@@ -5415,6 +5429,23 @@ async function addConstructToChatLog(constructID, chatLogID) {
   currentLog.constructs.push(constructID);
   await updateChat(currentLog);
 }
+function makeDelay() {
+  let timeoutId = null;
+  const waitFor2 = (seconds) => {
+    isDelaying2 = true;
+    return new Promise((resolve, reject) => {
+      timeoutId = setTimeout(resolve, seconds * 1e3);
+    });
+  };
+  let isDelaying2 = false;
+  const cancel2 = () => {
+    isDelaying2 = false;
+    if (timeoutId !== null) {
+      clearTimeout(timeoutId);
+    }
+  };
+  return { waitFor: waitFor2, cancel: cancel2, isDelaying: isDelaying2 };
+}
 function DiscordController() {
   getDiscordSettings();
   expressApp.get("/api/discord/channels", (req, res) => {
@@ -5524,6 +5555,36 @@ function DiscordController() {
   expressApp.get("/api/discord/diffusion-channels", (req, res) => {
     try {
       res.json({ channels: getDiffusionWhitelist() });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
+  });
+  expressApp.get("/api/discord/delay", (req, res) => {
+    try {
+      res.json({ value: getDelay() });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
+  });
+  expressApp.post("/api/discord/delay", (req, res) => {
+    try {
+      setDelay(req.body.value);
+      res.send({ message: "Delay updated successfully." });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
+  });
+  expressApp.get("/api/discord/delay-enabled", (req, res) => {
+    try {
+      res.json({ value: getDoDelay() });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
+  });
+  expressApp.post("/api/discord/delay-enabled", (req, res) => {
+    try {
+      setDoDelay(req.body.value);
+      res.send({ message: "Delay setting updated successfully." });
     } catch (error) {
       res.status(500).send({ error: error.message });
     }
@@ -7397,7 +7458,11 @@ function saveDiscordData(newToken, newAppId, discordMultiConstructMode) {
 let messageQueue = [];
 let isProcessing = false;
 let processingMessage;
+const { waitFor, cancel, isDelaying } = makeDelay();
 async function processQueue() {
+  if (isDelaying) {
+    cancel();
+  }
   if (isProcessing)
     return;
   while (messageQueue.length > 0) {
