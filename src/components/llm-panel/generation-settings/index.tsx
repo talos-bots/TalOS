@@ -19,6 +19,11 @@ const GenerationSettings = () => {
     const [maxTokens, setMaxTokens] = useState<number>(250);
     const [samplerOrder, setSamplerOrder] = useState<number[]>([6,3,2,5,0,1,4]);
     const [stopBrackets, setStopBrackets] = useState<boolean>(false);
+    const [presencePenalty, setPresencePenalty] = useState<number>(0.0);
+    const [frequencyPenalty, setFrequencyPenalty] = useState<number>(0.0);
+    const [mirostatMode, setMirostatMode] = useState<number>(0);
+    const [mirostatTau, setMirostatTau] = useState<number>(0.0);
+    const [mirostatEta, setMirostatEta] = useState<number>(0.0);
     const [connectionPresetName, setConnectionPresetName] = useState<string>("");
     const [connectionPreset, setConnectionPreset] = useState<SettingsPreset | undefined>(undefined);
     const [currentConnectionPreset, setCurrentConnectionPreset] = useState<string>("");
@@ -42,6 +47,11 @@ const GenerationSettings = () => {
             setMaxTokens(settings.max_tokens);
             setSamplerOrder(settings.sampler_order);
             setStopBrackets(stopBrackets);
+            setPresencePenalty(settings.presence_penalty);
+            setFrequencyPenalty(settings.frequency_penalty);
+            setMirostatEta(settings.mirostat_eta);
+            setMirostatMode(settings.mirostat_mode);
+            setMirostatTau(settings.mirostat_tau);
         }
         getLLMSettingsPresets().then((presets) => {
             setConnectionPresets(presets);
@@ -69,7 +79,12 @@ const GenerationSettings = () => {
             singleline: false,
             sampler_full_determinism: false,
             min_length: minLength,
-            max_tokens: maxTokens
+            max_tokens: maxTokens,
+            presence_penalty: presencePenalty,
+            frequency_penalty: frequencyPenalty,
+            mirostat_mode: mirostatMode,
+            mirostat_tau: mirostatTau,
+            mirostat_eta: mirostatEta,
         };
         setLLMSettings(settings, stopBrackets);
     }
@@ -90,6 +105,11 @@ const GenerationSettings = () => {
             setMinLength(connectionPreset.min_length);
             setMaxTokens(connectionPreset.max_tokens);
             setSamplerOrder(connectionPreset.sampler_order);
+            setPresencePenalty(connectionPreset.presence_penalty);
+            setFrequencyPenalty(connectionPreset.frequency_penalty);
+            setMirostatEta(connectionPreset.mirostat_eta);
+            setMirostatMode(connectionPreset.mirostat_mode);
+            setMirostatTau(connectionPreset.mirostat_tau);
             setCurrentLLMConnectionPreset(connectionPreset._id);
         }else{
             setConnectionPresetName("");
@@ -126,6 +146,11 @@ const GenerationSettings = () => {
             connectionPreset.min_length = minLength;
             connectionPreset.max_tokens = maxTokens;
             connectionPreset.sampler_order = samplerOrder;
+            connectionPreset.presence_penalty = presencePenalty;
+            connectionPreset.frequency_penalty = frequencyPenalty;
+            connectionPreset.mirostat_eta = mirostatEta;
+            connectionPreset.mirostat_mode = mirostatMode;
+            connectionPreset.mirostat_tau = mirostatTau;
             const newPresets = await addLLMSettingsPreset(connectionPreset);
             if(newPresets){
                 setConnectionPresets(newPresets);
@@ -149,6 +174,11 @@ const GenerationSettings = () => {
                 sampler_order: samplerOrder,
                 singleline: false,
                 sampler_full_determinism: false,
+                presence_penalty: presencePenalty,
+                frequency_penalty: frequencyPenalty,
+                mirostat_eta: mirostatEta,
+                mirostat_mode: mirostatMode,
+                mirostat_tau: mirostatTau,
             }
             const newPresets = await addLLMSettingsPreset(newPreset);
             if(newPresets){
@@ -175,6 +205,8 @@ const GenerationSettings = () => {
         setMaxTokens(preset.max_tokens);
         setSamplerOrder(preset.sampler_order);
         setCurrentLLMConnectionPreset(preset._id);
+        setPresencePenalty(preset.presence_penalty);
+        setFrequencyPenalty(preset.frequency_penalty);
         saveSettings();
     }
 
@@ -295,6 +327,56 @@ const GenerationSettings = () => {
                     <div className="w-full flex flex-row">
                         <input className="w-2/3 themed-input" type="range" min='0.0' max="10" step="0.1" value={repPenSlope} onChange={async (e) => {setRepPenSlope(parseFloat(e.target.value));}} />
                         <input className="w-1/3 themed-input" id='input-container' type="number" min='0.0' max="10" step="0.1" value={repPenSlope} onChange={async (e) => {setRepPenSlope(parseFloat(e.target.value));}} />
+                    </div>
+                </div>
+                <div className="flex flex-col ">
+                    <span className=" font-semibold">Frequency Penalty</span>
+                    <i className="text-sm">                
+                        (Ooba, OpenAI)
+                    </i>
+                    <div className="w-full flex flex-row">
+                        <input className="w-2/3 themed-input" type="range" min='0.00' max="10.00" step="0.05" value={frequencyPenalty} onChange={async (e) => {setFrequencyPenalty(parseFloat(e.target.value));}} />
+                        <input className="w-1/3 themed-input" id='input-container' type="number" min='0.00' max="10.00" step="0.05" value={frequencyPenalty} onChange={async (e) => {setFrequencyPenalty(parseFloat(e.target.value));}} />
+                    </div>
+                </div>
+                <div className="flex flex-col ">
+                    <span className=" font-semibold">Presence Penalty</span>
+                    <i className="text-sm">                
+                        (Ooba, OpenAI)
+                    </i>
+                    <div className="w-full flex flex-row">
+                        <input className="w-2/3 themed-input" type="range" min='0.00' max="10.00" step="0.05" value={presencePenalty} onChange={async (e) => {setPresencePenalty(parseFloat(e.target.value));}} />
+                        <input className="w-1/3 themed-input" id='input-container' type="number" min='0.00' max="10.00" step="0.05" value={presencePenalty} onChange={async (e) => {setPresencePenalty(parseFloat(e.target.value));}} />
+                    </div>
+                </div>
+                <div className="flex flex-col">
+                    <span>Mirostat Mode</span>
+                    <i className="text-sm">
+                        1 is for llama.cpp only, 0 is off, 2 is vague and idk.        
+                        (Ooba)
+                    </i>
+                    <div className="w-full flex flex-row">
+                        <input className="w-2/3 themed-input" type="number" min='0' max="2" step="1" value={mirostatMode} onChange={async (e) => {setMirostatMode(parseInt(e.target.value));}} />
+                    </div>
+                </div>
+                <div className="flex flex-col">
+                    <span>Mirostat Tau</span>
+                    <i className="text-sm">
+                        (Ooba)
+                    </i>
+                    <div className="w-full flex flex-row">
+                        <input className="w-2/3 themed-input" type="range" min='0' max="10" step="0.05" value={mirostatTau} onChange={async (e) => {setMirostatTau(parseFloat(e.target.value));}} />
+                        <input className="w-1/3 themed-input" id='input-container' type="number" min='0' max="10" step="0.05" value={mirostatTau} onChange={async (e) => {setMirostatTau(parseFloat(e.target.value));}} />
+                    </div>
+                </div>
+                <div className="flex flex-col">
+                    <span>Mirostat Eta</span>
+                    <i className="text-sm">
+                        (Ooba)
+                    </i>
+                    <div className="w-full flex flex-row">
+                        <input className="w-2/3 themed-input" type="range" min='0' max="1" step="0.01" value={mirostatEta} onChange={async (e) => {setMirostatEta(parseFloat(e.target.value));}} />
+                        <input className="w-1/3 themed-input" type="number" min='0' max="1" step="0.01" value={mirostatEta} onChange={async (e) => {setMirostatEta(parseFloat(e.target.value));}} />
                     </div>
                 </div>
                 <div className="flex flex-col ">

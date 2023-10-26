@@ -79,6 +79,11 @@ interface Settings {
     min_length: number;
     max_context_length: number;
     max_tokens: number;
+    presence_penalty: number;
+    frequency_penalty: number;
+    mirostat_mode: number;
+    mirostat_tau: number;
+    mirostat_eta: number;
 }
 
 interface SettingsPreset {
@@ -453,7 +458,12 @@ export const generateText = async (
                 'add_bos_token': true,
                 'ban_eos_token': false,
                 'skip_special_tokens': true,
-                'stopping_strings': stops
+                'stopping_strings': stops,
+                'presence_penalty': settings.presence_penalty ? settings.presence_penalty : 0,
+                'frequency_penalty': settings.frequency_penalty ? settings.frequency_penalty : 0,
+                'mirostat_mode': settings.mirostat_mode ? settings.mirostat_mode : 0,
+                'mirostat_tau': settings.mirostat_tau ? settings.mirostat_tau : 0,
+                'mirostat_eta': settings.mirostat_eta ? settings.mirostat_eta : 0,
                 }
                 console.log(oobaPayload)
                 cancelTokenSource = axios.CancelToken.source();
@@ -524,6 +534,8 @@ export const generateText = async (
                     top_p: settings.top_p ? settings.top_p : 0.9,
                     temperature: settings.temperature ? settings.temperature : 0.9,
                     max_tokens: settings.max_length ? settings.max_length : 350,
+                    frequency_penalty: settings.frequency_penalty ? settings.frequency_penalty : 0,
+                    presence_penalty: settings.frequency_penalty ? settings.frequency_penalty : 0,
                     stop: [`${configuredName}:`],
                 }).then((response) => {
                     return response;

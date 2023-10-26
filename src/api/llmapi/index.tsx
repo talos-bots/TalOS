@@ -35,6 +35,11 @@ export interface SettingsPreset {
     min_length: number;
     max_context_length: number;
     max_tokens: number;
+    presence_penalty: number;
+    frequency_penalty: number;
+    mirostat_mode: number;
+    mirostat_tau: number;
+    mirostat_eta: number;
 }
 
 export type OAI_Model = 'gpt-3.5-turbo-16k' | 'gpt-4' | 'gpt-3.5-turbo' | 'gpt-3.5-turbo-16k-0613' | 'gpt-3.5-turbo-0613' | 'gpt-3.5-turbo-0301' | 'gpt-4-0314' | 'gpt-4-0613';

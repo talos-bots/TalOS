@@ -163,6 +163,11 @@ export interface Settings {
     min_length: number;
     max_context_length: number;
     max_tokens: number;
+    presence_penalty: number;
+    frequency_penalty: number;
+    mirostat_mode: number;
+    mirostat_tau: number;
+    mirostat_eta: number;
 }
 export type EndpointType = 'Kobold' | 'Ooba' | 'OAI' | 'Horde' | 'P-OAI' | 'P-Claude' | 'PaLM' | 'Aphrodite';
 
