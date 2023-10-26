@@ -5534,7 +5534,6 @@ const RegisterCommand = {
   description: "Registers the current channel.",
   execute: async (interaction) => {
     var _a, _b, _c, _d;
-    await interaction.deferReply({ ephemeral: true });
     let constructs = await getAllConstructs();
     console.log(constructs);
     if (constructs === null) {
@@ -5550,13 +5549,13 @@ const RegisterCommand = {
       constructArray.push(assembledConstruct);
     }
     if (interaction.channelId === null) {
-      await interaction.editReply({
+      await interaction.reply({
         content: "This command can only be used in a server channel."
       });
       return;
     }
     if (interaction.guildId === null) {
-      await interaction.editReply({
+      await interaction.reply({
         content: "This command can only be used in a server channel."
       });
       return;
@@ -5570,7 +5569,7 @@ const RegisterCommand = {
       }
     }
     if (registered) {
-      await interaction.editReply({
+      await interaction.reply({
         content: "Channel already registered."
       });
       return;
@@ -5585,7 +5584,7 @@ const RegisterCommand = {
     });
     let currentPage = 0;
     const itemsPerPage = 10;
-    const constructEmbed = new discord_js.EmbedBuilder().setTitle("Choose which Constructs to add to the ChatLog").setDescription("React with the number of the construct to add or remove it from the chat log.").addFields([{ name: "Constructs", value: "Loading..." }]);
+    const constructEmbed = new discord_js.EmbedBuilder().setTitle("Choose which Constructs to add to the Channel").setDescription("React with the number of the construct to add or remove it from the chat log.").addFields([{ name: "Constructs", value: "Loading..." }]);
     let chatLog = {
       _id: interaction.channelId,
       name: 'Discord "' + (((_a = interaction == null ? void 0 : interaction.channel) == null ? void 0 : _a.isDMBased()) ? `DM ${interaction.user.displayName}` : `${(_b = interaction == null ? void 0 : interaction.channel) == null ? void 0 : _b.id}`) + `" Chat`,
@@ -5621,7 +5620,11 @@ const RegisterCommand = {
         });
         number++;
       }
-      const newEmbed = new discord_js.EmbedBuilder().setTitle("Choose a Construct").setFields(fields).setDescription("React with the number of the construct to add or remove it from the chat log.");
+      fields.push({
+        name: "Page:",
+        value: `${page + 1}/${Math.ceil(constructArray.length / itemsPerPage)}`
+      });
+      const newEmbed = new discord_js.EmbedBuilder().setTitle("Choose which Constructs to add to the Channel").setFields(fields).setDescription("React with the number of the construct to add or remove it from the chat log.");
       await menuMessage.edit({ embeds: [newEmbed] });
       await menuMessage.reactions.removeAll();
       if (currentPage > 0)
@@ -6469,6 +6472,10 @@ const manageConstructsCommand = {
         });
         number++;
       }
+      fields.push({
+        name: "Page:",
+        value: `${page + 1}/${Math.ceil(constructArray.length / itemsPerPage)}`
+      });
       const newEmbed = new discord_js.EmbedBuilder().setTitle("Choose a Construct").setFields(fields).setDescription("React with the number of the construct to add or remove it from the chat log.");
       await menuMessage.edit({ embeds: [newEmbed] });
       await menuMessage.reactions.removeAll();

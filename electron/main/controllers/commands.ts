@@ -14,7 +14,6 @@ export const RegisterCommand: SlashCommand = {
     name: 'register',
     description: 'Registers the current channel.',
     execute: async (interaction: CommandInteraction) => {
-        await interaction.deferReply({ephemeral: true});
         let constructs = await getAllConstructs();
         console.log(constructs);
         if(constructs === null){
@@ -29,13 +28,13 @@ export const RegisterCommand: SlashCommand = {
             constructArray.push(assembledConstruct);
         }
         if (interaction.channelId === null) {
-            await interaction.editReply({
+            await interaction.reply({
             content: "This command can only be used in a server channel.",
             });
             return;
         }
         if(interaction.guildId === null){
-            await interaction.editReply({
+            await interaction.reply({
             content: "This command can only be used in a server channel.",
             });
             return;
@@ -49,7 +48,7 @@ export const RegisterCommand: SlashCommand = {
             }
         }
         if(registered){
-            await interaction.editReply({
+            await interaction.reply({
                 content: "Channel already registered.",
             });
             return;
@@ -66,7 +65,7 @@ export const RegisterCommand: SlashCommand = {
         let currentPage = 0;
         const itemsPerPage = 10;
 
-        const constructEmbed = new EmbedBuilder().setTitle("Choose which Constructs to add to the ChatLog").setDescription('React with the number of the construct to add or remove it from the chat log.').addFields([{name: 'Constructs', value: 'Loading...'}]);
+        const constructEmbed = new EmbedBuilder().setTitle("Choose which Constructs to add to the Channel").setDescription('React with the number of the construct to add or remove it from the chat log.').addFields([{name: 'Constructs', value: 'Loading...'}]);
         let chatLog: ChatInterface = {
             _id: interaction.channelId,
             name: 'Discord "' + (interaction?.channel?.isDMBased()? `DM ${interaction.user.displayName}` : `${interaction?.channel?.id}`) + `" Chat`,
@@ -102,7 +101,11 @@ export const RegisterCommand: SlashCommand = {
                 });
                 number++;
             }
-            const newEmbed = new EmbedBuilder().setTitle("Choose a Construct").setFields(fields).setDescription('React with the number of the construct to add or remove it from the chat log.');
+            fields.push({
+                name: 'Page:',
+                value: `${page + 1}/${Math.ceil(constructArray.length / itemsPerPage)}`,
+            });
+            const newEmbed = new EmbedBuilder().setTitle("Choose which Constructs to add to the Channel").setFields(fields).setDescription('React with the number of the construct to add or remove it from the chat log.');
             await menuMessage.edit({ embeds: [newEmbed] });
 
             // Clear reactions and re-add them for current page
@@ -968,6 +971,10 @@ const manageConstructsCommand: SlashCommand = {
                 });
                 number++;
             }
+            fields.push({
+                name: 'Page:',
+                value: `${page + 1}/${Math.ceil(constructArray.length / itemsPerPage)}`,
+            });
             const newEmbed = new EmbedBuilder().setTitle("Choose a Construct").setFields(fields).setDescription('React with the number of the construct to add or remove it from the chat log.');
             await menuMessage.edit({ embeds: [newEmbed] });
 
