@@ -522,7 +522,9 @@ export const DoCharacterGreetingsCommand: SlashCommand = {
             });
             return;
         }
-        const constructs = retrieveConstructs();
+        const pulledLog = await getIntactChatLog(interaction.channrlId);
+        const constructs = pulledLog?.constructs;
+        if(!constructs) return;
         let constructDoc = await getConstruct(constructs[0]);
         let construct = assembleConstructFromData(constructDoc);
         let user = getUsername(interaction.user.id, interaction.channelId);
@@ -639,7 +641,9 @@ export const SysCommand: SlashCommand = {
             });
             return;
         }
-        const constructs = retrieveConstructs();
+        const pulledLog = await getIntactChatLog(interaction.channelId)
+        const constructs = pulledLog?.constructs;
+        if(!constructs || constructs.length < 1) return;
         let constructDoc = await getConstruct(constructs[0]);
         let construct = assembleConstructFromData(constructDoc);
         if(construct === null) return;
@@ -691,7 +695,7 @@ export const SysCommand: SlashCommand = {
                 lastMessage: newMessage,
                 lastMessageDate: newMessage.timestamp,
                 firstMessageDate: newMessage.timestamp,
-                constructs: constructs,
+                constructs: [],
                 humans: [interaction.user.id],
                 chatConfigs: [],
                 doVector: false,
