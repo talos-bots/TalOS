@@ -108,9 +108,6 @@ export const RegisterCommand: SlashCommand = {
             });
             const newEmbed = new EmbedBuilder().setTitle("Choose which Constructs to add to the Channel").setFields(fields).setDescription('React with the number of the construct to add or remove it from the chat log.');
             await menuMessage.edit({ embeds: [newEmbed] });
-
-            // Clear reactions and re-add them for current page
-            await menuMessage.reactions.removeAll();
             if (currentPage > 0) await menuMessage.react('◀');
             if ((currentPage + 1) * itemsPerPage < constructArray.length) await menuMessage.react('▶');
             // Add number reactions based on items in current page
@@ -1009,7 +1006,6 @@ const manageConstructsCommand: SlashCommand = {
             });
             const newEmbed = new EmbedBuilder().setTitle("Choose a Construct").setFields(fields).setDescription('React with the number of the construct to add or remove it from the chat log.');
             await menuMessage.edit({ embeds: [newEmbed] });
-            await menuMessage.reactions.removeAll();
             if (currentPage > 0) await menuMessage.react('◀');
             if ((currentPage + 1) * itemsPerPage < constructArray.length) await menuMessage.react('▶');
             // Add number reactions based on items in current page
@@ -1028,7 +1024,7 @@ const manageConstructsCommand: SlashCommand = {
             if(!reaction) return;
             if(!reaction.emoji) return;
             if(!reaction.emoji.name) return;
-
+            await reaction.users.remove(user.id);
             const index = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'].indexOf(reaction.emoji.name);
             if (index !== -1) {
                 const constructIndex = currentPage * itemsPerPage + index;
@@ -1056,8 +1052,6 @@ const manageConstructsCommand: SlashCommand = {
                 menuMessage.delete();
                 collector.stop();
             }
-            // Remove the user's reaction
-            await reaction.users.remove(user.id);
         });
         try{
             updateMenu(0);
