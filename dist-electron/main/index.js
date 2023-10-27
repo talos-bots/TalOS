@@ -2212,7 +2212,19 @@ async function getStatus(testEndpoint, testEndpointType) {
           return "Ooba endpoint is not responding.";
         }
       case "OAI":
-        return "OpenAI status is not yet supported.";
+        try {
+          response = await axios.get(`https://api.openai.com/v1/models`, { headers: { "Authorization": `Bearer ${endpointUrl}`, "Content-Type": "application/json" } }).then((response2) => {
+            console.log(response2.data);
+            return response2;
+          }).catch((error) => {
+            console.log(error);
+            throw error;
+          });
+          return "Key is valid.";
+        } catch (e) {
+          console.log(e);
+          return "Key is invalid.";
+        }
       case "Horde":
         response = await axios.get(`${HORDE_API_URL}/v2/status/heartbeat`);
         if (response.status === 200) {
