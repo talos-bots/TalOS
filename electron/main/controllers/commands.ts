@@ -114,8 +114,6 @@ export const RegisterCommand: SlashCommand = {
             for (let i = start; i < end && i < constructArray.length; i++) {
                 await menuMessage.react(['1️⃣', `2️⃣`, '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'][i % 10]);
             }
-            await menuMessage.react('❎');
-            await menuMessage.react('🗑️');
         };
 
         const collector = menuMessage.createReactionCollector({ time: 60000 });
@@ -147,7 +145,8 @@ export const RegisterCommand: SlashCommand = {
                 await updateMenu(currentPage);
             } else if (reaction.emoji.name === '❎') {
                 // clear all constructs
-                if(chatLog === null) return;
+                //@ts-ignore
+                chatLog = await getIntactChatLog(interaction);
                 chatLog.constructs = [];
                 await updateChat(chatLog);
             } else if(reaction.emoji.name === '🗑️'){
@@ -1019,8 +1018,6 @@ const manageConstructsCommand: SlashCommand = {
             for (let i = start; i < end && i < constructArray.length; i++) {
                 await menuMessage.react(['1️⃣', `2️⃣`, '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'][i % 10]);
             }
-            await menuMessage.react('❎');
-            await menuMessage.react('🗑️');
         };
 
         const collector = menuMessage.createReactionCollector({ time: 60000 });
@@ -1052,9 +1049,12 @@ const manageConstructsCommand: SlashCommand = {
                 await updateMenu(currentPage);
             }else if (reaction.emoji.name === '❎') {
                 // clear all constructs
-                if(chatLog === null) return;
-                chatLog.constructs = [];
-                await updateChat(chatLog);
+                //@ts-ignore
+                chatLog = await getIntactChatLog(interaction);
+                if(chatLog){
+                    chatLog.constructs = [];
+                    await updateChat(chatLog);
+                }
             } else if(reaction.emoji.name === '🗑️'){
                 menuMessage.delete();
                 collector.stop();
