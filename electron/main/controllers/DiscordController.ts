@@ -295,7 +295,7 @@ export async function handleDiscordMessage(message: Message) {
             lastMessage: newMessage,
             lastMessageDate: newMessage.timestamp,
             firstMessageDate: newMessage.timestamp,
-            constructs: activeConstructs,
+            constructs: [activeConstructs[0]],
             humans: [message.author.id],
             chatConfigs: [],
             doVector: (message?.channel?.isDMBased()? true : false),

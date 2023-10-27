@@ -4584,7 +4584,7 @@ async function handleDiscordMessage(message) {
       lastMessage: newMessage,
       lastMessageDate: newMessage.timestamp,
       firstMessageDate: newMessage.timestamp,
-      constructs: activeConstructs,
+      constructs: [activeConstructs[0]],
       humans: [message.author.id],
       chatConfigs: [],
       doVector: ((_c = message == null ? void 0 : message.channel) == null ? void 0 : _c.isDMBased()) ? true : false,
@@ -6120,7 +6120,10 @@ const DoCharacterGreetingsCommand = {
       });
       return;
     }
-    const constructs = retrieveConstructs();
+    const pulledLog = await getIntactChatLog(interaction);
+    const constructs = pulledLog == null ? void 0 : pulledLog.constructs;
+    if (!constructs || constructs.length < 1)
+      return;
     let constructDoc = await getConstruct(constructs[0]);
     let construct = assembleConstructFromData(constructDoc);
     let user = getUsername(interaction.user.id, interaction.channelId);
@@ -6191,9 +6194,12 @@ const DoCharacterGreetingsCommand = {
         return;
       }
     }
-    await interaction.editReply({
-      content: randomGreeting.replaceAll("{{user}}", `${user}`).replaceAll("{{char}}", `${construct.name}`)
-    });
+    const activeConstructs = retrieveConstructs();
+    if (activeConstructs[0] === constructs[0]) {
+      await sendMessage(interaction.channelId, randomGreeting.replaceAll("{{user}}", `${user}`).replaceAll("{{char}}", `${construct.name}`));
+    } else {
+      await sendMessageAsCharacter(construct, interaction.channelId, randomGreeting.replaceAll("{{user}}", `${user}`).replaceAll("{{char}}", `${construct.name}`));
+    }
   }
 };
 const PingCommand = {
@@ -6240,7 +6246,10 @@ const SysCommand = {
       });
       return;
     }
-    const constructs = retrieveConstructs();
+    const pulledLog = await getIntactChatLog(interaction);
+    const constructs = pulledLog == null ? void 0 : pulledLog.constructs;
+    if (!constructs || constructs.length < 1)
+      return;
     let constructDoc = await getConstruct(constructs[0]);
     let construct = assembleConstructFromData(constructDoc);
     if (construct === null)
@@ -6295,7 +6304,7 @@ const SysCommand = {
         lastMessage: newMessage,
         lastMessageDate: newMessage.timestamp,
         firstMessageDate: newMessage.timestamp,
-        constructs,
+        constructs: [],
         humans: [interaction.user.id],
         chatConfigs: [],
         doVector: false,

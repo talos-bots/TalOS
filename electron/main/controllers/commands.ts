@@ -4,7 +4,7 @@ import { addAlias, addConstructToChatLog, addDiffusionWhitelist, addRegisteredCh
 import { addChat, getAllConstructs, getChat, getConstruct, removeChat, updateChat } from "../api/pouchdb";
 import { assembleChatFromData, assembleConstructFromData, getIntactChatLog } from "../helpers/helpers";
 import { retrieveConstructs, setDoMultiLine } from "./ChatController";
-import { cleanEmotes, clearMessageQueue, clearWebhooksFromChannel, doGlobalNicknameChange } from "../api/discord";
+import { cleanEmotes, clearMessageQueue, clearWebhooksFromChannel, doGlobalNicknameChange, sendMessage, sendMessageAsCharacter } from "../api/discord";
 import { doInstruct, generateText, getStatus } from "../api/llm";
 import { deleteIndex } from "../api/vector";
 import { getDefaultCfg, getDefaultHeight, getDefaultHighresSteps, getDefaultNegativePrompt, getDefaultSteps, getDefaultWidth, txt2img, getDefaultPrompt } from "../api/sd";
@@ -522,9 +522,9 @@ export const DoCharacterGreetingsCommand: SlashCommand = {
             });
             return;
         }
-        const pulledLog = await getIntactChatLog(interaction.channrlId);
+        const pulledLog = await getIntactChatLog(interaction);
         const constructs = pulledLog?.constructs;
-        if(!constructs) return;
+        if(!constructs || constructs.length < 1) return;
         let constructDoc = await getConstruct(constructs[0]);
         let construct = assembleConstructFromData(constructDoc);
         let user = getUsername(interaction.user.id, interaction.channelId);
@@ -592,9 +592,12 @@ export const DoCharacterGreetingsCommand: SlashCommand = {
                 return;
             }
         }
-        await interaction.editReply({
-            content: randomGreeting.replaceAll('{{user}}', `${user}`).replaceAll('{{char}}', `${construct.name}`),
-        });
+        const activeConstructs = retrieveConstructs();
+        if(activeConstructs[0] === constructs[0]){
+            await sendMessage(interaction.channelId, randomGreeting.replaceAll('{{user}}', `${user}`).replaceAll('{{char}}', `${construct.name}`))
+        }else{
+            await sendMessageAsCharacter(construct, interaction.channelId, randomGreeting.replaceAll('{{user}}', `${user}`).replaceAll('{{char}}', `${construct.name}`));
+        }
     }
 }
 
@@ -641,7 +644,7 @@ export const SysCommand: SlashCommand = {
             });
             return;
         }
-        const pulledLog = await getIntactChatLog(interaction.channelId)
+        const pulledLog = await getIntactChatLog(interaction)
         const constructs = pulledLog?.constructs;
         if(!constructs || constructs.length < 1) return;
         let constructDoc = await getConstruct(constructs[0]);
