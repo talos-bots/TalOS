@@ -5721,8 +5721,6 @@ const RegisterCommand = {
       for (let i = start; i < end && i < constructArray.length; i++) {
         await menuMessage.react(["1️⃣", `2️⃣`, "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"][i % 10]);
       }
-      await menuMessage.react("❎");
-      await menuMessage.react("🗑️");
     };
     const collector = menuMessage.createReactionCollector({ time: 6e4 });
     collector.on("collect", async (reaction, user) => {
@@ -5754,8 +5752,7 @@ const RegisterCommand = {
         currentPage++;
         await updateMenu(currentPage);
       } else if (reaction.emoji.name === "❎") {
-        if (chatLog === null)
-          return;
+        chatLog = await getIntactChatLog(interaction);
         chatLog.constructs = [];
         await updateChat(chatLog);
       } else if (reaction.emoji.name === "🗑️") {
@@ -6613,8 +6610,6 @@ const manageConstructsCommand = {
       for (let i = start; i < end && i < constructArray.length; i++) {
         await menuMessage.react(["1️⃣", `2️⃣`, "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"][i % 10]);
       }
-      await menuMessage.react("❎");
-      await menuMessage.react("🗑️");
     };
     const collector = menuMessage.createReactionCollector({ time: 6e4 });
     collector.on("collect", async (reaction, user) => {
@@ -6647,10 +6642,11 @@ const manageConstructsCommand = {
         currentPage++;
         await updateMenu(currentPage);
       } else if (reaction.emoji.name === "❎") {
-        if (chatLog === null)
-          return;
-        chatLog.constructs = [];
-        await updateChat(chatLog);
+        chatLog = await getIntactChatLog(interaction);
+        if (chatLog) {
+          chatLog.constructs = [];
+          await updateChat(chatLog);
+        }
       } else if (reaction.emoji.name === "🗑️") {
         menuMessage.delete();
         collector.stop();

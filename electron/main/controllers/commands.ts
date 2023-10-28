@@ -567,12 +567,6 @@ export const DoCharacterGreetingsCommand: SlashCommand = {
             chatLog.messages.push(greetingMessage);
             chatLog.lastMessage = greetingMessage;
             chatLog.lastMessageDate = greetingMessage.timestamp;
-            if(!chatLog.constructs.includes(greetingMessage.userID)){
-                chatLog.constructs.push(greetingMessage.userID);
-            }
-            if(!chatLog.humans.includes(interaction.user.id)){
-                chatLog.humans.push(interaction.user.id);
-            }
         }else{
             chatLog = {
                 _id: interaction.channelId,
@@ -682,12 +676,6 @@ export const SysCommand: SlashCommand = {
             chatLog.messages.push(newMessage);
             chatLog.lastMessage = newMessage;
             chatLog.lastMessageDate = newMessage.timestamp;
-            if(!chatLog.constructs.includes(newMessage.userID)){
-                chatLog.constructs.push(newMessage.userID);
-            }
-            if(!chatLog.humans.includes(interaction.user.id)){
-                chatLog.humans.push(interaction.user.id);
-            }
         }else{
             chatLog = {
                 _id: interaction.channelId,

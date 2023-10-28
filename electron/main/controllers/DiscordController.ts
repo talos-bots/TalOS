@@ -520,7 +520,6 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
             console.log('interrupted')
             return chatLog;
         }
-        sendMessage(message.channel.id, '**No response from LLM. Check your endpoint or settings and try again.**');
         console.log('no response from LLM')
         return chatLog;
     }
@@ -623,7 +622,6 @@ async function doCharacterThoughts(construct: ConstructInterface, chatLog: ChatI
             console.log('interrupted')
             return chatLog;
         }
-        sendMessage(message.channel.id, '**No response from LLM. Check your endpoint or settings and try again.**');
         return chatLog;
     }
     reply = reply.replace(/\*/g, '');
