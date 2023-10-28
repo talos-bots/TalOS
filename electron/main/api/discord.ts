@@ -298,7 +298,10 @@ export async function getDiscordGuilds() {
 
 export async function leaveGuild(guildId: string){
     if(!isReady) return false;
+    console.log("Leaving guild...");
+    console.log(guildId);
     let guild = disClient.guilds.cache.get(guildId);
+    console.log(guild);
     if(!guild) return false;
     await guild.leave();
     return true;
@@ -733,8 +736,8 @@ export function DiscordJSRoutes(){
 
     // Equivalent to 'discord-leave-guild' handler
     expressApp.post('/api/discord/leave-guild', async (req, res) => {
-        const { guildId } = req.body;
-        const success = await leaveGuild(guildId);
+        const { guildID } = req.body;
+        const success = await leaveGuild(guildID);
         res.json({ success });
     });
 
