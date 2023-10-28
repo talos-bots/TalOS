@@ -268,6 +268,7 @@ export function setInterrupted(channelID: string){
 
 let isInterrupted = false;
 let interruptedChannel = '';
+let generationFailure = false;
 
 export async function handleDiscordMessage(message: Message) {
     const activeConstructs = retrieveConstructs();
@@ -392,7 +393,7 @@ export async function handleDiscordMessage(message: Message) {
             }
         } while (hasBeenMention);
 
-        while (true) { // The loop to make replies continuously until no construct feels the need to reply
+        while (true && !generationFailure) {
             let shouldContinue = false; // By default, we assume we won't need another iteration
             if(chatLog?.lastMessage.text === undefined) break;
             if(isInterrupted && interruptedChannel === message.channel.id){
@@ -468,6 +469,10 @@ export async function handleDiscordMessage(message: Message) {
         isInterrupted = false;
         interruptedChannel = '';
     }
+    if(generationFailure){
+        generationFailure = false;
+        await sendMessage(message.channel.id, '**Generation failure detected.**');
+    }
 }
 
 async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInterface, message: Message | CommandInteraction){
@@ -516,6 +521,10 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
         }
     }
     const result = await generateContinueChatLog(construct, chatLog, username, maxMessages, stopList, undefined, undefined, getDoMultiLine(), replaceUser, dataString);
+    if(result === null){
+        generationFailure = true;
+        return chatLog;
+    }
     let reply: string;
     if (result !== null) {
         reply = result;
@@ -614,6 +623,10 @@ async function doCharacterThoughts(construct: ConstructInterface, chatLog: ChatI
         return chatLog;
     }
     const result = await generateThoughts(construct, chatLog, username, maxMessages, getDoMultiLine(), replaceUser);
+    if(result === null){
+        generationFailure = true;
+        return chatLog;
+    }
     if(isInterrupted && interruptedChannel === message.channelId){
         console.log('interrupted')
         return chatLog;

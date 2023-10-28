@@ -4556,6 +4556,7 @@ function setInterrupted(channelID) {
 }
 let isInterrupted = false;
 let interruptedChannel = "";
+let generationFailure = false;
 async function handleDiscordMessage(message) {
   var _a, _b, _c, _d, _e, _f, _g;
   const activeConstructs = retrieveConstructs();
@@ -4663,7 +4664,7 @@ async function handleDiscordMessage(message) {
       iterations++;
       hasBeenMention = false;
       for (let i = 0; i < shuffledConstructs.length; i++) {
-        if (isInterrupted) {
+        if (isInterrupted && interruptedChannel === message.channel.id) {
           break;
         }
         if (isMentioned(lastMessageText, shuffledConstructs[i]) && chatLog.lastMessage.isHuman && !chatLog.lastMessage.isThought && chatLog.lastMessage.userID !== shuffledConstructs[i]._id) {
@@ -4675,15 +4676,15 @@ async function handleDiscordMessage(message) {
         chatLog = await doRoundRobin(shuffledConstructs, chatLog, message);
       }
     } while (hasBeenMention);
-    while (true) {
+    while (!generationFailure) {
       let shouldContinue = false;
       if ((chatLog == null ? void 0 : chatLog.lastMessage.text) === void 0)
         break;
-      if (isInterrupted) {
+      if (isInterrupted && interruptedChannel === message.channel.id) {
         break;
       }
       for (let i = 0; i < shuffledConstructs.length; i++) {
-        if (isInterrupted) {
+        if (isInterrupted && interruptedChannel === message.channel.id) {
           break;
         }
         let config = shuffledConstructs[i].defaultConfig;
@@ -4746,12 +4747,17 @@ async function handleDiscordMessage(message) {
       console.log("lurking");
     }
   }
-  if (isInterrupted) {
+  if (isInterrupted && interruptedChannel === message.channel.id) {
     isInterrupted = false;
+    interruptedChannel = "";
+  }
+  if (generationFailure) {
+    generationFailure = false;
+    await sendMessage(message.channel.id, "**Generation failure detected.**");
   }
 }
 async function doCharacterReply(construct, chatLog, message) {
-  if (isInterrupted) {
+  if (isInterrupted && interruptedChannel === message.channelId) {
     console.log("interrupted");
     return chatLog;
   }
@@ -4796,11 +4802,15 @@ async function doCharacterReply(construct, chatLog, message) {
     }
   }
   const result = await generateContinueChatLog(construct, chatLog, username, maxMessages, stopList, void 0, void 0, getDoMultiLine(), replaceUser, dataString);
+  if (result === null) {
+    generationFailure = true;
+    return chatLog;
+  }
   let reply;
   if (result !== null) {
     reply = result;
   } else {
-    if (isInterrupted) {
+    if (isInterrupted && interruptedChannel === message.channelId) {
       console.log("interrupted");
       return chatLog;
     }
@@ -4889,12 +4899,16 @@ async function doCharacterThoughts(construct, chatLog, message) {
   }
   if (message.channel === null)
     return;
-  if (isInterrupted) {
+  if (isInterrupted && interruptedChannel === message.channelId) {
     console.log("interrupted");
     return chatLog;
   }
   const result = await generateThoughts(construct, chatLog, username, maxMessages, getDoMultiLine(), replaceUser);
-  if (isInterrupted) {
+  if (result === null) {
+    generationFailure = true;
+    return chatLog;
+  }
+  if (isInterrupted && interruptedChannel === message.channelId) {
     console.log("interrupted");
     return chatLog;
   }
@@ -4902,7 +4916,7 @@ async function doCharacterThoughts(construct, chatLog, message) {
   if (result !== null) {
     reply = result;
   } else {
-    if (isInterrupted) {
+    if (isInterrupted && interruptedChannel === message.channelId) {
       console.log("interrupted");
       return chatLog;
     }
@@ -4945,7 +4959,7 @@ async function doRoundRobin(constructArray, chatLog, message) {
     return chatLog;
   }
   for (let i = 0; i < constructArray.length; i++) {
-    if (isInterrupted) {
+    if (isInterrupted && interruptedChannel === message.channelId) {
       break;
     }
     let config = constructArray[i].defaultConfig;
@@ -4966,7 +4980,7 @@ async function doRoundRobin(constructArray, chatLog, message) {
     const wasHuman = chatLog.lastMessage.isHuman;
     if (wasMentionedByHuman) {
       if (config.replyToUserMention >= Math.random()) {
-        if (isInterrupted) {
+        if (isInterrupted && interruptedChannel === message.channelId) {
           console.log("interrupted");
           return chatLog;
         }
@@ -4977,7 +4991,7 @@ async function doRoundRobin(constructArray, chatLog, message) {
       }
     } else if (wasMentioned && chatLog.lastMessage.userID !== constructArray[i]._id) {
       if (config.replyToConstructMention >= Math.random()) {
-        if (isInterrupted) {
+        if (isInterrupted && interruptedChannel === message.channelId) {
           console.log("interrupted");
           return chatLog;
         }
@@ -4989,7 +5003,7 @@ async function doRoundRobin(constructArray, chatLog, message) {
     } else {
       if (wasHuman) {
         if (config.replyToUser >= Math.random()) {
-          if (isInterrupted) {
+          if (isInterrupted && interruptedChannel === message.channelId) {
             console.log("interrupted");
             return chatLog;
           }
@@ -5000,7 +5014,7 @@ async function doRoundRobin(constructArray, chatLog, message) {
         }
       } else {
         if (config.replyToConstruct >= Math.random()) {
-          if (isInterrupted) {
+          if (isInterrupted && interruptedChannel === message.channelId) {
             console.log("interrupted");
             return chatLog;
           }
@@ -5095,7 +5109,7 @@ async function continueChatLog(interaction) {
     let lastMessageText = (_a = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _a.text;
     let iterations = 0;
     do {
-      if (isInterrupted) {
+      if (isInterrupted && interruptedChannel === interaction.channelId) {
         break;
       }
       if (((_b = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _b.text) === void 0)
@@ -5105,7 +5119,7 @@ async function continueChatLog(interaction) {
       iterations++;
       hasBeenMention = false;
       for (let i = 0; i < shuffledConstructs.length; i++) {
-        if (isInterrupted) {
+        if (isInterrupted && interruptedChannel === interaction.channelId) {
           break;
         }
         if (isMentioned(lastMessageText, shuffledConstructs[i]) && chatLog.lastMessage.isHuman && !chatLog.lastMessage.isThought && chatLog.lastMessage.userID !== shuffledConstructs[i]._id) {
@@ -5121,11 +5135,11 @@ async function continueChatLog(interaction) {
       let shouldContinue = false;
       if ((chatLog == null ? void 0 : chatLog.lastMessage.text) === void 0)
         break;
-      if (isInterrupted) {
+      if (isInterrupted && interruptedChannel === interaction.channelId) {
         break;
       }
       for (let i = 0; i < shuffledConstructs.length; i++) {
-        if (isInterrupted) {
+        if (isInterrupted && interruptedChannel === interaction.channelId) {
           break;
         }
         let config = shuffledConstructs[i].defaultConfig;
@@ -5184,6 +5198,7 @@ async function continueChatLog(interaction) {
   }
   if (isInterrupted && interaction.channelId === interruptedChannel) {
     isInterrupted = false;
+    interruptedChannel = "";
   }
 }
 async function handleRengenerateMessage(message) {
@@ -7137,12 +7152,21 @@ async function getDiscordGuilds() {
       name: channel.name
     }));
     return {
-      id: guild.id,
+      _id: guild.id,
       name: guild.name,
       channels
     };
   });
   return guilds;
+}
+async function leaveGuild(guildId) {
+  if (!isReady)
+    return false;
+  let guild = disClient.guilds.cache.get(guildId);
+  if (!guild)
+    return false;
+  await guild.leave();
+  return true;
 }
 async function setStatus(message, type) {
   if (!disClient.user)
@@ -7544,6 +7568,11 @@ function DiscordJSRoutes() {
   expressApp.get("/api/discord/guilds", async (req, res) => {
     const guilds = await getDiscordGuilds();
     res.json(guilds);
+  });
+  expressApp.post("/api/discord/leave-guild", async (req, res) => {
+    const { guildId } = req.body;
+    const success = await leaveGuild(guildId);
+    res.json({ success });
   });
   expressApp.post("/api/discord/login", async (req, res) => {
     try {

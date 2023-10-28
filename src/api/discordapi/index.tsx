@@ -125,13 +125,25 @@ export const getApplicationID = async (): Promise<string> => {
 }
 
 // Get Guilds
-export const getGuilds = async (): Promise<Array<any>> => {
+export const getGuilds = async () => {
     try {
         const response = await axios.get(`${url}/api/discord/guilds`);
+        console.log(response.data);
         return response.data;
     } catch (error) {
         console.error('Failed to get guilds:', error);
         return [];
+    }
+}
+
+// Leave guild
+export const leaveGuild = async (guildID: string): Promise<boolean> => {
+    try {
+        const response = await axios.post(`${url}/api/discord/leave-guild`, { guildID });
+        return response.data.success;
+    } catch (error) {
+        console.error('Failed to leave guild:', error);
+        return false;
     }
 }
 

@@ -165,6 +165,7 @@ function createClient(){
         setDiscordBotInfo(construct.name, construct.avatar);
     });
 }
+
 export async function registerCommands() {
     if(!isReady) return;
     const rest = new REST().setToken(token);
@@ -287,12 +288,20 @@ export async function getDiscordGuilds() {
             name: channel.name,
           }));
         return {
-          id: guild.id,
+          _id: guild.id,
           name: guild.name,
           channels,
         };
     });
     return guilds;
+}
+
+export async function leaveGuild(guildId: string){
+    if(!isReady) return false;
+    let guild = disClient.guilds.cache.get(guildId);
+    if(!guild) return false;
+    await guild.leave();
+    return true;
 }
 
 export async function setStatus(message: string, type: string){
@@ -720,6 +729,13 @@ export function DiscordJSRoutes(){
     expressApp.get('/api/discord/guilds', async (req, res) => {
         const guilds = await getDiscordGuilds();
         res.json(guilds);
+    });
+
+    // Equivalent to 'discord-leave-guild' handler
+    expressApp.post('/api/discord/leave-guild', async (req, res) => {
+        const { guildId } = req.body;
+        const success = await leaveGuild(guildId);
+        res.json({ success });
     });
 
     expressApp.post('/api/discord/login', async (req, res) => {
