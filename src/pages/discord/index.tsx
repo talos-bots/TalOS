@@ -315,7 +315,7 @@ const DiscordPage = () => {
                         </div>
                     </Accordian>
                     <Accordian title="Discord Servers Management" className="slide-in-right">
-                        <ChannelManager />
+                        <ChannelManager botActive={isBotActive}/>
                     </Accordian>
                 </div>
             </div>
