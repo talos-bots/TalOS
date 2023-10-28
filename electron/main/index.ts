@@ -53,6 +53,7 @@ export const dataPath = path.join(app.getPath("userData"), "data/");
 export const imagesPath = path.join(dataPath, "images/");
 export const uploadsPath = path.join(dataPath, "uploads/");
 export const actionLogsPath = path.join(dataPath, "action-logs/");
+export const eventLogsPath = path.join(dataPath, "event-logs/");
 fs.mkdirSync(dataPath, { recursive: true });
 fs.mkdirSync(imagesPath, { recursive: true });
 fs.mkdirSync(uploadsPath, { recursive: true });

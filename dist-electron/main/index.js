@@ -4549,11 +4549,13 @@ const isChannelRegistered = (channel) => {
   }
   return false;
 };
-function setInterrupted() {
+function setInterrupted(channelID) {
   cancelGeneration();
   isInterrupted = true;
+  interruptedChannel = channelID;
 }
 let isInterrupted = false;
+let interruptedChannel = "";
 async function handleDiscordMessage(message) {
   var _a, _b, _c, _d, _e, _f, _g;
   const activeConstructs = retrieveConstructs();
@@ -4603,6 +4605,7 @@ async function handleDiscordMessage(message) {
   }
   if (chatLog.messages.length === 1) {
     isInterrupted = false;
+    interruptedChannel = "";
   }
   if (!chatLog.messages.includes(newMessage)) {
     chatLog.messages.push(newMessage);
@@ -4650,7 +4653,7 @@ async function handleDiscordMessage(message) {
     let lastMessageText = (_e = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _e.text;
     let iterations = 0;
     do {
-      if (isInterrupted) {
+      if (isInterrupted && interruptedChannel === message.channel.id) {
         break;
       }
       if (((_f = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _f.text) === void 0)
@@ -4801,7 +4804,6 @@ async function doCharacterReply(construct, chatLog, message) {
       console.log("interrupted");
       return chatLog;
     }
-    sendMessage(message.channel.id, "**No response from LLM. Check your endpoint or settings and try again.**");
     console.log("no response from LLM");
     return chatLog;
   }
@@ -4904,7 +4906,6 @@ async function doCharacterThoughts(construct, chatLog, message) {
       console.log("interrupted");
       return chatLog;
     }
-    sendMessage(message.channel.id, "**No response from LLM. Check your endpoint or settings and try again.**");
     return chatLog;
   }
   reply = reply.replace(/\*/g, "");
@@ -5181,7 +5182,7 @@ async function continueChatLog(interaction) {
       }
     }
   }
-  if (isInterrupted) {
+  if (isInterrupted && interaction.channelId === interruptedChannel) {
     isInterrupted = false;
   }
 }
@@ -6167,12 +6168,6 @@ const DoCharacterGreetingsCommand = {
       chatLog.messages.push(greetingMessage);
       chatLog.lastMessage = greetingMessage;
       chatLog.lastMessageDate = greetingMessage.timestamp;
-      if (!chatLog.constructs.includes(greetingMessage.userID)) {
-        chatLog.constructs.push(greetingMessage.userID);
-      }
-      if (!chatLog.humans.includes(interaction.user.id)) {
-        chatLog.humans.push(interaction.user.id);
-      }
     } else {
       chatLog = {
         _id: interaction.channelId,
@@ -6286,12 +6281,6 @@ const SysCommand = {
       chatLog.messages.push(newMessage);
       chatLog.lastMessage = newMessage;
       chatLog.lastMessageDate = newMessage.timestamp;
-      if (!chatLog.constructs.includes(newMessage.userID)) {
-        chatLog.constructs.push(newMessage.userID);
-      }
-      if (!chatLog.humans.includes(interaction.user.id)) {
-        chatLog.humans.push(interaction.user.id);
-      }
     } else {
       chatLog = {
         _id: interaction.channelId,
@@ -6957,7 +6946,7 @@ function createClient() {
       console.log("Message ID:", message.id);
       if (message.channelId === (processingMessage == null ? void 0 : processingMessage.channelId) && message.id !== (processingMessage == null ? void 0 : processingMessage.id)) {
         console.log("Message is not the same as the one being processed, ignoring...");
-        setInterrupted();
+        setInterrupted(message.channelId);
       }
       messageQueue.push(message);
       await processQueue();
@@ -44081,6 +44070,7 @@ const dataPath = path.join(electron.app.getPath("userData"), "data/");
 const imagesPath = path.join(dataPath, "images/");
 const uploadsPath = path.join(dataPath, "uploads/");
 const actionLogsPath = path.join(dataPath, "action-logs/");
+const eventLogsPath = path.join(dataPath, "event-logs/");
 fs.mkdirSync(dataPath, { recursive: true });
 fs.mkdirSync(imagesPath, { recursive: true });
 fs.mkdirSync(uploadsPath, { recursive: true });
@@ -44318,6 +44308,7 @@ exports.actionLogsPath = actionLogsPath;
 exports.backgroundsPath = backgroundsPath;
 exports.charactersPath = charactersPath;
 exports.dataPath = dataPath;
+exports.eventLogsPath = eventLogsPath;
 exports.expressApp = expressApp;
 exports.expressAppIO = expressAppIO;
 exports.imagesPath = imagesPath;

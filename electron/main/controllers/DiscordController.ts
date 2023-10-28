@@ -260,12 +260,14 @@ export const isChannelRegistered = (channel: string): boolean => {
     return false;
 }
 
-export function setInterrupted(){
+export function setInterrupted(channelID: string){
     cancelGeneration();
     isInterrupted = true;
+    interruptedChannel = channelID;
 }
 
 let isInterrupted = false;
+let interruptedChannel = '';
 
 export async function handleDiscordMessage(message: Message) {
     const activeConstructs = retrieveConstructs();
@@ -313,6 +315,7 @@ export async function handleDiscordMessage(message: Message) {
     }
     if(chatLog.messages.length === 1){
         isInterrupted = false;
+        interruptedChannel = '';
     }
     if(!chatLog.messages.includes(newMessage)){
         chatLog.messages.push(newMessage);
@@ -364,7 +367,7 @@ export async function handleDiscordMessage(message: Message) {
         let iterations = 0;
 
         do {
-            if(isInterrupted){
+            if(isInterrupted && interruptedChannel === message.channel.id){
                 break;
             }
             if (chatLog?.lastMessage?.text === undefined) break;
@@ -375,7 +378,7 @@ export async function handleDiscordMessage(message: Message) {
             hasBeenMention = false;
             
             for (let i = 0; i < shuffledConstructs.length; i++) {
-                if(isInterrupted){
+                if(isInterrupted && interruptedChannel === message.channel.id){
                     break;
                 }
                 if (isMentioned(lastMessageText, shuffledConstructs[i]) && chatLog.lastMessage.isHuman && !chatLog.lastMessage.isThought && (chatLog.lastMessage.userID !== shuffledConstructs[i]._id)) {
@@ -392,11 +395,11 @@ export async function handleDiscordMessage(message: Message) {
         while (true) { // The loop to make replies continuously until no construct feels the need to reply
             let shouldContinue = false; // By default, we assume we won't need another iteration
             if(chatLog?.lastMessage.text === undefined) break;
-            if(isInterrupted){
+            if(isInterrupted && interruptedChannel === message.channel.id){
                 break;
             }
             for(let i = 0; i < shuffledConstructs.length; i++) {
-                if(isInterrupted){
+                if(isInterrupted && interruptedChannel === message.channel.id){
                     break;
                 }
                 let config = shuffledConstructs[i].defaultConfig;
@@ -461,13 +464,14 @@ export async function handleDiscordMessage(message: Message) {
             console.log('lurking')
         }
     }
-    if(isInterrupted){
+    if(isInterrupted && interruptedChannel === message.channel.id){
         isInterrupted = false;
+        interruptedChannel = '';
     }
 }
 
 async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInterface, message: Message | CommandInteraction){
-    if(isInterrupted){
+    if(isInterrupted && interruptedChannel === message.channelId){
         console.log('interrupted')
         return chatLog;
     }
@@ -516,7 +520,7 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
     if (result !== null) {
         reply = result;
     } else {
-        if(isInterrupted){
+        if(isInterrupted && interruptedChannel === message.channelId){
             console.log('interrupted')
             return chatLog;
         }
@@ -605,12 +609,12 @@ async function doCharacterThoughts(construct: ConstructInterface, chatLog: ChatI
         username = alias;
     }
     if(message.channel === null) return;
-    if(isInterrupted){
+    if(isInterrupted && interruptedChannel === message.channelId){
         console.log('interrupted')
         return chatLog;
     }
     const result = await generateThoughts(construct, chatLog, username, maxMessages, getDoMultiLine(), replaceUser);
-    if(isInterrupted){
+    if(isInterrupted && interruptedChannel === message.channelId){
         console.log('interrupted')
         return chatLog;
     }
@@ -618,7 +622,7 @@ async function doCharacterThoughts(construct: ConstructInterface, chatLog: ChatI
     if (result !== null) {
         reply = result;
     } else {
-        if(isInterrupted){
+        if(isInterrupted && interruptedChannel === message.channelId){
             console.log('interrupted')
             return chatLog;
         }
@@ -665,7 +669,7 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
         return chatLog;
     }
     for(let i = 0; i < constructArray.length; i++){
-        if(isInterrupted){
+        if(isInterrupted && interruptedChannel === message.channelId){
             break;
         }
         let config = constructArray[i].defaultConfig;
@@ -684,7 +688,7 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
         const wasHuman = chatLog.lastMessage.isHuman;
         if(wasMentionedByHuman){
             if(config.replyToUserMention >= Math.random()){
-                if(isInterrupted){
+                if(isInterrupted && interruptedChannel === message.channelId){
                     console.log('interrupted')
                     return chatLog;
                 }
@@ -695,7 +699,7 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
             }
         }else if(wasMentioned && chatLog.lastMessage.userID !== constructArray[i]._id){
             if(config.replyToConstructMention >= Math.random()){
-                if(isInterrupted){
+                if(isInterrupted && interruptedChannel === message.channelId){
                     console.log('interrupted')
                     return chatLog;
                 }
@@ -707,7 +711,7 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
         }else{
             if(wasHuman){
                 if(config.replyToUser >= Math.random()){
-                    if(isInterrupted){
+                    if(isInterrupted && interruptedChannel === message.channelId){
                         console.log('interrupted')
                         return chatLog;
                     }
@@ -718,7 +722,7 @@ async function doRoundRobin(constructArray: ConstructInterface[], chatLog: ChatI
                 }
             }else{
                 if(config.replyToConstruct >= Math.random()){
-                    if(isInterrupted){
+                    if(isInterrupted && interruptedChannel === message.channelId){
                         console.log('interrupted')
                         return chatLog;
                     }
@@ -815,7 +819,7 @@ export async function continueChatLog(interaction: CommandInteraction) {
         let iterations = 0;
 
         do {
-            if(isInterrupted){
+            if(isInterrupted && interruptedChannel === interaction.channelId){
                 break;
             }
             if (chatLog?.lastMessage?.text === undefined) break;
@@ -826,7 +830,7 @@ export async function continueChatLog(interaction: CommandInteraction) {
             hasBeenMention = false;
             
             for (let i = 0; i < shuffledConstructs.length; i++) {
-                if(isInterrupted){
+                if(isInterrupted && interruptedChannel === interaction.channelId){
                     break;
                 }
                 if (isMentioned(lastMessageText, shuffledConstructs[i]) && chatLog.lastMessage.isHuman && !chatLog.lastMessage.isThought && (chatLog.lastMessage.userID !== shuffledConstructs[i]._id)) {
@@ -843,11 +847,11 @@ export async function continueChatLog(interaction: CommandInteraction) {
         while (true) { // The loop to make replies continuously until no construct feels the need to reply
             let shouldContinue = false; // By default, we assume we won't need another iteration
             if(chatLog?.lastMessage.text === undefined) break;
-            if(isInterrupted){
+            if(isInterrupted && interruptedChannel === interaction.channelId){
                 break;
             }
             for(let i = 0; i < shuffledConstructs.length; i++) {
-                if(isInterrupted){
+                if(isInterrupted && interruptedChannel === interaction.channelId){
                     break;
                 }
                 let config = shuffledConstructs[i].defaultConfig;
@@ -906,8 +910,9 @@ export async function continueChatLog(interaction: CommandInteraction) {
             }
         }
     }
-    if(isInterrupted){
+    if(isInterrupted && interaction.channelId === interruptedChannel){
         isInterrupted = false;
+        interruptedChannel = '';
     }
 }
 

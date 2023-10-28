@@ -49,7 +49,7 @@ function createClient(){
             console.log("Message ID:", message.id);
             if(message.channelId === processingMessage?.channelId && message.id !== processingMessage?.id){
                 console.log("Message is not the same as the one being processed, ignoring...");
-                setInterrupted();
+                setInterrupted(message.channelId);
             }
             messageQueue.push(message);
             await processQueue();
