@@ -349,7 +349,7 @@ export async function generateThoughts(construct: ConstructInterface, chat: Chat
 
 export async function generateContinueChatLog(construct: ConstructInterface, chatLog: ChatInterface, currentUser?: string, messagesToInclude?: any, stopList?: string[], authorsNote?: string | string[], authorsNoteDepth?: number, doMultiLine?: boolean, replaceUser: boolean = true, userData?: string) {
     let prompt = '';
-    if(construct.defaultConfig.doInstruct){
+    if(construct.defaultConfig.doInstruct === true){
         prompt += assembleInstructPrompt(construct, chatLog, currentUser, messagesToInclude, replaceUser);
     }else{
         prompt += assemblePrompt(construct, chatLog, currentUser, messagesToInclude, replaceUser);

@@ -3536,7 +3536,7 @@ async function generateThoughts(construct, chat, currentUser = "you", messagesTo
 async function generateContinueChatLog(construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth, doMultiLine, replaceUser2 = true, userData) {
   var _a;
   let prompt = "";
-  if (construct.defaultConfig.doInstruct) {
+  if (construct.defaultConfig.doInstruct === true) {
     prompt += assembleInstructPrompt(construct, chatLog, currentUser, messagesToInclude, replaceUser2);
   } else {
     prompt += assemblePrompt(construct, chatLog, currentUser, messagesToInclude, replaceUser2);
