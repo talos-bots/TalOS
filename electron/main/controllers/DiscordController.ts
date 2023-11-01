@@ -471,7 +471,6 @@ export async function handleDiscordMessage(message: Message) {
     }
     if(generationFailure){
         generationFailure = false;
-        await sendMessage(message.channel.id, '**Generation failure detected.**');
     }
 }
 
