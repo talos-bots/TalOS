@@ -553,7 +553,7 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
     chatLog.messages.push(replyMessage);
     chatLog.lastMessage = replyMessage;
     chatLog.lastMessageDate = replyMessage.timestamp;
-    if(lastIntentData !== null){
+    if(lastIntentData !== null && construct.defaultConfig.doActions === true){
         const currentIntentData = await detectIntent(reply);
         if(currentIntentData !== null){
             if(lastIntentData?.intent !== 'search'){
@@ -788,16 +788,17 @@ export async function continueChatLog(interaction: CommandInteraction) {
     }
     if(!registered) return;
     let constructArray = [];
-    let chatLogData = await getChat(interaction.channel.id);
+    let chatLogData = await getChat(interaction.channelId).then((doc) => {
+        return doc;
+    }).catch((err) => {
+        console.log(err);
+    });
     let chatLog;
     if (chatLogData) {
         chatLog = assembleChatFromData(chatLogData);
     }
     if(chatLog === null || chatLog === undefined){
-        return;
-    }
-    if(chatLog.messages.length < 1){
-        return;
+        return console.log('Chat log is null or undefined');
     }
     for (let i = 0; i < chatLog.constructs.length; i++) {
         let constructDoc = await getConstruct(chatLog.constructs[i]);

@@ -4753,7 +4753,6 @@ async function handleDiscordMessage(message) {
   }
   if (generationFailure) {
     generationFailure = false;
-    await sendMessage(message.channel.id, "**Generation failure detected.**");
   }
 }
 async function doCharacterReply(construct, chatLog, message) {
@@ -4835,7 +4834,7 @@ async function doCharacterReply(construct, chatLog, message) {
   chatLog.messages.push(replyMessage);
   chatLog.lastMessage = replyMessage;
   chatLog.lastMessageDate = replyMessage.timestamp;
-  if (lastIntentData !== null) {
+  if (lastIntentData !== null && construct.defaultConfig.doActions === true) {
     const currentIntentData = await detectIntent(reply);
     if (currentIntentData !== null) {
       if ((lastIntentData == null ? void 0 : lastIntentData.intent) !== "search") {
@@ -5069,16 +5068,17 @@ async function continueChatLog(interaction) {
   if (!registered)
     return;
   let constructArray = [];
-  let chatLogData = await getChat(interaction.channel.id);
+  let chatLogData = await getChat(interaction.channelId).then((doc) => {
+    return doc;
+  }).catch((err) => {
+    console.log(err);
+  });
   let chatLog;
   if (chatLogData) {
     chatLog = assembleChatFromData(chatLogData);
   }
   if (chatLog === null || chatLog === void 0) {
-    return;
-  }
-  if (chatLog.messages.length < 1) {
-    return;
+    return console.log("Chat log is null or undefined");
   }
   for (let i = 0; i < chatLog.constructs.length; i++) {
     let constructDoc = await getConstruct(chatLog.constructs[i]);
@@ -5912,7 +5912,7 @@ const ClearLogCommand = {
       }
     }
     deleteIndex(interaction.channelId);
-    setInterrupted();
+    setInterrupted(interaction.channelId);
     clearMessageQueue();
     await interaction.editReply({
       content: "Chat log cleared."
@@ -6505,7 +6505,7 @@ const stopCommand = {
   description: "Stops the bot.",
   execute: async (interaction) => {
     await interaction.deferReply({ ephemeral: true });
-    setInterrupted();
+    setInterrupted(interaction.channelId);
     clearMessageQueue();
     await interaction.editReply({
       content: `*Stopping...*`

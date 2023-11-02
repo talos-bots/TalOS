@@ -298,7 +298,7 @@ export const ClearLogCommand: SlashCommand = {
             
         }
         deleteIndex(interaction.channelId);
-        setInterrupted();
+        setInterrupted(interaction.channelId);
         clearMessageQueue();
         await interaction.editReply({
             content: "Chat log cleared.",
@@ -899,7 +899,7 @@ const stopCommand: SlashCommand = {
     description: 'Stops the bot.',
     execute: async (interaction: CommandInteraction) => {
         await interaction.deferReply({ephemeral: true});
-        setInterrupted();
+        setInterrupted(interaction.channelId);
         clearMessageQueue();
         await interaction.editReply({
             content: `*Stopping...*`,
