@@ -792,6 +792,7 @@ export async function continueChatLog(interaction: CommandInteraction) {
         return doc;
     }).catch((err) => {
         console.log(err);
+        console.log('Error getting chat log');
     });
     let chatLog;
     if (chatLogData) {
@@ -801,7 +802,16 @@ export async function continueChatLog(interaction: CommandInteraction) {
         return console.log('Chat log is null or undefined');
     }
     for (let i = 0; i < chatLog.constructs.length; i++) {
-        let constructDoc = await getConstruct(chatLog.constructs[i]);
+        let constructDoc;
+        try{
+            constructDoc = await getConstruct(chatLog.constructs[i]);
+        }catch(e){
+            console.log(e);
+            console.log('Error getting construct');
+        }
+        if(constructDoc === null){
+            continue;
+        }
         let construct = assembleConstructFromData(constructDoc);
         if(construct === null) continue;
         constructArray.push(construct);

@@ -202,7 +202,7 @@ const ChatDetails = (props: ChatDetailsProps) => {
                 )}
                 <div className="grid w-1/3 gap-4 absolute right-4" id="info-text">
                     <div className="flex flex-row justify-end text-right">
-                        <i className={"w-full text-right" + (selected? 'text-theme-text-hover' : 'text-theme-italic')}>{getFormattedTime(chat.lastMessage.timestamp)}</i>
+                        <i className={"w-full text-right" + (selected? 'text-theme-text-hover' : 'text-theme-italic')}>{getFormattedTime(chat.lastMessage?.timestamp)}</i>
                     </div>
                 </div>
             </div>

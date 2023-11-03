@@ -640,7 +640,18 @@ export const SysCommand: SlashCommand = {
         const pulledLog = await getIntactChatLog(interaction)
         const constructs = pulledLog?.constructs;
         if(!constructs || constructs.length < 1) return;
-        let constructDoc = await getConstruct(constructs[0]);
+        let constructDoc;
+        try{
+            constructDoc = await getConstruct(constructs[0]);
+        }catch(e){
+            console.log(e);
+        }
+        if(constructDoc === null){
+            await interaction.editReply({
+                content: "No construct found.",
+            });
+            return;
+        }
         let construct = assembleConstructFromData(constructDoc);
         if(construct === null) return;
         const message = interaction.options.get('message')?.value as string;
