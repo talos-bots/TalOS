@@ -31,7 +31,6 @@ const ChatDetails = (props: ChatDetailsProps) => {
 
     useEffect(() => {
         if(chat === undefined || chat === null) return;
-    
         const init = async () => {
             setName(chat.name);
             let fetchedConstructs: Construct[] = [];
@@ -49,7 +48,6 @@ const ChatDetails = (props: ChatDetailsProps) => {
             constructsRef.current = fetchedConstructs; // update the ref
             setConstructs(fetchedConstructs); // update the state directly
         };
-    
         init();
     }, [chat]);
     

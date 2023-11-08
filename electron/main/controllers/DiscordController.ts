@@ -802,9 +802,16 @@ export async function continueChatLog(interaction: CommandInteraction) {
         return console.log('Chat log is null or undefined');
     }
     for (let i = 0; i < chatLog.constructs.length; i++) {
+        console.log('Getting construct');
+        console.log(chatLog.constructs[i]);
         let constructDoc;
         try{
-            constructDoc = await getConstruct(chatLog.constructs[i]);
+            constructDoc = await getConstruct(chatLog.constructs[i]).then((doc) => {
+                return doc;
+            }).catch((err) => {
+                console.log(err);
+                console.log('Error getting construct');
+            });
         }catch(e){
             console.log(e);
             console.log('Error getting construct');
