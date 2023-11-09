@@ -284,6 +284,7 @@ export async function getStatus(testEndpoint?: string, testEndpointType?: string
     let endpointUrl = testEndpoint ? testEndpoint : endpoint;
     let endpointStatusType = testEndpointType ? testEndpointType : endpointType;
     let endpointURLObject;
+    let connection = connectionPresets.find((connectionPreset) => connectionPreset._id === currentConnectionPreset);
     try {
         let response;
     switch (endpointStatusType) {
@@ -291,7 +292,7 @@ export async function getStatus(testEndpoint?: string, testEndpointType?: string
             endpointURLObject = new URL(endpointUrl);
             try{
                 response = await axios.get(`${endpointURLObject.protocol}//${endpointURLObject.hostname}${endpointURLObject.port? `:${endpointURLObject.port}` : ''}/api/v1/model`,
-                // { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537', 'Content-Type': 'application/json', 'x-api-key': connection?.password, 'Origin': 'https://fake-origin.com', 'Referer': 'https://fake-origin.com'}}
+                { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537', 'Content-Type': 'application/json', 'x-api-key': connection?.password, 'Origin': 'https://fake-origin.com', 'Referer': 'https://fake-origin.com'}}
                 ).then((response) => {
                     return response;
                 }).catch((error) => {

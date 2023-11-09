@@ -1,9 +1,9 @@
-import React, { useEffect } from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App'
-import './index.scss'
+import React, { useEffect } from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import './index.scss';
 import 'intro.js/introjs.css';
-import { ThemeProvider } from '@material-tailwind/react'
+import { ThemeProvider } from '@material-tailwind/react';
 
 function Main() {
   useEffect(() => {
