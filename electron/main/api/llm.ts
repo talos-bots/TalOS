@@ -512,7 +512,12 @@ export const generateText = async (
                 'repetition_penalty_range': settings.rep_pen_range ? settings.rep_pen_range : 0,
                 'top_k': settings.top_k ? settings.top_k : 0,
                 'ban_eos_token': false,
-                'stopping_strings': stops
+                'stopping_strings': stops,
+                'presence_penalty': settings.presence_penalty ? settings.presence_penalty : 0,
+                'frequency_penalty': settings.frequency_penalty ? settings.frequency_penalty : 0,
+                'mirostat_mode': settings.mirostat_mode > 0 ? 2 : 0,
+                'mirostat_tau': settings.mirostat_tau ? settings.mirostat_tau : 0,
+                'mirostat_eta': settings.mirostat_eta ? settings.mirostat_eta : 0,
                 }
                 console.log(oobaPayload)
                 cancelTokenSource = axios.CancelToken.source();
