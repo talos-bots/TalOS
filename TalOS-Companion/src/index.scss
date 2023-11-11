@@ -1,0 +1,660 @@
+@charset "UTF-8";
+/* Import the base styles for Tailwind */
+@import 'tailwindcss/base';
+
+/* Import the component styles for Tailwind */
+@import 'tailwindcss/components';
+
+/* Import the utility styles for Tailwind */
+@import 'tailwindcss/utilities';
+
+@layer utilities {
+  .scale-y-100 {
+    transform: scaleY(1);
+  }
+}
+
+@font-face {
+  font-family: 'DejaVuSansBold';
+  src: local('DejaVuSansBold'), url('./fonts/DejaVuSans-Bold.ttf') format('ttf');
+}
+
+@font-face {
+  font-family: 'RocketRinder';
+  src: local('RocketRinder'), url('./fonts/RocketRinder.ttf') format('ttf');
+}
+
+:root {
+  --background-image: url('./backgrounds/homedark.png');
+  --background-color: null;
+  --theme-root: rgba(0, 0, 0, 0.5);
+  --theme-box: rgba(30, 30, 30, 0.767);
+  --theme-italic: rgb(197, 196, 196);
+  --theme-text: rgba(255, 253, 253, 1);
+  --theme-button: rgba(40, 40, 40, 0.658);
+  --theme-bright-color: rgba(50, 50, 50);
+  --theme-accent: rgba(60, 60, 60, 0.295);
+  --theme-border: rgba(0, 0, 0, 1);
+  --theme-hover-pos: var(--theme-accent);
+  --theme-hover-neg: rgba(196, 0, 0, .75);
+  --theme-blur: 15px;
+  --theme-border-width: 2px;
+  --theme-border-radius: 8px;
+  --theme-font: 'DejaVuSansBold', sans-serif;
+  --theme-border-type: solid;
+  --theme-text-hover: rgb(255, 255, 255);
+  --theme-flavor-text: rgba(180, 180, 180, 0.5);
+}
+
+.main-content {
+  margin: 0 auto;
+  text-align: center;
+  padding-top: 70px;
+}
+
+:root {
+  font-family: var(--theme-font);
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: light dark;
+  color: var(--theme-text);
+  background-color: var(--background-color);
+  background-image: var(--background-image);
+  background-size: cover;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+h2 {
+  font-size: 2.0em;
+  line-height: 1.25;
+}
+
+h3 {
+  font-size: 1.5em;
+  line-height: 1.3;
+}
+
+h4 {
+  font-size: 1.3m;
+  line-height: 1.35;
+}
+
+h5 {
+  font-size: 1.2em;
+  line-height: 1.5;
+}
+
+li {
+  margin-bottom: 0.25em;
+}
+ol {
+  list-style-type: decimal;
+  list-style-position: inside;
+}
+ul {
+  list-style-type: disc;
+}
+
+.card {
+  padding: 2em;
+}
+
+.themed-button-neg {
+  @apply font-semibold theme-border-style shadow-md bg-theme-button hover:text-theme-text-hover hover:bg-theme-hover-neg text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
+}
+
+.themed-button-pos {
+  @apply font-semibold theme-border-style shadow-md bg-theme-button hover:text-theme-text-hover hover:bg-theme-hover-pos text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
+}
+
+.themed-button {
+  @apply font-semibold theme-border-style shadow-md bg-theme-button text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
+}
+
+.themed-root {
+  @apply theme-border-style shadow-md bg-theme-root border-theme-border border-theme-border-width rounded-theme-border-radius p-4 backdrop-blur-theme-blur;
+}
+
+.themed-box {
+  @apply theme-border-style shadow-md bg-theme-box border-theme-border border-theme-border-width rounded-theme-border-radius p-4 backdrop-blur-theme-blur;
+}
+
+.themed-input {
+  @apply resize-none overflow-y-auto theme-border-style shadow-md bg-theme-accent text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
+}
+
+.themed-input .themed-input{
+  background-color: var(--theme-button) !important;
+  @apply resize-none overflow-y-auto theme-border-style shadow-md text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
+}
+
+.themed-input .themed-input .themed-input{
+  background-color: var(--theme-box) !important;
+  @apply resize-none overflow-y-auto theme-border-style shadow-md text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
+}
+
+.themed-input-box {
+  @apply resize-none overflow-y-auto theme-border-style shadow-md bg-theme-box text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
+}
+
+.themed-input-root {
+  @apply resize-none overflow-y-auto theme-border-style shadow-md bg-theme-root text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
+}
+
+.theme-border-style {
+  border-style: var(--theme-border-type);
+}
+
+.themed-button-no-bg {
+  @apply font-semibold theme-border-style shadow-md text-theme-text border-theme-border border-theme-border-width p-2 backdrop-blur-theme-blur rounded-theme-border-radius;
+}
+
+.themed-button-small {
+  @apply theme-border-style shadow-md bg-theme-button text-theme-text border-theme-border border-theme-border-width p-1 backdrop-blur-theme-blur rounded-theme-border-radius;
+}
+
+.themed-root-no-padding {
+  @apply theme-border-style shadow-md bg-theme-root border-theme-border border-theme-border-width rounded-theme-border-radius backdrop-blur-theme-blur;
+}
+
+.themed-box-no-padding {
+  @apply theme-border-style shadow-md bg-theme-box border-theme-border border-theme-border-width rounded-theme-border-radius backdrop-blur-theme-blur;
+}
+
+/* This is the scrollbar track */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+.themed-message-box {
+  @apply w-full h-full min-h-full overflow-y-auto overflow-x-hidden gap-2 flex flex-col;
+}
+
+.themed-message {
+  @apply shadow-md bg-theme-root rounded-theme-border-radius backdrop-blur-theme-blur w-full p-2 text-left border-theme-border border-theme-border-width theme-border-style;
+}
+
+.themed-message-info {
+  @apply text-theme-italic italic text-sm absolute top-2 left-16;
+}
+
+.themed-message-text {
+  @apply text-left mt-1 ml-1;
+}
+
+.themed-message-avatar {
+  width: 3rem;
+  height: 3rem;
+  flex-shrink: 0;
+  min-width: 3rem;
+  min-height: 3rem;
+  @apply rounded-theme-border-radius object-cover bg-theme-box border-theme-border-width border-theme-border;
+}
+
+.themed-chat-avatar {
+  @apply w-16 h-16 rounded-theme-border-radius object-cover bg-theme-box border-theme-border-width border-theme-border ;
+}
+
+.construct-search-bar input{
+	margin-right: auto;
+	margin-left: auto;
+	flex-direction: column;
+	justify-content: flex-start;
+	color: var(--theme-text);
+  background-color: var(--theme-button);
+  height: 100%;
+  @apply border-theme-border-width border-theme-border theme-border-style rounded-theme-border-radius p-2
+}
+
+.construct-search-bar input:focus{
+	background-color: var(--theme-accent);
+  @apply border-theme-border-width border-theme-border theme-border-style rounded-theme-border-radius p-2
+}
+
+.message-button {
+  transition: transform 0.3s;
+  font-style: italic;
+  color: var(--theme-text-italic); 
+}
+
+.message-button:hover {
+  transform: scale(1.1);
+}
+
+.loading {
+  margin-top: .5rem;
+  display: flex;
+  flex-direction: row;
+}
+
+.loading__letter {
+  font-weight: bolder;
+  letter-spacing: .5rem;
+  text-transform: uppercase;
+  animation-name: bounce;
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+}
+
+.loading__letter:nth-child(2) {
+  animation-delay: .1s;	
+}
+.loading__letter:nth-child(3) {
+  animation-delay: .2s;
+}
+
+@keyframes bounce {
+  0% {
+    transform: translateY(0px)
+  }
+  40% {
+    transform: translateY(-1rem);
+  }
+  80%,
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+@media (max-width: 700px) {
+  .loading__letter {
+    font-size: 50px;
+  }
+}
+
+@media (max-width: 340px) {
+  .loading__letter {
+    font-size: 40px;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.pop-in {
+  animation: popIn 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.pop-out {
+  animation: popOut .7s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popOut {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+}
+
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+  
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Slide-in from the left */
+@keyframes slide-in-left {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Slide-in from the right */
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Slide-in from the top */
+@keyframes slide-in-top {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Slide-in from the bottom */
+@keyframes slide-in-bottom {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+
+.slide-in-left {
+  animation: slide-in-left 1s forwards;
+}
+
+.slide-in-right {
+  animation: slide-in-right 1s forwards;
+}
+
+.slide-in-top {
+  animation: slide-in-top 1s forwards;
+}
+
+.slide-in-bottom {
+  animation: slide-in-bottom 1s forwards;
+}
+
+.slide-in-bottom-message {
+  animation: slide-in-bottom .3s forwards;
+}
+
+/* Slide-out to the left */
+@keyframes slide-out-left {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+.slide-out-left {
+  animation: slide-out-left .5s ease-in-out forwards;
+}
+
+/* Slide-out to the right */
+@keyframes slide-out-right {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.slide-out-right {
+  animation: slide-out-right 1s ease-in-out forwards;
+}
+
+/* Slide-out to the top */
+@keyframes slide-out-top {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+}
+
+.slide-out-top {
+  animation: slide-out-top 1s ease-in-out forwards;
+}
+
+/* Slide-out to the bottom */
+@keyframes slide-out-bottom {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+.slide-out-bottom {
+  animation: slide-out-bottom 1s ease-in-out forwards;
+}
+
+.truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.accordion-content {
+  overflow: hidden;
+  transition: height 0.3s ease-out;
+  height: 0;
+}
+
+/* Add this to your stylesheet */
+.tooltip {
+  position: absolute;
+  bottom: 50px; /* Adjust this to position your tooltip */
+  left: 50%;    /* Center the tooltip */
+  transform: translateX(-50%); /* Center the tooltip */
+  background-color: rgba(0,0,0,0.8);
+  color: white;
+  padding: 5px;
+  border-radius: 5px;
+  visibility: hidden; 
+  opacity: 0;
+  transition: opacity 0.3s, visibility 0.3s; /* Add transition */
+  z-index: 10000; /* Setting a very high z-index so it appears above other elements. Adjust as needed */
+}
+
+.themed-root-no-padding:hover .tooltip {
+  visibility: visible; 
+  opacity: 1; 
+}
+
+.user-image {
+	width: 20rem;
+	height: 20rem;
+	word-wrap: break-word;
+	cursor: pointer;
+	aspect-ratio: 1/1.5;
+	border-radius: 10%;
+	overflow: hidden;
+	object-fit: cover;
+	box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.2);
+	@apply rounded-theme-border-radius object-cover bg-theme-box border-theme-border-width border-theme-border;
+}
+
+.user-image-default {
+	width: 20rem;
+	height: 20rem;
+	word-wrap: break-word;
+	cursor: pointer;
+	border-radius: 10%;
+	overflow: hidden;
+	display: flex;
+  	align-items: center;
+  	justify-content: center;
+	color: var(--theme-text);
+	background-color: var(--theme-accent);
+	box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.2);
+  @apply rounded-theme-border-radius object-cover bg-theme-box border-theme-border-width border-theme-border
+}
+
+.book-image {
+	width: 10rem;
+	height: 10rem;
+	word-wrap: break-word;
+	cursor: pointer;
+	aspect-ratio: 1/1.5;
+	border-radius: 10%;
+	overflow: hidden;
+	object-fit: cover;
+	box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.2);
+	@apply rounded-theme-border-radius object-cover bg-theme-box border-theme-border-width border-theme-border;
+}
+
+.book-image-default {
+	width: 10rem;
+	height: 10rem;
+	word-wrap: break-word;
+	cursor: pointer;
+	border-radius: 10%;
+	overflow: hidden;
+	display: flex;
+  	align-items: center;
+  	justify-content: center;
+	color: var(--theme-text);
+	background-color: var(--theme-accent);
+	box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.2);
+  @apply rounded-theme-border-radius object-cover bg-theme-box border-theme-border-width border-theme-border;
+}
+
+.chat-input-bar{
+  @apply backdrop-blur-theme-blur flex items-center w-full h-full justify-between rounded-theme-border-radius bg-theme-root box-border p-4 border-theme-border border-theme-border-width theme-border-style
+}
+/* This is the container of the scrollbar */
+::-webkit-scrollbar-track {
+  background: transparent; /* or the color of your container */
+  padding-right: 1.5rem;     /* adjust as needed */
+  padding-left: 1.5rem;      /* adjust as needed */
+  padding-top: 1.5rem;       /* adjust as needed */
+}
+
+/* This is the scrollbar itself */
+::-webkit-scrollbar-thumb {
+  background: var(--theme-root); 
+  border-radius: var(--theme-border-radius);
+}
+
+/* This is when you hover over the scrollbar */
+::-webkit-scrollbar-thumb:hover {
+  background: var(--theme-box); 
+}
+
+/* This sets the width of the scrollbar */
+::-webkit-scrollbar {
+  width: 8px;             /* adjust width as needed */
+}
+
+[data-tooltip] {
+  position: relative;
+  cursor: pointer;
+  z-index: 9999999999 !important;
+}
+
+[data-tooltip]::before,
+[data-tooltip]::after {
+  position: absolute;
+  visibility: hidden;
+  opacity: 0;
+  z-index: 9999999999 !important;
+  pointer-events: none;
+  transition: all 0.3s;
+}
+
+[data-tooltip]::before {
+  content: attr(data-tooltip);
+  width: max-content;
+  top: 100%; /* Set top to 100% to place it below the element */
+  left: 0; /* Adjust this value to control horizontal placement */
+  white-space: nowrap;
+  font-size: 12px;
+  z-index: 9999999999 !important;
+  @apply themed-input;
+}
+
+[data-tooltip]::after {
+  content: '';
+  top: 100%; /* Set top to 100% to place it below the element */
+  left: 0; /* Adjust this value to control horizontal placement */
+  z-index: 9999999999 !important;
+}
+
+[data-tooltip]:hover::before,
+[data-tooltip]:hover::after {
+  visibility: visible;
+  opacity: 1;
+  z-index: 9999999999 !important;
+}
+
+/*
+  * IntroJS Custom CSS
+*/
+
+.introJs-custom-box {
+  color: var(--theme-text) !important;
+  background-color: var(--theme-root) !important;
+  border: 1px solid var(--theme-border);
+  border-radius: var(--theme-border-radius);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  padding: 10px;
+}
+
+select {
+  background-color: var(--theme-accent) !important;
+  color: var(--theme-text) !important;
+}
+
+select option {
+  background-color: var(--theme-accent) !important;
+  color: var(--theme-text) !important;
+}
+
+/* Style for inline code */
+code {
+	white-space: pre-wrap;
+	word-wrap: break-word;
+	display: inline-block;
+	max-width: 100%;
+  width: 100%;
+	background-color: #1312127c; /* Change this color to your preference */
+	padding: 2px 4px;
+	border-radius: var(--theme-border-radius);
+	font-family: 'Courier New', Courier, monospace;
+	font-size: 1em;
+}
+// pre {
+// 	white-space: pre-wrap;
+// 	word-wrap: break-word;
+// 	background-color: #1312123a; /* Change this color to your preference */
+// 	padding: 8px;
+// 	border-radius: var(--theme-border-radius);
+// 	font-family: 'Courier New', Courier, monospace;
+// 	font-size: 1em;
+// 	overflow: auto;
+// }

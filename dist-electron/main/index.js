@@ -44201,10 +44201,20 @@ expressApp.use(express.static("public"));
 expressApp.use(express.static("dist"));
 expressApp.use(bodyParser.json({ limit: "1000mb" }));
 expressApp.use(bodyParser.urlencoded({ limit: "1000mb", extended: true }));
-expressApp.use(cors());
+const corsOptions = {
+  origin: "*",
+  // Accepts all origins
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  // List all methods you want to allow
+  credentials: true
+  // Optional: if you need to handle credentials
+};
+expressApp.use(cors(corsOptions));
 expressApp.use("/api/images", express.static(uploadsPath));
 const server = node_http.createServer(expressApp);
-const expressAppIO = new socket_io.Server(server);
+const expressAppIO = new socket_io.Server(server, {
+  cors: corsOptions
+});
 expressAppIO.sockets.on("connection", (socket) => {
   console.log("Client connected:", socket.id);
   socket.onAny((eventName, ...args) => {

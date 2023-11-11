@@ -47,11 +47,19 @@ expressApp.use(express.static('public'));
 expressApp.use(express.static('dist'));
 expressApp.use(bodyParser.json({ limit: '1000mb' }));
 expressApp.use(bodyParser.urlencoded({ limit: '1000mb', extended: true }));
-expressApp.use(cors());
+const corsOptions = {
+  origin: "*", // Accepts all origins
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // List all methods you want to allow
+  credentials: true // Optional: if you need to handle credentials
+};
+expressApp.use(cors(corsOptions));
 expressApp.use('/api/images', express.static(uploadsPath));
 const server = createServer(expressApp);
-export const expressAppIO = new Server(server);
+export const expressAppIO = new Server(server, {
+  cors: corsOptions
+});
 
+//enable * on CORS for socket.io
 expressAppIO.sockets.on('connection', (socket) => {
   console.log('Client connected:', socket.id);
 
