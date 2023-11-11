@@ -192,7 +192,7 @@ const ConstructQuickCrud = (props: ConstructManagementProps) => {
         const url = await saveTavernCardAsImage(passedConstruct);
         const element = document.createElement("a");
         element.href = url;
-        element.download = `${passedConstruct.name}.ConstructOS.png`;
+        element.download = `${passedConstruct.name}.TalOS.png`;
         document.body.appendChild(element);
         element.click();
     }

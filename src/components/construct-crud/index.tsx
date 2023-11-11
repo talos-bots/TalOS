@@ -342,7 +342,7 @@ const ConstructManagement = (props: ConstructManagementProps) => {
         const url = await saveTavernCardAsImage(constructState);
         const element = document.createElement("a");
         element.href = url;
-        element.download = `${constructState.name}.ConstructOS.png`;
+        element.download = `${constructState.name}.TalOS.png`;
         document.body.appendChild(element);
         element.click();
     }
