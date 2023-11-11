@@ -407,7 +407,14 @@ export async function getAllLoras(){
     const res = await axios({
         method: 'get',
         url: url.toString(),
+    }).then((res) => {
+        return res;
+    }).catch((err) => {
+        console.log('Failed to get loras');
     });
+    if(!res){
+        return null;
+    }
     return res.data;
 }
 
@@ -417,7 +424,15 @@ export async function getEmbeddings(){
     const res = await axios({
         method: 'get',
         url: url.toString(),
+    }).then((res) => {
+        return res;
+    }).catch((err) => {
+        console.log('Failed to get embeddings');
     });
+
+    if(!res){
+        return null;
+    }
     return res.data;
 }
 
@@ -427,7 +442,14 @@ export async function getModels(){
     const res = await axios({
         method: 'get',
         url: url.toString(),
+    }).then((res) => {
+        return res;
+    }).catch((err) => {
+        console.log('Failed to get SD models');
     });
+    if(!res){
+        return null;
+    }
     return res.data;
 }
 
@@ -437,7 +459,14 @@ export async function getVaeModels(){
     const res = await axios({
         method: 'get',
         url: url.toString(),
+    }).then((res) => {
+        return res;
+    }).catch((err) => {
+        console.log('Failed to get SD VAE models');
     });
+    if(!res){
+        return null;
+    }
     return res.data;
 }
 
@@ -447,7 +476,14 @@ export async function getUpscalers(){
     const res = await axios({
         method: 'get',
         url: url.toString(),
+    }).then((res) => {
+        return res;
+    }).catch((err) => {
+        console.log('Failed to get upscalers');
     });
+    if(!res){
+        return null;
+    }
     return res.data;
 }
 

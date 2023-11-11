@@ -47,30 +47,35 @@ const StableDiffusionPanel = () => {
 
     const fetchStableDiffusionOptions = async () => {
         getDefaultUpscaler().then((result) => {
+            if(!result === null)
             setUpscaler(result);
         }).catch((err) => {
             console.error(err);
         });
 
         getLoras().then((result) => {
+            if(!result === null)
             setLoras(result);
         }).catch((err) => {
             console.error(err);
         });
 
         getEmbeddings().then((result) => {
+            if(!result === null)
             setEmbeddings(result);
         }).catch((err) => {
             console.error(err);
         });
 
         getModels().then((result) => {
+            if(!result === null)
             setModels(result);
         }).catch((err) => {
             console.error(err);
         });
 
         getUpscalers().then((result) => {
+            if(!result === null)
             setUpscalers(result);
         }).catch((err) => {
             console.error(err);

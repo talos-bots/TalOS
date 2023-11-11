@@ -2163,6 +2163,7 @@ async function getStatus(testEndpoint, testEndpointType) {
   let endpointUrl = testEndpoint ? testEndpoint : endpoint;
   let endpointStatusType = testEndpointType ? testEndpointType : endpointType;
   let endpointURLObject;
+  let connection = connectionPresets.find((connectionPreset) => connectionPreset._id === currentConnectionPreset);
   try {
     let response;
     switch (endpointStatusType) {
@@ -2170,8 +2171,8 @@ async function getStatus(testEndpoint, testEndpointType) {
         endpointURLObject = new URL(endpointUrl);
         try {
           response = await axios.get(
-            `${endpointURLObject.protocol}//${endpointURLObject.hostname}${endpointURLObject.port ? `:${endpointURLObject.port}` : ""}/api/v1/model`
-            // { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537', 'Content-Type': 'application/json', 'x-api-key': connection?.password, 'Origin': 'https://fake-origin.com', 'Referer': 'https://fake-origin.com'}}
+            `${endpointURLObject.protocol}//${endpointURLObject.hostname}${endpointURLObject.port ? `:${endpointURLObject.port}` : ""}/api/v1/model`,
+            { headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537", "Content-Type": "application/json", "x-api-key": connection == null ? void 0 : connection.password, "Origin": "https://fake-origin.com", "Referer": "https://fake-origin.com" } }
           ).then((response2) => {
             return response2;
           }).catch((error) => {
@@ -2187,28 +2188,37 @@ async function getStatus(testEndpoint, testEndpointType) {
       case "Kobold":
         endpointURLObject = new URL(endpointUrl);
         try {
-          response = await axios.get(`${endpointURLObject.protocol}//${endpointURLObject.hostname}${endpointURLObject.port ? `:${endpointURLObject.port}` : ""}/api/v1/model`).then((response2) => {
+          response = await axios.get(`${endpointURLObject.protocol}//${endpointURLObject.hostname.includes("localhost") ? "127.0.0.1" : endpointURLObject.hostname}${endpointURLObject.port ? `:${endpointURLObject.port}` : ""}/api/v1/model`).then((response2) => {
             return response2;
           }).catch((error) => {
-            console.log(error);
+            throw error;
           });
-          if (response) {
-            return response.data.result;
-          }
-        } catch (error) {
-          return "Kobold endpoint is not responding.";
-        }
-        break;
-      case "Ooba":
-        endpointURLObject = new URL(endpointUrl);
-        try {
-          response = await axios.get(`${endpointURLObject.protocol}//${endpointURLObject.hostname}${endpointURLObject.port ? `:${endpointURLObject.port}` : ""}/api/v1/model`);
           if (response.status === 200) {
             return response.data.result;
           } else {
             return "Ooba endpoint is not responding.";
           }
         } catch (error) {
+          console.log("Kobold Connection Error:\n", error);
+          return "Kobold endpoint is not responding.";
+        }
+        break;
+      case "Ooba":
+        endpointURLObject = new URL(endpointUrl);
+        try {
+          response = await axios.get(`${endpointURLObject.protocol}//${endpointURLObject.hostname}${endpointURLObject.port ? `:${endpointURLObject.port}` : ""}/api/v1/model`).then((response2) => {
+            return response2;
+          }).catch((error) => {
+            console.log(error);
+            throw error;
+          });
+          if (response.status === 200) {
+            return response.data.result;
+          } else {
+            return "Ooba endpoint is not responding.";
+          }
+        } catch (error) {
+          console.log("Ooba Connection Error:\n", error);
           return "Ooba endpoint is not responding.";
         }
       case "OAI":
@@ -2383,7 +2393,12 @@ const generateText = async (prompt, configuredName = "You", stopList = null, con
           "repetition_penalty_range": settings.rep_pen_range ? settings.rep_pen_range : 0,
           "top_k": settings.top_k ? settings.top_k : 0,
           "ban_eos_token": false,
-          "stopping_strings": stops
+          "stopping_strings": stops,
+          "presence_penalty": settings.presence_penalty ? settings.presence_penalty : 0,
+          "frequency_penalty": settings.frequency_penalty ? settings.frequency_penalty : 0,
+          "mirostat_mode": settings.mirostat_mode > 0 ? 2 : 0,
+          "mirostat_tau": settings.mirostat_tau ? settings.mirostat_tau : 0,
+          "mirostat_eta": settings.mirostat_eta ? settings.mirostat_eta : 0
         };
         console.log(oobaPayload);
         cancelTokenSource = axios.CancelToken.source();
@@ -4320,7 +4335,14 @@ async function getAllLoras() {
   const res = await axios({
     method: "get",
     url: url2.toString()
+  }).then((res2) => {
+    return res2;
+  }).catch((err) => {
+    console.log("Failed to get loras");
   });
+  if (!res) {
+    return null;
+  }
   return res.data;
 }
 async function getEmbeddings() {
@@ -4329,7 +4351,14 @@ async function getEmbeddings() {
   const res = await axios({
     method: "get",
     url: url2.toString()
+  }).then((res2) => {
+    return res2;
+  }).catch((err) => {
+    console.log("Failed to get embeddings");
   });
+  if (!res) {
+    return null;
+  }
   return res.data;
 }
 async function getModels() {
@@ -4338,7 +4367,14 @@ async function getModels() {
   const res = await axios({
     method: "get",
     url: url2.toString()
+  }).then((res2) => {
+    return res2;
+  }).catch((err) => {
+    console.log("Failed to get SD models");
   });
+  if (!res) {
+    return null;
+  }
   return res.data;
 }
 async function getVaeModels() {
@@ -4347,7 +4383,14 @@ async function getVaeModels() {
   const res = await axios({
     method: "get",
     url: url2.toString()
+  }).then((res2) => {
+    return res2;
+  }).catch((err) => {
+    console.log("Failed to get SD VAE models");
   });
+  if (!res) {
+    return null;
+  }
   return res.data;
 }
 async function getUpscalers() {
@@ -4356,7 +4399,14 @@ async function getUpscalers() {
   const res = await axios({
     method: "get",
     url: url2.toString()
+  }).then((res2) => {
+    return res2;
+  }).catch((err) => {
+    console.log("Failed to get upscalers");
   });
+  if (!res) {
+    return null;
+  }
   return res.data;
 }
 function getTimestamp() {
@@ -6154,7 +6204,17 @@ const DoCharacterGreetingsCommand = {
     const constructs = pulledLog == null ? void 0 : pulledLog.constructs;
     if (!constructs || constructs.length < 1)
       return;
-    let constructDoc = await getConstruct(constructs[0]);
+    let currentConstructIndex = 0;
+    let constructDoc = null;
+    while (constructDoc === null && currentConstructIndex < constructs.length - 1) {
+      constructDoc = await getConstruct(constructs[currentConstructIndex]).then((doc) => {
+        return doc;
+      }).catch((e) => {
+        console.log(e);
+        return null;
+      });
+      currentConstructIndex++;
+    }
     let construct = assembleConstructFromData(constructDoc);
     let user = getUsername(interaction.user.id, interaction.channelId);
     if (construct === null)
@@ -6191,7 +6251,12 @@ const DoCharacterGreetingsCommand = {
     }
     if (!registered)
       return;
-    let chatLogData = await getChat(interaction.channelId);
+    let chatLogData = await getChat(interaction.channelId).then((doc) => {
+      return doc;
+    }).catch((e) => {
+      console.log(e);
+      return null;
+    });
     let chatLog;
     if (chatLogData) {
       chatLog = assembleChatFromData(chatLogData);

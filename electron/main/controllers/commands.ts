@@ -569,7 +569,12 @@ export const DoCharacterGreetingsCommand: SlashCommand = {
             }
         }
         if(!registered) return;
-        let chatLogData = await getChat(interaction.channelId);
+        let chatLogData = await getChat(interaction.channelId).then((doc) => {
+            return doc;
+        }).catch((e) => {
+            console.log(e);
+            return null;
+        });
         let chatLog;
         if (chatLogData) {
             chatLog = assembleChatFromData(chatLogData);

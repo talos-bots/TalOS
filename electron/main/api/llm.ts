@@ -308,28 +308,37 @@ export async function getStatus(testEndpoint?: string, testEndpointType?: string
         case 'Kobold':
             endpointURLObject = new URL(endpointUrl);
             try{
-                response = await axios.get(`${endpointURLObject.protocol}//${endpointURLObject.hostname}${endpointURLObject.port? `:${endpointURLObject.port}` : ''}/api/v1/model`).then((response) => {
+                response = await axios.get(`${endpointURLObject.protocol}//${endpointURLObject.hostname.includes('localhost') ? '127.0.0.1' : endpointURLObject.hostname}${endpointURLObject.port? `:${endpointURLObject.port}` : ''}/api/v1/model`).then((response) => {
                     return response;
                 }).catch((error) => {
-                    console.log(error);
+                    throw error;
                 });
-                if(response){
-                    return response.data.result;
-                }
-            } catch (error) {
-                return 'Kobold endpoint is not responding.'
-            }
-            break;
-        case 'Ooba':
-            endpointURLObject = new URL(endpointUrl);
-            try{
-                response = await axios.get(`${endpointURLObject.protocol}//${endpointURLObject.hostname}${endpointURLObject.port? `:${endpointURLObject.port}` : ''}/api/v1/model`);
                 if (response.status === 200) {
                     return response.data.result;
                 } else {
                     return 'Ooba endpoint is not responding.';
                 }
             } catch (error) {
+                console.log('Kobold Connection Error:\n',error);
+                return 'Kobold endpoint is not responding.'
+            }
+            break;
+        case 'Ooba':
+            endpointURLObject = new URL(endpointUrl);
+            try{
+                response = await axios.get(`${endpointURLObject.protocol}//${endpointURLObject.hostname}${endpointURLObject.port? `:${endpointURLObject.port}` : ''}/api/v1/model`).then((response) => {
+                    return response;
+                }).catch((error) => {
+                    console.log(error);
+                    throw error;
+                });
+                if (response.status === 200) {
+                    return response.data.result;
+                } else {
+                    return 'Ooba endpoint is not responding.';
+                }
+            } catch (error) {
+                console.log('Ooba Connection Error:\n',error);
                 return 'Ooba endpoint is not responding.';
             }
         case 'OAI':
