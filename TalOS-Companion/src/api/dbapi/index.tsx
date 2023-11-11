@@ -36,6 +36,7 @@ export async function getConstructs(): Promise<Construct[]> {
         });
     } catch (error: any) {
         throw new Error(`Failed to fetch constructs: ${error.message}`);
+        return [];
     }
 }
 
@@ -138,6 +139,7 @@ export async function getAttachments(): Promise<Attachment[]> {
         });
     } catch (error) {
         throw new Error("Failed to fetch attachments from the server.");
+        return [];
     }
 }
 
@@ -398,6 +400,7 @@ export async function getUsers(): Promise<User[]> {
         return users;
     } catch (error: any) {
         throw new Error(`Error fetching users: ${error.message}`);
+        return [];
     }
 }
 
@@ -466,6 +469,7 @@ export async function getLorebooks(): Promise<Lorebook[]> {
         });
     } catch (error: any) {
         throw new Error("Failed to fetch lorebooks: " + error.message);
+        return [];
     }
 }
 

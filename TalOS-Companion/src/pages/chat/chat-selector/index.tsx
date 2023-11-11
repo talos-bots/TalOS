@@ -41,6 +41,7 @@ const ChatSelector = (props: ChatSelectorProps) => {
             setIsLoaded(true);
         }).catch((err) => {
             console.error(err);
+            setIsLoaded(true);
         });
     }, []);
 
