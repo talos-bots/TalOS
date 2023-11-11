@@ -5,14 +5,15 @@
   "description": "Electron LLM React",
   "author": "Wayward Wyverns Softworks",
   "private": true,
+  "type": "module",
   "debug": {
     "env": {
       "VITE_DEV_SERVER_URL": "http://127.0.0.1:7777/"
     }
   },
   "scripts": {
-    "dev": "vite",
     "dev-external": "concurrently \"vite\" \"cd ./TalOS-Companion && npm run dev\"",
+    "dev": "concurrently \"tsc && node --loader ts-node/esm ./electron/main/server.ts\" \"cd ./TalOS-Companion && npm run dev\"",
     "build": "tsc && vite build && electron-builder",
     "build-win": "tsc && vite build && electron-builder --win",
     "build-mac": "tsc && vite build && electron-builder --mac",
