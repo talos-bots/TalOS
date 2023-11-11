@@ -496,7 +496,7 @@ export const DoCharacterGreetingsCommand: SlashCommand = {
     name: 'greeting',
     description: 'Adds the character greeting to the chat.',
     execute: async (interaction: CommandInteraction) => {
-        await interaction.deferReply();
+        await interaction.deferReply({ephemeral: true});
         if (interaction.channelId === null) {
             await interaction.editReply({
             content: "This command can only be used in a server.",
@@ -582,6 +582,7 @@ export const DoCharacterGreetingsCommand: SlashCommand = {
             chatLog.messages.push(greetingMessage);
             chatLog.lastMessage = greetingMessage;
             chatLog.lastMessageDate = greetingMessage.timestamp;
+            await updateChat(chatLog);
         }else{
             chatLog = {
                 _id: interaction.channelId,
@@ -606,6 +607,9 @@ export const DoCharacterGreetingsCommand: SlashCommand = {
         }else{
             await sendMessageAsCharacter(construct, interaction.channelId, randomGreeting.replaceAll('{{user}}', `${user}`).replaceAll('{{char}}', `${construct.name}`));
         }
+        interaction.editReply({
+            content: `Greeting sent.`,
+        });
     }
 }
 

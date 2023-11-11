@@ -6175,7 +6175,7 @@ const DoCharacterGreetingsCommand = {
   description: "Adds the character greeting to the chat.",
   execute: async (interaction) => {
     var _a;
-    await interaction.deferReply();
+    await interaction.deferReply({ ephemeral: true });
     if (interaction.channelId === null) {
       await interaction.editReply({
         content: "This command can only be used in a server."
@@ -6265,6 +6265,7 @@ const DoCharacterGreetingsCommand = {
       chatLog.messages.push(greetingMessage);
       chatLog.lastMessage = greetingMessage;
       chatLog.lastMessageDate = greetingMessage.timestamp;
+      await updateChat(chatLog);
     } else {
       chatLog = {
         _id: interaction.channelId,
@@ -6289,6 +6290,9 @@ const DoCharacterGreetingsCommand = {
     } else {
       await sendMessageAsCharacter(construct, interaction.channelId, randomGreeting.replaceAll("{{user}}", `${user}`).replaceAll("{{char}}", `${construct.name}`));
     }
+    interaction.editReply({
+      content: `Greeting sent.`
+    });
   }
 };
 const PingCommand = {
