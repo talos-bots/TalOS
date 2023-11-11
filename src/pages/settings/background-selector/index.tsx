@@ -1,6 +1,6 @@
-import { deleteBackground, getBackgrounds, saveBackground } from "@/api/baseapi";
-import { getStorageValue, setStorageValue } from "@/api/dbapi";
-import { setStyle } from "@/components/menu-theme-loader";
+import { deleteBackground, getBackgrounds, saveBackground } from "../../../api/baseapi";
+import { getStorageValue, setStorageValue } from "../../../api/dbapi";
+import { setStyle } from "../../../components/menu-theme-loader";
 import { Image, Trash } from "lucide-react";
 import React, { useState, useEffect, FC } from "react";
 

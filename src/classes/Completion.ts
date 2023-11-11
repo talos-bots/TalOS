@@ -1,4 +1,4 @@
-import { CompletionType } from "@/types";
+import { CompletionType } from "../types";
 
 export type AuthorType = 'AI' | 'User';
 

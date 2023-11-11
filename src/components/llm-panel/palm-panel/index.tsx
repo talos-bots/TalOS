@@ -1,4 +1,4 @@
-import { getPaLMFilters, getPalmModel, setPaLMFilters, setPalmModel } from "@/api/llmapi";
+import { getPaLMFilters, getPalmModel, setPaLMFilters, setPalmModel } from "../../../api/llmapi";
 import axios from "axios";
 import { Save, Trash } from "lucide-react";
 import { useEffect, useState } from "react";

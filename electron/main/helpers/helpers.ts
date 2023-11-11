@@ -9,7 +9,7 @@ import { encode } from 'gpt-tokenizer'
 import { getCaption } from "../model-pipeline/transformers";
 import { cleanEmotes } from "../api/discord";
 import { fillChatContextToLimit } from "./chat-helpers";
-import { imagesPath, uploadsPath } from "..";
+import { imagesPath, uploadsPath } from "../server";
 import fetch from 'node-fetch';
 import fs from 'fs';
 import path from 'path';

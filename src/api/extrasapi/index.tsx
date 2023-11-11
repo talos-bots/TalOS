@@ -1,4 +1,4 @@
-import { Construct } from "@/classes/Construct";
+import { Construct } from "../../classes/Construct";
 import { saveNewConstruct } from "../dbapi";
 import exifr from 'exifr'
 // @ts-ignore
@@ -8,7 +8,7 @@ import PNGtext from 'png-chunk-text';
 // @ts-ignore
 import { ipcRenderer } from "electron";
 import { uploadImage } from "../baseapi";
-import { url } from "@/App";
+import { url } from "../../App";
 // @ts-ignore
 import { encode } from 'png-chunk-text';
 // @ts-ignore

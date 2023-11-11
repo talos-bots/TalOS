@@ -1,5 +1,5 @@
-import { Construct } from "@/classes/Construct";
-import TokenTextarea from "@/components/token-textarea";
+import { Construct } from "../../../classes/Construct";
+import TokenTextarea from "../../../components/token-textarea";
 import { useEffect, useState } from "react";
 import { getReturnValue } from "./helpers";
 

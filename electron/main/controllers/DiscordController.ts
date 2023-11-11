@@ -7,7 +7,7 @@ import { cancel, deleteMessage, disClient, editMessage, getStopList, isAutoReply
 import { Alias, AttachmentInferface, ChannelConfigInterface, ChatInterface, ConstructInterface, MessageInterface } from '../types/types';
 import { addVectorFromMessage } from '../api/vector';
 import { getDefaultCfg, getDefaultHeight, getDefaultHighresSteps, getDefaultNegativePrompt, getDefaultPrompt, getDefaultSteps, getDefaultWidth, makeImage } from '../api/sd';
-import { expressApp, expressAppIO, win } from '..';
+import { expressApp, expressAppIO } from '../server';
 import { detectIntent } from '../helpers/actions-helpers';
 import { createSelfieForConstruct } from '../helpers/discord-helpers';
 import { cancelGeneration } from '../api/llm';

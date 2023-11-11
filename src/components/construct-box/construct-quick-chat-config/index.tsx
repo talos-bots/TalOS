@@ -1,4 +1,4 @@
-import { Construct } from "@/classes/Construct";
+import { Construct } from "../../../classes/Construct";
 import { Save } from "lucide-react";
 import { useEffect, useState } from "react";
 

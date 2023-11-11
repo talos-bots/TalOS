@@ -1,10 +1,10 @@
-import { getImageURL } from "@/api/baseapi";
-import { getConstructs, getStorageValue, setStorageValue } from "@/api/dbapi";
-import { Chat } from "@/classes/Chat";
-import { Construct, ConstructChatConfig } from "@/classes/Construct";
-import ConstructQuickCrud from "@/components/construct-quick-crud";
-import ConnectionBox from "@/components/llm-panel/connection-box";
-import GenerationSettings from "@/components/llm-panel/generation-settings";
+import { getImageURL } from "../../../api/baseapi";
+import { getConstructs, getStorageValue, setStorageValue } from "../../../api/dbapi";
+import { Chat } from "../../../classes/Chat";
+import { Construct, ConstructChatConfig } from "../../../classes/Construct";
+import ConstructQuickCrud from "../../../components/construct-quick-crud";
+import ConnectionBox from "../../../components/llm-panel/connection-box";
+import GenerationSettings from "../../../components/llm-panel/generation-settings";
 import { ArrowBigLeft, ArrowBigRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { RiQuestionMark } from "react-icons/ri";
@@ -15,6 +15,7 @@ interface ChatConfigPaneProps {
     chatPanelClose: boolean;
     onEdit?: (chat: Chat) => void;
 }
+
 const ChatConfigPane = (props: ChatConfigPaneProps) => {
     const { chat, onEdit, chatPanelClose } = props;
     const [global, setGlobal] = useState<boolean>(chat.global);

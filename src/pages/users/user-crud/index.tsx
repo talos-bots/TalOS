@@ -1,8 +1,8 @@
-import { getImageURL, uploadImage } from "@/api/baseapi";
-import { saveNewUser, updateUser } from "@/api/dbapi";
-import { User } from "@/classes/User";
-import Loading from "@/components/loading";
-import StringArrayEditorCards from "@/components/string-array-editor-cards";
+import { getImageURL, uploadImage } from "../../../api/baseapi";
+import { saveNewUser, updateUser } from "../../../api/dbapi";
+import { User } from "../../../classes/User";
+import Loading from "../../../components/loading";
+import StringArrayEditorCards from "../../../components/string-array-editor-cards";
 import { Save, Trash } from "lucide-react";
 import { useEffect, useState } from "react";
 import { RiQuestionMark } from "react-icons/ri";

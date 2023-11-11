@@ -1,5 +1,5 @@
-import { url } from '@/App';
-import { sendDesktopNotification } from '@/components/desktop-notification';
+import { url } from '../../App';
+import { sendDesktopNotification } from '../../components/desktop-notification';
 import axios from 'axios';
 import { Snowflake, Webhook } from 'discord.js';
 type ValidStatus = 'online' | 'dnd' | 'idle' | 'invisible';

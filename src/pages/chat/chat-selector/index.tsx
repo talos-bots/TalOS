@@ -1,18 +1,18 @@
-import { deleteChat, getChat, getChats, getConstructs, saveNewChat } from "@/api/dbapi";
-import { Chat } from "@/classes/Chat";
-import { Construct } from "@/classes/Construct";
-import ConstructProfile from "@/components/construct-profile";
+import { deleteChat, getChat, getChats, getConstructs, saveNewChat } from "../../../api/dbapi";
+import { Chat } from "../../../classes/Chat";
+import { Construct } from "../../../classes/Construct";
+import ConstructProfile from "../../../components/construct-profile";
 import { useEffect, useState } from "react";
 import ChatDetails from "./chat-details";
-import Loading from "@/components/loading";
+import Loading from "../../../components/loading";
 import { Link } from "react-router-dom";
 import { PlusIcon, RefreshCcw } from "lucide-react";
 import { AiOutlineUpload } from "react-icons/ai";
-import { getActiveConstructList } from "@/api/constructapi";
-import { removeAllMemories } from "@/api/vectorapi";
+import { getActiveConstructList } from "../../../api/constructapi";
+import { removeAllMemories } from "../../../api/vectorapi";
 import ChatSettings from "./chat-settings";
 import ChatConfigMain from "./chat-config-main";
-import { importTavernCharacter } from "@/api/extrasapi";
+import { importTavernCharacter } from "../../../api/extrasapi";
 interface ChatSelectorProps {
     onClick?: (chatID: Chat) => void;
 }

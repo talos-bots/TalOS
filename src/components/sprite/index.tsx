@@ -1,7 +1,7 @@
-import { getImageURL } from "@/api/baseapi";
-import { getConstruct } from "@/api/dbapi";
-import { Construct, Sprite } from "@/classes/Construct";
-import { Emotion } from "@/types";
+import { getImageURL } from "../../api/baseapi";
+import { getConstruct } from "../../api/dbapi";
+import { Construct, Sprite } from "../../classes/Construct";
+import { Emotion } from "../../types";
 import { useEffect, useState } from "react";
 
 interface SpriteProps {

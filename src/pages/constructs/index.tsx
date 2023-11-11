@@ -2,14 +2,14 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { FiPlus, FiX } from "react-icons/fi";
-import { Construct } from "@/classes/Construct";
-import { getConstructs, saveNewConstruct, updateConstruct } from "@/api/dbapi";
-import ConstructBox from "@/components/construct-box";
-import { importTavernCharacter } from "@/api/extrasapi";
+import { Construct } from "../../classes/Construct";
+import { getConstructs, saveNewConstruct, updateConstruct } from "../../api/dbapi";
+import ConstructBox from "../../components/construct-box";
+import { importTavernCharacter } from "../../api/extrasapi";
 import { AiOutlineUpload } from "react-icons/ai";
-import { getActiveConstructList, removeAllActiveConstructs } from "@/api/constructapi";
-import Loading from "@/components/loading";
-import ConstructProfile from "@/components/construct-profile";
+import { getActiveConstructList, removeAllActiveConstructs } from "../../api/constructapi";
+import Loading from "../../components/loading";
+import ConstructProfile from "../../components/construct-profile";
 import ConstructEditProfile from "./construct-edit-profile";
 import { PlusIcon } from "lucide-react";
 

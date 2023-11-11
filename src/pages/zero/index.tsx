@@ -1,5 +1,5 @@
-import { doInstructions, generateText, getGPTTokens, getInstructPrompt, getLlamaTokens, getTextEmotion } from "@/api/llmapi";
-import TokenTextarea from "@/components/token-textarea";
+import { doInstructions, generateText, getGPTTokens, getInstructPrompt, getLlamaTokens, getTextEmotion } from "../../api/llmapi";
+import TokenTextarea from "../../components/token-textarea";
 import { SendHorizonal } from "lucide-react";
 import React, { useState } from "react";
 type models = "GPT" | "LLaMA";

@@ -1,6 +1,6 @@
-import { EntryPostion, LoreEntry } from "@/classes/Lorebook";
-import Accordian from "@/components/accordion";
-import { confirmModal } from "@/components/confirm-modal";
+import { EntryPostion, LoreEntry } from "../../../../classes/Lorebook";
+import Accordian from "../../../../components/accordion";
+import { confirmModal } from "../../../../components/confirm-modal";
 import { Save, Trash } from "lucide-react";
 import { useEffect, useState } from "react";
 import ReactSwitch from "react-switch";

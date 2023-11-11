@@ -6,7 +6,7 @@ import { getConstruct, getLorebooks, getUser, updateChat } from '../api/pouchdb'
 import { ChatInterface, ConstructInterface, LoreEntryInterface, MessageInterface, UserInterface } from '../types/types';
 import { getRelaventMemories } from '../api/vector';
 import { detectIntent } from '../helpers/actions-helpers';
-import { expressApp } from '..';
+import { expressApp } from '../server';
 import { getYesNoMaybe } from '../model-pipeline/transformers';
 import { getDoSystemInfo, setDoSystemInfo } from './ActiveConstructController';
 import { fillChatContextToLimit } from '../helpers/chat-helpers';

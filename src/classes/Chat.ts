@@ -1,4 +1,4 @@
-import { Emotion } from "@/types";
+import { Emotion } from "../types";
 import { ConstructChatConfig } from "./Construct";
 import { Message } from "./Message";
 

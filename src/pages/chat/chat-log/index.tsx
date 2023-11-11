@@ -1,23 +1,23 @@
 import { useState, useEffect, useRef } from "react";
-import InputGroup from "@/pages/chat/chat-input";
-import { Chat } from "@/classes/Chat";
-import { Message } from "@/classes/Message";
-import { getChat, getConstruct, getStorageValue, getUser, saveNewAttachment, saveNewChat, updateChat } from "@/api/dbapi";
-import MessageComponent from "@/pages/chat/chat-log/message";
+import InputGroup from "../../../pages/chat/chat-input";
+import { Chat } from "../../../classes/Chat";
+import { Message } from "../../../classes/Message";
+import { getChat, getConstruct, getStorageValue, getUser, saveNewAttachment, saveNewChat, updateChat } from "../../../api/dbapi";
+import MessageComponent from "../../../pages/chat/chat-log/message";
 import { addUserMessage, createSelfieMessage, createSystemMessage, doSlashCommand, findFirstMention, getLoadingMessage, isConstructMentioned, regenerateMessage, regenerateUserMessage, sendMessage, sendThoughts, wait } from "../helpers";
 import { Alert } from "@material-tailwind/react";
-import ChatInfo from "@/pages/chat/chat-info";
-import Loading from "@/components/loading";
-import { User } from "@/classes/User";
-import { addVectorFromMessage } from "@/api/vectorapi";
-import { detectChatIntent, getDoCaptioning, getDoEmotions, getImageCaption, getTextEmotion } from "@/api/llmapi";
-import { Attachment } from "@/classes/Attachment";
+import ChatInfo from "../../../pages/chat/chat-info";
+import Loading from "../../../components/loading";
+import { User } from "../../../classes/User";
+import { addVectorFromMessage } from "../../../api/vectorapi";
+import { detectChatIntent, getDoCaptioning, getDoEmotions, getImageCaption, getTextEmotion } from "../../../api/llmapi";
+import { Attachment } from "../../../classes/Attachment";
 import ChatConfigPane from "../chat-config-pane";
 import { Link } from "react-router-dom";
-import SpriteDisplay from "@/components/sprite";
-import { Construct, ConstructChatConfig, DefaultChatConfig } from "@/classes/Construct";
-import { socket } from "@/App";
-import { takeSelfie } from "@/api/constructapi";
+import SpriteDisplay from "../../../components/sprite";
+import { Construct, ConstructChatConfig, DefaultChatConfig } from "../../../classes/Construct";
+import { socket } from "../../../App";
+import { takeSelfie } from "../../../api/constructapi";
 import ThinkingMessage from "./thinking";
 
 interface ChatLogProps {

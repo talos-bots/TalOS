@@ -1,5 +1,5 @@
-import { getSystemInfo, setSystemInfo } from "@/api/constructapi";
-import { getStorageValue, setStorageValue } from "@/api/dbapi";
+import { getSystemInfo, setSystemInfo } from "../../../../api/constructapi";
+import { getStorageValue, setStorageValue } from "../../../../api/dbapi";
 import { useEffect, useState } from "react";
 import ReactSwitch from "react-switch";
 

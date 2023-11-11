@@ -25,19 +25,19 @@ Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
 const electron = require("electron");
 const node_os = require("node:os");
 const path$1 = require("node:path");
-const path = require("path");
-const discord_js = require("discord.js");
+const fs$1 = require("fs");
 const Store = require("electron-store");
+const FormData = require("form-data");
+const axios = require("axios");
 const PouchDB = require("pouchdb");
 const LeveldbAdapter = require("pouchdb-adapter-leveldb");
-const axios = require("axios");
-const OpenAI = require("openai");
-const promises = require("fs/promises");
-const fs$1 = require("node:fs");
-const FormData = require("form-data");
-const vectra = require("vectra");
 const gptTokenizer = require("gpt-tokenizer");
-const fs = require("fs");
+const path = require("path");
+const promises = require("fs/promises");
+const discord_js = require("discord.js");
+const OpenAI = require("openai");
+const vectra = require("vectra");
+const fs = require("node:fs");
 const express = require("express");
 const multer = require("multer");
 const cors = require("cors");
@@ -1352,394 +1352,6 @@ async function getYesNoMaybe(text) {
   const model = await zeroShotPromise;
   const results = await model(text, labels);
   return results;
-}
-function assembleConstructFromData(data) {
-  if (data === null)
-    return null;
-  if ((data == null ? void 0 : data.doc) !== void 0)
-    data = data.doc;
-  if ((data == null ? void 0 : data._id) === void 0)
-    return null;
-  const construct = {
-    _id: data._id,
-    name: data.name,
-    nickname: data.nickname,
-    avatar: data.avatar,
-    commands: data.commands,
-    visualDescription: data.visualDescription,
-    personality: data.personality,
-    background: data.background,
-    relationships: data.relationships,
-    interests: data.interests,
-    greetings: data.greetings,
-    farewells: data.farewells,
-    authorsNote: data.authorsNote,
-    defaultConfig: data.defaultConfig,
-    thoughtPattern: data.thoughtPattern,
-    sprites: data.sprites
-  };
-  return construct;
-}
-function assembleChatFromData(data) {
-  if (data === null)
-    return null;
-  if ((data == null ? void 0 : data._id) === void 0)
-    return null;
-  const chat = {
-    _id: data._id,
-    name: data.name,
-    type: data.type,
-    messages: data.messages,
-    lastMessage: data.lastMessage,
-    lastMessageDate: data.lastMessageDate,
-    firstMessageDate: data.firstMessageDate,
-    constructs: data.constructs,
-    humans: data.humans,
-    chatConfigs: data.chatConfigs,
-    doVector: data.doVector,
-    global: data.global
-  };
-  return chat;
-}
-function assembleUserFromData(data) {
-  if (data === null)
-    return null;
-  if ((data == null ? void 0 : data._id) === void 0)
-    return null;
-  const user = {
-    _id: data._id,
-    name: data.name,
-    pronouns: data.pronouns,
-    nickname: data.nickname,
-    avatar: data.avatar,
-    personality: data.personality,
-    background: data.background,
-    relationships: data.relationships,
-    interests: data.interests
-  };
-  return user;
-}
-function assemblePromptFromLog(data) {
-  var _a, _b, _c;
-  let prompt = "";
-  let messages = data.messages;
-  for (let i = 0; i < messages.length; i++) {
-    if (messages[i].isCommand === true) {
-      prompt += `${messages[i].text.trim()}
-`;
-      continue;
-    } else {
-      if (messages[i].isThought === true) {
-        prompt += `${messages[i].user}'s Thoughts: ${messages[i].text.trim()}
-`;
-      } else {
-        let captionText = "";
-        if (messages[i].attachments.length > 0) {
-          for (let j = 0; j < messages[i].attachments.length; j++) {
-            let attachmentCaption = (_b = (_a = messages[i].attachments[j]) == null ? void 0 : _a.metadata) == null ? void 0 : _b.caption;
-            if (attachmentCaption) {
-              captionText += `[${messages[i].user} sent an image of ${attachmentCaption}] `;
-            } else {
-              captionText += `[${messages[i].user} sent a file called ${(_c = messages[i].attachments[j]) == null ? void 0 : _c.name}] `;
-            }
-          }
-        }
-        prompt += `${messages[i].user}: ${messages[i].text.trim()}${captionText.trim()}
-`;
-      }
-    }
-  }
-  return prompt;
-}
-function assembleAlpacaPromptFromLog(data, messagesToInclude = 25, constructName = "Bot") {
-  var _a, _b, _c;
-  let prompt = "";
-  let messages = data.messages.slice(-messagesToInclude);
-  for (let i = 0; i < messages.length; i++) {
-    let messageText = messages[i].text.trim();
-    if (messages[i].isCommand === true) {
-      prompt += `### Instruction:
-${messageText}
-`;
-      continue;
-    } else if (messages[i].isThought === true) {
-      prompt += `### Response:
-${messages[i].user}'s Thoughts: ${messageText}
-`;
-    } else {
-      let captionText = "";
-      if (messages[i].attachments.length > 0) {
-        for (let j = 0; j < messages[i].attachments.length; j++) {
-          let attachmentCaption = (_b = (_a = messages[i].attachments[j]) == null ? void 0 : _a.metadata) == null ? void 0 : _b.caption;
-          if (attachmentCaption) {
-            captionText += `[${messages[i].user} sent an image of ${attachmentCaption}] `;
-          } else {
-            captionText += `[${messages[i].user} sent a file called ${(_c = messages[i].attachments[j]) == null ? void 0 : _c.name}] `;
-          }
-        }
-      }
-      if (messages[i].isHuman) {
-        prompt += `### Instruction:
-${messages[i].user}: ${messageText}${captionText.trim()}
-`;
-      } else {
-        prompt += `### Response:
-${messages[i].user}: ${messageText}${captionText.trim()}
-`;
-      }
-    }
-  }
-  if (messages.length > 0 && messages[messages.length - 1].user !== "Bot") {
-    prompt += `### Response:
-${constructName}:`;
-  }
-  return prompt;
-}
-function assembleVicunaPromptFromLog(data, messagesToInclude = 25, constructName = "Bot") {
-  var _a, _b, _c;
-  let prompt = "";
-  let messages = data.messages.slice(-messagesToInclude);
-  for (let i = 0; i < messages.length; i++) {
-    let messageText = messages[i].text.trim();
-    if (messages[i].isCommand === true) {
-      prompt += `SYSTEM: ${messageText}
-`;
-      continue;
-    } else if (messages[i].isThought === true) {
-      prompt += `ASSISTANT: ${messages[i].user}'s Thoughts: ${messageText}
-`;
-    } else {
-      let captionText = "";
-      if (messages[i].attachments && messages[i].attachments.length > 0) {
-        for (let j = 0; j < messages[i].attachments.length; j++) {
-          let attachmentCaption = (_b = (_a = messages[i].attachments[j]) == null ? void 0 : _a.metadata) == null ? void 0 : _b.caption;
-          if (attachmentCaption) {
-            captionText += `[${messages[i].user} sent an image of ${attachmentCaption}] `;
-          } else {
-            captionText += `[${messages[i].user} sent a file called ${(_c = messages[i].attachments[j]) == null ? void 0 : _c.name}] `;
-          }
-        }
-      }
-      if (messages[i].isHuman) {
-        prompt += `USER: ${messages[i].user}: ${messageText}${captionText.trim()}
-`;
-      } else {
-        prompt += `ASSISTANT: ${messages[i].user}: ${messageText}${captionText.trim()}
-`;
-      }
-    }
-  }
-  if (messages.length > 0 && messages[messages.length - 1].isHuman) {
-    prompt += `ASSISTANT: ${constructName}:`;
-  }
-  return prompt;
-}
-function assembleMetharmePromptFromLog(data, messagesToInclude = 25, constructName = "Bot") {
-  var _a, _b, _c;
-  let prompt = "";
-  let messages = data.messages.slice(-messagesToInclude);
-  for (let i = 0; i < messages.length; i++) {
-    let messageText = messages[i].text.trim();
-    if (messages[i].isCommand === true) {
-      prompt += `<|user|>${messageText}`;
-      continue;
-    } else if (messages[i].isThought === true) {
-      prompt += `<|model|>${messages[i].user}'s Thoughts: ${messageText}`;
-    } else {
-      let captionText = "";
-      if (messages[i].attachments && messages[i].attachments.length > 0) {
-        for (let j = 0; j < messages[i].attachments.length; j++) {
-          let attachmentCaption = (_b = (_a = messages[i].attachments[j]) == null ? void 0 : _a.metadata) == null ? void 0 : _b.caption;
-          if (attachmentCaption) {
-            captionText += `[${messages[i].user} sent an image of ${attachmentCaption}] `;
-          } else {
-            captionText += `[${messages[i].user} sent a file called ${(_c = messages[i].attachments[j]) == null ? void 0 : _c.name}] `;
-          }
-        }
-      }
-      if (messages[i].isHuman) {
-        prompt += `<|user|>${messages[i].user}: ${messageText}${captionText.trim()}`;
-      } else {
-        prompt += `<|model|>${messages[i].user}: ${messageText}${captionText.trim()}`;
-      }
-    }
-  }
-  if (messages.length > 0 && messages[messages.length - 1].isHuman) {
-    prompt += `<|model|>${constructName}:`;
-  }
-  return prompt;
-}
-async function convertDiscordMessageToMessage(message, activeConstructs) {
-  var _a;
-  let attachments = [];
-  let username = await getUsername(message.author.id, message.channelId);
-  if (username === null) {
-    username = message.author.displayName;
-  }
-  if (message.attachments.size > 0) {
-    for (const attachment of message.attachments.values()) {
-      try {
-        let response = await axios.get(attachment.url, { responseType: "arraybuffer" });
-        let base64Data = Buffer.from(response.data, "binary").toString("base64");
-        let newAttachment = {
-          _id: attachment.id,
-          type: attachment.contentType ? attachment.contentType : "unknown",
-          name: attachment.name,
-          data: base64Data.split(";base64,").pop() || "",
-          metadata: attachment.size,
-          fileext: attachment.name.split(".").pop() || "unknown"
-        };
-        if ((_a = attachment.contentType) == null ? void 0 : _a.includes("image")) {
-          let caption = await getCaption(newAttachment.data);
-          newAttachment.metadata = {
-            caption,
-            size: attachment.size
-          };
-        }
-        addAttachment(newAttachment);
-        attachments.push(newAttachment);
-      } catch (error) {
-        console.error("Error fetching attachment:", error);
-      }
-    }
-  }
-  const convertedMessage = {
-    _id: message.id,
-    user: username,
-    avatar: message.author.avatarURL() ? message.author.avatarURL() : "",
-    text: cleanEmotes(message.content.trim()),
-    userID: message.author.id,
-    timestamp: message.createdTimestamp,
-    origin: "Discord - " + message.channelId,
-    isHuman: true,
-    isCommand: false,
-    isPrivate: false,
-    participants: [message.author.id, ...activeConstructs],
-    attachments,
-    isThought: false
-  };
-  return convertedMessage;
-}
-async function base642Buffer(base64) {
-  let buffer;
-  if (base64.includes("/images")) {
-    base64 = await getImageFromURL(base64);
-  }
-  const match = base64.match(/^data:image\/[^;]+;base64,(.+)/);
-  if (match) {
-    const actualBase64 = match[1];
-    buffer = Buffer.from(actualBase64, "base64");
-  } else {
-    try {
-      buffer = Buffer.from(base64, "base64");
-    } catch (error) {
-      console.error("Invalid base64 string:", error);
-      return base64;
-    }
-  }
-  const form = new FormData();
-  form.append("file", buffer, {
-    filename: "file.png",
-    // You can name the file whatever you like
-    contentType: "image/png"
-    // Be sure this matches the actual file type
-  });
-  try {
-    const response = await axios.post("https://file.io", form, {
-      headers: {
-        ...form.getHeaders()
-      }
-    });
-    if (response.status !== 200) {
-      console.error("Failed to upload file:", response.statusText);
-      return buffer;
-    }
-    return response.data.link;
-  } catch (error) {
-    console.error("Failed to upload file:", error);
-    return buffer;
-  }
-}
-function assembleUserFromDiscordAuthor(message) {
-  var _a;
-  let avatar = message.author.avatarURL() ? (_a = message.author.avatarURL()) == null ? void 0 : _a.toString() : "";
-  if (avatar === null)
-    avatar = "";
-  if (avatar === void 0)
-    avatar = "";
-  const user = {
-    _id: message.author.id,
-    name: message.author.username,
-    pronouns: "",
-    nickname: message.author.displayName,
-    avatar,
-    personality: "",
-    background: "",
-    relationships: [],
-    interests: []
-  };
-  return user;
-}
-async function addUserFromDiscordMessage(message) {
-  const user = assembleUserFromDiscordAuthor(message);
-  console.log("New User:", user);
-  if (user._id === void 0)
-    return;
-  let existingUserData = await getUser(user._id);
-  console.log("Existing Data:", existingUserData);
-  existingUserData = assembleUserFromData(existingUserData);
-  console.log("Existing Data Assembled:", existingUserData);
-  if (existingUserData !== null) {
-    return;
-  }
-  await addUser(user);
-}
-function assembleLorebookFromData(data) {
-  if (data === null) {
-    return null;
-  }
-  if ((data == null ? void 0 : data._id) === void 0) {
-    return null;
-  }
-  const lorebook = {
-    _id: data._id,
-    name: data.name || "",
-    avatar: data.avatar || "",
-    description: data.description || "",
-    scan_depth: data.scan_depth || 0,
-    token_budget: data.token_budget || 0,
-    recursive_scanning: data.recursive_scanning || false,
-    global: data.global || false,
-    constructs: data.constructs || [],
-    extensions: data.extensions || {},
-    entries: data.entries || []
-  };
-  return lorebook;
-}
-function getGPTTokens(text) {
-  const tokens = gptTokenizer.encode(text).length;
-  return tokens;
-}
-async function getImageFromURL(url2) {
-  const filePath = path.join(uploadsPath, url2.split("/images/")[1]);
-  if (!fs.existsSync(filePath)) {
-    throw new Error(`File not found: ${filePath}`);
-  }
-  const buffer = await fs.promises.readFile(filePath);
-  return buffer.toString("base64");
-}
-async function getIntactChatLog(interaction) {
-  let logData = await getChat(interaction.channelId);
-  if (logData === null) {
-    await interaction.reply("No chat log found.");
-    return null;
-  }
-  let chatLog = assembleChatFromData(logData);
-  if (chatLog === null) {
-    await interaction.reply("No chat log found.");
-    return null;
-  }
-  return chatLog;
 }
 const instructPromptWithGuidance = `
 {{guidance}}
@@ -3067,1029 +2679,74 @@ function VectorDBRoutes() {
     }
   });
 }
-const constructSettings = new Store(
-  {
-    name: "constructSettings",
-    defaults: {
-      doSystemInfo: true,
-      doRandomMessages: true,
-      doRandomThoughts: true,
-      doRandomActions: true,
-      showDiscordUserInfo: false,
-      thoughtInterval: 10,
-      actionInterval: 10,
-      messageInterval: 10
-    }
-  }
-);
-function getDoRandomMessages() {
-  return constructSettings.get("doRandomMessages") || true;
-}
-function setDoRandomMessages(doRandomMessages) {
-  constructSettings.set("doRandomMessages", doRandomMessages);
-}
-function getDoRandomThoughts() {
-  return constructSettings.get("doRandomThoughts") || true;
-}
-function setDoRandomThoughts(doRandomThoughts) {
-  constructSettings.set("doRandomThoughts", doRandomThoughts);
-}
-function getDoRandomActions() {
-  return constructSettings.get("doRandomActions") || true;
-}
-function setDoRandomActions(doRandomActions) {
-  constructSettings.set("doRandomActions", doRandomActions);
-}
-function getThoughtInterval() {
-  return constructSettings.get("thoughtInterval") || 10;
-}
-function setThoughtInterval(thoughtInterval) {
-  constructSettings.set("thoughtInterval", thoughtInterval);
-}
-function getActionInterval() {
-  return constructSettings.get("actionInterval") || 10;
-}
-function setActionInterval(actionInterval) {
-  constructSettings.set("actionInterval", actionInterval);
-}
-function getMessageInterval() {
-  return constructSettings.get("messageInterval") || 10;
-}
-function setMessageInterval(messageInterval) {
-  constructSettings.set("messageInterval", messageInterval);
-}
-function getDoSystemInfo() {
-  return constructSettings.get("doSystemInfo") || true;
-}
-function setDoSystemInfo(doSystemSettings) {
-  constructSettings.set("doSystemInfo", doSystemSettings);
-}
-function getShowDiscordUserInfo() {
-  return constructSettings.get("showDiscordUserInfo") || false;
-}
-function setShowDiscordUserInfo(showDiscordUserInfo) {
-  constructSettings.set("showDiscordUserInfo", showDiscordUserInfo);
-}
-async function ActiveConstructController() {
-  expressApp.post("/api/constructs/set/systeminfo", (req, res) => {
-    setDoSystemInfo(req.body.value);
-    const currentDoSystemInfo = getDoSystemInfo();
-    res.json({ doSystemInfo: currentDoSystemInfo });
-  });
-  expressApp.get("/api/constructs/systeminfo", (req, res) => {
-    const currentDoSystemInfo = getDoSystemInfo();
-    res.json({ doSystemInfo: currentDoSystemInfo });
-  });
-  expressApp.post("/api/constructs/set/randommessages", (req, res) => {
-    setDoRandomMessages(req.body.value);
-    const currentDoRandomMessages = getDoRandomMessages();
-    res.json({ doRandomMessages: currentDoRandomMessages });
-  });
-  expressApp.get("/api/constructs/randommessages", (req, res) => {
-    const currentDoRandomMessages = getDoRandomMessages();
-    res.json({ doRandomMessages: currentDoRandomMessages });
-  });
-  expressApp.post("/api/constructs/set/randomthoughts", (req, res) => {
-    setDoRandomThoughts(req.body.value);
-    const currentDoRandomThoughts = getDoRandomThoughts();
-    res.json({ doRandomThoughts: currentDoRandomThoughts });
-  });
-  expressApp.get("/api/constructs/randomthoughts", (req, res) => {
-    const currentDoRandomThoughts = getDoRandomThoughts();
-    res.json({ doRandomThoughts: currentDoRandomThoughts });
-  });
-  expressApp.post("/api/constructs/set/randomactions", (req, res) => {
-    setDoRandomActions(req.body.value);
-    const currentDoRandomActions = getDoRandomActions();
-    res.json({ doRandomActions: currentDoRandomActions });
-  });
-  expressApp.get("/api/constructs/randomactions", (req, res) => {
-    const currentDoRandomActions = getDoRandomActions();
-    res.json({ doRandomActions: currentDoRandomActions });
-  });
-  expressApp.post("/api/constructs/set/thoughtinterval", (req, res) => {
-    setThoughtInterval(req.body.value);
-    const currentThoughtInterval = getThoughtInterval();
-    res.json({ thoughtInterval: currentThoughtInterval });
-  });
-  expressApp.get("/api/constructs/thoughtinterval", (req, res) => {
-    const currentThoughtInterval = getThoughtInterval();
-    res.json({ thoughtInterval: currentThoughtInterval });
-  });
-  expressApp.post("/api/constructs/set/actioninterval", (req, res) => {
-    setActionInterval(req.body.value);
-    const currentActionInterval = getActionInterval();
-    res.json({ actionInterval: currentActionInterval });
-  });
-  expressApp.get("/api/constructs/actioninterval", (req, res) => {
-    const currentActionInterval = getActionInterval();
-    res.json({ actionInterval: currentActionInterval });
-  });
-  expressApp.post("/api/constructs/set/messageinterval", (req, res) => {
-    setMessageInterval(req.body.value);
-    const currentMessageInterval = getMessageInterval();
-    res.json({ messageInterval: currentMessageInterval });
-  });
-  expressApp.get("/api/constructs/messageinterval", (req, res) => {
-    const currentMessageInterval = getMessageInterval();
-    res.json({ messageInterval: currentMessageInterval });
-  });
-  expressApp.post("/api/constructs/set/showdiscorduserinfo", (req, res) => {
-    setShowDiscordUserInfo(req.body.value);
-    const currentShowDiscordUserInfo = getShowDiscordUserInfo();
-    res.json({ showDiscordUserInfo: currentShowDiscordUserInfo });
-  });
-  expressApp.get("/api/constructs/showdiscorduserinfo", (req, res) => {
-    const currentShowDiscordUserInfo = getShowDiscordUserInfo();
-    res.json({ showDiscordUserInfo: currentShowDiscordUserInfo });
-  });
-}
-function fillChatContextToLimit(chatLog, tokenLimit, tokenizer = "LLaMA") {
-  console.log(`Filling chat context to ${tokenLimit} tokens.`);
-  const messagesToInclude = [];
-  let tokenCount = 0;
-  for (let i = chatLog.messages.length - 1; i >= 0; i--) {
-    const message = chatLog.messages[i];
-    let tokens;
-    if (tokenizer === "OpenAI") {
-      tokens = getGPTTokens(message.text);
-    } else {
-      tokens = getGPTTokens(message.text);
-    }
-    if (tokens + tokenCount <= tokenLimit) {
-      messagesToInclude.unshift(message);
-      tokenCount += tokens;
-    } else {
-      break;
-    }
-  }
-  console.log(`Including ${messagesToInclude.length} messages with ${tokenCount} tokens.`);
-  return messagesToInclude;
-}
 const store$4 = new Store({
-  name: "constructData"
-});
-let ActiveConstructs = [];
-const retrieveConstructs = () => {
-  return store$4.get("ids", []);
-};
-const setDoMultiLine = (doMultiLine) => {
-  store$4.set("doMultiLine", doMultiLine);
-};
-const getDoMultiLine = () => {
-  return store$4.get("doMultiLine", false);
-};
-const addConstruct = (newId) => {
-  const existingIds = retrieveConstructs();
-  if (!existingIds.includes(newId)) {
-    existingIds.push(newId);
-    store$4.set("ids", existingIds);
-  }
-};
-const removeConstruct = (idToRemove) => {
-  const existingIds = retrieveConstructs();
-  const updatedIds = existingIds.filter((id) => id !== idToRemove);
-  store$4.set("ids", updatedIds);
-};
-const isConstructActive = (id) => {
-  const existingIds = retrieveConstructs();
-  return existingIds.includes(id);
-};
-const clearActiveConstructs = () => {
-  store$4.set("ids", []);
-};
-const setAsPrimary = async (id) => {
-  const existingIds = retrieveConstructs();
-  const index = existingIds.indexOf(id);
-  if (index > -1) {
-    existingIds.splice(index, 1);
-  }
-  existingIds.unshift(id);
-  store$4.set("ids", existingIds);
-  if (isReady) {
-    let constructRaw = await getConstruct(id);
-    let construct = assembleConstructFromData(constructRaw);
-    if (construct === null) {
-      console.log("Could not assemble construct from data");
-      return;
-    }
-    setDiscordBotInfo(construct.name, construct.avatar);
-  }
-};
-function getCharacterPromptFromConstruct(construct, replaceUser2 = true) {
-  let prompt = "";
-  if (construct.background.length > 1) {
-    prompt += construct.background + "\n";
-  }
-  if (construct.interests.length > 1) {
-    prompt += "Interests:\n";
-    for (let i = 0; i < construct.interests.length; i++) {
-      prompt += "- " + construct.interests[i] + "\n";
-    }
-  }
-  if (construct.relationships.length > 1) {
-    prompt += "Relationships:\n";
-    for (let i = 0; i < construct.relationships.length; i++) {
-      prompt += "- " + construct.relationships[i] + "\n";
-    }
-  }
-  if (construct.personality.length > 1) {
-    prompt += construct.personality + "\n";
-  }
-  if (replaceUser2 === true) {
-    return prompt.replaceAll("{{char}}", `${construct.name}`);
-  } else {
-    return prompt;
-  }
-}
-function getUserPromptFromUser(user, replaceUser2 = true) {
-  let prompt = "";
-  if (user.background.length > 1) {
-    prompt += user.background + "\n";
-  }
-  if (user.interests.length > 1) {
-    prompt += "Interests:\n";
-    for (let i = 0; i < user.interests.length; i++) {
-      prompt += "- " + user.interests[i] + "\n";
-    }
-  }
-  if (user.relationships.length > 1) {
-    prompt += "Relationships:\n";
-    for (let i = 0; i < user.relationships.length; i++) {
-      prompt += "- " + user.relationships[i] + "\n";
-    }
-  }
-  if (user.personality.length > 1) {
-    prompt += user.personality + "\n";
-  }
-  if (replaceUser2 === true) {
-    return prompt.replaceAll("{{char}}", `${user ? (user == null ? void 0 : user.nickname) || user.name : "DefaultUser"}`);
-  } else {
-    return prompt;
-  }
-}
-function assembleInstructPrompt(construct, chatLog, currentUser = "you", messagesToInclude, replaceUser2 = true) {
-  let prompt = "";
-  const currentSettings = settings;
-  const type = construct.defaultConfig.instructType;
-  prompt += getCharacterPromptFromConstruct(construct);
-  let leftOverTokens = currentSettings.max_context_length - getGPTTokens(prompt + construct.authorsNote);
-  const chatsToSend = fillChatContextToLimit(chatLog, leftOverTokens);
-  chatLog.messages = chatsToSend;
-  switch (type) {
-    case "Alpaca":
-      prompt += assembleAlpacaPromptFromLog(chatLog, messagesToInclude, construct.name);
-      break;
-    case "Metharme":
-      prompt += assembleMetharmePromptFromLog(chatLog, messagesToInclude, construct.name);
-      break;
-    case "Vicuna":
-      prompt += assembleVicunaPromptFromLog(chatLog, messagesToInclude, construct.name);
-      break;
-    default:
-      prompt += assembleAlpacaPromptFromLog(chatLog, messagesToInclude, construct.name);
-      break;
-  }
-  if (replaceUser2 === true) {
-    return prompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${construct.name}`);
-  } else {
-    return prompt;
-  }
-}
-function assemblePrompt(construct, chatLog, currentUser = "you", messagesToInclude, replaceUser2 = true) {
-  let prompt = "";
-  const currentSettings = settings;
-  prompt += getCharacterPromptFromConstruct(construct);
-  let leftOverTokens = currentSettings.max_context_length - getGPTTokens(prompt + construct.authorsNote);
-  const chatsToSend = fillChatContextToLimit(chatLog, leftOverTokens);
-  chatLog.messages = chatsToSend;
-  prompt += assemblePromptFromLog(chatLog);
-  prompt += `${construct.name}:`;
-  if (replaceUser2 === true) {
-    return prompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${construct.name}`);
-  } else {
-    return prompt;
-  }
-}
-function assembleUserPrompt(user, chatLog, currentUser = "you", messagesToInclude, replaceUser2 = true) {
-  let prompt = "";
-  prompt += getUserPromptFromUser(user);
-  prompt += assemblePromptFromLog(chatLog);
-  prompt += `${user ? (user == null ? void 0 : user.nickname) || user.name : "DefaultUser"}:`;
-  if (replaceUser2 === true) {
-    return prompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${user ? (user == null ? void 0 : user.nickname) || user.name : "DefaultUser"}`);
-  } else {
-    return prompt;
-  }
-}
-async function handleLorebookPrompt(construct, prompt, chatLog) {
-  const lorebooksData = await getLorebooks();
-  if (lorebooksData === null || lorebooksData === void 0) {
-    console.log("Could not get lorebooks");
-    return prompt;
-  }
-  const assembledLorebooks = [];
-  for (let i = 0; i < lorebooksData.length; i++) {
-    let lorebook = assembleLorebookFromData(lorebooksData[i].doc);
-    if (lorebook === null || lorebook === void 0) {
-      console.log("Could not assemble lorebook from data");
-      continue;
-    }
-    if (lorebook.constructs.includes(construct._id)) {
-      assembledLorebooks.push(lorebook);
-    } else {
-      if (lorebook.global === true) {
-        assembledLorebooks.push(lorebook);
-      } else {
-        continue;
-      }
-    }
-  }
-  const availableEntries = [];
-  for (let i = 0; i < assembledLorebooks.length; i++) {
-    for (let j = 0; j < assembledLorebooks[i].entries.length; j++) {
-      if (assembledLorebooks[i].entries[j].enabled === false) {
-        continue;
-      } else {
-        availableEntries.push(assembledLorebooks[i].entries[j]);
-      }
-    }
-  }
-  const lastTwoMessages = chatLog.messages.slice(-2);
-  if (assembledLorebooks.length === 0) {
-    return prompt;
-  }
-  const appliedEntries = [];
-  for (let i = 0; i < availableEntries.length; i++) {
-    if (availableEntries[i].constant === true) {
-      appliedEntries.push(availableEntries[i]);
-    } else {
-      if (availableEntries[i].case_sensitive === true) {
-        for (let j = 0; j < lastTwoMessages.length; j++) {
-          for (let k = 0; k < availableEntries[i].keys.length; k++) {
-            if (lastTwoMessages[j].text.includes(availableEntries[i].keys[k].trim())) {
-              if (appliedEntries.includes(availableEntries[i])) {
-                continue;
-              } else {
-                if (availableEntries[i].selective === true) {
-                  for (let k2 = 0; k2 < availableEntries[i].secondary_keys.length; k2++) {
-                    if (lastTwoMessages[j].text.includes(availableEntries[i].secondary_keys[k2].trim())) {
-                      if (appliedEntries.includes(availableEntries[i])) {
-                        continue;
-                      } else {
-                        appliedEntries.push(availableEntries[i]);
-                      }
-                    } else {
-                      continue;
-                    }
-                  }
-                } else {
-                  appliedEntries.push(availableEntries[i]);
-                }
-              }
-            } else {
-              continue;
-            }
-          }
-        }
-      } else {
-        for (let j = 0; j < lastTwoMessages.length; j++) {
-          for (let k = 0; k < availableEntries[i].keys.length; k++) {
-            if (lastTwoMessages[j].text.toLocaleLowerCase().includes(availableEntries[i].keys[k].trim().toLocaleLowerCase())) {
-              if (appliedEntries.includes(availableEntries[i])) {
-                continue;
-              } else {
-                if (availableEntries[i].selective === true) {
-                  for (let k2 = 0; k2 < availableEntries[i].secondary_keys.length; k2++) {
-                    if (lastTwoMessages[j].text.toLocaleLowerCase().includes(availableEntries[i].secondary_keys[k2].trim().toLocaleLowerCase())) {
-                      if (appliedEntries.includes(availableEntries[i])) {
-                        continue;
-                      } else {
-                        appliedEntries.push(availableEntries[i]);
-                      }
-                    } else {
-                      continue;
-                    }
-                  }
-                } else {
-                  appliedEntries.push(availableEntries[i]);
-                }
-              }
-            } else {
-              continue;
-            }
-          }
-        }
-      }
-    }
-  }
-  let splitPrompt = prompt.split("\n");
-  let newPrompt = "";
-  for (let k = 0; k < appliedEntries.length; k++) {
-    let depth = appliedEntries[k].priority;
-    let insertHere = depth === 0 || depth > splitPrompt.length ? splitPrompt.length : splitPrompt.length - depth;
-    if (appliedEntries[k].position === "after_char") {
-      splitPrompt.splice(insertHere, 0, appliedEntries[k].content);
-    } else {
-      splitPrompt.splice(0, 0, appliedEntries[k].content);
-    }
-  }
-  for (let i = 0; i < splitPrompt.length; i++) {
-    if (i !== splitPrompt.length - 1) {
-      newPrompt += splitPrompt[i] + "\n";
-    } else {
-      newPrompt += splitPrompt[i];
-    }
-  }
-  return newPrompt;
-}
-async function generateThoughts(construct, chat, currentUser = "you", messagesToInclude = 25, doMultiLine, replaceUser2 = true) {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _i;
-  let messagesExceptLastTwo = chat.messages.slice(-messagesToInclude);
-  let prompt = "";
-  for (let i = 0; i < messagesExceptLastTwo.length; i++) {
-    if (messagesExceptLastTwo[i].isCommand === true) {
-      prompt += messagesExceptLastTwo[i].text.trim() + "\n";
-    } else {
-      if (messagesExceptLastTwo[i].isThought === true) {
-        prompt += `${(_b = (_a = messagesExceptLastTwo[i]) == null ? void 0 : _a.user) == null ? void 0 : _b.trim()}'s Thoughts: ${(_d = (_c = messagesExceptLastTwo[i]) == null ? void 0 : _c.text) == null ? void 0 : _d.trim()}
-`;
-      } else {
-        prompt += `${(_f = (_e = messagesExceptLastTwo[i]) == null ? void 0 : _e.user) == null ? void 0 : _f.trim()}: ${(_h = (_g = messagesExceptLastTwo[i]) == null ? void 0 : _g.text) == null ? void 0 : _h.trim()}
-`;
-      }
-    }
-  }
-  let lorebookPrompt = await handleLorebookPrompt(construct, prompt, chat);
-  if (lorebookPrompt !== null && lorebookPrompt !== void 0) {
-    prompt = lorebookPrompt;
-  }
-  prompt += `
-`;
-  prompt += `### Instruction:
-`;
-  prompt += `Using the context above, determine how you are thinking. Thoughts should be unqiue, and related to the last thing said. You are ${construct.name}.
-`;
-  prompt += `${construct.thoughtPattern.trim()}
-
-`;
-  prompt += `### Response:
-`;
-  prompt += `${construct.name.trim()}'s Thoughts:`;
-  if (replaceUser2 === true) {
-    prompt = prompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${construct.name}`);
-  }
-  console.log(prompt);
-  const response = await generateText(prompt, currentUser, void 0, construct);
-  if (response && response.results && response.results[0]) {
-    return breakUpCommands(construct.name, response.results[0].replaceAll(`${construct.name.trim()}'s Thoughts:`, ""), currentUser, void 0, doMultiLine);
-  } else {
-    console.log("No valid response from GenerateText:", (_i = response == null ? void 0 : response.error) == null ? void 0 : _i.toString());
-    return null;
-  }
-}
-async function generateContinueChatLog(construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth, doMultiLine, replaceUser2 = true, userData) {
-  var _a;
-  let prompt = "";
-  if (construct.defaultConfig.doInstruct === true) {
-    prompt += assembleInstructPrompt(construct, chatLog, currentUser, messagesToInclude, replaceUser2);
-  } else {
-    prompt += assemblePrompt(construct, chatLog, currentUser, messagesToInclude, replaceUser2);
-  }
-  if (getDoSystemInfo() === true) {
-    let splitPrompt = prompt.split("\n");
-    let newPrompt = "";
-    let depth = 4;
-    let insertHere = splitPrompt.length < depth ? 0 : splitPrompt.length - depth;
-    for (let i = 0; i < splitPrompt.length; i++) {
-      if (i === insertHere) {
-        newPrompt += getSystemInformation(chatLog) + "\n";
-      }
-      if (i !== splitPrompt.length - 1) {
-        newPrompt += splitPrompt[i] + "\n";
-      } else {
-        newPrompt += splitPrompt[i];
-      }
-    }
-    prompt = newPrompt;
-  }
-  if (userData !== void 0 && userData !== null && userData !== "") {
-    let splitPrompt = prompt.split("\n");
-    let newPrompt = "";
-    let depth = 3;
-    let insertHere = splitPrompt.length < depth ? 0 : splitPrompt.length - depth;
-    for (let i = 0; i < splitPrompt.length; i++) {
-      if (i === insertHere) {
-        newPrompt += userData + "\n";
-      }
-      if (i !== splitPrompt.length - 1) {
-        newPrompt += splitPrompt[i] + "\n";
-      } else {
-        newPrompt += splitPrompt[i];
-      }
-    }
-    prompt = newPrompt;
-  }
-  if (construct.authorsNote !== void 0 && construct.authorsNote !== "" && construct.authorsNote !== null || authorsNote !== void 0 && authorsNote !== "" && authorsNote !== null) {
-    if (!authorsNote) {
-      authorsNote = [construct.authorsNote];
-    } else if (!Array.isArray(authorsNote)) {
-      authorsNote = [authorsNote];
-    }
-    if (construct.authorsNote && authorsNote.indexOf(construct.authorsNote) === -1) {
-      authorsNote.push(construct.authorsNote);
-    }
-    let splitPrompt = prompt.split("\n");
-    let newPrompt = "";
-    let depth = 4;
-    if (authorsNoteDepth !== void 0) {
-      depth = authorsNoteDepth;
-    }
-    let insertHere = splitPrompt.length < depth ? 0 : splitPrompt.length - depth;
-    for (let i = 0; i < splitPrompt.length; i++) {
-      if (i === insertHere) {
-        for (let note of authorsNote) {
-          newPrompt += note + "\n";
-        }
-      }
-      if (i !== splitPrompt.length - 1) {
-        newPrompt += splitPrompt[i] + "\n";
-      } else {
-        newPrompt += splitPrompt[i];
-      }
-    }
-    prompt = newPrompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${construct.name}`);
-  }
-  let promptWithWorldInfo = await handleLorebookPrompt(construct, prompt, chatLog);
-  if (promptWithWorldInfo !== null && promptWithWorldInfo !== void 0) {
-    prompt = promptWithWorldInfo;
-  }
-  prompt = prompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${construct.name}`);
-  if (chatLog.doVector === true) {
-    let memoryText = "";
-    const memories = await getRelaventMemories(chatLog._id, chatLog.lastMessage.text).then((memories2) => {
-      return memories2;
-    }).catch((error) => {
-      console.log("Error from GetRelaventMemories:", error);
-      return null;
-    });
-    if (memories !== null && memories !== void 0) {
-      for (let i = 0; i < memories.length; i++) {
-        if (memories[i] !== void 0) {
-          if (memories[i].item.metadata.text !== void 0 && memories[i].item.metadata.text !== null && memories[i].item.metadata.text !== "" && memories[i].item.metadata.text !== chatLog.lastMessage.text) {
-            memoryText += `${memories[i].item.metadata.user}: ${memories[i].item.metadata.text}
-`;
-          }
-        }
-      }
-      prompt = memoryText + prompt;
-    }
-  }
-  const response = await generateText(prompt, currentUser, stopList, construct).then((response2) => {
-    return response2;
-  }).catch((error) => {
-    console.log("Error from GenerateText:", error);
-    return null;
-  });
-  if (response && response.results && response.results[0]) {
-    return breakUpCommands(construct.name, response.results[0], currentUser, stopList, doMultiLine);
-  } else {
-    console.log("No valid response from GenerateText:", (_a = response == null ? void 0 : response.error) == null ? void 0 : _a.toString());
-    return null;
-  }
-}
-async function generateContinueChatLogAsUser(user, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth, doMultiLine, replaceUser2 = true) {
-  var _a;
-  let prompt = assembleUserPrompt(user, chatLog, currentUser);
-  prompt = prompt.replaceAll("{{user}}", `${user ? (user == null ? void 0 : user.nickname) || user.name : "DefaultUser"}`);
-  const response = await generateText(prompt, currentUser, stopList);
-  if (response && response.results && response.results[0]) {
-    return breakUpCommands(`${user ? (user == null ? void 0 : user.nickname) || user.name : "DefaultUser"}`, response.results[0], currentUser, stopList, doMultiLine);
-  } else {
-    console.log("No valid response from GenerateText:", (_a = response == null ? void 0 : response.error) == null ? void 0 : _a.toString());
-    return null;
-  }
-}
-function breakUpCommands(charName, commandString, user = "You", stopList = [], doMultiLine = false) {
-  let lines = commandString.split("\n");
-  let formattedCommands = [];
-  let currentCommand = "";
-  let isFirstLine = true;
-  if (doMultiLine === false) {
-    lines = lines.slice(0, 1);
-    let command = lines[0];
-    return command;
-  }
-  for (let i = 0; i < lines.length; i++) {
-    let lineToTest = lines[i].toLocaleLowerCase();
-    if (lineToTest.startsWith(`${user.toLocaleLowerCase()}:`) || lineToTest.startsWith("you:") || lineToTest.startsWith("<start>") || lineToTest.startsWith("<end>") || lineToTest.startsWith("<user>") || lineToTest.toLocaleLowerCase().startsWith("user:")) {
-      break;
-    }
-    if (stopList !== null) {
-      for (let j = 0; j < stopList.length; j++) {
-        if (lineToTest.startsWith(`${stopList[j].toLocaleLowerCase()}`)) {
-          break;
-        }
-      }
-    }
-    if (lineToTest.startsWith(`${charName}:`)) {
-      isFirstLine = false;
-      if (currentCommand !== "") {
-        currentCommand = currentCommand.replaceAll(`${charName}:`, "");
-        formattedCommands.push(currentCommand.trim());
-      }
-      currentCommand = lines[i];
-    }
-    if (lineToTest.includes(":") && i >= 1) {
-      return formattedCommands.join("\n");
-    } else {
-      if (currentCommand !== "" || isFirstLine) {
-        currentCommand += (isFirstLine ? "" : "\n") + lines[i];
-      }
-      if (isFirstLine)
-        isFirstLine = false;
-    }
-  }
-  if (currentCommand !== "") {
-    formattedCommands.push(currentCommand.replaceAll(`${charName}:`, ""));
-  }
-  let final = formattedCommands.join("\n");
-  return final;
-}
-async function removeMessagesFromChatLog(chatLog, messageContent) {
-  let newChatLog = chatLog;
-  let messages = newChatLog.messages;
-  for (let i = 0; i < messages.length; i++) {
-    if (messages[i].text === messageContent) {
-      messages.splice(i, 1);
-      break;
-    }
-  }
-  newChatLog.messages = messages;
-  await updateChat(newChatLog);
-  return newChatLog;
-}
-async function regenerateMessageFromChatLog(chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, doMultiLine, doInstruction, instructType) {
-  let messages = chatLog.messages;
-  let beforeMessages = [];
-  let afterMessages = [];
-  let foundMessage;
-  let messageIndex = -1;
-  for (let i = 0; i < messages.length; i++) {
-    if (messageID !== void 0) {
-      if (messages[i]._id === messageID) {
-        messageIndex = i;
-        foundMessage = messages[i];
-        break;
-      }
-    } else {
-      if (messages[i].text.trim().includes(messageContent.trim())) {
-        messageIndex = i;
-        foundMessage = messages[i];
-        break;
-      }
-    }
-  }
-  if (foundMessage === void 0) {
-    console.log("Could not find message to regenerate");
-    return;
-  }
-  if (messageIndex !== -1) {
-    beforeMessages = messages.slice(0, messageIndex);
-    afterMessages = messages.slice(messageIndex + 1);
-    messages.splice(messageIndex, 1);
-  }
-  chatLog.messages = messages;
-  let constructData = await getConstruct(foundMessage.userID);
-  if (constructData === null) {
-    console.log("Could not find construct to regenerate message");
-    return;
-  }
-  let construct = assembleConstructFromData(constructData);
-  if (construct === null) {
-    console.log("Could not assemble construct from data");
-    return;
-  }
-  let newReply = await generateContinueChatLog(construct, chatLog, foundMessage.participants[0], void 0, void 0, authorsNote, authorsNoteDepth, doMultiLine, true);
-  if (newReply === null) {
-    console.log("Could not generate new reply");
-    return;
-  }
-  let newMessage = {
-    _id: Date.now().toString(),
-    user: construct.name,
-    avatar: construct.avatar,
-    text: newReply,
-    userID: construct._id,
-    timestamp: Date.now(),
-    origin: "Discord",
-    isHuman: false,
-    isCommand: false,
-    isPrivate: false,
-    participants: foundMessage.participants,
-    attachments: [],
-    isThought: false
-  };
-  messages = beforeMessages.concat(newMessage, afterMessages);
-  chatLog.messages = messages;
-  await updateChat(chatLog);
-  return newReply;
-}
-async function regenerateUserMessageFromChatLog(chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, doMultiLine) {
-  let messages = chatLog.messages;
-  let beforeMessages = [];
-  let afterMessages = [];
-  let foundMessage;
-  let messageIndex = -1;
-  for (let i = 0; i < messages.length; i++) {
-    if (messageID !== void 0) {
-      if (messages[i]._id === messageID) {
-        messageIndex = i;
-        foundMessage = messages[i];
-        break;
-      }
-    } else {
-      if (messages[i].text.trim().includes(messageContent.trim())) {
-        messageIndex = i;
-        foundMessage = messages[i];
-        break;
-      }
-    }
-  }
-  if (foundMessage === void 0) {
-    console.log("Could not find message to regenerate");
-    return;
-  }
-  if (messageIndex !== -1) {
-    beforeMessages = messages.slice(0, messageIndex);
-    afterMessages = messages.slice(messageIndex + 1);
-    messages.splice(messageIndex, 1);
-  }
-  chatLog.messages = messages;
-  let userData = await getUser(foundMessage.userID);
-  if (userData === null) {
-    console.log("Could not find construct to regenerate message");
-    return;
-  }
-  let construct = assembleUserFromData(userData);
-  if (construct === null) {
-    console.log("Could not assemble construct from data");
-    return;
-  }
-  let newReply = await generateContinueChatLogAsUser(construct, chatLog, foundMessage.participants[0], void 0, void 0, authorsNote, authorsNoteDepth, doMultiLine);
-  if (newReply === null) {
-    console.log("Could not generate new reply");
-    return;
-  }
-  let newMessage = {
-    _id: Date.now().toString(),
-    user: construct ? (construct == null ? void 0 : construct.nickname) || construct.name : "DefaultUser",
-    avatar: construct.avatar,
-    text: newReply,
-    userID: construct._id,
-    timestamp: Date.now(),
-    origin: "Discord",
-    isHuman: true,
-    isCommand: false,
-    isPrivate: false,
-    participants: foundMessage.participants,
-    attachments: [],
-    isThought: false
-  };
-  messages = beforeMessages.concat(newMessage, afterMessages);
-  chatLog.messages = messages;
-  await updateChat(chatLog);
-  return newReply;
-}
-function getSystemInformation(chatLog) {
-  var _a, _b;
-  const now = /* @__PURE__ */ new Date();
-  const currentTimeString = `${now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true })}, ${now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}`;
-  try {
-    const lastMessageDate = new Date((_a = chatLog == null ? void 0 : chatLog.messages[chatLog.messages.length - 2]) == null ? void 0 : _a.timestamp);
-    const chatStartDate = new Date((_b = chatLog == null ? void 0 : chatLog.messages[0]) == null ? void 0 : _b.timestamp);
-    if (isNaN(chatStartDate.getTime()) || isNaN(lastMessageDate.getTime())) {
-      throw new Error("Invalid date data in chatLog");
-    }
-    const timeSinceLastMessageString = getTimeDifferenceString(now, lastMessageDate);
-    if (timeSinceLastMessageString === "" || timeSinceLastMessageString === null || timeSinceLastMessageString === void 0)
-      return `[Current Time: ${currentTimeString}. Chat started on ${chatStartDate.toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}]`;
-    return `[Current Time: ${currentTimeString}. Time since last sent message: ${timeSinceLastMessageString}. Chat started on ${chatStartDate.toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}]`;
-  } catch (error) {
-    console.error(error);
-    return `[Current Time: ${currentTimeString}.]`;
-  }
-}
-function getTimeDifferenceString(now, past) {
-  const diffMs = now.getTime() - past.getTime();
-  const diffDays = Math.floor(diffMs / (1e3 * 60 * 60 * 24));
-  const diffHours = Math.floor(diffMs % (1e3 * 60 * 60 * 24) / (1e3 * 60 * 60));
-  const diffMinutes = Math.floor(diffMs % (1e3 * 60 * 60) / (1e3 * 60));
-  let result = "";
-  if (diffDays > 0) {
-    result += `${diffDays} days, `;
-  }
-  if (diffDays > 0 || diffHours > 0) {
-    result += `${diffHours} hours, and `;
-  }
-  result += `${diffMinutes} minutes`;
-  return result;
-}
-function constructController() {
-  ActiveConstructs = retrieveConstructs();
-  expressApp.post("/api/constructs/add-to-active", (req, res) => {
-    addConstruct(req.body.construct);
-    ActiveConstructs = retrieveConstructs();
-    res.json({ activeConstructs: ActiveConstructs });
-  });
-  expressApp.post("/api/constructs/remove-active", (req, res) => {
-    removeConstruct(req.body.construct);
-    ActiveConstructs = retrieveConstructs();
-    res.json({ activeConstructs: ActiveConstructs });
-  });
-  expressApp.get("/api/constructs/active-list", (req, res) => {
-    ActiveConstructs = retrieveConstructs();
-    res.json({ activeConstructs: ActiveConstructs });
-  });
-  expressApp.post("/api/constructs/is-active", (req, res) => {
-    const isActive = isConstructActive(req.body.construct);
-    res.json({ isActive });
-  });
-  expressApp.post("/api/constructs/remove-all-active", (req, res) => {
-    clearActiveConstructs();
-    ActiveConstructs = retrieveConstructs();
-    res.json({ activeConstructs: ActiveConstructs });
-  });
-  expressApp.post("/api/constructs/set-construct-primary", (req, res) => {
-    const constructId = req.body.constructId;
-    setAsPrimary(constructId);
-    const activeConstructs = retrieveConstructs();
-    res.json({ activeConstructs });
-  });
-  expressApp.post("/api/constructs/set/systeminfo", (req, res) => {
-    setDoSystemInfo(req.body.value);
-    const currentDoSystemInfo = getDoSystemInfo();
-    res.json({ doSystemInfo: currentDoSystemInfo });
-  });
-  expressApp.get("/api/constructs/systeminfo", (req, res) => {
-    const currentDoSystemInfo = getDoSystemInfo();
-    res.json({ doSystemInfo: currentDoSystemInfo });
-  });
-  expressApp.post("/api/constructs/multi-line", (req, res) => {
-    const value = req.body.value;
-    setDoMultiLine(value);
-    const currentDoMultiLine = getDoMultiLine();
-    res.json({ doMultiLine: currentDoMultiLine });
-  });
-  expressApp.get("/api/constructs/multi-line", (req, res) => {
-    const currentDoMultiLine = getDoMultiLine();
-    res.json({ doMultiLine: currentDoMultiLine });
-  });
-  expressApp.post("/api/constructs/character-prompt", (req, res) => {
-    const construct = req.body.construct;
-    const prompt = getCharacterPromptFromConstruct(construct);
-    res.json({ prompt });
-  });
-  expressApp.post("/api/constructs/assemble-prompt", (req, res) => {
-    const { construct, chatLog, currentUser, messagesToInclude } = req.body;
-    const prompt = assemblePrompt(construct, chatLog, currentUser);
-    res.json({ prompt });
-  });
-  expressApp.post("/api/constructs/assemble-instruct-prompt", (req, res) => {
-    const { construct, chatLog, currentUser, messagesToInclude, instructType } = req.body;
-    const prompt = assembleInstructPrompt(construct, chatLog, currentUser, messagesToInclude, true);
-    res.json({ prompt });
-  });
-  expressApp.post("/api/chat/continue", (req, res) => {
-    const { construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth, doMultiline, replaceUser: replaceUser2 } = req.body;
-    generateContinueChatLog(construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth, doMultiline, replaceUser2).then((response) => {
-      res.json({ response });
-    }).catch((error) => {
-      res.status(500).json({ error: error.message });
-    });
-  });
-  expressApp.post("/api/chat/remove-messages", (req, res) => {
-    const { chatLog, messageContent } = req.body;
-    removeMessagesFromChatLog(chatLog, messageContent).then((response) => {
-      res.json({ response });
-    }).catch((error) => {
-      res.status(500).json({ error: error.message });
-    });
-  });
-  expressApp.post("/api/chat/regenerate-message", (req, res) => {
-    const { chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, doMultiline, replaceUser: replaceUser2 } = req.body;
-    regenerateMessageFromChatLog(chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, doMultiline).then((response) => {
-      res.json({ response });
-    }).catch((error) => {
-      res.status(500).json({ error: error.message });
-    });
-  });
-  expressApp.post("/api/chat/regenerate-user-message", (req, res) => {
-    const { chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, doMultiline, replaceUser: replaceUser2 } = req.body;
-    regenerateUserMessageFromChatLog(chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, doMultiline).then((response) => {
-      res.json({ response });
-    }).catch((error) => {
-      res.status(500).json({ error: error.message });
-    });
-  });
-  expressApp.post("/api/chat/parse-reply", (req, res) => {
-    const { charName, commandString, user, stopList } = req.body;
-    let response = breakUpCommands(charName, commandString, user, stopList);
-    res.json({ response });
-  });
-  expressApp.post("/api/construct/thoughts", (req, res) => {
-    const { construct, chatLog, currentUser, messagesToInclude } = req.body;
-    generateThoughts(construct, chatLog, currentUser, messagesToInclude).then((response) => {
-      res.json({ response });
-    }).catch((error) => {
-      res.status(500).send({ error: error.message });
-    });
-  });
-  expressApp.post("/api/chat/intent", (req, res) => {
-    const { message } = req.body;
-    detectIntent(message).then((response) => {
-      res.json({ response });
-    }).catch((error) => {
-      res.status(500).send({ error: error.message });
-    });
-  });
-  expressApp.post("/api/classify/yesno", (req, res) => {
-    const { message } = req.body;
-    getYesNoMaybe(message).then((result) => {
-      res.json({ result });
-    }).catch((error) => {
-      res.status(500).send({ error: error.message });
-    });
-  });
-}
-const store$3 = new Store({
   name: "stableDiffusionData"
 });
 const getSDApiUrl = () => {
-  return store$3.get("apiUrl", "");
+  return store$4.get("apiUrl", "");
 };
 const setSDApiUrl = (apiUrl) => {
-  store$3.set("apiUrl", apiUrl);
+  store$4.set("apiUrl", apiUrl);
 };
 const setDefaultPrompt = (prompt) => {
-  store$3.set("defaultPrompt", prompt);
+  store$4.set("defaultPrompt", prompt);
 };
 const getDefaultPrompt = () => {
-  return store$3.get("defaultPrompt", "");
+  return store$4.get("defaultPrompt", "");
 };
 const setDefaultNegativePrompt = (prompt) => {
-  store$3.set("defaultNegativePrompt", prompt);
+  store$4.set("defaultNegativePrompt", prompt);
 };
 const getDefaultNegativePrompt = () => {
-  return store$3.get("defaultNegativePrompt", "lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry");
+  return store$4.get("defaultNegativePrompt", "lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry");
 };
 const setDefaultUpscaler = (upscaler) => {
-  store$3.set("defaultUpscaler", upscaler);
+  store$4.set("defaultUpscaler", upscaler);
 };
 const getDefaultUpscaler = () => {
-  return store$3.get("defaultUpscaler", "");
+  return store$4.get("defaultUpscaler", "");
 };
 const setDefaultSteps = (steps) => {
-  store$3.set("defaultSteps", steps);
+  store$4.set("defaultSteps", steps);
 };
 const getDefaultSteps = () => {
-  return store$3.get("defaultSteps", 25);
+  return store$4.get("defaultSteps", 25);
 };
 const setDefaultCfg = (cfg) => {
-  store$3.set("defaultCfg", cfg);
+  store$4.set("defaultCfg", cfg);
 };
 const getDefaultCfg = () => {
-  return store$3.get("defaultCfg", 7);
+  return store$4.get("defaultCfg", 7);
 };
 const setDefaultWidth = (width) => {
-  store$3.set("defaultWidth", width);
+  store$4.set("defaultWidth", width);
 };
 const getDefaultWidth = () => {
-  return store$3.get("defaultWidth", 512);
+  return store$4.get("defaultWidth", 512);
 };
 const setDefaultHeight = (height) => {
-  store$3.set("defaultHeight", height);
+  store$4.set("defaultHeight", height);
 };
 const getDefaultHeight = () => {
-  return store$3.get("defaultHeight", 512);
+  return store$4.get("defaultHeight", 512);
 };
 const setDefaultHighresSteps = (highresSteps) => {
-  store$3.set("defaultHighresSteps", highresSteps);
+  store$4.set("defaultHighresSteps", highresSteps);
 };
 const getDefaultHighresSteps = () => {
-  return store$3.get("defaultHighresSteps", 10);
+  return store$4.get("defaultHighresSteps", 10);
 };
 const setDefaultDenoisingStrength = (denoisingStrength) => {
-  store$3.set("defaultDenoisingStrength", denoisingStrength);
+  store$4.set("defaultDenoisingStrength", denoisingStrength);
 };
 const getDefaultDenoisingStrength = () => {
-  return store$3.get("defaultDenoisingStrength", 0.25);
+  return store$4.get("defaultDenoisingStrength", 0.25);
 };
 const setDefaultUpscale = (upscale) => {
-  store$3.set("defaultUpscale", upscale);
+  store$4.set("defaultUpscale", upscale);
 };
 const getDefaultUpscale = () => {
-  return store$3.get("defaultUpscale", 1.5);
+  return store$4.get("defaultUpscale", 1.5);
 };
 function SDRoutes() {
   expressApp.post("/api/diffusion/url", (req, res) => {
@@ -4325,7 +2982,7 @@ async function makeImage(prompt, negativePrompt, steps, cfg, width, height, high
   };
   const newPath = path$1.join(uploadsPath, fileName);
   const buffer = Buffer.from(res.data.images[0].split(";base64,").pop(), "base64");
-  await fs$1.promises.writeFile(newPath, buffer);
+  await fs.promises.writeFile(newPath, buffer);
   addAttachment(attachment);
   return { name: fileName, base64: res.data.images[0].split(";base64,").pop(), model };
 }
@@ -4419,1285 +3076,141 @@ function getTimestamp() {
   const seconds = String(now.getSeconds()).padStart(2, "0");
   return `${year}${month}${day}_${hours}${minutes}${seconds}`;
 }
-async function createSelfieForConstruct(construct, intent, subject) {
-  if (!construct)
-    return null;
-  let prompt = construct.visualDescription + ", " + intent + ", " + subject;
-  const imageData = await txt2img(prompt);
-  if (!imageData)
-    return null;
-  return imageData;
+const constructSettings = new Store(
+  {
+    name: "constructSettings",
+    defaults: {
+      doSystemInfo: true,
+      doRandomMessages: true,
+      doRandomThoughts: true,
+      doRandomActions: true,
+      showDiscordUserInfo: false,
+      thoughtInterval: 10,
+      actionInterval: 10,
+      messageInterval: 10
+    }
+  }
+);
+function getDoRandomMessages() {
+  return constructSettings.get("doRandomMessages") || true;
 }
-const store$2 = new Store({
-  name: "discordData"
-});
-let maxMessages = 25;
-let doStableReactions = false;
-let showDiffusionDetails = false;
-let diffusionWhitelist = [];
-let replaceUser = true;
-let lastIntentData = null;
-function getDiscordSettings() {
-  maxMessages = getMaxMessages();
-  getDoMultiLine();
-  getDoAutoReply();
-  getDoStableDiffusion();
-  doStableReactions = getDoStableReactions();
-  getDoGeneralPurpose();
-  diffusionWhitelist = getDiffusionWhitelist();
-  showDiffusionDetails = getShowDiffusionDetails();
-  replaceUser = getReplaceUser();
+function setDoRandomMessages(doRandomMessages) {
+  constructSettings.set("doRandomMessages", doRandomMessages);
 }
-const getDoAutoReply = () => {
-  return store$2.get("doAutoReply", false);
-};
-const setDoStableDiffusion = (doStableDiffusion2) => {
-  store$2.set("doStableDiffusion", doStableDiffusion2);
-  doStableDiffusion2 = doStableDiffusion2;
-  registerCommands();
-};
-const getDoStableDiffusion = () => {
-  return store$2.get("doStableDiffusion", false);
-};
-const setDoStableReactions = (newStatus) => {
-  store$2.set("doStableReactions", newStatus);
-  doStableReactions = newStatus;
-};
-const getDoStableReactions = () => {
-  return store$2.get("doStableReactions", false);
-};
-const getDoGeneralPurpose = () => {
-  return store$2.get("doGeneralPurpose", false);
-};
-const getDiffusionWhitelist = () => {
-  return store$2.get("diffusionWhitelist", []);
-};
-const addDiffusionWhitelist = (channelID) => {
-  let whitelist = getDiffusionWhitelist();
-  if (!whitelist.includes(channelID)) {
-    whitelist.push(channelID);
-  }
-  store$2.set("diffusionWhitelist", whitelist);
-  diffusionWhitelist = whitelist;
-};
-const removeDiffusionWhitelist = (channelID) => {
-  let whitelist = getDiffusionWhitelist();
-  if (whitelist.includes(channelID)) {
-    whitelist.splice(whitelist.indexOf(channelID), 1);
-  }
-  store$2.set("diffusionWhitelist", whitelist);
-  diffusionWhitelist = whitelist;
-};
-const setShowDiffusionDetails = (show) => {
-  store$2.set("showDiffusionDetails", show);
-  showDiffusionDetails = show;
-};
-const getShowDiffusionDetails = () => {
-  return store$2.get("showDiffusionDetails", false);
-};
-const setReplaceUser = (replace) => {
-  store$2.set("replaceUser", replace);
-  replaceUser = replace;
-};
-const getReplaceUser = () => {
-  return store$2.get("replaceUser", false);
-};
-const setDelay = (delay2) => {
-  store$2.set("delay", delay2);
-  delay2 = delay2;
-};
-const getDelay = () => {
-  return store$2.get("delay", 0);
-};
-const setDoDelay = (doDelay2) => {
-  store$2.set("doDelay", doDelay2);
-  doDelay2 = doDelay2;
-};
-const getDoDelay = () => {
-  return store$2.get("doDelay", false);
-};
-async function getUsername(userID, channelID) {
-  var _a, _b;
-  const channels = getRegisteredChannels();
-  for (let i = 0; i < (channels == null ? void 0 : channels.length); i++) {
-    if (((_a = channels[i]) == null ? void 0 : _a._id) === channelID) {
-      if (((_b = channels[i]) == null ? void 0 : _b.aliases) === void 0)
-        continue;
-      for (let j = 0; j < channels[i].aliases.length; j++) {
-        if (channels[i].aliases[j]._id === userID) {
-          return channels[i].aliases[j].name;
-        }
-      }
-    }
-  }
-  try {
-    let user = await disClient.users.fetch(userID);
-    let name = (user == null ? void 0 : user.displayName) !== void 0 ? user.displayName : user.username;
-    console.log(name);
-    return name;
-  } catch (error) {
-    console.error("Error fetching user:", error);
-    return "Unknown user";
-  }
+function getDoRandomThoughts() {
+  return constructSettings.get("doRandomThoughts") || true;
 }
-const addAlias = (newAlias, channelID) => {
-  var _a, _b;
-  const channels = getRegisteredChannels();
-  for (let i = 0; i < channels.length; i++) {
-    if (channels[i]._id === channelID) {
-      if (((_a = channels[i]) == null ? void 0 : _a.aliases) === void 0) {
-        channels[i].aliases = [];
-      }
-      let replaced = false;
-      for (let j = 0; j < channels[i].aliases.length; j++) {
-        if (channels[i].aliases[j]._id === newAlias._id) {
-          channels[i].aliases[j] = newAlias;
-          replaced = true;
-          break;
-        }
-      }
-      if (!replaced) {
-        (_b = channels[i]) == null ? void 0 : _b.aliases.push(newAlias);
-      }
-    }
-  }
-  store$2.set("channels", channels);
-};
-const getMaxMessages = () => {
-  return store$2.get("maxMessages", 25);
-};
-const getRegisteredChannels = () => {
-  return store$2.get("channels", []);
-};
-const addRegisteredChannel = (newChannel) => {
-  const existingChannels = getRegisteredChannels();
-  let registered = false;
-  for (let i = 0; i < existingChannels.length; i++) {
-    if (existingChannels[i]._id === newChannel._id) {
-      registered = true;
-      break;
-    }
-  }
-  if (registered)
-    return;
-  if (!existingChannels.includes(newChannel)) {
-    existingChannels.push(newChannel);
-    store$2.set("channels", existingChannels);
-  }
-};
-const removeRegisteredChannel = (channelToRemove) => {
-  const existingChannels = getRegisteredChannels();
-  const updatedChannels = existingChannels.filter((channel) => channel._id !== channelToRemove);
-  store$2.set("channels", updatedChannels);
-};
-const isChannelRegistered = (channel) => {
-  const existingChannels = getRegisteredChannels();
-  for (let i = 0; i < existingChannels.length; i++) {
-    if (existingChannels[i]._id === channel) {
-      return true;
-    }
-  }
-  return false;
-};
-function setInterrupted(channelID) {
-  cancelGeneration();
-  isInterrupted = true;
-  interruptedChannel = channelID;
+function setDoRandomThoughts(doRandomThoughts) {
+  constructSettings.set("doRandomThoughts", doRandomThoughts);
 }
-let isInterrupted = false;
-let interruptedChannel = "";
-let generationFailure = false;
-async function handleDiscordMessage(message) {
-  var _a, _b, _c, _d, _e, _f, _g;
-  const activeConstructs = retrieveConstructs();
-  const newMessage = await convertDiscordMessageToMessage(message, activeConstructs);
-  addUserFromDiscordMessage(message);
-  let constructArray = [];
-  let chatLogData = await getChat(message.channel.id);
-  let chatLog;
-  if (chatLogData) {
-    chatLog = assembleChatFromData(chatLogData);
-    if (chatLog === null)
-      return;
-    chatLog.messages.push(newMessage);
-    chatLog.lastMessage = newMessage;
-    chatLog.lastMessageDate = newMessage.timestamp;
-    if (!chatLog.constructs.includes(newMessage.userID)) {
-      chatLog.constructs.push(newMessage.userID);
-    }
-    if (!chatLog.humans.includes(message.author.id)) {
-      chatLog.humans.push(message.author.id);
-    }
-  } else {
-    chatLog = {
-      _id: message.channel.id,
-      name: 'Discord "' + (((_a = message == null ? void 0 : message.channel) == null ? void 0 : _a.isDMBased()) ? `DM ${message.author.displayName}` : `${(_b = message == null ? void 0 : message.channel) == null ? void 0 : _b.id}`) + `" Chat`,
-      type: "Discord",
-      messages: [newMessage],
-      lastMessage: newMessage,
-      lastMessageDate: newMessage.timestamp,
-      firstMessageDate: newMessage.timestamp,
-      constructs: [activeConstructs[0]],
-      humans: [message.author.id],
-      chatConfigs: [],
-      doVector: ((_c = message == null ? void 0 : message.channel) == null ? void 0 : _c.isDMBased()) ? true : false,
-      global: ((_d = message == null ? void 0 : message.channel) == null ? void 0 : _d.isDMBased()) ? true : false
-    };
-    if (chatLog.messages.length > 0) {
-      await addChat(chatLog);
-    }
-  }
-  for (let i = 0; i < chatLog.constructs.length; i++) {
-    let constructDoc = await getConstruct(chatLog.constructs[i]);
-    let construct = assembleConstructFromData(constructDoc);
-    if (construct === null)
-      continue;
-    constructArray.push(construct);
-  }
-  if (chatLog.messages.length === 1) {
-    isInterrupted = false;
-    interruptedChannel = "";
-  }
-  if (!chatLog.messages.includes(newMessage)) {
-    chatLog.messages.push(newMessage);
-  }
-  const intentData = await detectIntent(newMessage.text);
-  if (intentData !== null) {
-    if ((intentData == null ? void 0 : intentData.intent) !== "none") {
-      lastIntentData = intentData;
-    }
-  }
-  if (message.content.startsWith("-")) {
-    await updateChat(chatLog);
-    return;
-  }
-  if (chatLog.doVector) {
-    if (chatLog.global) {
-      for (let i = 0; i < constructArray.length; i++) {
-        addVectorFromMessage(constructArray[i]._id, newMessage);
-      }
-    } else {
-      addVectorFromMessage(chatLog._id, newMessage);
-    }
-  }
-  await updateChat(chatLog);
-  expressAppIO.emit(`chat-message-${message.channel.id}`);
-  if (isMultiConstructMode() && !message.channel.isDMBased()) {
-    let lastMessageContent = chatLog.lastMessage.text;
-    let shuffledConstructs = constructArray;
-    for (let i = shuffledConstructs.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffledConstructs[i], shuffledConstructs[j]] = [shuffledConstructs[j], shuffledConstructs[i]];
-    }
-    let mentionedConstruct = containsName(lastMessageContent, constructArray);
-    if (mentionedConstruct) {
-      let mentionedIndex = shuffledConstructs.findIndex((construct) => construct.name === mentionedConstruct);
-      if (mentionedIndex !== -1) {
-        const [mentioned] = shuffledConstructs.splice(mentionedIndex, 1);
-        shuffledConstructs.unshift(mentioned);
-      }
-    }
-    chatLog = await doRoundRobin(shuffledConstructs, chatLog, message);
-    if (chatLog === void 0)
-      return;
-    let hasBeenMention = true;
-    let lastMessageText = (_e = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _e.text;
-    let iterations = 0;
-    do {
-      if (isInterrupted && interruptedChannel === message.channel.id) {
-        break;
-      }
-      if (((_f = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _f.text) === void 0)
-        break;
-      if (iterations > 0 && lastMessageText === chatLog.lastMessage.text)
-        break;
-      iterations++;
-      hasBeenMention = false;
-      for (let i = 0; i < shuffledConstructs.length; i++) {
-        if (isInterrupted && interruptedChannel === message.channel.id) {
-          break;
-        }
-        if (isMentioned(lastMessageText, shuffledConstructs[i]) && chatLog.lastMessage.isHuman && !chatLog.lastMessage.isThought && chatLog.lastMessage.userID !== shuffledConstructs[i]._id) {
-          hasBeenMention = true;
-          break;
-        }
-      }
-      if (hasBeenMention) {
-        chatLog = await doRoundRobin(shuffledConstructs, chatLog, message);
-      }
-    } while (hasBeenMention);
-    while (!generationFailure) {
-      let shouldContinue = false;
-      if ((chatLog == null ? void 0 : chatLog.lastMessage.text) === void 0)
-        break;
-      if (isInterrupted && interruptedChannel === message.channel.id) {
-        break;
-      }
-      for (let i = 0; i < shuffledConstructs.length; i++) {
-        if (isInterrupted && interruptedChannel === message.channel.id) {
-          break;
-        }
-        let config = shuffledConstructs[i].defaultConfig;
-        if ((_g = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _g.isHuman) {
-          if (config.replyToUser >= Math.random()) {
-            let replyLog = await doCharacterReply(shuffledConstructs[i], chatLog, message);
-            if (replyLog !== void 0) {
-              chatLog = replyLog;
-            }
-            shouldContinue = true;
-          }
-        } else {
-          if (config.replyToConstruct >= Math.random() && chatLog.lastMessage.userID !== shuffledConstructs[i]._id) {
-            let replyLog = await doCharacterReply(shuffledConstructs[i], chatLog, message);
-            if (replyLog !== void 0) {
-              chatLog = replyLog;
-            }
-            shouldContinue = true;
-          }
-        }
-      }
-      if (!shouldContinue) {
-        break;
-      }
-    }
-  } else {
-    console.log("single character mode");
-    let config = constructArray[0].defaultConfig;
-    if (chatLog.chatConfigs !== void 0 && chatLog.chatConfigs.length > 0) {
-      for (let j = 0; j < chatLog.chatConfigs.length; j++) {
-        if (chatLog.chatConfigs[j]._id === constructArray[0]._id) {
-          config = chatLog.chatConfigs[j];
-          break;
-        }
-      }
-    }
-    if (!config.doLurk) {
-      console.log("not lurking");
-      let wasMentioned = isMentioned(chatLog.lastMessage.text, constructArray[0]) && chatLog.lastMessage.isHuman;
-      if (wasMentioned) {
-        if (config.replyToUserMention >= Math.random()) {
-          sendTyping(message);
-          console.log("replying to user mention");
-          let replyLog = await doCharacterReply(constructArray[0], chatLog, message);
-          if (replyLog !== void 0) {
-            chatLog = replyLog;
-          }
-        }
-      } else {
-        if (config.replyToUser >= Math.random()) {
-          console.log("replying to user");
-          sendTyping(message);
-          let replyLog = await doCharacterReply(constructArray[0], chatLog, message);
-          if (replyLog !== void 0) {
-            chatLog = replyLog;
-          }
-        }
-      }
-    } else {
-      console.log("lurking");
-    }
-  }
-  if (isInterrupted && interruptedChannel === message.channel.id) {
-    isInterrupted = false;
-    interruptedChannel = "";
-  }
-  if (generationFailure) {
-    generationFailure = false;
-  }
+function getDoRandomActions() {
+  return constructSettings.get("doRandomActions") || true;
 }
-async function doCharacterReply(construct, chatLog, message) {
-  if (isInterrupted && interruptedChannel === message.channelId) {
-    console.log("interrupted");
-    return chatLog;
-  }
-  let stopList = void 0;
-  let username = "You";
-  let authorID = "You";
-  let primaryConstruct = retrieveConstructs()[0];
-  if (message instanceof discord_js.Message) {
-    username = message.author.displayName;
-    authorID = message.author.id;
-  }
-  if (message instanceof discord_js.CommandInteraction) {
-    username = message.user.displayName;
-    authorID = message.user.id;
-  }
-  if (message.guildId !== null) {
-    stopList = await getStopList(message.guildId, message.channelId);
-  }
-  let alias = await getUsername(authorID, chatLog._id);
-  if (alias !== null && alias !== void 0) {
-    username = alias;
-  }
-  if (construct.defaultConfig.haveThoughts && construct.defaultConfig.thinkBeforeChat) {
-    if (construct.defaultConfig.thoughtChance >= Math.random()) {
-      sendTyping(message);
-      let thoughtChatLog = await doCharacterThoughts(construct, chatLog, message);
-      if (thoughtChatLog !== void 0) {
-        chatLog = thoughtChatLog;
-      }
-    }
-  }
-  if (message.channel === null) {
-    console.log("channel is null");
-    return chatLog;
-  }
-  let dataString = "";
-  sendTyping(message);
-  if (getShowDiscordUserInfo() && !message.channel.isDMBased() && message instanceof discord_js.Message && message.guildId !== null) {
-    const userData = await assembleUserProfile(message.guildId, message.author.id);
-    if (userData !== null && userData !== void 0) {
-      dataString = userData;
-    }
-  }
-  const result = await generateContinueChatLog(construct, chatLog, username, maxMessages, stopList, void 0, void 0, getDoMultiLine(), replaceUser, dataString);
-  if (result === null) {
-    generationFailure = true;
-    return chatLog;
-  }
-  let reply;
-  if (result !== null) {
-    reply = result;
-  } else {
-    if (isInterrupted && interruptedChannel === message.channelId) {
-      console.log("interrupted");
-      return chatLog;
-    }
-    console.log("no response from LLM");
-    return chatLog;
-  }
-  const replyMessage = {
-    _id: Date.now().toString(),
-    user: construct.name,
-    avatar: construct.avatar,
-    text: reply,
-    userID: construct._id,
-    timestamp: Date.now(),
-    origin: "Discord - " + message.channelId,
-    isHuman: false,
-    isCommand: false,
-    isPrivate: false,
-    participants: [authorID, construct._id],
-    attachments: [],
-    isThought: false
-  };
-  chatLog.messages.push(replyMessage);
-  chatLog.lastMessage = replyMessage;
-  chatLog.lastMessageDate = replyMessage.timestamp;
-  if (lastIntentData !== null && construct.defaultConfig.doActions === true) {
-    const currentIntentData = await detectIntent(reply);
-    if (currentIntentData !== null) {
-      if ((lastIntentData == null ? void 0 : lastIntentData.intent) !== "search") {
-        if ((currentIntentData == null ? void 0 : currentIntentData.compliance) === true) {
-          const imageData = await createSelfieForConstruct(construct, lastIntentData == null ? void 0 : lastIntentData.intent, currentIntentData == null ? void 0 : currentIntentData.subject);
-          if (imageData !== null) {
-            const buffer = Buffer.from(imageData.base64, "base64");
-            let attachment = new discord_js.AttachmentBuilder(buffer, { name: `${imageData.name}` });
-            if (primaryConstruct === construct._id) {
-              await sendAttachment(message.channel.id, attachment);
-            } else {
-              await sendAttachmentAsCharacter(construct, message.channel.id, attachment);
-            }
-            lastIntentData = null;
-            const selfieMessage = createSelfieMessage(imageData.name, construct);
-            chatLog.messages.push(selfieMessage);
-          }
-        }
-      }
-    }
-  }
-  if (primaryConstruct === construct._id) {
-    console.log("sending message as primary");
-    if (0.5 >= Math.random() && !message.channel.isDMBased() && message instanceof discord_js.Message) {
-      await sendReply(message, reply);
-    } else {
-      await sendMessage(message.channel.id, reply);
-    }
-  } else {
-    console.log("sending message as character");
-    await sendMessageAsCharacter(construct, message.channel.id, reply);
-  }
-  if (construct.defaultConfig.haveThoughts && !construct.defaultConfig.thinkBeforeChat) {
-    if (construct.defaultConfig.thoughtChance >= Math.random()) {
-      sendTyping(message);
-      console.log("thinking after chat");
-      let thoughtChatLog = await doCharacterThoughts(construct, chatLog, message);
-      if (thoughtChatLog !== void 0) {
-        chatLog = thoughtChatLog;
-      }
-    }
-  }
-  await updateChat(chatLog);
-  return chatLog;
+function setDoRandomActions(doRandomActions) {
+  constructSettings.set("doRandomActions", doRandomActions);
 }
-async function doCharacterThoughts(construct, chatLog, message) {
-  let username = "You";
-  let authorID = "You";
-  let primaryConstruct = retrieveConstructs()[0];
-  if (message instanceof discord_js.Message) {
-    username = message.author.displayName;
-    authorID = message.author.id;
-  }
-  if (message instanceof discord_js.CommandInteraction) {
-    username = message.user.displayName;
-    authorID = message.user.id;
-  }
-  let alias = await getUsername(authorID, chatLog._id);
-  if (alias !== null && alias !== void 0) {
-    username = alias;
-  }
-  if (message.channel === null)
-    return;
-  if (isInterrupted && interruptedChannel === message.channelId) {
-    console.log("interrupted");
-    return chatLog;
-  }
-  const result = await generateThoughts(construct, chatLog, username, maxMessages, getDoMultiLine(), replaceUser);
-  if (result === null) {
-    generationFailure = true;
-    return chatLog;
-  }
-  if (isInterrupted && interruptedChannel === message.channelId) {
-    console.log("interrupted");
-    return chatLog;
-  }
-  let reply;
-  if (result !== null) {
-    reply = result;
-  } else {
-    if (isInterrupted && interruptedChannel === message.channelId) {
-      console.log("interrupted");
-      return chatLog;
-    }
-    return chatLog;
-  }
-  reply = reply.replace(/\*/g, "");
-  reply = `*${reply.trim()}*`;
-  if (reply.trim().length <= 2)
-    return chatLog;
-  const replyMessage = {
-    _id: Date.now().toString(),
-    user: construct.name,
-    avatar: construct.avatar,
-    text: reply,
-    userID: construct._id,
-    timestamp: Date.now(),
-    origin: "Discord - " + message.channelId,
-    isHuman: false,
-    isCommand: false,
-    isPrivate: false,
-    participants: [authorID, construct._id],
-    attachments: [],
-    isThought: true
-  };
-  chatLog.messages.push(replyMessage);
-  chatLog.lastMessage = replyMessage;
-  chatLog.lastMessageDate = replyMessage.timestamp;
-  const newEmbed = new discord_js.EmbedBuilder().setTitle("Thoughts").setDescription(reply).setFooter({ text: "Powered by TalOS" }).setTimestamp();
-  if (primaryConstruct === construct._id) {
-    await sendMessageEmbed(message.channel.id, newEmbed);
-  } else {
-    await sendEmbedAsCharacter(construct, message.channel.id, newEmbed);
-  }
-  await updateChat(chatLog);
-  return chatLog;
+function getThoughtInterval() {
+  return constructSettings.get("thoughtInterval") || 10;
 }
-async function doRoundRobin(constructArray, chatLog, message) {
-  if (message.channel === null) {
-    console.log("channel is null");
-    return chatLog;
-  }
-  for (let i = 0; i < constructArray.length; i++) {
-    if (isInterrupted && interruptedChannel === message.channelId) {
-      break;
-    }
-    let config = constructArray[i].defaultConfig;
-    if (chatLog.chatConfigs !== void 0 && chatLog.chatConfigs.length > 0) {
-      for (let j = 0; j < chatLog.chatConfigs.length; j++) {
-        if (chatLog.chatConfigs[j]._id === constructArray[i]._id) {
-          config = chatLog.chatConfigs[j];
-          break;
-        }
-      }
-    }
-    if (config === void 0)
-      continue;
-    if (config.doLurk === true)
-      continue;
-    let wasMentioned = isMentioned(chatLog.lastMessage.text, constructArray[i]);
-    const wasMentionedByHuman = chatLog.lastMessage.isHuman && wasMentioned;
-    const wasHuman = chatLog.lastMessage.isHuman;
-    if (wasMentionedByHuman) {
-      if (config.replyToUserMention >= Math.random()) {
-        if (isInterrupted && interruptedChannel === message.channelId) {
-          console.log("interrupted");
-          return chatLog;
-        }
-        let replyLog = await doCharacterReply(constructArray[i], chatLog, message);
-        if (replyLog !== void 0) {
-          chatLog = replyLog;
-        }
-      }
-    } else if (wasMentioned && chatLog.lastMessage.userID !== constructArray[i]._id) {
-      if (config.replyToConstructMention >= Math.random()) {
-        if (isInterrupted && interruptedChannel === message.channelId) {
-          console.log("interrupted");
-          return chatLog;
-        }
-        let replyLog = await doCharacterReply(constructArray[i], chatLog, message);
-        if (replyLog !== void 0) {
-          chatLog = replyLog;
-        }
-      }
-    } else {
-      if (wasHuman) {
-        if (config.replyToUser >= Math.random()) {
-          if (isInterrupted && interruptedChannel === message.channelId) {
-            console.log("interrupted");
-            return chatLog;
-          }
-          let replyLog = await doCharacterReply(constructArray[i], chatLog, message);
-          if (replyLog !== void 0) {
-            chatLog = replyLog;
-          }
-        }
-      } else {
-        if (config.replyToConstruct >= Math.random()) {
-          if (isInterrupted && interruptedChannel === message.channelId) {
-            console.log("interrupted");
-            return chatLog;
-          }
-          let replyLog = await doCharacterReply(constructArray[i], chatLog, message);
-          if (replyLog !== void 0) {
-            chatLog = replyLog;
-          }
-        }
-      }
-    }
-  }
-  return chatLog;
+function setThoughtInterval(thoughtInterval) {
+  constructSettings.set("thoughtInterval", thoughtInterval);
 }
-function createSelfieMessage(attachmentURL, construct) {
-  const attachment = {
-    _id: (/* @__PURE__ */ new Date()).getTime().toString(),
-    name: "Selfie taken by " + construct.name,
-    type: "image/png",
-    data: `/api/images/${attachmentURL}`,
-    fileext: "png",
-    metadata: ""
-  };
-  const newMessage = {
-    _id: (/* @__PURE__ */ new Date()).getTime().toString(),
-    user: construct.name,
-    avatar: construct.avatar,
-    text: "",
-    userID: construct._id,
-    timestamp: (/* @__PURE__ */ new Date()).getTime(),
-    origin: "Selfie",
-    isHuman: false,
-    isCommand: false,
-    isPrivate: false,
-    participants: [construct._id],
-    attachments: [attachment],
-    isThought: false
-  };
-  return newMessage;
+function getActionInterval() {
+  return constructSettings.get("actionInterval") || 10;
 }
-async function continueChatLog(interaction) {
-  var _a, _b, _c;
-  let registeredChannels = getRegisteredChannels();
-  let registered = false;
-  if (interaction.channel === null)
-    return;
-  for (let i = 0; i < registeredChannels.length; i++) {
-    if (registeredChannels[i]._id === interaction.channel.id) {
-      registered = true;
-      break;
-    }
-  }
-  if (!registered)
-    return;
-  let constructArray = [];
-  let chatLogData = await getChat(interaction.channelId).then((doc) => {
-    return doc;
-  }).catch((err) => {
-    console.log(err);
-    console.log("Error getting chat log");
-  });
-  let chatLog;
-  if (chatLogData) {
-    chatLog = assembleChatFromData(chatLogData);
-  }
-  if (chatLog === null || chatLog === void 0) {
-    return console.log("Chat log is null or undefined");
-  }
-  for (let i = 0; i < chatLog.constructs.length; i++) {
-    console.log("Getting construct");
-    console.log(chatLog.constructs[i]);
-    let constructDoc;
-    try {
-      constructDoc = await getConstruct(chatLog.constructs[i]).then((doc) => {
-        return doc;
-      }).catch((err) => {
-        console.log(err);
-        console.log("Error getting construct");
-      });
-    } catch (e) {
-      console.log(e);
-      console.log("Error getting construct");
-    }
-    if (constructDoc === null) {
-      continue;
-    }
-    let construct = assembleConstructFromData(constructDoc);
-    if (construct === null)
-      continue;
-    constructArray.push(construct);
-  }
-  if (isMultiConstructMode() && !interaction.channel.isDMBased()) {
-    let lastMessageContent = chatLog.lastMessage.text;
-    let shuffledConstructs = constructArray;
-    for (let i = shuffledConstructs.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffledConstructs[i], shuffledConstructs[j]] = [shuffledConstructs[j], shuffledConstructs[i]];
-    }
-    let mentionedConstruct = containsName(lastMessageContent, constructArray);
-    if (mentionedConstruct) {
-      let mentionedIndex = shuffledConstructs.findIndex((construct) => construct.name === mentionedConstruct);
-      if (mentionedIndex !== -1) {
-        const [mentioned] = shuffledConstructs.splice(mentionedIndex, 1);
-        shuffledConstructs.unshift(mentioned);
-      }
-    }
-    chatLog = await doRoundRobin(shuffledConstructs, chatLog, interaction);
-    if (chatLog === void 0)
-      return;
-    let hasBeenMention = true;
-    let lastMessageText = (_a = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _a.text;
-    let iterations = 0;
-    do {
-      if (isInterrupted && interruptedChannel === interaction.channelId) {
-        break;
-      }
-      if (((_b = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _b.text) === void 0)
-        break;
-      if (iterations > 0 && lastMessageText === chatLog.lastMessage.text)
-        break;
-      iterations++;
-      hasBeenMention = false;
-      for (let i = 0; i < shuffledConstructs.length; i++) {
-        if (isInterrupted && interruptedChannel === interaction.channelId) {
-          break;
-        }
-        if (isMentioned(lastMessageText, shuffledConstructs[i]) && chatLog.lastMessage.isHuman && !chatLog.lastMessage.isThought && chatLog.lastMessage.userID !== shuffledConstructs[i]._id) {
-          hasBeenMention = true;
-          break;
-        }
-      }
-      if (hasBeenMention) {
-        chatLog = await doRoundRobin(shuffledConstructs, chatLog, interaction);
-      }
-    } while (hasBeenMention);
-    while (true) {
-      let shouldContinue = false;
-      if ((chatLog == null ? void 0 : chatLog.lastMessage.text) === void 0)
-        break;
-      if (isInterrupted && interruptedChannel === interaction.channelId) {
-        break;
-      }
-      for (let i = 0; i < shuffledConstructs.length; i++) {
-        if (isInterrupted && interruptedChannel === interaction.channelId) {
-          break;
-        }
-        let config = shuffledConstructs[i].defaultConfig;
-        if ((_c = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _c.isHuman) {
-          if (config.replyToUser >= Math.random()) {
-            let replyLog = await doCharacterReply(shuffledConstructs[i], chatLog, interaction);
-            if (replyLog !== void 0) {
-              chatLog = replyLog;
-            }
-            shouldContinue = true;
-          }
-        } else {
-          if (config.replyToConstruct >= Math.random() && chatLog.lastMessage.userID !== shuffledConstructs[i]._id) {
-            let replyLog = await doCharacterReply(shuffledConstructs[i], chatLog, interaction);
-            if (replyLog !== void 0) {
-              chatLog = replyLog;
-            }
-            shouldContinue = true;
-          }
-        }
-      }
-      if (!shouldContinue) {
-        break;
-      }
-    }
-  } else {
-    let config = constructArray[0].defaultConfig;
-    if (chatLog.chatConfigs !== void 0 && chatLog.chatConfigs.length > 0) {
-      for (let j = 0; j < chatLog.chatConfigs.length; j++) {
-        if (chatLog.chatConfigs[j]._id === constructArray[0]._id) {
-          config = chatLog.chatConfigs[j];
-          break;
-        }
-      }
-    }
-    if (!config.doLurk === true) {
-      let wasMentioned = isMentioned(chatLog.lastMessage.text, constructArray[0]) && chatLog.lastMessage.isHuman;
-      if (wasMentioned) {
-        if (config.replyToUserMention >= Math.random()) {
-          sendTyping(interaction);
-          let replyLog = await doCharacterReply(constructArray[0], chatLog, interaction);
-          if (replyLog !== void 0) {
-            chatLog = replyLog;
-          }
-        }
-      } else {
-        if (config.replyToUser >= Math.random()) {
-          sendTyping(interaction);
-          let replyLog = await doCharacterReply(constructArray[0], chatLog, interaction);
-          if (replyLog !== void 0) {
-            chatLog = replyLog;
-          }
-        }
-      }
-    }
-  }
-  if (isInterrupted && interaction.channelId === interruptedChannel) {
-    isInterrupted = false;
-    interruptedChannel = "";
-  }
+function setActionInterval(actionInterval) {
+  constructSettings.set("actionInterval", actionInterval);
 }
-async function handleRengenerateMessage(message) {
-  let registeredChannels = getRegisteredChannels();
-  let registered = false;
-  if (message.channel === null) {
-    console.log("Channel is null");
-    return;
-  }
-  for (let i = 0; i < registeredChannels.length; i++) {
-    if (registeredChannels[i]._id === message.channel.id) {
-      registered = true;
-      break;
-    }
-  }
-  if (!registered) {
-    console.log("Channel is not registered");
-    return;
-  }
-  let chatLogData = await getChat(message.channel.id);
-  let chatLog;
-  if (chatLogData) {
-    chatLog = assembleChatFromData(chatLogData);
-  }
-  if (chatLog === void 0 || chatLog === null) {
-    console.log("Chat log is undefined");
-    return;
-  }
-  if (chatLog.messages.length <= 1) {
-    console.log("Chat log has no messages");
-    return;
-  }
-  let edittedMessage = await regenerateMessageFromChatLog(chatLog, message.content);
-  if (edittedMessage === void 0) {
-    console.log("Editted message is undefined");
-    return;
-  }
-  await editMessage(message, edittedMessage);
+function getMessageInterval() {
+  return constructSettings.get("messageInterval") || 10;
 }
-async function handleRemoveMessage(message) {
-  let registeredChannels = getRegisteredChannels();
-  let registered = false;
-  if (message.channel === null)
-    return;
-  for (let i = 0; i < registeredChannels.length; i++) {
-    if (registeredChannels[i]._id === message.channel.id) {
-      registered = true;
-      break;
-    }
-  }
-  if (!registered)
-    return;
-  let chatLogData = await getChat(message.channel.id);
-  let chatLog;
-  if (chatLogData) {
-    chatLog = assembleChatFromData(chatLogData);
-  }
-  if (chatLog === void 0 || chatLog === null) {
-    return;
-  }
-  if (chatLog.messages.length < 1) {
-    return;
-  }
-  await removeMessagesFromChatLog(chatLog, message.content);
-  await deleteMessage(message);
+function setMessageInterval(messageInterval) {
+  constructSettings.set("messageInterval", messageInterval);
 }
-function containsName(message, chars) {
-  for (let i = 0; i < chars.length; i++) {
-    if (isMentioned(message, chars[i])) {
-      return chars[i].name;
-    }
-  }
-  return false;
+function getDoSystemInfo() {
+  return constructSettings.get("doSystemInfo") || true;
 }
-function isMentioned(message, char) {
-  if (message.toLowerCase().trim().includes(char.name.toLowerCase().trim()) && char.name !== "" || message.toLowerCase().trim().includes(char.nickname.toLowerCase().trim()) && char.nickname !== "") {
-    return true;
-  }
-  return false;
+function setDoSystemInfo(doSystemSettings) {
+  constructSettings.set("doSystemInfo", doSystemSettings);
 }
-async function assembleUserProfile(ServerID, userID, isDM = false) {
-  if (!isDM) {
-    let userData;
-    let userRoles = [];
-    let serverData;
-    serverData = await disClient.guilds.fetch(ServerID);
-    if (!serverData) {
-      console.log("Server not found");
-      return;
-    }
-    userData = await serverData.members.fetch(userID);
-    if (!userData) {
-      console.log("User not found");
-      return;
-    }
-    userData.roles.cache.forEach((role) => {
-      userRoles.push(role.name);
-    });
-    let status = "";
-    if ((userData == null ? void 0 : userData.presence) === void 0 || (userData == null ? void 0 : userData.presence) === null)
-      return;
-    if ((userData == null ? void 0 : userData.presence.activities) === void 0) {
-      status = "No status";
-    } else if ((userData == null ? void 0 : userData.presence.activities.length) > 0) {
-      switch (userData == null ? void 0 : userData.presence.activities[0].type) {
-        case 0:
-          status = `Playing ${userData.presence.activities[0].name}`;
-          break;
-        case 2:
-          status = `Listening to ${userData.presence.activities[0].details} by ${userData.presence.activities[0].state} on ${userData.presence.activities[0].name}`;
-          break;
-        default:
-          status = `${userData == null ? void 0 : userData.presence.activities[0].name}`;
-          break;
-      }
-    } else {
-      status = "No status";
-    }
-    const userObject = {
-      username: userData.user.username ? userData.user.username : "No username",
-      nickname: userData.nickname ? userData.nickname : "No nickname",
-      roles: userRoles,
-      joined: userData.joinedAt ? userData.joinedAt : "Not inside a server.",
-      created: userData.user.createdAt ? userData.user.createdAt : "Not inside a server.",
-      status
-    };
-    let userString = `[{{char}} is speaking to ${userObject.username} ${userObject.nickname !== "No nickname" ? `(${userObject.nickname})` : ""} in ${serverData.name}. ${userObject.username} is ${userObject.status}. ${userObject.username} joined the server on ${userObject.joined}. ${userObject.username} created their account on ${userObject.created}. ${userObject.username} has the following roles: ${userObject.roles.join(", ")}.]`;
-    return userString;
-  } else {
-    return null;
-  }
+function getShowDiscordUserInfo() {
+  return constructSettings.get("showDiscordUserInfo") || false;
 }
-async function doImageReaction(message) {
-  var _a, _b;
-  if (!doStableReactions) {
-    console.log("Stable Reactions is disabled");
-    return;
-  }
-  if (!diffusionWhitelist.includes(message.channel.id)) {
-    console.log("Channel is not whitelisted");
-    return;
-  }
-  if (message.attachments.size > 0) {
-    message.react("❎");
-    console.log("Message has an attachment");
-    return;
-  }
-  if (message.embeds.length > 0) {
-    message.react("❎");
-    console.log("Message has an embed");
-    return;
-  }
-  if (message.content.includes("http")) {
-    message.react("❎");
-    console.log("Message has a link");
-    return;
-  }
-  if (message.content.includes("www")) {
-    console.log("Message has a link");
-    message.react("❎");
-    return;
-  }
-  if (message.content.includes(".com")) {
-    message.react("❎");
-    console.log("Message has a link");
-    return;
-  }
-  if (message.content.includes(".net")) {
-    message.react("❎");
-    console.log("Message has a link");
-    return;
-  }
-  if (message.cleanContent.length < 1) {
-    message.react("❎");
-    console.log("Message has no content");
-    return;
-  }
-  message.react("✅");
-  let prompt = message.cleanContent;
-  let imageData = await makeImage(prompt).then((data) => {
-    return data;
-  }).catch((err) => {
-    console.log(err);
-    return null;
-  });
-  if (imageData === null) {
-    if (((_b = (_a = message == null ? void 0 : message.reactions) == null ? void 0 : _a.cache) == null ? void 0 : _b.get("✅")) !== void 0) {
-      message.reactions.cache.get("✅").remove();
-    }
-    message.react("❌");
-    console.log("Image data is null");
-    return;
-  }
-  const buffer = Buffer.from(imageData.base64, "base64");
-  let attachment = new discord_js.AttachmentBuilder(buffer, { name: `${imageData.name}` });
-  const embed = new discord_js.EmbedBuilder().setTitle("Imagine").setFields([
-    {
-      name: "Prompt",
-      value: getDefaultPrompt() + prompt,
-      inline: false
-    },
-    {
-      name: "Negative Prompt",
-      value: `${getDefaultNegativePrompt()}`,
-      inline: false
-    },
-    {
-      name: "Steps",
-      value: getDefaultSteps().toString(),
-      inline: true
-    },
-    {
-      name: "CFG",
-      value: getDefaultCfg().toString(),
-      inline: false
-    },
-    {
-      name: "Width",
-      value: getDefaultWidth().toString(),
-      inline: true
-    },
-    {
-      name: "Height",
-      value: getDefaultHeight().toString(),
-      inline: true
-    },
-    {
-      name: "Highres Steps",
-      value: getDefaultHighresSteps().toString(),
-      inline: false
-    },
-    {
-      name: "Model",
-      value: `${imageData.model}`,
-      inline: false
-    }
-  ]).setImage(`attachment://${imageData.name}`).setFooter({ text: "Powered by Stable Diffusion" });
-  if (!showDiffusionDetails) {
-    message.reply({ files: [attachment], embeds: [embed] });
-  } else {
-    message.reply({ files: [attachment] });
-  }
+function setShowDiscordUserInfo(showDiscordUserInfo) {
+  constructSettings.set("showDiscordUserInfo", showDiscordUserInfo);
 }
-async function removeConstructFromChatLog(constructID, chatLogID) {
-  const currentLogData = await getChat(chatLogID);
-  if (currentLogData === null) {
-    return;
-  }
-  let currentLog = assembleChatFromData(currentLogData);
-  if (currentLog === null) {
-    return;
-  }
-  if (!currentLog.constructs.includes(constructID)) {
-    return;
-  }
-  currentLog.constructs = currentLog.constructs.filter((item) => item !== constructID);
-  await updateChat(currentLog);
-}
-async function addConstructToChatLog(constructID, chatLogID) {
-  const currentLogData = await getChat(chatLogID);
-  if (currentLogData === null) {
-    return;
-  }
-  let currentLog = assembleChatFromData(currentLogData);
-  if (currentLog === null) {
-    return;
-  }
-  if (currentLog.constructs.includes(constructID)) {
-    return;
-  }
-  currentLog.constructs.push(constructID);
-  await updateChat(currentLog);
-}
-function makeDelay() {
-  let timeoutId = null;
-  const waitFor2 = (seconds) => {
-    isDelaying2 = true;
-    return new Promise((resolve, reject) => {
-      timeoutId = setTimeout(resolve, seconds * 1e3);
-    });
-  };
-  let isDelaying2 = false;
-  const cancel2 = () => {
-    isDelaying2 = false;
-    if (timeoutId !== null) {
-      clearTimeout(timeoutId);
-    }
-  };
-  return { waitFor: waitFor2, cancel: cancel2, isDelaying: isDelaying2 };
-}
-function DiscordController() {
-  getDiscordSettings();
-  expressApp.get("/api/discord/channels", (req, res) => {
-    try {
-      const channels = getRegisteredChannels();
-      res.json({ channels });
-    } catch (error) {
-      res.status(500).send({ error: error.message });
-    }
+async function ActiveConstructController() {
+  expressApp.post("/api/constructs/set/systeminfo", (req, res) => {
+    setDoSystemInfo(req.body.value);
+    const currentDoSystemInfo = getDoSystemInfo();
+    res.json({ doSystemInfo: currentDoSystemInfo });
   });
-  expressApp.post("/api/discord/channels/register", (req, res) => {
-    try {
-      const { channel } = req.body;
-      addRegisteredChannel(channel);
-      res.status(200).send({ message: "Channel registered successfully." });
-    } catch (error) {
-      res.status(500).send({ error: error.message });
-    }
+  expressApp.get("/api/constructs/systeminfo", (req, res) => {
+    const currentDoSystemInfo = getDoSystemInfo();
+    res.json({ doSystemInfo: currentDoSystemInfo });
   });
-  expressApp.delete("/api/discord/channels/unregister", (req, res) => {
-    try {
-      const { channel } = req.body;
-      removeRegisteredChannel(channel);
-      res.status(200).send({ message: "Channel unregistered successfully." });
-    } catch (error) {
-      res.status(500).send({ error: error.message });
-    }
+  expressApp.post("/api/constructs/set/randommessages", (req, res) => {
+    setDoRandomMessages(req.body.value);
+    const currentDoRandomMessages = getDoRandomMessages();
+    res.json({ doRandomMessages: currentDoRandomMessages });
   });
-  expressApp.get("/api/discord/channels/check", (req, res) => {
-    try {
-      const { channel } = req.query;
-      const isRegistered = isChannelRegistered(channel);
-      res.json({ isRegistered });
-    } catch (error) {
-      res.status(500).send({ error: error.message });
-    }
+  expressApp.get("/api/constructs/randommessages", (req, res) => {
+    const currentDoRandomMessages = getDoRandomMessages();
+    res.json({ doRandomMessages: currentDoRandomMessages });
   });
-  expressApp.get("/api/discord/diffusion", (req, res) => {
-    try {
-      res.json({ value: getDoStableDiffusion() });
-    } catch (error) {
-      res.status(500).send({ error: error.message });
-    }
+  expressApp.post("/api/constructs/set/randomthoughts", (req, res) => {
+    setDoRandomThoughts(req.body.value);
+    const currentDoRandomThoughts = getDoRandomThoughts();
+    res.json({ doRandomThoughts: currentDoRandomThoughts });
   });
-  expressApp.post("/api/discord/diffusion", (req, res) => {
-    try {
-      setDoStableDiffusion(req.body.value);
-      res.send({ message: "Updated successfully." });
-    } catch (error) {
-      res.status(500).send({ error: error.message });
-    }
+  expressApp.get("/api/constructs/randomthoughts", (req, res) => {
+    const currentDoRandomThoughts = getDoRandomThoughts();
+    res.json({ doRandomThoughts: currentDoRandomThoughts });
   });
-  expressApp.get("/api/discord/diffusion-reactions", (req, res) => {
-    try {
-      res.json({ value: getDoStableReactions() });
-    } catch (error) {
-      res.status(500).send({ error: error.message });
-    }
+  expressApp.post("/api/constructs/set/randomactions", (req, res) => {
+    setDoRandomActions(req.body.value);
+    const currentDoRandomActions = getDoRandomActions();
+    res.json({ doRandomActions: currentDoRandomActions });
   });
-  expressApp.post("/api/discord/diffusion-reactions", (req, res) => {
-    try {
-      setDoStableReactions(req.body.value);
-      console.log("Set Diffusion Reacts", req.body.value);
-      res.send({ message: "Updated successfully." });
-    } catch (error) {
-      res.status(500).send({ error: error.message });
-    }
+  expressApp.get("/api/constructs/randomactions", (req, res) => {
+    const currentDoRandomActions = getDoRandomActions();
+    res.json({ doRandomActions: currentDoRandomActions });
   });
-  expressApp.get("/api/discord/diffusion-whitelist", (req, res) => {
-    try {
-      res.json({ channels: getDiffusionWhitelist() });
-    } catch (error) {
-      res.status(500).send({ error: error.message });
-    }
+  expressApp.post("/api/constructs/set/thoughtinterval", (req, res) => {
+    setThoughtInterval(req.body.value);
+    const currentThoughtInterval = getThoughtInterval();
+    res.json({ thoughtInterval: currentThoughtInterval });
   });
-  expressApp.post("/api/discord/diffusion-whitelist", (req, res) => {
-    try {
-      addDiffusionWhitelist(req.body.channel);
-      res.send({ message: "Channel added to whitelist successfully." });
-    } catch (error) {
-      res.status(500).send({ error: error.message });
-    }
+  expressApp.get("/api/constructs/thoughtinterval", (req, res) => {
+    const currentThoughtInterval = getThoughtInterval();
+    res.json({ thoughtInterval: currentThoughtInterval });
   });
-  expressApp.delete("/api/discord/diffusion-whitelist", (req, res) => {
-    try {
-      removeDiffusionWhitelist(req.body.channel);
-      res.send({ message: "Channel removed from whitelist successfully." });
-    } catch (error) {
-      res.status(500).send({ error: error.message });
-    }
+  expressApp.post("/api/constructs/set/actioninterval", (req, res) => {
+    setActionInterval(req.body.value);
+    const currentActionInterval = getActionInterval();
+    res.json({ actionInterval: currentActionInterval });
   });
-  expressApp.get("/api/discord/diffusion-details", (req, res) => {
-    try {
-      res.json({ value: getShowDiffusionDetails() });
-    } catch (error) {
-      res.status(500).send({ error: error.message });
-    }
+  expressApp.get("/api/constructs/actioninterval", (req, res) => {
+    const currentActionInterval = getActionInterval();
+    res.json({ actionInterval: currentActionInterval });
   });
-  expressApp.post("/api/discord/diffusion-details", (req, res) => {
-    try {
-      setShowDiffusionDetails(req.body.value);
-      res.send({ message: "Detail setting updated successfully." });
-    } catch (error) {
-      res.status(500).send({ error: error.message });
-    }
+  expressApp.post("/api/constructs/set/messageinterval", (req, res) => {
+    setMessageInterval(req.body.value);
+    const currentMessageInterval = getMessageInterval();
+    res.json({ messageInterval: currentMessageInterval });
   });
-  expressApp.get("/api/discord/diffusion-channels", (req, res) => {
-    try {
-      res.json({ channels: getDiffusionWhitelist() });
-    } catch (error) {
-      res.status(500).send({ error: error.message });
-    }
+  expressApp.get("/api/constructs/messageinterval", (req, res) => {
+    const currentMessageInterval = getMessageInterval();
+    res.json({ messageInterval: currentMessageInterval });
   });
-  expressApp.get("/api/discord/delay", (req, res) => {
-    try {
-      res.json({ value: getDelay() });
-    } catch (error) {
-      res.status(500).send({ error: error.message });
-    }
+  expressApp.post("/api/constructs/set/showdiscorduserinfo", (req, res) => {
+    setShowDiscordUserInfo(req.body.value);
+    const currentShowDiscordUserInfo = getShowDiscordUserInfo();
+    res.json({ showDiscordUserInfo: currentShowDiscordUserInfo });
   });
-  expressApp.post("/api/discord/delay", (req, res) => {
-    try {
-      setDelay(req.body.value);
-      res.send({ message: "Delay updated successfully." });
-    } catch (error) {
-      res.status(500).send({ error: error.message });
-    }
-  });
-  expressApp.get("/api/discord/delay-enabled", (req, res) => {
-    try {
-      res.json({ value: getDoDelay() });
-    } catch (error) {
-      res.status(500).send({ error: error.message });
-    }
-  });
-  expressApp.post("/api/discord/delay-enabled", (req, res) => {
-    try {
-      setDoDelay(req.body.value);
-      res.send({ message: "Delay setting updated successfully." });
-    } catch (error) {
-      res.status(500).send({ error: error.message });
-    }
+  expressApp.get("/api/constructs/showdiscorduserinfo", (req, res) => {
+    const currentShowDiscordUserInfo = getShowDiscordUserInfo();
+    res.json({ showDiscordUserInfo: currentShowDiscordUserInfo });
   });
 }
 const RegisterCommand = {
@@ -7026,7 +4539,7 @@ const intents = {
   ],
   partials: [discord_js.Partials.Channel, discord_js.Partials.GuildMember, discord_js.Partials.User, discord_js.Partials.Reaction, discord_js.Partials.Message, discord_js.Partials.ThreadMember, discord_js.Partials.GuildScheduledEvent]
 };
-const store$1 = new Store({
+const store$3 = new Store({
   name: "discordData"
 });
 let disClient = new discord_js.Client(intents);
@@ -7571,21 +5084,21 @@ async function getWebhooksForChannel(channelID) {
 }
 async function getDiscordData() {
   let savedToken;
-  const storedToken = store$1.get("discordToken");
+  const storedToken = store$3.get("discordToken");
   if (storedToken !== void 0 && typeof storedToken === "string") {
     savedToken = storedToken;
   } else {
     savedToken = "";
   }
   let appId;
-  const storedAppId = store$1.get("discordAppId");
+  const storedAppId = store$3.get("discordAppId");
   if (storedAppId !== void 0 && typeof storedAppId === "string") {
     appId = storedAppId;
   } else {
     appId = "";
   }
   let discordMultiConstructMode;
-  const storedDiscordMultiConstructMode = store$1.get("discordMultiConstructMode");
+  const storedDiscordMultiConstructMode = store$3.get("discordMultiConstructMode");
   if (storedDiscordMultiConstructMode !== void 0 && typeof storedDiscordMultiConstructMode === "boolean") {
     discordMultiConstructMode = storedDiscordMultiConstructMode;
   } else {
@@ -7598,7 +5111,7 @@ async function getDiscordData() {
 }
 function saveDiscordData(newToken, newAppId, discordMultiConstructMode) {
   if (newToken === "") {
-    const storedToken = store$1.get("discordToken");
+    const storedToken = store$3.get("discordToken");
     if (storedToken !== void 0 && typeof storedToken === "string") {
       token = storedToken;
     } else {
@@ -7606,10 +5119,10 @@ function saveDiscordData(newToken, newAppId, discordMultiConstructMode) {
     }
   } else {
     token = newToken;
-    store$1.set("discordToken", newToken);
+    store$3.set("discordToken", newToken);
   }
   if (newAppId === "") {
-    const storedAppId = store$1.get("discordAppId");
+    const storedAppId = store$3.get("discordAppId");
     if (storedAppId !== void 0 && typeof storedAppId === "string") {
       applicationID = storedAppId;
     } else {
@@ -7617,10 +5130,10 @@ function saveDiscordData(newToken, newAppId, discordMultiConstructMode) {
     }
   } else {
     applicationID = newAppId;
-    store$1.set("discordAppId", newAppId);
+    store$3.set("discordAppId", newAppId);
   }
   multiConstructMode = discordMultiConstructMode;
-  store$1.set("discordMultiConstructMode", discordMultiConstructMode);
+  store$3.set("discordMultiConstructMode", discordMultiConstructMode);
 }
 let messageQueue = [];
 let isProcessing = false;
@@ -7679,7 +5192,7 @@ function DiscordJSRoutes() {
       let rawToken = req.body.rawToken;
       let appId = req.body.appId;
       if (rawToken === "") {
-        const storedToken = store$1.get("discordToken");
+        const storedToken = store$3.get("discordToken");
         if (storedToken !== void 0 && typeof storedToken === "string") {
           token = storedToken;
         } else {
@@ -7688,10 +5201,10 @@ function DiscordJSRoutes() {
         }
       } else {
         token = rawToken;
-        store$1.set("discordToken", rawToken);
+        store$3.set("discordToken", rawToken);
       }
       if (appId === "") {
-        const storedAppId = store$1.get("discordAppId");
+        const storedAppId = store$3.get("discordAppId");
         if (storedAppId !== void 0 && typeof storedAppId === "string") {
           applicationID = storedAppId;
         } else {
@@ -7700,7 +5213,7 @@ function DiscordJSRoutes() {
         }
       } else {
         applicationID = appId;
-        store$1.set("discordAppId", appId);
+        store$3.set("discordAppId", appId);
       }
       await disClient.login(token);
       createClient();
@@ -7829,6 +5342,2493 @@ function DiscordJSRoutes() {
   });
   expressApp.get("/api/discord/bot/status", (req, res) => {
     res.send({ status: isReady });
+  });
+}
+function assembleConstructFromData(data) {
+  if (data === null)
+    return null;
+  if ((data == null ? void 0 : data.doc) !== void 0)
+    data = data.doc;
+  if ((data == null ? void 0 : data._id) === void 0)
+    return null;
+  const construct = {
+    _id: data._id,
+    name: data.name,
+    nickname: data.nickname,
+    avatar: data.avatar,
+    commands: data.commands,
+    visualDescription: data.visualDescription,
+    personality: data.personality,
+    background: data.background,
+    relationships: data.relationships,
+    interests: data.interests,
+    greetings: data.greetings,
+    farewells: data.farewells,
+    authorsNote: data.authorsNote,
+    defaultConfig: data.defaultConfig,
+    thoughtPattern: data.thoughtPattern,
+    sprites: data.sprites
+  };
+  return construct;
+}
+function assembleChatFromData(data) {
+  if (data === null)
+    return null;
+  if ((data == null ? void 0 : data._id) === void 0)
+    return null;
+  const chat = {
+    _id: data._id,
+    name: data.name,
+    type: data.type,
+    messages: data.messages,
+    lastMessage: data.lastMessage,
+    lastMessageDate: data.lastMessageDate,
+    firstMessageDate: data.firstMessageDate,
+    constructs: data.constructs,
+    humans: data.humans,
+    chatConfigs: data.chatConfigs,
+    doVector: data.doVector,
+    global: data.global
+  };
+  return chat;
+}
+function assembleUserFromData(data) {
+  if (data === null)
+    return null;
+  if ((data == null ? void 0 : data._id) === void 0)
+    return null;
+  const user = {
+    _id: data._id,
+    name: data.name,
+    pronouns: data.pronouns,
+    nickname: data.nickname,
+    avatar: data.avatar,
+    personality: data.personality,
+    background: data.background,
+    relationships: data.relationships,
+    interests: data.interests
+  };
+  return user;
+}
+function assemblePromptFromLog(data) {
+  var _a, _b, _c;
+  let prompt = "";
+  let messages = data.messages;
+  for (let i = 0; i < messages.length; i++) {
+    if (messages[i].isCommand === true) {
+      prompt += `${messages[i].text.trim()}
+`;
+      continue;
+    } else {
+      if (messages[i].isThought === true) {
+        prompt += `${messages[i].user}'s Thoughts: ${messages[i].text.trim()}
+`;
+      } else {
+        let captionText = "";
+        if (messages[i].attachments.length > 0) {
+          for (let j = 0; j < messages[i].attachments.length; j++) {
+            let attachmentCaption = (_b = (_a = messages[i].attachments[j]) == null ? void 0 : _a.metadata) == null ? void 0 : _b.caption;
+            if (attachmentCaption) {
+              captionText += `[${messages[i].user} sent an image of ${attachmentCaption}] `;
+            } else {
+              captionText += `[${messages[i].user} sent a file called ${(_c = messages[i].attachments[j]) == null ? void 0 : _c.name}] `;
+            }
+          }
+        }
+        prompt += `${messages[i].user}: ${messages[i].text.trim()}${captionText.trim()}
+`;
+      }
+    }
+  }
+  return prompt;
+}
+function assembleAlpacaPromptFromLog(data, messagesToInclude = 25, constructName = "Bot") {
+  var _a, _b, _c;
+  let prompt = "";
+  let messages = data.messages.slice(-messagesToInclude);
+  for (let i = 0; i < messages.length; i++) {
+    let messageText = messages[i].text.trim();
+    if (messages[i].isCommand === true) {
+      prompt += `### Instruction:
+${messageText}
+`;
+      continue;
+    } else if (messages[i].isThought === true) {
+      prompt += `### Response:
+${messages[i].user}'s Thoughts: ${messageText}
+`;
+    } else {
+      let captionText = "";
+      if (messages[i].attachments.length > 0) {
+        for (let j = 0; j < messages[i].attachments.length; j++) {
+          let attachmentCaption = (_b = (_a = messages[i].attachments[j]) == null ? void 0 : _a.metadata) == null ? void 0 : _b.caption;
+          if (attachmentCaption) {
+            captionText += `[${messages[i].user} sent an image of ${attachmentCaption}] `;
+          } else {
+            captionText += `[${messages[i].user} sent a file called ${(_c = messages[i].attachments[j]) == null ? void 0 : _c.name}] `;
+          }
+        }
+      }
+      if (messages[i].isHuman) {
+        prompt += `### Instruction:
+${messages[i].user}: ${messageText}${captionText.trim()}
+`;
+      } else {
+        prompt += `### Response:
+${messages[i].user}: ${messageText}${captionText.trim()}
+`;
+      }
+    }
+  }
+  if (messages.length > 0 && messages[messages.length - 1].user !== "Bot") {
+    prompt += `### Response:
+${constructName}:`;
+  }
+  return prompt;
+}
+function assembleVicunaPromptFromLog(data, messagesToInclude = 25, constructName = "Bot") {
+  var _a, _b, _c;
+  let prompt = "";
+  let messages = data.messages.slice(-messagesToInclude);
+  for (let i = 0; i < messages.length; i++) {
+    let messageText = messages[i].text.trim();
+    if (messages[i].isCommand === true) {
+      prompt += `SYSTEM: ${messageText}
+`;
+      continue;
+    } else if (messages[i].isThought === true) {
+      prompt += `ASSISTANT: ${messages[i].user}'s Thoughts: ${messageText}
+`;
+    } else {
+      let captionText = "";
+      if (messages[i].attachments && messages[i].attachments.length > 0) {
+        for (let j = 0; j < messages[i].attachments.length; j++) {
+          let attachmentCaption = (_b = (_a = messages[i].attachments[j]) == null ? void 0 : _a.metadata) == null ? void 0 : _b.caption;
+          if (attachmentCaption) {
+            captionText += `[${messages[i].user} sent an image of ${attachmentCaption}] `;
+          } else {
+            captionText += `[${messages[i].user} sent a file called ${(_c = messages[i].attachments[j]) == null ? void 0 : _c.name}] `;
+          }
+        }
+      }
+      if (messages[i].isHuman) {
+        prompt += `USER: ${messages[i].user}: ${messageText}${captionText.trim()}
+`;
+      } else {
+        prompt += `ASSISTANT: ${messages[i].user}: ${messageText}${captionText.trim()}
+`;
+      }
+    }
+  }
+  if (messages.length > 0 && messages[messages.length - 1].isHuman) {
+    prompt += `ASSISTANT: ${constructName}:`;
+  }
+  return prompt;
+}
+function assembleMetharmePromptFromLog(data, messagesToInclude = 25, constructName = "Bot") {
+  var _a, _b, _c;
+  let prompt = "";
+  let messages = data.messages.slice(-messagesToInclude);
+  for (let i = 0; i < messages.length; i++) {
+    let messageText = messages[i].text.trim();
+    if (messages[i].isCommand === true) {
+      prompt += `<|user|>${messageText}`;
+      continue;
+    } else if (messages[i].isThought === true) {
+      prompt += `<|model|>${messages[i].user}'s Thoughts: ${messageText}`;
+    } else {
+      let captionText = "";
+      if (messages[i].attachments && messages[i].attachments.length > 0) {
+        for (let j = 0; j < messages[i].attachments.length; j++) {
+          let attachmentCaption = (_b = (_a = messages[i].attachments[j]) == null ? void 0 : _a.metadata) == null ? void 0 : _b.caption;
+          if (attachmentCaption) {
+            captionText += `[${messages[i].user} sent an image of ${attachmentCaption}] `;
+          } else {
+            captionText += `[${messages[i].user} sent a file called ${(_c = messages[i].attachments[j]) == null ? void 0 : _c.name}] `;
+          }
+        }
+      }
+      if (messages[i].isHuman) {
+        prompt += `<|user|>${messages[i].user}: ${messageText}${captionText.trim()}`;
+      } else {
+        prompt += `<|model|>${messages[i].user}: ${messageText}${captionText.trim()}`;
+      }
+    }
+  }
+  if (messages.length > 0 && messages[messages.length - 1].isHuman) {
+    prompt += `<|model|>${constructName}:`;
+  }
+  return prompt;
+}
+async function convertDiscordMessageToMessage(message, activeConstructs) {
+  var _a;
+  let attachments = [];
+  let username = await getUsername(message.author.id, message.channelId);
+  if (username === null) {
+    username = message.author.displayName;
+  }
+  if (message.attachments.size > 0) {
+    for (const attachment of message.attachments.values()) {
+      try {
+        let response = await axios.get(attachment.url, { responseType: "arraybuffer" });
+        let base64Data = Buffer.from(response.data, "binary").toString("base64");
+        let newAttachment = {
+          _id: attachment.id,
+          type: attachment.contentType ? attachment.contentType : "unknown",
+          name: attachment.name,
+          data: base64Data.split(";base64,").pop() || "",
+          metadata: attachment.size,
+          fileext: attachment.name.split(".").pop() || "unknown"
+        };
+        if ((_a = attachment.contentType) == null ? void 0 : _a.includes("image")) {
+          let caption = await getCaption(newAttachment.data);
+          newAttachment.metadata = {
+            caption,
+            size: attachment.size
+          };
+        }
+        addAttachment(newAttachment);
+        attachments.push(newAttachment);
+      } catch (error) {
+        console.error("Error fetching attachment:", error);
+      }
+    }
+  }
+  const convertedMessage = {
+    _id: message.id,
+    user: username,
+    avatar: message.author.avatarURL() ? message.author.avatarURL() : "",
+    text: cleanEmotes(message.content.trim()),
+    userID: message.author.id,
+    timestamp: message.createdTimestamp,
+    origin: "Discord - " + message.channelId,
+    isHuman: true,
+    isCommand: false,
+    isPrivate: false,
+    participants: [message.author.id, ...activeConstructs],
+    attachments,
+    isThought: false
+  };
+  return convertedMessage;
+}
+async function base642Buffer(base64) {
+  let buffer;
+  if (base64.includes("/images")) {
+    base64 = await getImageFromURL(base64);
+  }
+  const match = base64.match(/^data:image\/[^;]+;base64,(.+)/);
+  if (match) {
+    const actualBase64 = match[1];
+    buffer = Buffer.from(actualBase64, "base64");
+  } else {
+    try {
+      buffer = Buffer.from(base64, "base64");
+    } catch (error) {
+      console.error("Invalid base64 string:", error);
+      return base64;
+    }
+  }
+  const form = new FormData();
+  form.append("file", buffer, {
+    filename: "file.png",
+    // You can name the file whatever you like
+    contentType: "image/png"
+    // Be sure this matches the actual file type
+  });
+  try {
+    const response = await axios.post("https://file.io", form, {
+      headers: {
+        ...form.getHeaders()
+      }
+    });
+    if (response.status !== 200) {
+      console.error("Failed to upload file:", response.statusText);
+      return buffer;
+    }
+    return response.data.link;
+  } catch (error) {
+    console.error("Failed to upload file:", error);
+    return buffer;
+  }
+}
+function assembleUserFromDiscordAuthor(message) {
+  var _a;
+  let avatar = message.author.avatarURL() ? (_a = message.author.avatarURL()) == null ? void 0 : _a.toString() : "";
+  if (avatar === null)
+    avatar = "";
+  if (avatar === void 0)
+    avatar = "";
+  const user = {
+    _id: message.author.id,
+    name: message.author.username,
+    pronouns: "",
+    nickname: message.author.displayName,
+    avatar,
+    personality: "",
+    background: "",
+    relationships: [],
+    interests: []
+  };
+  return user;
+}
+async function addUserFromDiscordMessage(message) {
+  const user = assembleUserFromDiscordAuthor(message);
+  console.log("New User:", user);
+  if (user._id === void 0)
+    return;
+  let existingUserData = await getUser(user._id);
+  console.log("Existing Data:", existingUserData);
+  existingUserData = assembleUserFromData(existingUserData);
+  console.log("Existing Data Assembled:", existingUserData);
+  if (existingUserData !== null) {
+    return;
+  }
+  await addUser(user);
+}
+function assembleLorebookFromData(data) {
+  if (data === null) {
+    return null;
+  }
+  if ((data == null ? void 0 : data._id) === void 0) {
+    return null;
+  }
+  const lorebook = {
+    _id: data._id,
+    name: data.name || "",
+    avatar: data.avatar || "",
+    description: data.description || "",
+    scan_depth: data.scan_depth || 0,
+    token_budget: data.token_budget || 0,
+    recursive_scanning: data.recursive_scanning || false,
+    global: data.global || false,
+    constructs: data.constructs || [],
+    extensions: data.extensions || {},
+    entries: data.entries || []
+  };
+  return lorebook;
+}
+function getGPTTokens(text) {
+  const tokens = gptTokenizer.encode(text).length;
+  return tokens;
+}
+async function getImageFromURL(url2) {
+  const filePath = path.join(uploadsPath, url2.split("/images/")[1]);
+  if (!fs$1.existsSync(filePath)) {
+    throw new Error(`File not found: ${filePath}`);
+  }
+  const buffer = await fs$1.promises.readFile(filePath);
+  return buffer.toString("base64");
+}
+async function getIntactChatLog(interaction) {
+  let logData = await getChat(interaction.channelId);
+  if (logData === null) {
+    await interaction.reply("No chat log found.");
+    return null;
+  }
+  let chatLog = assembleChatFromData(logData);
+  if (chatLog === null) {
+    await interaction.reply("No chat log found.");
+    return null;
+  }
+  return chatLog;
+}
+function fillChatContextToLimit(chatLog, tokenLimit, tokenizer = "LLaMA") {
+  console.log(`Filling chat context to ${tokenLimit} tokens.`);
+  const messagesToInclude = [];
+  let tokenCount = 0;
+  for (let i = chatLog.messages.length - 1; i >= 0; i--) {
+    const message = chatLog.messages[i];
+    let tokens;
+    if (tokenizer === "OpenAI") {
+      tokens = getGPTTokens(message.text);
+    } else {
+      tokens = getGPTTokens(message.text);
+    }
+    if (tokens + tokenCount <= tokenLimit) {
+      messagesToInclude.unshift(message);
+      tokenCount += tokens;
+    } else {
+      break;
+    }
+  }
+  console.log(`Including ${messagesToInclude.length} messages with ${tokenCount} tokens.`);
+  return messagesToInclude;
+}
+const store$2 = new Store({
+  name: "constructData"
+});
+let ActiveConstructs = [];
+const retrieveConstructs = () => {
+  return store$2.get("ids", []);
+};
+const setDoMultiLine = (doMultiLine) => {
+  store$2.set("doMultiLine", doMultiLine);
+};
+const getDoMultiLine = () => {
+  return store$2.get("doMultiLine", false);
+};
+const addConstruct = (newId) => {
+  const existingIds = retrieveConstructs();
+  if (!existingIds.includes(newId)) {
+    existingIds.push(newId);
+    store$2.set("ids", existingIds);
+  }
+};
+const removeConstruct = (idToRemove) => {
+  const existingIds = retrieveConstructs();
+  const updatedIds = existingIds.filter((id) => id !== idToRemove);
+  store$2.set("ids", updatedIds);
+};
+const isConstructActive = (id) => {
+  const existingIds = retrieveConstructs();
+  return existingIds.includes(id);
+};
+const clearActiveConstructs = () => {
+  store$2.set("ids", []);
+};
+const setAsPrimary = async (id) => {
+  const existingIds = retrieveConstructs();
+  const index = existingIds.indexOf(id);
+  if (index > -1) {
+    existingIds.splice(index, 1);
+  }
+  existingIds.unshift(id);
+  store$2.set("ids", existingIds);
+  if (isReady) {
+    let constructRaw = await getConstruct(id);
+    let construct = assembleConstructFromData(constructRaw);
+    if (construct === null) {
+      console.log("Could not assemble construct from data");
+      return;
+    }
+    setDiscordBotInfo(construct.name, construct.avatar);
+  }
+};
+function getCharacterPromptFromConstruct(construct, replaceUser2 = true) {
+  let prompt = "";
+  if (construct.background.length > 1) {
+    prompt += construct.background + "\n";
+  }
+  if (construct.interests.length > 1) {
+    prompt += "Interests:\n";
+    for (let i = 0; i < construct.interests.length; i++) {
+      prompt += "- " + construct.interests[i] + "\n";
+    }
+  }
+  if (construct.relationships.length > 1) {
+    prompt += "Relationships:\n";
+    for (let i = 0; i < construct.relationships.length; i++) {
+      prompt += "- " + construct.relationships[i] + "\n";
+    }
+  }
+  if (construct.personality.length > 1) {
+    prompt += construct.personality + "\n";
+  }
+  if (replaceUser2 === true) {
+    return prompt.replaceAll("{{char}}", `${construct.name}`);
+  } else {
+    return prompt;
+  }
+}
+function getUserPromptFromUser(user, replaceUser2 = true) {
+  let prompt = "";
+  if (user.background.length > 1) {
+    prompt += user.background + "\n";
+  }
+  if (user.interests.length > 1) {
+    prompt += "Interests:\n";
+    for (let i = 0; i < user.interests.length; i++) {
+      prompt += "- " + user.interests[i] + "\n";
+    }
+  }
+  if (user.relationships.length > 1) {
+    prompt += "Relationships:\n";
+    for (let i = 0; i < user.relationships.length; i++) {
+      prompt += "- " + user.relationships[i] + "\n";
+    }
+  }
+  if (user.personality.length > 1) {
+    prompt += user.personality + "\n";
+  }
+  if (replaceUser2 === true) {
+    return prompt.replaceAll("{{char}}", `${user ? (user == null ? void 0 : user.nickname) || user.name : "DefaultUser"}`);
+  } else {
+    return prompt;
+  }
+}
+function assembleInstructPrompt(construct, chatLog, currentUser = "you", messagesToInclude, replaceUser2 = true) {
+  let prompt = "";
+  const currentSettings = settings;
+  const type = construct.defaultConfig.instructType;
+  prompt += getCharacterPromptFromConstruct(construct);
+  let leftOverTokens = currentSettings.max_context_length - getGPTTokens(prompt + construct.authorsNote);
+  const chatsToSend = fillChatContextToLimit(chatLog, leftOverTokens);
+  chatLog.messages = chatsToSend;
+  switch (type) {
+    case "Alpaca":
+      prompt += assembleAlpacaPromptFromLog(chatLog, messagesToInclude, construct.name);
+      break;
+    case "Metharme":
+      prompt += assembleMetharmePromptFromLog(chatLog, messagesToInclude, construct.name);
+      break;
+    case "Vicuna":
+      prompt += assembleVicunaPromptFromLog(chatLog, messagesToInclude, construct.name);
+      break;
+    default:
+      prompt += assembleAlpacaPromptFromLog(chatLog, messagesToInclude, construct.name);
+      break;
+  }
+  if (replaceUser2 === true) {
+    return prompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${construct.name}`);
+  } else {
+    return prompt;
+  }
+}
+function assemblePrompt(construct, chatLog, currentUser = "you", messagesToInclude, replaceUser2 = true) {
+  let prompt = "";
+  const currentSettings = settings;
+  prompt += getCharacterPromptFromConstruct(construct);
+  let leftOverTokens = currentSettings.max_context_length - getGPTTokens(prompt + construct.authorsNote);
+  const chatsToSend = fillChatContextToLimit(chatLog, leftOverTokens);
+  chatLog.messages = chatsToSend;
+  prompt += assemblePromptFromLog(chatLog);
+  prompt += `${construct.name}:`;
+  if (replaceUser2 === true) {
+    return prompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${construct.name}`);
+  } else {
+    return prompt;
+  }
+}
+function assembleUserPrompt(user, chatLog, currentUser = "you", messagesToInclude, replaceUser2 = true) {
+  let prompt = "";
+  prompt += getUserPromptFromUser(user);
+  prompt += assemblePromptFromLog(chatLog);
+  prompt += `${user ? (user == null ? void 0 : user.nickname) || user.name : "DefaultUser"}:`;
+  if (replaceUser2 === true) {
+    return prompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${user ? (user == null ? void 0 : user.nickname) || user.name : "DefaultUser"}`);
+  } else {
+    return prompt;
+  }
+}
+async function handleLorebookPrompt(construct, prompt, chatLog) {
+  const lorebooksData = await getLorebooks();
+  if (lorebooksData === null || lorebooksData === void 0) {
+    console.log("Could not get lorebooks");
+    return prompt;
+  }
+  const assembledLorebooks = [];
+  for (let i = 0; i < lorebooksData.length; i++) {
+    let lorebook = assembleLorebookFromData(lorebooksData[i].doc);
+    if (lorebook === null || lorebook === void 0) {
+      console.log("Could not assemble lorebook from data");
+      continue;
+    }
+    if (lorebook.constructs.includes(construct._id)) {
+      assembledLorebooks.push(lorebook);
+    } else {
+      if (lorebook.global === true) {
+        assembledLorebooks.push(lorebook);
+      } else {
+        continue;
+      }
+    }
+  }
+  const availableEntries = [];
+  for (let i = 0; i < assembledLorebooks.length; i++) {
+    for (let j = 0; j < assembledLorebooks[i].entries.length; j++) {
+      if (assembledLorebooks[i].entries[j].enabled === false) {
+        continue;
+      } else {
+        availableEntries.push(assembledLorebooks[i].entries[j]);
+      }
+    }
+  }
+  const lastTwoMessages = chatLog.messages.slice(-2);
+  if (assembledLorebooks.length === 0) {
+    return prompt;
+  }
+  const appliedEntries = [];
+  for (let i = 0; i < availableEntries.length; i++) {
+    if (availableEntries[i].constant === true) {
+      appliedEntries.push(availableEntries[i]);
+    } else {
+      if (availableEntries[i].case_sensitive === true) {
+        for (let j = 0; j < lastTwoMessages.length; j++) {
+          for (let k = 0; k < availableEntries[i].keys.length; k++) {
+            if (lastTwoMessages[j].text.includes(availableEntries[i].keys[k].trim())) {
+              if (appliedEntries.includes(availableEntries[i])) {
+                continue;
+              } else {
+                if (availableEntries[i].selective === true) {
+                  for (let k2 = 0; k2 < availableEntries[i].secondary_keys.length; k2++) {
+                    if (lastTwoMessages[j].text.includes(availableEntries[i].secondary_keys[k2].trim())) {
+                      if (appliedEntries.includes(availableEntries[i])) {
+                        continue;
+                      } else {
+                        appliedEntries.push(availableEntries[i]);
+                      }
+                    } else {
+                      continue;
+                    }
+                  }
+                } else {
+                  appliedEntries.push(availableEntries[i]);
+                }
+              }
+            } else {
+              continue;
+            }
+          }
+        }
+      } else {
+        for (let j = 0; j < lastTwoMessages.length; j++) {
+          for (let k = 0; k < availableEntries[i].keys.length; k++) {
+            if (lastTwoMessages[j].text.toLocaleLowerCase().includes(availableEntries[i].keys[k].trim().toLocaleLowerCase())) {
+              if (appliedEntries.includes(availableEntries[i])) {
+                continue;
+              } else {
+                if (availableEntries[i].selective === true) {
+                  for (let k2 = 0; k2 < availableEntries[i].secondary_keys.length; k2++) {
+                    if (lastTwoMessages[j].text.toLocaleLowerCase().includes(availableEntries[i].secondary_keys[k2].trim().toLocaleLowerCase())) {
+                      if (appliedEntries.includes(availableEntries[i])) {
+                        continue;
+                      } else {
+                        appliedEntries.push(availableEntries[i]);
+                      }
+                    } else {
+                      continue;
+                    }
+                  }
+                } else {
+                  appliedEntries.push(availableEntries[i]);
+                }
+              }
+            } else {
+              continue;
+            }
+          }
+        }
+      }
+    }
+  }
+  let splitPrompt = prompt.split("\n");
+  let newPrompt = "";
+  for (let k = 0; k < appliedEntries.length; k++) {
+    let depth = appliedEntries[k].priority;
+    let insertHere = depth === 0 || depth > splitPrompt.length ? splitPrompt.length : splitPrompt.length - depth;
+    if (appliedEntries[k].position === "after_char") {
+      splitPrompt.splice(insertHere, 0, appliedEntries[k].content);
+    } else {
+      splitPrompt.splice(0, 0, appliedEntries[k].content);
+    }
+  }
+  for (let i = 0; i < splitPrompt.length; i++) {
+    if (i !== splitPrompt.length - 1) {
+      newPrompt += splitPrompt[i] + "\n";
+    } else {
+      newPrompt += splitPrompt[i];
+    }
+  }
+  return newPrompt;
+}
+async function generateThoughts(construct, chat, currentUser = "you", messagesToInclude = 25, doMultiLine, replaceUser2 = true) {
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i;
+  let messagesExceptLastTwo = chat.messages.slice(-messagesToInclude);
+  let prompt = "";
+  for (let i = 0; i < messagesExceptLastTwo.length; i++) {
+    if (messagesExceptLastTwo[i].isCommand === true) {
+      prompt += messagesExceptLastTwo[i].text.trim() + "\n";
+    } else {
+      if (messagesExceptLastTwo[i].isThought === true) {
+        prompt += `${(_b = (_a = messagesExceptLastTwo[i]) == null ? void 0 : _a.user) == null ? void 0 : _b.trim()}'s Thoughts: ${(_d = (_c = messagesExceptLastTwo[i]) == null ? void 0 : _c.text) == null ? void 0 : _d.trim()}
+`;
+      } else {
+        prompt += `${(_f = (_e = messagesExceptLastTwo[i]) == null ? void 0 : _e.user) == null ? void 0 : _f.trim()}: ${(_h = (_g = messagesExceptLastTwo[i]) == null ? void 0 : _g.text) == null ? void 0 : _h.trim()}
+`;
+      }
+    }
+  }
+  let lorebookPrompt = await handleLorebookPrompt(construct, prompt, chat);
+  if (lorebookPrompt !== null && lorebookPrompt !== void 0) {
+    prompt = lorebookPrompt;
+  }
+  prompt += `
+`;
+  prompt += `### Instruction:
+`;
+  prompt += `Using the context above, determine how you are thinking. Thoughts should be unqiue, and related to the last thing said. You are ${construct.name}.
+`;
+  prompt += `${construct.thoughtPattern.trim()}
+
+`;
+  prompt += `### Response:
+`;
+  prompt += `${construct.name.trim()}'s Thoughts:`;
+  if (replaceUser2 === true) {
+    prompt = prompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${construct.name}`);
+  }
+  console.log(prompt);
+  const response = await generateText(prompt, currentUser, void 0, construct);
+  if (response && response.results && response.results[0]) {
+    return breakUpCommands(construct.name, response.results[0].replaceAll(`${construct.name.trim()}'s Thoughts:`, ""), currentUser, void 0, doMultiLine);
+  } else {
+    console.log("No valid response from GenerateText:", (_i = response == null ? void 0 : response.error) == null ? void 0 : _i.toString());
+    return null;
+  }
+}
+async function generateContinueChatLog(construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth, doMultiLine, replaceUser2 = true, userData) {
+  var _a;
+  let prompt = "";
+  if (construct.defaultConfig.doInstruct === true) {
+    prompt += assembleInstructPrompt(construct, chatLog, currentUser, messagesToInclude, replaceUser2);
+  } else {
+    prompt += assemblePrompt(construct, chatLog, currentUser, messagesToInclude, replaceUser2);
+  }
+  if (getDoSystemInfo() === true) {
+    let splitPrompt = prompt.split("\n");
+    let newPrompt = "";
+    let depth = 4;
+    let insertHere = splitPrompt.length < depth ? 0 : splitPrompt.length - depth;
+    for (let i = 0; i < splitPrompt.length; i++) {
+      if (i === insertHere) {
+        newPrompt += getSystemInformation(chatLog) + "\n";
+      }
+      if (i !== splitPrompt.length - 1) {
+        newPrompt += splitPrompt[i] + "\n";
+      } else {
+        newPrompt += splitPrompt[i];
+      }
+    }
+    prompt = newPrompt;
+  }
+  if (userData !== void 0 && userData !== null && userData !== "") {
+    let splitPrompt = prompt.split("\n");
+    let newPrompt = "";
+    let depth = 3;
+    let insertHere = splitPrompt.length < depth ? 0 : splitPrompt.length - depth;
+    for (let i = 0; i < splitPrompt.length; i++) {
+      if (i === insertHere) {
+        newPrompt += userData + "\n";
+      }
+      if (i !== splitPrompt.length - 1) {
+        newPrompt += splitPrompt[i] + "\n";
+      } else {
+        newPrompt += splitPrompt[i];
+      }
+    }
+    prompt = newPrompt;
+  }
+  if (construct.authorsNote !== void 0 && construct.authorsNote !== "" && construct.authorsNote !== null || authorsNote !== void 0 && authorsNote !== "" && authorsNote !== null) {
+    if (!authorsNote) {
+      authorsNote = [construct.authorsNote];
+    } else if (!Array.isArray(authorsNote)) {
+      authorsNote = [authorsNote];
+    }
+    if (construct.authorsNote && authorsNote.indexOf(construct.authorsNote) === -1) {
+      authorsNote.push(construct.authorsNote);
+    }
+    let splitPrompt = prompt.split("\n");
+    let newPrompt = "";
+    let depth = 4;
+    if (authorsNoteDepth !== void 0) {
+      depth = authorsNoteDepth;
+    }
+    let insertHere = splitPrompt.length < depth ? 0 : splitPrompt.length - depth;
+    for (let i = 0; i < splitPrompt.length; i++) {
+      if (i === insertHere) {
+        for (let note of authorsNote) {
+          newPrompt += note + "\n";
+        }
+      }
+      if (i !== splitPrompt.length - 1) {
+        newPrompt += splitPrompt[i] + "\n";
+      } else {
+        newPrompt += splitPrompt[i];
+      }
+    }
+    prompt = newPrompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${construct.name}`);
+  }
+  let promptWithWorldInfo = await handleLorebookPrompt(construct, prompt, chatLog);
+  if (promptWithWorldInfo !== null && promptWithWorldInfo !== void 0) {
+    prompt = promptWithWorldInfo;
+  }
+  prompt = prompt.replaceAll("{{user}}", `${currentUser}`).replaceAll("{{char}}", `${construct.name}`);
+  if (chatLog.doVector === true) {
+    let memoryText = "";
+    const memories = await getRelaventMemories(chatLog._id, chatLog.lastMessage.text).then((memories2) => {
+      return memories2;
+    }).catch((error) => {
+      console.log("Error from GetRelaventMemories:", error);
+      return null;
+    });
+    if (memories !== null && memories !== void 0) {
+      for (let i = 0; i < memories.length; i++) {
+        if (memories[i] !== void 0) {
+          if (memories[i].item.metadata.text !== void 0 && memories[i].item.metadata.text !== null && memories[i].item.metadata.text !== "" && memories[i].item.metadata.text !== chatLog.lastMessage.text) {
+            memoryText += `${memories[i].item.metadata.user}: ${memories[i].item.metadata.text}
+`;
+          }
+        }
+      }
+      prompt = memoryText + prompt;
+    }
+  }
+  const response = await generateText(prompt, currentUser, stopList, construct).then((response2) => {
+    return response2;
+  }).catch((error) => {
+    console.log("Error from GenerateText:", error);
+    return null;
+  });
+  if (response && response.results && response.results[0]) {
+    return breakUpCommands(construct.name, response.results[0], currentUser, stopList, doMultiLine);
+  } else {
+    console.log("No valid response from GenerateText:", (_a = response == null ? void 0 : response.error) == null ? void 0 : _a.toString());
+    return null;
+  }
+}
+async function generateContinueChatLogAsUser(user, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth, doMultiLine, replaceUser2 = true) {
+  var _a;
+  let prompt = assembleUserPrompt(user, chatLog, currentUser);
+  prompt = prompt.replaceAll("{{user}}", `${user ? (user == null ? void 0 : user.nickname) || user.name : "DefaultUser"}`);
+  const response = await generateText(prompt, currentUser, stopList);
+  if (response && response.results && response.results[0]) {
+    return breakUpCommands(`${user ? (user == null ? void 0 : user.nickname) || user.name : "DefaultUser"}`, response.results[0], currentUser, stopList, doMultiLine);
+  } else {
+    console.log("No valid response from GenerateText:", (_a = response == null ? void 0 : response.error) == null ? void 0 : _a.toString());
+    return null;
+  }
+}
+function breakUpCommands(charName, commandString, user = "You", stopList = [], doMultiLine = false) {
+  let lines = commandString.split("\n");
+  let formattedCommands = [];
+  let currentCommand = "";
+  let isFirstLine = true;
+  if (doMultiLine === false) {
+    lines = lines.slice(0, 1);
+    let command = lines[0];
+    return command;
+  }
+  for (let i = 0; i < lines.length; i++) {
+    let lineToTest = lines[i].toLocaleLowerCase();
+    if (lineToTest.startsWith(`${user.toLocaleLowerCase()}:`) || lineToTest.startsWith("you:") || lineToTest.startsWith("<start>") || lineToTest.startsWith("<end>") || lineToTest.startsWith("<user>") || lineToTest.toLocaleLowerCase().startsWith("user:")) {
+      break;
+    }
+    if (stopList !== null) {
+      for (let j = 0; j < stopList.length; j++) {
+        if (lineToTest.startsWith(`${stopList[j].toLocaleLowerCase()}`)) {
+          break;
+        }
+      }
+    }
+    if (lineToTest.startsWith(`${charName}:`)) {
+      isFirstLine = false;
+      if (currentCommand !== "") {
+        currentCommand = currentCommand.replaceAll(`${charName}:`, "");
+        formattedCommands.push(currentCommand.trim());
+      }
+      currentCommand = lines[i];
+    }
+    if (lineToTest.includes(":") && i >= 1) {
+      return formattedCommands.join("\n");
+    } else {
+      if (currentCommand !== "" || isFirstLine) {
+        currentCommand += (isFirstLine ? "" : "\n") + lines[i];
+      }
+      if (isFirstLine)
+        isFirstLine = false;
+    }
+  }
+  if (currentCommand !== "") {
+    formattedCommands.push(currentCommand.replaceAll(`${charName}:`, ""));
+  }
+  let final = formattedCommands.join("\n");
+  return final;
+}
+async function removeMessagesFromChatLog(chatLog, messageContent) {
+  let newChatLog = chatLog;
+  let messages = newChatLog.messages;
+  for (let i = 0; i < messages.length; i++) {
+    if (messages[i].text === messageContent) {
+      messages.splice(i, 1);
+      break;
+    }
+  }
+  newChatLog.messages = messages;
+  await updateChat(newChatLog);
+  return newChatLog;
+}
+async function regenerateMessageFromChatLog(chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, doMultiLine, doInstruction, instructType) {
+  let messages = chatLog.messages;
+  let beforeMessages = [];
+  let afterMessages = [];
+  let foundMessage;
+  let messageIndex = -1;
+  for (let i = 0; i < messages.length; i++) {
+    if (messageID !== void 0) {
+      if (messages[i]._id === messageID) {
+        messageIndex = i;
+        foundMessage = messages[i];
+        break;
+      }
+    } else {
+      if (messages[i].text.trim().includes(messageContent.trim())) {
+        messageIndex = i;
+        foundMessage = messages[i];
+        break;
+      }
+    }
+  }
+  if (foundMessage === void 0) {
+    console.log("Could not find message to regenerate");
+    return;
+  }
+  if (messageIndex !== -1) {
+    beforeMessages = messages.slice(0, messageIndex);
+    afterMessages = messages.slice(messageIndex + 1);
+    messages.splice(messageIndex, 1);
+  }
+  chatLog.messages = messages;
+  let constructData = await getConstruct(foundMessage.userID);
+  if (constructData === null) {
+    console.log("Could not find construct to regenerate message");
+    return;
+  }
+  let construct = assembleConstructFromData(constructData);
+  if (construct === null) {
+    console.log("Could not assemble construct from data");
+    return;
+  }
+  let newReply = await generateContinueChatLog(construct, chatLog, foundMessage.participants[0], void 0, void 0, authorsNote, authorsNoteDepth, doMultiLine, true);
+  if (newReply === null) {
+    console.log("Could not generate new reply");
+    return;
+  }
+  let newMessage = {
+    _id: Date.now().toString(),
+    user: construct.name,
+    avatar: construct.avatar,
+    text: newReply,
+    userID: construct._id,
+    timestamp: Date.now(),
+    origin: "Discord",
+    isHuman: false,
+    isCommand: false,
+    isPrivate: false,
+    participants: foundMessage.participants,
+    attachments: [],
+    isThought: false
+  };
+  messages = beforeMessages.concat(newMessage, afterMessages);
+  chatLog.messages = messages;
+  await updateChat(chatLog);
+  return newReply;
+}
+async function regenerateUserMessageFromChatLog(chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, doMultiLine) {
+  let messages = chatLog.messages;
+  let beforeMessages = [];
+  let afterMessages = [];
+  let foundMessage;
+  let messageIndex = -1;
+  for (let i = 0; i < messages.length; i++) {
+    if (messageID !== void 0) {
+      if (messages[i]._id === messageID) {
+        messageIndex = i;
+        foundMessage = messages[i];
+        break;
+      }
+    } else {
+      if (messages[i].text.trim().includes(messageContent.trim())) {
+        messageIndex = i;
+        foundMessage = messages[i];
+        break;
+      }
+    }
+  }
+  if (foundMessage === void 0) {
+    console.log("Could not find message to regenerate");
+    return;
+  }
+  if (messageIndex !== -1) {
+    beforeMessages = messages.slice(0, messageIndex);
+    afterMessages = messages.slice(messageIndex + 1);
+    messages.splice(messageIndex, 1);
+  }
+  chatLog.messages = messages;
+  let userData = await getUser(foundMessage.userID);
+  if (userData === null) {
+    console.log("Could not find construct to regenerate message");
+    return;
+  }
+  let construct = assembleUserFromData(userData);
+  if (construct === null) {
+    console.log("Could not assemble construct from data");
+    return;
+  }
+  let newReply = await generateContinueChatLogAsUser(construct, chatLog, foundMessage.participants[0], void 0, void 0, authorsNote, authorsNoteDepth, doMultiLine);
+  if (newReply === null) {
+    console.log("Could not generate new reply");
+    return;
+  }
+  let newMessage = {
+    _id: Date.now().toString(),
+    user: construct ? (construct == null ? void 0 : construct.nickname) || construct.name : "DefaultUser",
+    avatar: construct.avatar,
+    text: newReply,
+    userID: construct._id,
+    timestamp: Date.now(),
+    origin: "Discord",
+    isHuman: true,
+    isCommand: false,
+    isPrivate: false,
+    participants: foundMessage.participants,
+    attachments: [],
+    isThought: false
+  };
+  messages = beforeMessages.concat(newMessage, afterMessages);
+  chatLog.messages = messages;
+  await updateChat(chatLog);
+  return newReply;
+}
+function getSystemInformation(chatLog) {
+  var _a, _b;
+  const now = /* @__PURE__ */ new Date();
+  const currentTimeString = `${now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true })}, ${now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}`;
+  try {
+    const lastMessageDate = new Date((_a = chatLog == null ? void 0 : chatLog.messages[chatLog.messages.length - 2]) == null ? void 0 : _a.timestamp);
+    const chatStartDate = new Date((_b = chatLog == null ? void 0 : chatLog.messages[0]) == null ? void 0 : _b.timestamp);
+    if (isNaN(chatStartDate.getTime()) || isNaN(lastMessageDate.getTime())) {
+      throw new Error("Invalid date data in chatLog");
+    }
+    const timeSinceLastMessageString = getTimeDifferenceString(now, lastMessageDate);
+    if (timeSinceLastMessageString === "" || timeSinceLastMessageString === null || timeSinceLastMessageString === void 0)
+      return `[Current Time: ${currentTimeString}. Chat started on ${chatStartDate.toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}]`;
+    return `[Current Time: ${currentTimeString}. Time since last sent message: ${timeSinceLastMessageString}. Chat started on ${chatStartDate.toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}]`;
+  } catch (error) {
+    console.error(error);
+    return `[Current Time: ${currentTimeString}.]`;
+  }
+}
+function getTimeDifferenceString(now, past) {
+  const diffMs = now.getTime() - past.getTime();
+  const diffDays = Math.floor(diffMs / (1e3 * 60 * 60 * 24));
+  const diffHours = Math.floor(diffMs % (1e3 * 60 * 60 * 24) / (1e3 * 60 * 60));
+  const diffMinutes = Math.floor(diffMs % (1e3 * 60 * 60) / (1e3 * 60));
+  let result = "";
+  if (diffDays > 0) {
+    result += `${diffDays} days, `;
+  }
+  if (diffDays > 0 || diffHours > 0) {
+    result += `${diffHours} hours, and `;
+  }
+  result += `${diffMinutes} minutes`;
+  return result;
+}
+function constructController() {
+  ActiveConstructs = retrieveConstructs();
+  expressApp.post("/api/constructs/add-to-active", (req, res) => {
+    addConstruct(req.body.construct);
+    ActiveConstructs = retrieveConstructs();
+    res.json({ activeConstructs: ActiveConstructs });
+  });
+  expressApp.post("/api/constructs/remove-active", (req, res) => {
+    removeConstruct(req.body.construct);
+    ActiveConstructs = retrieveConstructs();
+    res.json({ activeConstructs: ActiveConstructs });
+  });
+  expressApp.get("/api/constructs/active-list", (req, res) => {
+    ActiveConstructs = retrieveConstructs();
+    res.json({ activeConstructs: ActiveConstructs });
+  });
+  expressApp.post("/api/constructs/is-active", (req, res) => {
+    const isActive = isConstructActive(req.body.construct);
+    res.json({ isActive });
+  });
+  expressApp.post("/api/constructs/remove-all-active", (req, res) => {
+    clearActiveConstructs();
+    ActiveConstructs = retrieveConstructs();
+    res.json({ activeConstructs: ActiveConstructs });
+  });
+  expressApp.post("/api/constructs/set-construct-primary", (req, res) => {
+    const constructId = req.body.constructId;
+    setAsPrimary(constructId);
+    const activeConstructs = retrieveConstructs();
+    res.json({ activeConstructs });
+  });
+  expressApp.post("/api/constructs/set/systeminfo", (req, res) => {
+    setDoSystemInfo(req.body.value);
+    const currentDoSystemInfo = getDoSystemInfo();
+    res.json({ doSystemInfo: currentDoSystemInfo });
+  });
+  expressApp.get("/api/constructs/systeminfo", (req, res) => {
+    const currentDoSystemInfo = getDoSystemInfo();
+    res.json({ doSystemInfo: currentDoSystemInfo });
+  });
+  expressApp.post("/api/constructs/multi-line", (req, res) => {
+    const value = req.body.value;
+    setDoMultiLine(value);
+    const currentDoMultiLine = getDoMultiLine();
+    res.json({ doMultiLine: currentDoMultiLine });
+  });
+  expressApp.get("/api/constructs/multi-line", (req, res) => {
+    const currentDoMultiLine = getDoMultiLine();
+    res.json({ doMultiLine: currentDoMultiLine });
+  });
+  expressApp.post("/api/constructs/character-prompt", (req, res) => {
+    const construct = req.body.construct;
+    const prompt = getCharacterPromptFromConstruct(construct);
+    res.json({ prompt });
+  });
+  expressApp.post("/api/constructs/assemble-prompt", (req, res) => {
+    const { construct, chatLog, currentUser, messagesToInclude } = req.body;
+    const prompt = assemblePrompt(construct, chatLog, currentUser);
+    res.json({ prompt });
+  });
+  expressApp.post("/api/constructs/assemble-instruct-prompt", (req, res) => {
+    const { construct, chatLog, currentUser, messagesToInclude, instructType } = req.body;
+    const prompt = assembleInstructPrompt(construct, chatLog, currentUser, messagesToInclude, true);
+    res.json({ prompt });
+  });
+  expressApp.post("/api/chat/continue", (req, res) => {
+    const { construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth, doMultiline, replaceUser: replaceUser2 } = req.body;
+    generateContinueChatLog(construct, chatLog, currentUser, messagesToInclude, stopList, authorsNote, authorsNoteDepth, doMultiline, replaceUser2).then((response) => {
+      res.json({ response });
+    }).catch((error) => {
+      res.status(500).json({ error: error.message });
+    });
+  });
+  expressApp.post("/api/chat/remove-messages", (req, res) => {
+    const { chatLog, messageContent } = req.body;
+    removeMessagesFromChatLog(chatLog, messageContent).then((response) => {
+      res.json({ response });
+    }).catch((error) => {
+      res.status(500).json({ error: error.message });
+    });
+  });
+  expressApp.post("/api/chat/regenerate-message", (req, res) => {
+    const { chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, doMultiline, replaceUser: replaceUser2 } = req.body;
+    regenerateMessageFromChatLog(chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, doMultiline).then((response) => {
+      res.json({ response });
+    }).catch((error) => {
+      res.status(500).json({ error: error.message });
+    });
+  });
+  expressApp.post("/api/chat/regenerate-user-message", (req, res) => {
+    const { chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, doMultiline, replaceUser: replaceUser2 } = req.body;
+    regenerateUserMessageFromChatLog(chatLog, messageContent, messageID, authorsNote, authorsNoteDepth, doMultiline).then((response) => {
+      res.json({ response });
+    }).catch((error) => {
+      res.status(500).json({ error: error.message });
+    });
+  });
+  expressApp.post("/api/chat/parse-reply", (req, res) => {
+    const { charName, commandString, user, stopList } = req.body;
+    let response = breakUpCommands(charName, commandString, user, stopList);
+    res.json({ response });
+  });
+  expressApp.post("/api/construct/thoughts", (req, res) => {
+    const { construct, chatLog, currentUser, messagesToInclude } = req.body;
+    generateThoughts(construct, chatLog, currentUser, messagesToInclude).then((response) => {
+      res.json({ response });
+    }).catch((error) => {
+      res.status(500).send({ error: error.message });
+    });
+  });
+  expressApp.post("/api/chat/intent", (req, res) => {
+    const { message } = req.body;
+    detectIntent(message).then((response) => {
+      res.json({ response });
+    }).catch((error) => {
+      res.status(500).send({ error: error.message });
+    });
+  });
+  expressApp.post("/api/classify/yesno", (req, res) => {
+    const { message } = req.body;
+    getYesNoMaybe(message).then((result) => {
+      res.json({ result });
+    }).catch((error) => {
+      res.status(500).send({ error: error.message });
+    });
+  });
+}
+async function createSelfieForConstruct(construct, intent, subject) {
+  if (!construct)
+    return null;
+  let prompt = construct.visualDescription + ", " + intent + ", " + subject;
+  const imageData = await txt2img(prompt);
+  if (!imageData)
+    return null;
+  return imageData;
+}
+const store$1 = new Store({
+  name: "discordData"
+});
+let maxMessages = 25;
+let doStableReactions = false;
+let showDiffusionDetails = false;
+let diffusionWhitelist = [];
+let replaceUser = true;
+let lastIntentData = null;
+function getDiscordSettings() {
+  maxMessages = getMaxMessages();
+  getDoMultiLine();
+  getDoAutoReply();
+  getDoStableDiffusion();
+  doStableReactions = getDoStableReactions();
+  getDoGeneralPurpose();
+  diffusionWhitelist = getDiffusionWhitelist();
+  showDiffusionDetails = getShowDiffusionDetails();
+  replaceUser = getReplaceUser();
+}
+const getDoAutoReply = () => {
+  return store$1.get("doAutoReply", false);
+};
+const setDoStableDiffusion = (doStableDiffusion2) => {
+  store$1.set("doStableDiffusion", doStableDiffusion2);
+  doStableDiffusion2 = doStableDiffusion2;
+  registerCommands();
+};
+const getDoStableDiffusion = () => {
+  return store$1.get("doStableDiffusion", false);
+};
+const setDoStableReactions = (newStatus) => {
+  store$1.set("doStableReactions", newStatus);
+  doStableReactions = newStatus;
+};
+const getDoStableReactions = () => {
+  return store$1.get("doStableReactions", false);
+};
+const getDoGeneralPurpose = () => {
+  return store$1.get("doGeneralPurpose", false);
+};
+const getDiffusionWhitelist = () => {
+  return store$1.get("diffusionWhitelist", []);
+};
+const addDiffusionWhitelist = (channelID) => {
+  let whitelist = getDiffusionWhitelist();
+  if (!whitelist.includes(channelID)) {
+    whitelist.push(channelID);
+  }
+  store$1.set("diffusionWhitelist", whitelist);
+  diffusionWhitelist = whitelist;
+};
+const removeDiffusionWhitelist = (channelID) => {
+  let whitelist = getDiffusionWhitelist();
+  if (whitelist.includes(channelID)) {
+    whitelist.splice(whitelist.indexOf(channelID), 1);
+  }
+  store$1.set("diffusionWhitelist", whitelist);
+  diffusionWhitelist = whitelist;
+};
+const setShowDiffusionDetails = (show) => {
+  store$1.set("showDiffusionDetails", show);
+  showDiffusionDetails = show;
+};
+const getShowDiffusionDetails = () => {
+  return store$1.get("showDiffusionDetails", false);
+};
+const setReplaceUser = (replace) => {
+  store$1.set("replaceUser", replace);
+  replaceUser = replace;
+};
+const getReplaceUser = () => {
+  return store$1.get("replaceUser", false);
+};
+const setDelay = (delay2) => {
+  store$1.set("delay", delay2);
+  delay2 = delay2;
+};
+const getDelay = () => {
+  return store$1.get("delay", 0);
+};
+const setDoDelay = (doDelay2) => {
+  store$1.set("doDelay", doDelay2);
+  doDelay2 = doDelay2;
+};
+const getDoDelay = () => {
+  return store$1.get("doDelay", false);
+};
+async function getUsername(userID, channelID) {
+  var _a, _b;
+  const channels = getRegisteredChannels();
+  for (let i = 0; i < (channels == null ? void 0 : channels.length); i++) {
+    if (((_a = channels[i]) == null ? void 0 : _a._id) === channelID) {
+      if (((_b = channels[i]) == null ? void 0 : _b.aliases) === void 0)
+        continue;
+      for (let j = 0; j < channels[i].aliases.length; j++) {
+        if (channels[i].aliases[j]._id === userID) {
+          return channels[i].aliases[j].name;
+        }
+      }
+    }
+  }
+  try {
+    let user = await disClient.users.fetch(userID);
+    let name = (user == null ? void 0 : user.displayName) !== void 0 ? user.displayName : user.username;
+    console.log(name);
+    return name;
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    return "Unknown user";
+  }
+}
+const addAlias = (newAlias, channelID) => {
+  var _a, _b;
+  const channels = getRegisteredChannels();
+  for (let i = 0; i < channels.length; i++) {
+    if (channels[i]._id === channelID) {
+      if (((_a = channels[i]) == null ? void 0 : _a.aliases) === void 0) {
+        channels[i].aliases = [];
+      }
+      let replaced = false;
+      for (let j = 0; j < channels[i].aliases.length; j++) {
+        if (channels[i].aliases[j]._id === newAlias._id) {
+          channels[i].aliases[j] = newAlias;
+          replaced = true;
+          break;
+        }
+      }
+      if (!replaced) {
+        (_b = channels[i]) == null ? void 0 : _b.aliases.push(newAlias);
+      }
+    }
+  }
+  store$1.set("channels", channels);
+};
+const getMaxMessages = () => {
+  return store$1.get("maxMessages", 25);
+};
+const getRegisteredChannels = () => {
+  return store$1.get("channels", []);
+};
+const addRegisteredChannel = (newChannel) => {
+  const existingChannels = getRegisteredChannels();
+  let registered = false;
+  for (let i = 0; i < existingChannels.length; i++) {
+    if (existingChannels[i]._id === newChannel._id) {
+      registered = true;
+      break;
+    }
+  }
+  if (registered)
+    return;
+  if (!existingChannels.includes(newChannel)) {
+    existingChannels.push(newChannel);
+    store$1.set("channels", existingChannels);
+  }
+};
+const removeRegisteredChannel = (channelToRemove) => {
+  const existingChannels = getRegisteredChannels();
+  const updatedChannels = existingChannels.filter((channel) => channel._id !== channelToRemove);
+  store$1.set("channels", updatedChannels);
+};
+const isChannelRegistered = (channel) => {
+  const existingChannels = getRegisteredChannels();
+  for (let i = 0; i < existingChannels.length; i++) {
+    if (existingChannels[i]._id === channel) {
+      return true;
+    }
+  }
+  return false;
+};
+function setInterrupted(channelID) {
+  cancelGeneration();
+  isInterrupted = true;
+  interruptedChannel = channelID;
+}
+let isInterrupted = false;
+let interruptedChannel = "";
+let generationFailure = false;
+async function handleDiscordMessage(message) {
+  var _a, _b, _c, _d, _e, _f, _g;
+  const activeConstructs = retrieveConstructs();
+  const newMessage = await convertDiscordMessageToMessage(message, activeConstructs);
+  addUserFromDiscordMessage(message);
+  let constructArray = [];
+  let chatLogData = await getChat(message.channel.id);
+  let chatLog;
+  if (chatLogData) {
+    chatLog = assembleChatFromData(chatLogData);
+    if (chatLog === null)
+      return;
+    chatLog.messages.push(newMessage);
+    chatLog.lastMessage = newMessage;
+    chatLog.lastMessageDate = newMessage.timestamp;
+    if (!chatLog.constructs.includes(newMessage.userID)) {
+      chatLog.constructs.push(newMessage.userID);
+    }
+    if (!chatLog.humans.includes(message.author.id)) {
+      chatLog.humans.push(message.author.id);
+    }
+  } else {
+    chatLog = {
+      _id: message.channel.id,
+      name: 'Discord "' + (((_a = message == null ? void 0 : message.channel) == null ? void 0 : _a.isDMBased()) ? `DM ${message.author.displayName}` : `${(_b = message == null ? void 0 : message.channel) == null ? void 0 : _b.id}`) + `" Chat`,
+      type: "Discord",
+      messages: [newMessage],
+      lastMessage: newMessage,
+      lastMessageDate: newMessage.timestamp,
+      firstMessageDate: newMessage.timestamp,
+      constructs: [activeConstructs[0]],
+      humans: [message.author.id],
+      chatConfigs: [],
+      doVector: ((_c = message == null ? void 0 : message.channel) == null ? void 0 : _c.isDMBased()) ? true : false,
+      global: ((_d = message == null ? void 0 : message.channel) == null ? void 0 : _d.isDMBased()) ? true : false
+    };
+    if (chatLog.messages.length > 0) {
+      await addChat(chatLog);
+    }
+  }
+  for (let i = 0; i < chatLog.constructs.length; i++) {
+    let constructDoc = await getConstruct(chatLog.constructs[i]);
+    let construct = assembleConstructFromData(constructDoc);
+    if (construct === null)
+      continue;
+    constructArray.push(construct);
+  }
+  if (chatLog.messages.length === 1) {
+    isInterrupted = false;
+    interruptedChannel = "";
+  }
+  if (!chatLog.messages.includes(newMessage)) {
+    chatLog.messages.push(newMessage);
+  }
+  const intentData = await detectIntent(newMessage.text);
+  if (intentData !== null) {
+    if ((intentData == null ? void 0 : intentData.intent) !== "none") {
+      lastIntentData = intentData;
+    }
+  }
+  if (message.content.startsWith("-")) {
+    await updateChat(chatLog);
+    return;
+  }
+  if (chatLog.doVector) {
+    if (chatLog.global) {
+      for (let i = 0; i < constructArray.length; i++) {
+        addVectorFromMessage(constructArray[i]._id, newMessage);
+      }
+    } else {
+      addVectorFromMessage(chatLog._id, newMessage);
+    }
+  }
+  await updateChat(chatLog);
+  expressAppIO.emit(`chat-message-${message.channel.id}`);
+  if (isMultiConstructMode() && !message.channel.isDMBased()) {
+    let lastMessageContent = chatLog.lastMessage.text;
+    let shuffledConstructs = constructArray;
+    for (let i = shuffledConstructs.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffledConstructs[i], shuffledConstructs[j]] = [shuffledConstructs[j], shuffledConstructs[i]];
+    }
+    let mentionedConstruct = containsName(lastMessageContent, constructArray);
+    if (mentionedConstruct) {
+      let mentionedIndex = shuffledConstructs.findIndex((construct) => construct.name === mentionedConstruct);
+      if (mentionedIndex !== -1) {
+        const [mentioned] = shuffledConstructs.splice(mentionedIndex, 1);
+        shuffledConstructs.unshift(mentioned);
+      }
+    }
+    chatLog = await doRoundRobin(shuffledConstructs, chatLog, message);
+    if (chatLog === void 0)
+      return;
+    let hasBeenMention = true;
+    let lastMessageText = (_e = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _e.text;
+    let iterations = 0;
+    do {
+      if (isInterrupted && interruptedChannel === message.channel.id) {
+        break;
+      }
+      if (((_f = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _f.text) === void 0)
+        break;
+      if (iterations > 0 && lastMessageText === chatLog.lastMessage.text)
+        break;
+      iterations++;
+      hasBeenMention = false;
+      for (let i = 0; i < shuffledConstructs.length; i++) {
+        if (isInterrupted && interruptedChannel === message.channel.id) {
+          break;
+        }
+        if (isMentioned(lastMessageText, shuffledConstructs[i]) && chatLog.lastMessage.isHuman && !chatLog.lastMessage.isThought && chatLog.lastMessage.userID !== shuffledConstructs[i]._id) {
+          hasBeenMention = true;
+          break;
+        }
+      }
+      if (hasBeenMention) {
+        chatLog = await doRoundRobin(shuffledConstructs, chatLog, message);
+      }
+    } while (hasBeenMention);
+    while (!generationFailure) {
+      let shouldContinue = false;
+      if ((chatLog == null ? void 0 : chatLog.lastMessage.text) === void 0)
+        break;
+      if (isInterrupted && interruptedChannel === message.channel.id) {
+        break;
+      }
+      for (let i = 0; i < shuffledConstructs.length; i++) {
+        if (isInterrupted && interruptedChannel === message.channel.id) {
+          break;
+        }
+        let config = shuffledConstructs[i].defaultConfig;
+        if ((_g = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _g.isHuman) {
+          if (config.replyToUser >= Math.random()) {
+            let replyLog = await doCharacterReply(shuffledConstructs[i], chatLog, message);
+            if (replyLog !== void 0) {
+              chatLog = replyLog;
+            }
+            shouldContinue = true;
+          }
+        } else {
+          if (config.replyToConstruct >= Math.random() && chatLog.lastMessage.userID !== shuffledConstructs[i]._id) {
+            let replyLog = await doCharacterReply(shuffledConstructs[i], chatLog, message);
+            if (replyLog !== void 0) {
+              chatLog = replyLog;
+            }
+            shouldContinue = true;
+          }
+        }
+      }
+      if (!shouldContinue) {
+        break;
+      }
+    }
+  } else {
+    console.log("single character mode");
+    let config = constructArray[0].defaultConfig;
+    if (chatLog.chatConfigs !== void 0 && chatLog.chatConfigs.length > 0) {
+      for (let j = 0; j < chatLog.chatConfigs.length; j++) {
+        if (chatLog.chatConfigs[j]._id === constructArray[0]._id) {
+          config = chatLog.chatConfigs[j];
+          break;
+        }
+      }
+    }
+    if (!config.doLurk) {
+      console.log("not lurking");
+      let wasMentioned = isMentioned(chatLog.lastMessage.text, constructArray[0]) && chatLog.lastMessage.isHuman;
+      if (wasMentioned) {
+        if (config.replyToUserMention >= Math.random()) {
+          sendTyping(message);
+          console.log("replying to user mention");
+          let replyLog = await doCharacterReply(constructArray[0], chatLog, message);
+          if (replyLog !== void 0) {
+            chatLog = replyLog;
+          }
+        }
+      } else {
+        if (config.replyToUser >= Math.random()) {
+          console.log("replying to user");
+          sendTyping(message);
+          let replyLog = await doCharacterReply(constructArray[0], chatLog, message);
+          if (replyLog !== void 0) {
+            chatLog = replyLog;
+          }
+        }
+      }
+    } else {
+      console.log("lurking");
+    }
+  }
+  if (isInterrupted && interruptedChannel === message.channel.id) {
+    isInterrupted = false;
+    interruptedChannel = "";
+  }
+  if (generationFailure) {
+    generationFailure = false;
+  }
+}
+async function doCharacterReply(construct, chatLog, message) {
+  if (isInterrupted && interruptedChannel === message.channelId) {
+    console.log("interrupted");
+    return chatLog;
+  }
+  let stopList = void 0;
+  let username = "You";
+  let authorID = "You";
+  let primaryConstruct = retrieveConstructs()[0];
+  if (message instanceof discord_js.Message) {
+    username = message.author.displayName;
+    authorID = message.author.id;
+  }
+  if (message instanceof discord_js.CommandInteraction) {
+    username = message.user.displayName;
+    authorID = message.user.id;
+  }
+  if (message.guildId !== null) {
+    stopList = await getStopList(message.guildId, message.channelId);
+  }
+  let alias = await getUsername(authorID, chatLog._id);
+  if (alias !== null && alias !== void 0) {
+    username = alias;
+  }
+  if (construct.defaultConfig.haveThoughts && construct.defaultConfig.thinkBeforeChat) {
+    if (construct.defaultConfig.thoughtChance >= Math.random()) {
+      sendTyping(message);
+      let thoughtChatLog = await doCharacterThoughts(construct, chatLog, message);
+      if (thoughtChatLog !== void 0) {
+        chatLog = thoughtChatLog;
+      }
+    }
+  }
+  if (message.channel === null) {
+    console.log("channel is null");
+    return chatLog;
+  }
+  let dataString = "";
+  sendTyping(message);
+  if (getShowDiscordUserInfo() && !message.channel.isDMBased() && message instanceof discord_js.Message && message.guildId !== null) {
+    const userData = await assembleUserProfile(message.guildId, message.author.id);
+    if (userData !== null && userData !== void 0) {
+      dataString = userData;
+    }
+  }
+  const result = await generateContinueChatLog(construct, chatLog, username, maxMessages, stopList, void 0, void 0, getDoMultiLine(), replaceUser, dataString);
+  if (result === null) {
+    generationFailure = true;
+    return chatLog;
+  }
+  let reply;
+  if (result !== null) {
+    reply = result;
+  } else {
+    if (isInterrupted && interruptedChannel === message.channelId) {
+      console.log("interrupted");
+      return chatLog;
+    }
+    console.log("no response from LLM");
+    return chatLog;
+  }
+  const replyMessage = {
+    _id: Date.now().toString(),
+    user: construct.name,
+    avatar: construct.avatar,
+    text: reply,
+    userID: construct._id,
+    timestamp: Date.now(),
+    origin: "Discord - " + message.channelId,
+    isHuman: false,
+    isCommand: false,
+    isPrivate: false,
+    participants: [authorID, construct._id],
+    attachments: [],
+    isThought: false
+  };
+  chatLog.messages.push(replyMessage);
+  chatLog.lastMessage = replyMessage;
+  chatLog.lastMessageDate = replyMessage.timestamp;
+  if (lastIntentData !== null && construct.defaultConfig.doActions === true) {
+    const currentIntentData = await detectIntent(reply);
+    if (currentIntentData !== null) {
+      if ((lastIntentData == null ? void 0 : lastIntentData.intent) !== "search") {
+        if ((currentIntentData == null ? void 0 : currentIntentData.compliance) === true) {
+          const imageData = await createSelfieForConstruct(construct, lastIntentData == null ? void 0 : lastIntentData.intent, currentIntentData == null ? void 0 : currentIntentData.subject);
+          if (imageData !== null) {
+            const buffer = Buffer.from(imageData.base64, "base64");
+            let attachment = new discord_js.AttachmentBuilder(buffer, { name: `${imageData.name}` });
+            if (primaryConstruct === construct._id) {
+              await sendAttachment(message.channel.id, attachment);
+            } else {
+              await sendAttachmentAsCharacter(construct, message.channel.id, attachment);
+            }
+            lastIntentData = null;
+            const selfieMessage = createSelfieMessage(imageData.name, construct);
+            chatLog.messages.push(selfieMessage);
+          }
+        }
+      }
+    }
+  }
+  if (primaryConstruct === construct._id) {
+    console.log("sending message as primary");
+    if (0.5 >= Math.random() && !message.channel.isDMBased() && message instanceof discord_js.Message) {
+      await sendReply(message, reply);
+    } else {
+      await sendMessage(message.channel.id, reply);
+    }
+  } else {
+    console.log("sending message as character");
+    await sendMessageAsCharacter(construct, message.channel.id, reply);
+  }
+  if (construct.defaultConfig.haveThoughts && !construct.defaultConfig.thinkBeforeChat) {
+    if (construct.defaultConfig.thoughtChance >= Math.random()) {
+      sendTyping(message);
+      console.log("thinking after chat");
+      let thoughtChatLog = await doCharacterThoughts(construct, chatLog, message);
+      if (thoughtChatLog !== void 0) {
+        chatLog = thoughtChatLog;
+      }
+    }
+  }
+  await updateChat(chatLog);
+  return chatLog;
+}
+async function doCharacterThoughts(construct, chatLog, message) {
+  let username = "You";
+  let authorID = "You";
+  let primaryConstruct = retrieveConstructs()[0];
+  if (message instanceof discord_js.Message) {
+    username = message.author.displayName;
+    authorID = message.author.id;
+  }
+  if (message instanceof discord_js.CommandInteraction) {
+    username = message.user.displayName;
+    authorID = message.user.id;
+  }
+  let alias = await getUsername(authorID, chatLog._id);
+  if (alias !== null && alias !== void 0) {
+    username = alias;
+  }
+  if (message.channel === null)
+    return;
+  if (isInterrupted && interruptedChannel === message.channelId) {
+    console.log("interrupted");
+    return chatLog;
+  }
+  const result = await generateThoughts(construct, chatLog, username, maxMessages, getDoMultiLine(), replaceUser);
+  if (result === null) {
+    generationFailure = true;
+    return chatLog;
+  }
+  if (isInterrupted && interruptedChannel === message.channelId) {
+    console.log("interrupted");
+    return chatLog;
+  }
+  let reply;
+  if (result !== null) {
+    reply = result;
+  } else {
+    if (isInterrupted && interruptedChannel === message.channelId) {
+      console.log("interrupted");
+      return chatLog;
+    }
+    return chatLog;
+  }
+  reply = reply.replace(/\*/g, "");
+  reply = `*${reply.trim()}*`;
+  if (reply.trim().length <= 2)
+    return chatLog;
+  const replyMessage = {
+    _id: Date.now().toString(),
+    user: construct.name,
+    avatar: construct.avatar,
+    text: reply,
+    userID: construct._id,
+    timestamp: Date.now(),
+    origin: "Discord - " + message.channelId,
+    isHuman: false,
+    isCommand: false,
+    isPrivate: false,
+    participants: [authorID, construct._id],
+    attachments: [],
+    isThought: true
+  };
+  chatLog.messages.push(replyMessage);
+  chatLog.lastMessage = replyMessage;
+  chatLog.lastMessageDate = replyMessage.timestamp;
+  const newEmbed = new discord_js.EmbedBuilder().setTitle("Thoughts").setDescription(reply).setFooter({ text: "Powered by TalOS" }).setTimestamp();
+  if (primaryConstruct === construct._id) {
+    await sendMessageEmbed(message.channel.id, newEmbed);
+  } else {
+    await sendEmbedAsCharacter(construct, message.channel.id, newEmbed);
+  }
+  await updateChat(chatLog);
+  return chatLog;
+}
+async function doRoundRobin(constructArray, chatLog, message) {
+  if (message.channel === null) {
+    console.log("channel is null");
+    return chatLog;
+  }
+  for (let i = 0; i < constructArray.length; i++) {
+    if (isInterrupted && interruptedChannel === message.channelId) {
+      break;
+    }
+    let config = constructArray[i].defaultConfig;
+    if (chatLog.chatConfigs !== void 0 && chatLog.chatConfigs.length > 0) {
+      for (let j = 0; j < chatLog.chatConfigs.length; j++) {
+        if (chatLog.chatConfigs[j]._id === constructArray[i]._id) {
+          config = chatLog.chatConfigs[j];
+          break;
+        }
+      }
+    }
+    if (config === void 0)
+      continue;
+    if (config.doLurk === true)
+      continue;
+    let wasMentioned = isMentioned(chatLog.lastMessage.text, constructArray[i]);
+    const wasMentionedByHuman = chatLog.lastMessage.isHuman && wasMentioned;
+    const wasHuman = chatLog.lastMessage.isHuman;
+    if (wasMentionedByHuman) {
+      if (config.replyToUserMention >= Math.random()) {
+        if (isInterrupted && interruptedChannel === message.channelId) {
+          console.log("interrupted");
+          return chatLog;
+        }
+        let replyLog = await doCharacterReply(constructArray[i], chatLog, message);
+        if (replyLog !== void 0) {
+          chatLog = replyLog;
+        }
+      }
+    } else if (wasMentioned && chatLog.lastMessage.userID !== constructArray[i]._id) {
+      if (config.replyToConstructMention >= Math.random()) {
+        if (isInterrupted && interruptedChannel === message.channelId) {
+          console.log("interrupted");
+          return chatLog;
+        }
+        let replyLog = await doCharacterReply(constructArray[i], chatLog, message);
+        if (replyLog !== void 0) {
+          chatLog = replyLog;
+        }
+      }
+    } else {
+      if (wasHuman) {
+        if (config.replyToUser >= Math.random()) {
+          if (isInterrupted && interruptedChannel === message.channelId) {
+            console.log("interrupted");
+            return chatLog;
+          }
+          let replyLog = await doCharacterReply(constructArray[i], chatLog, message);
+          if (replyLog !== void 0) {
+            chatLog = replyLog;
+          }
+        }
+      } else {
+        if (config.replyToConstruct >= Math.random()) {
+          if (isInterrupted && interruptedChannel === message.channelId) {
+            console.log("interrupted");
+            return chatLog;
+          }
+          let replyLog = await doCharacterReply(constructArray[i], chatLog, message);
+          if (replyLog !== void 0) {
+            chatLog = replyLog;
+          }
+        }
+      }
+    }
+  }
+  return chatLog;
+}
+function createSelfieMessage(attachmentURL, construct) {
+  const attachment = {
+    _id: (/* @__PURE__ */ new Date()).getTime().toString(),
+    name: "Selfie taken by " + construct.name,
+    type: "image/png",
+    data: `/api/images/${attachmentURL}`,
+    fileext: "png",
+    metadata: ""
+  };
+  const newMessage = {
+    _id: (/* @__PURE__ */ new Date()).getTime().toString(),
+    user: construct.name,
+    avatar: construct.avatar,
+    text: "",
+    userID: construct._id,
+    timestamp: (/* @__PURE__ */ new Date()).getTime(),
+    origin: "Selfie",
+    isHuman: false,
+    isCommand: false,
+    isPrivate: false,
+    participants: [construct._id],
+    attachments: [attachment],
+    isThought: false
+  };
+  return newMessage;
+}
+async function continueChatLog(interaction) {
+  var _a, _b, _c;
+  let registeredChannels = getRegisteredChannels();
+  let registered = false;
+  if (interaction.channel === null)
+    return;
+  for (let i = 0; i < registeredChannels.length; i++) {
+    if (registeredChannels[i]._id === interaction.channel.id) {
+      registered = true;
+      break;
+    }
+  }
+  if (!registered)
+    return;
+  let constructArray = [];
+  let chatLogData = await getChat(interaction.channelId).then((doc) => {
+    return doc;
+  }).catch((err) => {
+    console.log(err);
+    console.log("Error getting chat log");
+  });
+  let chatLog;
+  if (chatLogData) {
+    chatLog = assembleChatFromData(chatLogData);
+  }
+  if (chatLog === null || chatLog === void 0) {
+    return console.log("Chat log is null or undefined");
+  }
+  for (let i = 0; i < chatLog.constructs.length; i++) {
+    console.log("Getting construct");
+    console.log(chatLog.constructs[i]);
+    let constructDoc;
+    try {
+      constructDoc = await getConstruct(chatLog.constructs[i]).then((doc) => {
+        return doc;
+      }).catch((err) => {
+        console.log(err);
+        console.log("Error getting construct");
+      });
+    } catch (e) {
+      console.log(e);
+      console.log("Error getting construct");
+    }
+    if (constructDoc === null) {
+      continue;
+    }
+    let construct = assembleConstructFromData(constructDoc);
+    if (construct === null)
+      continue;
+    constructArray.push(construct);
+  }
+  if (isMultiConstructMode() && !interaction.channel.isDMBased()) {
+    let lastMessageContent = chatLog.lastMessage.text;
+    let shuffledConstructs = constructArray;
+    for (let i = shuffledConstructs.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffledConstructs[i], shuffledConstructs[j]] = [shuffledConstructs[j], shuffledConstructs[i]];
+    }
+    let mentionedConstruct = containsName(lastMessageContent, constructArray);
+    if (mentionedConstruct) {
+      let mentionedIndex = shuffledConstructs.findIndex((construct) => construct.name === mentionedConstruct);
+      if (mentionedIndex !== -1) {
+        const [mentioned] = shuffledConstructs.splice(mentionedIndex, 1);
+        shuffledConstructs.unshift(mentioned);
+      }
+    }
+    chatLog = await doRoundRobin(shuffledConstructs, chatLog, interaction);
+    if (chatLog === void 0)
+      return;
+    let hasBeenMention = true;
+    let lastMessageText = (_a = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _a.text;
+    let iterations = 0;
+    do {
+      if (isInterrupted && interruptedChannel === interaction.channelId) {
+        break;
+      }
+      if (((_b = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _b.text) === void 0)
+        break;
+      if (iterations > 0 && lastMessageText === chatLog.lastMessage.text)
+        break;
+      iterations++;
+      hasBeenMention = false;
+      for (let i = 0; i < shuffledConstructs.length; i++) {
+        if (isInterrupted && interruptedChannel === interaction.channelId) {
+          break;
+        }
+        if (isMentioned(lastMessageText, shuffledConstructs[i]) && chatLog.lastMessage.isHuman && !chatLog.lastMessage.isThought && chatLog.lastMessage.userID !== shuffledConstructs[i]._id) {
+          hasBeenMention = true;
+          break;
+        }
+      }
+      if (hasBeenMention) {
+        chatLog = await doRoundRobin(shuffledConstructs, chatLog, interaction);
+      }
+    } while (hasBeenMention);
+    while (true) {
+      let shouldContinue = false;
+      if ((chatLog == null ? void 0 : chatLog.lastMessage.text) === void 0)
+        break;
+      if (isInterrupted && interruptedChannel === interaction.channelId) {
+        break;
+      }
+      for (let i = 0; i < shuffledConstructs.length; i++) {
+        if (isInterrupted && interruptedChannel === interaction.channelId) {
+          break;
+        }
+        let config = shuffledConstructs[i].defaultConfig;
+        if ((_c = chatLog == null ? void 0 : chatLog.lastMessage) == null ? void 0 : _c.isHuman) {
+          if (config.replyToUser >= Math.random()) {
+            let replyLog = await doCharacterReply(shuffledConstructs[i], chatLog, interaction);
+            if (replyLog !== void 0) {
+              chatLog = replyLog;
+            }
+            shouldContinue = true;
+          }
+        } else {
+          if (config.replyToConstruct >= Math.random() && chatLog.lastMessage.userID !== shuffledConstructs[i]._id) {
+            let replyLog = await doCharacterReply(shuffledConstructs[i], chatLog, interaction);
+            if (replyLog !== void 0) {
+              chatLog = replyLog;
+            }
+            shouldContinue = true;
+          }
+        }
+      }
+      if (!shouldContinue) {
+        break;
+      }
+    }
+  } else {
+    let config = constructArray[0].defaultConfig;
+    if (chatLog.chatConfigs !== void 0 && chatLog.chatConfigs.length > 0) {
+      for (let j = 0; j < chatLog.chatConfigs.length; j++) {
+        if (chatLog.chatConfigs[j]._id === constructArray[0]._id) {
+          config = chatLog.chatConfigs[j];
+          break;
+        }
+      }
+    }
+    if (!config.doLurk === true) {
+      let wasMentioned = isMentioned(chatLog.lastMessage.text, constructArray[0]) && chatLog.lastMessage.isHuman;
+      if (wasMentioned) {
+        if (config.replyToUserMention >= Math.random()) {
+          sendTyping(interaction);
+          let replyLog = await doCharacterReply(constructArray[0], chatLog, interaction);
+          if (replyLog !== void 0) {
+            chatLog = replyLog;
+          }
+        }
+      } else {
+        if (config.replyToUser >= Math.random()) {
+          sendTyping(interaction);
+          let replyLog = await doCharacterReply(constructArray[0], chatLog, interaction);
+          if (replyLog !== void 0) {
+            chatLog = replyLog;
+          }
+        }
+      }
+    }
+  }
+  if (isInterrupted && interaction.channelId === interruptedChannel) {
+    isInterrupted = false;
+    interruptedChannel = "";
+  }
+}
+async function handleRengenerateMessage(message) {
+  let registeredChannels = getRegisteredChannels();
+  let registered = false;
+  if (message.channel === null) {
+    console.log("Channel is null");
+    return;
+  }
+  for (let i = 0; i < registeredChannels.length; i++) {
+    if (registeredChannels[i]._id === message.channel.id) {
+      registered = true;
+      break;
+    }
+  }
+  if (!registered) {
+    console.log("Channel is not registered");
+    return;
+  }
+  let chatLogData = await getChat(message.channel.id);
+  let chatLog;
+  if (chatLogData) {
+    chatLog = assembleChatFromData(chatLogData);
+  }
+  if (chatLog === void 0 || chatLog === null) {
+    console.log("Chat log is undefined");
+    return;
+  }
+  if (chatLog.messages.length <= 1) {
+    console.log("Chat log has no messages");
+    return;
+  }
+  let edittedMessage = await regenerateMessageFromChatLog(chatLog, message.content);
+  if (edittedMessage === void 0) {
+    console.log("Editted message is undefined");
+    return;
+  }
+  await editMessage(message, edittedMessage);
+}
+async function handleRemoveMessage(message) {
+  let registeredChannels = getRegisteredChannels();
+  let registered = false;
+  if (message.channel === null)
+    return;
+  for (let i = 0; i < registeredChannels.length; i++) {
+    if (registeredChannels[i]._id === message.channel.id) {
+      registered = true;
+      break;
+    }
+  }
+  if (!registered)
+    return;
+  let chatLogData = await getChat(message.channel.id);
+  let chatLog;
+  if (chatLogData) {
+    chatLog = assembleChatFromData(chatLogData);
+  }
+  if (chatLog === void 0 || chatLog === null) {
+    return;
+  }
+  if (chatLog.messages.length < 1) {
+    return;
+  }
+  await removeMessagesFromChatLog(chatLog, message.content);
+  await deleteMessage(message);
+}
+function containsName(message, chars) {
+  for (let i = 0; i < chars.length; i++) {
+    if (isMentioned(message, chars[i])) {
+      return chars[i].name;
+    }
+  }
+  return false;
+}
+function isMentioned(message, char) {
+  if (message.toLowerCase().trim().includes(char.name.toLowerCase().trim()) && char.name !== "" || message.toLowerCase().trim().includes(char.nickname.toLowerCase().trim()) && char.nickname !== "") {
+    return true;
+  }
+  return false;
+}
+async function assembleUserProfile(ServerID, userID, isDM = false) {
+  if (!isDM) {
+    let userData;
+    let userRoles = [];
+    let serverData;
+    serverData = await disClient.guilds.fetch(ServerID);
+    if (!serverData) {
+      console.log("Server not found");
+      return;
+    }
+    userData = await serverData.members.fetch(userID);
+    if (!userData) {
+      console.log("User not found");
+      return;
+    }
+    userData.roles.cache.forEach((role) => {
+      userRoles.push(role.name);
+    });
+    let status = "";
+    if ((userData == null ? void 0 : userData.presence) === void 0 || (userData == null ? void 0 : userData.presence) === null)
+      return;
+    if ((userData == null ? void 0 : userData.presence.activities) === void 0) {
+      status = "No status";
+    } else if ((userData == null ? void 0 : userData.presence.activities.length) > 0) {
+      switch (userData == null ? void 0 : userData.presence.activities[0].type) {
+        case 0:
+          status = `Playing ${userData.presence.activities[0].name}`;
+          break;
+        case 2:
+          status = `Listening to ${userData.presence.activities[0].details} by ${userData.presence.activities[0].state} on ${userData.presence.activities[0].name}`;
+          break;
+        default:
+          status = `${userData == null ? void 0 : userData.presence.activities[0].name}`;
+          break;
+      }
+    } else {
+      status = "No status";
+    }
+    const userObject = {
+      username: userData.user.username ? userData.user.username : "No username",
+      nickname: userData.nickname ? userData.nickname : "No nickname",
+      roles: userRoles,
+      joined: userData.joinedAt ? userData.joinedAt : "Not inside a server.",
+      created: userData.user.createdAt ? userData.user.createdAt : "Not inside a server.",
+      status
+    };
+    let userString = `[{{char}} is speaking to ${userObject.username} ${userObject.nickname !== "No nickname" ? `(${userObject.nickname})` : ""} in ${serverData.name}. ${userObject.username} is ${userObject.status}. ${userObject.username} joined the server on ${userObject.joined}. ${userObject.username} created their account on ${userObject.created}. ${userObject.username} has the following roles: ${userObject.roles.join(", ")}.]`;
+    return userString;
+  } else {
+    return null;
+  }
+}
+async function doImageReaction(message) {
+  var _a, _b;
+  if (!doStableReactions) {
+    console.log("Stable Reactions is disabled");
+    return;
+  }
+  if (!diffusionWhitelist.includes(message.channel.id)) {
+    console.log("Channel is not whitelisted");
+    return;
+  }
+  if (message.attachments.size > 0) {
+    message.react("❎");
+    console.log("Message has an attachment");
+    return;
+  }
+  if (message.embeds.length > 0) {
+    message.react("❎");
+    console.log("Message has an embed");
+    return;
+  }
+  if (message.content.includes("http")) {
+    message.react("❎");
+    console.log("Message has a link");
+    return;
+  }
+  if (message.content.includes("www")) {
+    console.log("Message has a link");
+    message.react("❎");
+    return;
+  }
+  if (message.content.includes(".com")) {
+    message.react("❎");
+    console.log("Message has a link");
+    return;
+  }
+  if (message.content.includes(".net")) {
+    message.react("❎");
+    console.log("Message has a link");
+    return;
+  }
+  if (message.cleanContent.length < 1) {
+    message.react("❎");
+    console.log("Message has no content");
+    return;
+  }
+  message.react("✅");
+  let prompt = message.cleanContent;
+  let imageData = await makeImage(prompt).then((data) => {
+    return data;
+  }).catch((err) => {
+    console.log(err);
+    return null;
+  });
+  if (imageData === null) {
+    if (((_b = (_a = message == null ? void 0 : message.reactions) == null ? void 0 : _a.cache) == null ? void 0 : _b.get("✅")) !== void 0) {
+      message.reactions.cache.get("✅").remove();
+    }
+    message.react("❌");
+    console.log("Image data is null");
+    return;
+  }
+  const buffer = Buffer.from(imageData.base64, "base64");
+  let attachment = new discord_js.AttachmentBuilder(buffer, { name: `${imageData.name}` });
+  const embed = new discord_js.EmbedBuilder().setTitle("Imagine").setFields([
+    {
+      name: "Prompt",
+      value: getDefaultPrompt() + prompt,
+      inline: false
+    },
+    {
+      name: "Negative Prompt",
+      value: `${getDefaultNegativePrompt()}`,
+      inline: false
+    },
+    {
+      name: "Steps",
+      value: getDefaultSteps().toString(),
+      inline: true
+    },
+    {
+      name: "CFG",
+      value: getDefaultCfg().toString(),
+      inline: false
+    },
+    {
+      name: "Width",
+      value: getDefaultWidth().toString(),
+      inline: true
+    },
+    {
+      name: "Height",
+      value: getDefaultHeight().toString(),
+      inline: true
+    },
+    {
+      name: "Highres Steps",
+      value: getDefaultHighresSteps().toString(),
+      inline: false
+    },
+    {
+      name: "Model",
+      value: `${imageData.model}`,
+      inline: false
+    }
+  ]).setImage(`attachment://${imageData.name}`).setFooter({ text: "Powered by Stable Diffusion" });
+  if (!showDiffusionDetails) {
+    message.reply({ files: [attachment], embeds: [embed] });
+  } else {
+    message.reply({ files: [attachment] });
+  }
+}
+async function removeConstructFromChatLog(constructID, chatLogID) {
+  const currentLogData = await getChat(chatLogID);
+  if (currentLogData === null) {
+    return;
+  }
+  let currentLog = assembleChatFromData(currentLogData);
+  if (currentLog === null) {
+    return;
+  }
+  if (!currentLog.constructs.includes(constructID)) {
+    return;
+  }
+  currentLog.constructs = currentLog.constructs.filter((item) => item !== constructID);
+  await updateChat(currentLog);
+}
+async function addConstructToChatLog(constructID, chatLogID) {
+  const currentLogData = await getChat(chatLogID);
+  if (currentLogData === null) {
+    return;
+  }
+  let currentLog = assembleChatFromData(currentLogData);
+  if (currentLog === null) {
+    return;
+  }
+  if (currentLog.constructs.includes(constructID)) {
+    return;
+  }
+  currentLog.constructs.push(constructID);
+  await updateChat(currentLog);
+}
+function makeDelay() {
+  let timeoutId = null;
+  const waitFor2 = (seconds) => {
+    isDelaying2 = true;
+    return new Promise((resolve, reject) => {
+      timeoutId = setTimeout(resolve, seconds * 1e3);
+    });
+  };
+  let isDelaying2 = false;
+  const cancel2 = () => {
+    isDelaying2 = false;
+    if (timeoutId !== null) {
+      clearTimeout(timeoutId);
+    }
+  };
+  return { waitFor: waitFor2, cancel: cancel2, isDelaying: isDelaying2 };
+}
+function DiscordController() {
+  getDiscordSettings();
+  expressApp.get("/api/discord/channels", (req, res) => {
+    try {
+      const channels = getRegisteredChannels();
+      res.json({ channels });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
+  });
+  expressApp.post("/api/discord/channels/register", (req, res) => {
+    try {
+      const { channel } = req.body;
+      addRegisteredChannel(channel);
+      res.status(200).send({ message: "Channel registered successfully." });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
+  });
+  expressApp.delete("/api/discord/channels/unregister", (req, res) => {
+    try {
+      const { channel } = req.body;
+      removeRegisteredChannel(channel);
+      res.status(200).send({ message: "Channel unregistered successfully." });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
+  });
+  expressApp.get("/api/discord/channels/check", (req, res) => {
+    try {
+      const { channel } = req.query;
+      const isRegistered = isChannelRegistered(channel);
+      res.json({ isRegistered });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
+  });
+  expressApp.get("/api/discord/diffusion", (req, res) => {
+    try {
+      res.json({ value: getDoStableDiffusion() });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
+  });
+  expressApp.post("/api/discord/diffusion", (req, res) => {
+    try {
+      setDoStableDiffusion(req.body.value);
+      res.send({ message: "Updated successfully." });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
+  });
+  expressApp.get("/api/discord/diffusion-reactions", (req, res) => {
+    try {
+      res.json({ value: getDoStableReactions() });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
+  });
+  expressApp.post("/api/discord/diffusion-reactions", (req, res) => {
+    try {
+      setDoStableReactions(req.body.value);
+      console.log("Set Diffusion Reacts", req.body.value);
+      res.send({ message: "Updated successfully." });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
+  });
+  expressApp.get("/api/discord/diffusion-whitelist", (req, res) => {
+    try {
+      res.json({ channels: getDiffusionWhitelist() });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
+  });
+  expressApp.post("/api/discord/diffusion-whitelist", (req, res) => {
+    try {
+      addDiffusionWhitelist(req.body.channel);
+      res.send({ message: "Channel added to whitelist successfully." });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
+  });
+  expressApp.delete("/api/discord/diffusion-whitelist", (req, res) => {
+    try {
+      removeDiffusionWhitelist(req.body.channel);
+      res.send({ message: "Channel removed from whitelist successfully." });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
+  });
+  expressApp.get("/api/discord/diffusion-details", (req, res) => {
+    try {
+      res.json({ value: getShowDiffusionDetails() });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
+  });
+  expressApp.post("/api/discord/diffusion-details", (req, res) => {
+    try {
+      setShowDiffusionDetails(req.body.value);
+      res.send({ message: "Detail setting updated successfully." });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
+  });
+  expressApp.get("/api/discord/diffusion-channels", (req, res) => {
+    try {
+      res.json({ channels: getDiffusionWhitelist() });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
+  });
+  expressApp.get("/api/discord/delay", (req, res) => {
+    try {
+      res.json({ value: getDelay() });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
+  });
+  expressApp.post("/api/discord/delay", (req, res) => {
+    try {
+      setDelay(req.body.value);
+      res.send({ message: "Delay updated successfully." });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
+  });
+  expressApp.get("/api/discord/delay-enabled", (req, res) => {
+    try {
+      res.json({ value: getDoDelay() });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
+  });
+  expressApp.post("/api/discord/delay-enabled", (req, res) => {
+    try {
+      setDoDelay(req.body.value);
+      res.send({ message: "Delay setting updated successfully." });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
   });
 }
 var commonjsGlobal = typeof globalThis !== "undefined" ? globalThis : typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : {};
@@ -9154,8 +9154,8 @@ function requireNode() {
           }
           break;
         case "FILE":
-          var fs$12 = fs;
-          stream2 = new fs$12.SyncWriteStream(fd2, { autoClose: false });
+          var fs2 = fs$1;
+          stream2 = new fs2.SyncWriteStream(fd2, { autoClose: false });
           stream2._type = "fs";
           break;
         case "PIPE":
@@ -9216,7 +9216,7 @@ function requireDestroy() {
     return destroy_1;
   hasRequiredDestroy = 1;
   var EventEmitter = require$$0$5.EventEmitter;
-  var ReadStream = fs.ReadStream;
+  var ReadStream = fs$1.ReadStream;
   var Stream = require$$1$3;
   var Zlib = require$$3$2;
   destroy_1 = destroy;
@@ -44178,6 +44178,126 @@ const bodyParser = /* @__PURE__ */ getDefaultExportFromCjs(bodyParserExports);
 process.env.DIST_ELECTRON = path$1.join(__dirname, "../");
 process.env.DIST = path$1.join(process.env.DIST_ELECTRON, "../dist");
 process.env.VITE_PUBLIC = process.env.VITE_DEV_SERVER_URL ? path$1.join(process.env.DIST_ELECTRON, "../public") : process.env.DIST;
+const appDataPath = process.env.APPDATA || (process.platform == "darwin" ? process.env.HOME + "Library/Preferences" : "/var/local");
+const store = new Store();
+const modelsPath = path$1.join(process.env.VITE_PUBLIC, "models/");
+const wasmPath = path$1.join(process.env.VITE_PUBLIC, "wasm/");
+const backgroundsPath = path$1.join(process.env.VITE_PUBLIC, "backgrounds/");
+const charactersPath = path$1.join(process.env.VITE_PUBLIC, "defaults/characters/");
+const dataPath = path$1.join(appDataPath, "ConstructOS/data/");
+console.log(dataPath);
+const imagesPath = path$1.join(dataPath, "images/");
+const uploadsPath = path$1.join(dataPath, "uploads/");
+const actionLogsPath = path$1.join(dataPath, "action-logs/");
+path$1.join(dataPath, "event-logs/");
+fs$1.mkdirSync(dataPath, { recursive: true });
+fs$1.mkdirSync(imagesPath, { recursive: true });
+fs$1.mkdirSync(uploadsPath, { recursive: true });
+fs$1.mkdirSync(actionLogsPath, { recursive: true });
+let isDarwin = process.platform === "darwin";
+const expressApp = express();
+const port = 3003;
+expressApp.use(express.static("public"));
+expressApp.use(express.static("dist"));
+expressApp.use(bodyParser.json({ limit: "1000mb" }));
+expressApp.use(bodyParser.urlencoded({ limit: "1000mb", extended: true }));
+expressApp.use(cors());
+expressApp.use("/api/images", express.static(uploadsPath));
+const server = node_http.createServer(expressApp);
+const expressAppIO = new socket_io.Server(server);
+expressAppIO.sockets.on("connection", (socket) => {
+  console.log("Client connected:", socket.id);
+  socket.onAny((eventName, ...args) => {
+    console.log(`event: ${eventName}`, args);
+  });
+});
+server.listen(port, () => {
+  console.log(`Server started on http://localhost:${port}`);
+});
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsPath);
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname);
+  }
+});
+const upload = multer({ storage });
+expressApp.post("/api/models/load", async (req, res) => {
+  getModels$1().then(() => {
+    res.send(true);
+  }).catch((err) => {
+    res.send(err);
+  });
+});
+expressApp.get("/api/get-data-path", (req, res) => {
+  res.send({ dataPath });
+});
+expressApp.post("/api/set-data", (req, res) => {
+  const { key, value } = req.body;
+  store.set(key, value);
+  res.send({ status: "success" });
+});
+expressApp.get("/api/get-data/:key", (req, res) => {
+  const value = store.get(req.params.key);
+  res.send({ value });
+});
+expressApp.post("/api/save-background", (req, res) => {
+  const { imageData, name, fileType } = req.body;
+  const imagePath = path$1.join(backgroundsPath, `${name}.${fileType}`);
+  const data = Buffer.from(imageData, "base64");
+  fs$1.writeFileSync(imagePath, data);
+  res.send({ fileName: `${name}.${fileType}` });
+});
+expressApp.get("/api/get-backgrounds", (req, res) => {
+  fs$1.readdir(backgroundsPath, (err, files) => {
+    if (err) {
+      res.send({ files: [] });
+      return;
+    }
+    res.send({ files });
+  });
+});
+expressApp.delete("/api/delete-background/:name", (req, res) => {
+  fs$1.unlink(path$1.join(backgroundsPath, req.params.name), (err) => {
+    if (err) {
+      res.send({ success: false });
+      return;
+    }
+    res.send({ success: true });
+  });
+});
+expressApp.get("/api/get-default-characters", (req, res) => {
+  const characters = [];
+  try {
+    fs$1.readdirSync(charactersPath).forEach((file) => {
+      if (file.endsWith(".png")) {
+        characters.push(file);
+      }
+    });
+    res.send({ characters });
+  } catch (err) {
+    res.status(500).send({ error: "Failed to read the characters directory." });
+  }
+});
+expressApp.post("/api/images/upload", upload.single("image"), (req, res) => {
+  if (!req.file) {
+    return res.status(400).send("No file uploaded.");
+  }
+  res.send(`File uploaded: ${req.file.originalname}`);
+});
+DiscordJSRoutes();
+PouchDBRoutes();
+LanguageModelAPI();
+SDRoutes();
+ElectronDBRoutes();
+constructController();
+DiscordController();
+VectorDBRoutes();
+ActiveConstructController();
+process.env.DIST_ELECTRON = path$1.join(__dirname, "../");
+process.env.DIST = path$1.join(process.env.DIST_ELECTRON, "../dist");
+process.env.VITE_PUBLIC = process.env.VITE_DEV_SERVER_URL ? path$1.join(process.env.DIST_ELECTRON, "../public") : process.env.DIST;
 if (node_os.release().startsWith("6.1"))
   electron.app.disableHardwareAcceleration();
 if (process.platform === "win32")
@@ -44187,24 +44307,9 @@ if (!electron.app.requestSingleInstanceLock()) {
   process.exit(0);
 }
 process.env["ELECTRON_DISABLE_SECURITY_WARNINGS"] = "true";
-let isDarwin = process.platform === "darwin";
 exports.win = null;
 const url = process.env.VITE_DEV_SERVER_URL;
 const indexHtml = path$1.join(process.env.DIST, "index.html");
-const modelsPath = path$1.join(process.env.VITE_PUBLIC, "models/");
-const wasmPath = path$1.join(process.env.VITE_PUBLIC, "wasm/");
-const backgroundsPath = path$1.join(process.env.VITE_PUBLIC, "backgrounds/");
-const charactersPath = path$1.join(process.env.VITE_PUBLIC, "defaults/characters/");
-const dataPath = path.join(electron.app.getPath("userData"), "data/");
-const imagesPath = path.join(dataPath, "images/");
-const uploadsPath = path.join(dataPath, "uploads/");
-const actionLogsPath = path.join(dataPath, "action-logs/");
-const eventLogsPath = path.join(dataPath, "event-logs/");
-fs.mkdirSync(dataPath, { recursive: true });
-fs.mkdirSync(imagesPath, { recursive: true });
-fs.mkdirSync(uploadsPath, { recursive: true });
-fs.mkdirSync(actionLogsPath, { recursive: true });
-const store = new Store();
 async function createWindow() {
   exports.win = new electron.BrowserWindow({
     title: "TalOS - AI Sandbox",
@@ -44269,15 +44374,6 @@ async function createWindow() {
       menu.popup();
     }
   });
-  DiscordJSRoutes();
-  PouchDBRoutes();
-  LanguageModelAPI();
-  SDRoutes();
-  ElectronDBRoutes();
-  constructController();
-  DiscordController();
-  VectorDBRoutes();
-  ActiveConstructController();
 }
 electron.app.whenReady().then(createWindow);
 electron.app.on("window-all-closed", () => {
@@ -44319,104 +44415,13 @@ electron.ipcMain.handle("open-win", (_, arg) => {
     childWindow.loadFile(indexHtml, { hash: arg });
   }
 });
-const expressApp = express();
-const port = 3003;
-expressApp.use(express.static("public"));
-expressApp.use(express.static("dist"));
-expressApp.use(bodyParser.json({ limit: "1000mb" }));
-expressApp.use(bodyParser.urlencoded({ limit: "1000mb", extended: true }));
-expressApp.use(cors());
-expressApp.use("/api/images", express.static(uploadsPath));
-const server = node_http.createServer(expressApp);
-const expressAppIO = new socket_io.Server(server);
-expressAppIO.sockets.on("connection", (socket) => {
-  console.log("Client connected:", socket.id);
-  socket.onAny((eventName, ...args) => {
-    console.log(`event: ${eventName}`, args);
-  });
-});
-server.listen(port, () => {
-  console.log(`Server started on http://localhost:${port}`);
-});
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadsPath);
-  },
-  filename: (req, file, cb) => {
-    cb(null, file.originalname);
-  }
-});
-const upload = multer({ storage });
-expressApp.post("/api/models/load", async (req, res) => {
-  getModels$1().then(() => {
-    res.send(true);
-  }).catch((err) => {
-    res.send(err);
-  });
-});
-expressApp.get("/api/get-data-path", (req, res) => {
-  res.send({ dataPath });
-});
-expressApp.post("/api/set-data", (req, res) => {
-  const { key, value } = req.body;
-  store.set(key, value);
-  res.send({ status: "success" });
-});
-expressApp.get("/api/get-data/:key", (req, res) => {
-  const value = store.get(req.params.key);
-  res.send({ value });
-});
-expressApp.post("/api/save-background", (req, res) => {
-  const { imageData, name, fileType } = req.body;
-  const imagePath = path.join(backgroundsPath, `${name}.${fileType}`);
-  const data = Buffer.from(imageData, "base64");
-  fs.writeFileSync(imagePath, data);
-  res.send({ fileName: `${name}.${fileType}` });
-});
-expressApp.get("/api/get-backgrounds", (req, res) => {
-  fs.readdir(backgroundsPath, (err, files) => {
-    if (err) {
-      res.send({ files: [] });
-      return;
-    }
-    res.send({ files });
-  });
-});
-expressApp.delete("/api/delete-background/:name", (req, res) => {
-  fs.unlink(path.join(backgroundsPath, req.params.name), (err) => {
-    if (err) {
-      res.send({ success: false });
-      return;
-    }
-    res.send({ success: true });
-  });
-});
-expressApp.get("/api/get-default-characters", (req, res) => {
-  const characters = [];
-  try {
-    fs.readdirSync(charactersPath).forEach((file) => {
-      if (file.endsWith(".png")) {
-        characters.push(file);
-      }
-    });
-    res.send({ characters });
-  } catch (err) {
-    res.status(500).send({ error: "Failed to read the characters directory." });
-  }
-});
-expressApp.post("/api/images/upload", upload.single("image"), (req, res) => {
-  if (!req.file) {
-    return res.status(400).send("No file uploaded.");
-  }
-  res.send(`File uploaded: ${req.file.originalname}`);
-});
 electron.ipcMain.on("open-external-url", (event, url2) => {
   electron.shell.openExternal(url2);
 });
 async function requestFullDiskAccess() {
   if (process.platform === "darwin") {
     try {
-      fs.readdirSync("/Library/Application Support/com.apple.TCC");
+      fs$1.readdirSync("/Library/Application Support/com.apple.TCC");
     } catch (e) {
       const { response } = await electron.dialog.showMessageBox({
         type: "info",
@@ -44433,17 +44438,4 @@ async function requestFullDiskAccess() {
     }
   }
 }
-exports.actionLogsPath = actionLogsPath;
-exports.backgroundsPath = backgroundsPath;
-exports.charactersPath = charactersPath;
-exports.dataPath = dataPath;
-exports.eventLogsPath = eventLogsPath;
-exports.expressApp = expressApp;
-exports.expressAppIO = expressAppIO;
-exports.imagesPath = imagesPath;
-exports.isDarwin = isDarwin;
-exports.modelsPath = modelsPath;
-exports.store = store;
-exports.uploadsPath = uploadsPath;
-exports.wasmPath = wasmPath;
 //# sourceMappingURL=index.js.map

@@ -1,13 +1,13 @@
-import { getConstruct, updateChat } from "@/api/dbapi";
-import { Chat } from "@/classes/Chat";
-import { Construct } from "@/classes/Construct";
-import { getFormattedTime } from "@/pages/chat/chat-log/message";
+import { getConstruct, updateChat } from "../../../../api/dbapi";
+import { Chat } from "../../../../classes/Chat";
+import { Construct } from "../../../../classes/Construct";
+import { getFormattedTime } from "../../../../pages/chat/chat-log/message";
 import { Edit2Icon, TrashIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { RiQuestionMark } from "react-icons/ri";
 import { truncateText } from "../../helpers";
-import { confirmModal } from "@/components/confirm-modal";
-import { getImageURL } from "@/api/baseapi";
+import { confirmModal } from "../../../../components/confirm-modal";
+import { getImageURL } from "../../../../api/baseapi";
 interface ChatDetailsProps {
     chat: Chat;
     onDoubleClick?: (chat: Chat) => void;

@@ -1,5 +1,5 @@
-import { getImageURL } from "@/api/baseapi";
-import { Construct } from "@/classes/Construct";
+import { getImageURL } from "../../api/baseapi";
+import { Construct } from "../../classes/Construct";
 import { PlusIcon } from "lucide-react";
 import React, { useState, useEffect } from "react";
 

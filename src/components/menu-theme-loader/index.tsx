@@ -1,6 +1,6 @@
-import { getStorageValue } from "@/api/dbapi";
-import UITheme from "@/classes/UITheme";
-import { defaultThemes } from "@/constants/uithemes";
+import { getStorageValue } from "../../api/dbapi";
+import UITheme from "../../classes/UITheme";
+import { defaultThemes } from "../../constants/uithemes";
 import { useState, useEffect } from "react";
 
 interface Props {

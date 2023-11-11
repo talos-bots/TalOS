@@ -1,4 +1,4 @@
-import { getGuilds, getRegisteredChannelsForChat, getRegisteredChannelsForDiffusion, leaveGuild } from "@/api/discordapi";
+import { getGuilds, getRegisteredChannelsForChat, getRegisteredChannelsForDiffusion, leaveGuild } from "../../../api/discordapi";
 import { useEffect, useState } from "react";
 interface ChannelManagerProps {
     botActive: boolean;

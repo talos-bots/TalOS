@@ -1,4 +1,4 @@
-import { getGPTTokens, getLlamaTokens } from "@/api/llmapi";
+import { getGPTTokens, getLlamaTokens } from "../../api/llmapi";
 import { useEffect, useState } from "react";
 
 interface TokenTextareaProps {

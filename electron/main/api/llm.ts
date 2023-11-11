@@ -3,7 +3,7 @@ import OpenAI from "openai";
 import Store from 'electron-store';
 import { instructPrompt, instructPromptWithContext, instructPromptWithExamples, instructPromptWithGuidance, instructPromptWithGuidanceAndContext, instructPromptWithGuidanceAndContextAndExamples, instructPromptWithGuidanceAndExamples } from '../types/prompts';
 import { getCaption, getClassification, getEmbedding, getEmbeddingSimilarity,  getQuestionAnswering } from '../model-pipeline/transformers';
-import { expressApp } from '..';
+import { expressApp } from '../server';
 import { detectIntent } from '../helpers/actions-helpers';
 import { ConstructInterface } from '../types/types';
 

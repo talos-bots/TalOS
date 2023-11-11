@@ -1,6 +1,6 @@
-import { url } from "@/App";
-import { Chat } from "@/classes/Chat";
-import { Construct } from "@/classes/Construct";
+import { url } from "../../App";
+import { Chat } from "../../classes/Chat";
+import { Construct } from "../../classes/Construct";
 import axios from "axios";
 import { uploadImage } from "../baseapi";
 import { sendTxt2Img } from "../sdapi";

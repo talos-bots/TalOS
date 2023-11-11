@@ -1,5 +1,5 @@
-import { ConnectionPreset, OAI_Model, addLLMConnectionPreset, getCurrentLLMConnectionPreset, getLLMConnectionInformation, getLLMConnectionPresets, getStatus, removeLLMConnectionPreset, setCurrentLLMConnectionPreset, setLLMConnectionInformation, setPaLMFilters, setPalmModel } from "@/api/llmapi";
-import { EndpointType } from "@/types";
+import { ConnectionPreset, OAI_Model, addLLMConnectionPreset, getCurrentLLMConnectionPreset, getLLMConnectionInformation, getLLMConnectionPresets, getStatus, removeLLMConnectionPreset, setCurrentLLMConnectionPreset, setLLMConnectionInformation, setPaLMFilters, setPalmModel } from "../../../api/llmapi";
+import { EndpointType } from "../../../types";
 import { useEffect, useState } from "react";
 import HordePanel from "../horde-panel";
 import OpenAIPanel from "../openai-panel";

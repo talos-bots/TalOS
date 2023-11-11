@@ -1,13 +1,13 @@
-import { Construct } from "@/classes/Construct";
-import { Attachment } from "@/classes/Attachment";
-import { Chat } from "@/classes/Chat";
-import { Instruct } from "@/classes/Instruct";
+import { Construct } from "../../classes/Construct";
+import { Attachment } from "../../classes/Attachment";
+import { Chat } from "../../classes/Chat";
+import { Instruct } from "../../classes/Instruct";
 import { removeConstructFromActive } from "../constructapi";
-import { CompletionLog } from "@/classes/CompletionLog";
-import { User } from "@/classes/User";
-import { Lorebook } from "@/classes/Lorebook";
+import { CompletionLog } from "../../classes/CompletionLog";
+import { User } from "../../classes/User";
+import { Lorebook } from "../../classes/Lorebook";
 import axios from 'axios';
-import { url } from '@/App';
+import { url } from '../../App';
 
 export async function getConstructs(): Promise<Construct[]> {
     try {

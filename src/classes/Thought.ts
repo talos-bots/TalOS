@@ -1,4 +1,4 @@
-import { Emotion } from "@/types";
+import { Emotion } from "../types";
 import { Attachment } from "./Attachment";
 
 export class Thought{

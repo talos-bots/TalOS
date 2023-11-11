@@ -1,5 +1,5 @@
 import Store from 'electron-store';
-import { expressApp } from '..';
+import { expressApp } from '../server';
 import { CompletionInterface, CompletionLogInterface } from '../types/types';
 import { getGPTTokens } from '../helpers/helpers';
 import { settings } from '../api/llm';

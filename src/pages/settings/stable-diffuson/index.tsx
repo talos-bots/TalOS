@@ -8,7 +8,7 @@ import {
     getDefaultWidth, setDefaultWidth,
     getDefaultHeight, setDefaultHeight,
     getDefaultHighresSteps, setDefaultHighresSteps,
-    getDefaultDenoisingStrength, setDefaultDenoisingStrength, getDefaultNegativePrompt, setDefaultNegativePrompt, getDefaultUpscale, setDefaultUpscale, getDefaultPrompt, setSDDefaultPrompt } from "@/api/sdapi";
+    getDefaultDenoisingStrength, setDefaultDenoisingStrength, getDefaultNegativePrompt, setDefaultNegativePrompt, getDefaultUpscale, setDefaultUpscale, getDefaultPrompt, setSDDefaultPrompt } from "../../../api/sdapi";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { URL } from "url";

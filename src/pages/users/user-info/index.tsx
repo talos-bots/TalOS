@@ -1,6 +1,6 @@
-import { getImageURL } from "@/api/baseapi";
-import { User } from "@/classes/User";
-import { confirmModal } from "@/components/confirm-modal";
+import { getImageURL } from "../../../api/baseapi";
+import { User } from "../../../classes/User";
+import { confirmModal } from "../../../components/confirm-modal";
 import { Download, EditIcon, TrashIcon } from "lucide-react";
 import { RiQuestionMark } from "react-icons/ri";
 

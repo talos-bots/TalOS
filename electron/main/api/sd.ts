@@ -2,7 +2,7 @@ import axios from 'axios';
 import Store from 'electron-store';
 import { AttachmentInferface } from '../types/types';
 import { addAttachment } from './pouchdb';
-import { expressApp, uploadsPath } from '..';
+import { expressApp, uploadsPath } from '../server';
 import path from 'node:path';
 import fs from 'node:fs';
 const store = new Store({

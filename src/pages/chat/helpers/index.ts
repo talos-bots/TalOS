@@ -1,10 +1,10 @@
-import { generateContinueChatLog, generateThoughts, regenerateMessageFromChatLog, regenerateUserMessageFromChatLog } from "@/api/constructapi";
-import { getConstruct } from "@/api/dbapi";
-import { Attachment } from "@/classes/Attachment";
-import { Chat } from "@/classes/Chat";
-import { Construct } from "@/classes/Construct";
-import { Message } from "@/classes/Message";
-import { User } from "@/classes/User";
+import { generateContinueChatLog, generateThoughts, regenerateMessageFromChatLog, regenerateUserMessageFromChatLog } from "../../../api/constructapi";
+import { getConstruct } from "../../../api/dbapi";
+import { Attachment } from "../../../classes/Attachment";
+import { Chat } from "../../../classes/Chat";
+import { Construct } from "../../../classes/Construct";
+import { Message } from "../../../classes/Message";
+import { User } from "../../../classes/User";
 import { Dispatch, SetStateAction } from "react";
 
 export async function getLoadingMessage(constructID: string){

@@ -1,6 +1,6 @@
-import { removeAllMemories } from "@/api/vectorapi";
-import { Chat } from "@/classes/Chat";
-import { confirmModal } from "@/components/confirm-modal";
+import { removeAllMemories } from "../../../api/vectorapi";
+import { Chat } from "../../../classes/Chat";
+import { confirmModal } from "../../../components/confirm-modal";
 import { Cog, Download, Edit2Icon, LucideArrowBigLeft, X } from "lucide-react";
 import { useEffect, useState } from "react";
 

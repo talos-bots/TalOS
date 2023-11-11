@@ -1,7 +1,7 @@
-import { getImageURL } from "@/api/baseapi";
-import { getConstruct } from "@/api/dbapi";
-import { Attachment } from "@/classes/Attachment";
-import { Message } from "@/classes/Message";
+import { getImageURL } from "../../../../api/baseapi";
+import { getConstruct } from "../../../../api/dbapi";
+import { Attachment } from "../../../../classes/Attachment";
+import { Message } from "../../../../classes/Message";
 import { EditIcon, File, RefreshCw, Split, TrashIcon } from "lucide-react";
 import { KeyboardEvent, useEffect, useRef, useState } from "react";
 import { RiQuestionMark } from "react-icons/ri";

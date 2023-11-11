@@ -1,10 +1,10 @@
-import { deleteAttachment, getAttachments, getStorageValue } from "@/api/dbapi";
-import { Attachment } from "@/classes/Attachment";
-import Loading from "@/components/loading";
+import { deleteAttachment, getAttachments, getStorageValue } from "../../api/dbapi";
+import { Attachment } from "../../classes/Attachment";
+import Loading from "../../components/loading";
 import { ArrowBigLeft, ArrowBigRight, Download, RefreshCcw, TrashIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import ImageAttachmentComponent from "./attachment";
-import { confirmModal } from "@/components/confirm-modal";
+import { confirmModal } from "../../components/confirm-modal";
 
 const AttachmentsPage = () => {
     const [attachments, setAttachments] = useState<Attachment[]>([]);

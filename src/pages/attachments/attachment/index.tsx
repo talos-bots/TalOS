@@ -1,4 +1,4 @@
-import { Attachment } from "@/classes/Attachment";
+import { Attachment } from "../../../classes/Attachment";
 import { Download, TrashIcon } from "lucide-react";
 import { useState } from "react";
 interface AttachmentComponentProps {

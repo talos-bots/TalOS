@@ -1,10 +1,10 @@
-import { PaLMFilters } from '@/components/llm-panel/palm-panel';
-import { Emotion, EndpointType, LLMConnectionInformation, Settings } from '@/types';
+import { PaLMFilters } from '../../components/llm-panel/palm-panel';
+import { Emotion, EndpointType, LLMConnectionInformation, Settings } from '../../types';
 // @ts-ignore
 import llamaTokenizer from 'llama-tokenizer-js'
 import { encode } from 'gpt-tokenizer'
 import axios from 'axios';
-import { url } from '@/App';
+import { url } from '../../App';
 
 export interface ConnectionPreset {
     _id: string;

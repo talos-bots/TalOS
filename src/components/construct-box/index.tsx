@@ -1,18 +1,18 @@
-import { Construct } from "@/classes/Construct";
+import { Construct } from "../../classes/Construct";
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { AiOutlineDown, AiOutlineUp } from "react-icons/ai";
 import { RiQuestionMark } from "react-icons/ri";
 import './ConstructBox.scss';
-import { deleteConstruct, getConstruct } from "@/api/dbapi";
-import { setConstructAsPrimary, addConstructToActive, constructIsActive, getActiveConstructList, removeConstructFromActive } from "@/api/constructapi";
+import { deleteConstruct, getConstruct } from "../../api/dbapi";
+import { setConstructAsPrimary, addConstructToActive, constructIsActive, getActiveConstructList, removeConstructFromActive } from "../../api/constructapi";
 import StringArrayEditorCards from "../string-array-editor-cards";
-import { saveTavernCardAsImage } from "@/api/extrasapi";
+import { saveTavernCardAsImage } from "../../api/extrasapi";
 import { Download, Edit, Trash } from "lucide-react";
 import { confirmModal } from "../confirm-modal";
 import QuickChatCongfig from "./construct-quick-chat-config";
 import TokenTextarea from "../token-textarea";
-import { getImageURL } from "@/api/baseapi";
+import { getImageURL } from "../../api/baseapi";
 interface Props {
     character: Construct;
     onCharacterDelete: (character: Construct) => void;

@@ -1,4 +1,4 @@
-import { url } from "@/App";
+import { url } from "../../App";
 import axios from "axios";
 
 export type ImageReply = {

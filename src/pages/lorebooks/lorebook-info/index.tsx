@@ -1,6 +1,6 @@
-import { getImageURL } from "@/api/baseapi";
-import { Lorebook } from "@/classes/Lorebook";
-import { confirmModal } from "@/components/confirm-modal";
+import { getImageURL } from "../../../api/baseapi";
+import { Lorebook } from "../../../classes/Lorebook";
+import { confirmModal } from "../../../components/confirm-modal";
 import { Book, Download, TrashIcon } from "lucide-react";
 
 interface LorebookInfoProps {

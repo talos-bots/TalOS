@@ -1,5 +1,5 @@
-import { SettingsPreset, addLLMSettingsPreset, getCurrentLLMSettingsPreset, getLLMSettings, getLLMSettingsPresets, removeLLMSettingsPreset, setLLMSettings } from "@/api/llmapi";
-import { EndpointType, Settings } from "@/types";
+import { SettingsPreset, addLLMSettingsPreset, getCurrentLLMSettingsPreset, getLLMSettings, getLLMSettingsPresets, removeLLMSettingsPreset, setLLMSettings } from "../../../api/llmapi";
+import { EndpointType, Settings } from "../../../types";
 import { Save, Trash } from "lucide-react";
 import { useEffect, useState } from "react";
 

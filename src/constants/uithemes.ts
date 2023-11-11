@@ -1,4 +1,4 @@
-import UITheme from "@/classes/UITheme";
+import UITheme from "../classes/UITheme";
 
 const defaultGreen = new UITheme();
 defaultGreen.name = 'Green';

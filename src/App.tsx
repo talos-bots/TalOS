@@ -1,6 +1,6 @@
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { ipcMain, ipcRenderer } from 'electron';
+// import { ipcMain, ipcRenderer } from 'electron';
 import { Steps, Hints } from 'intro.js-react';
 import { getStorageValue, setStorageValue } from './api/dbapi';
 import { getDefaultCharactersFromPublic } from './api/extrasapi';
@@ -21,7 +21,7 @@ import NetworkPage from './pages/network';
 
 export const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, url: string) => {
   e.preventDefault();
-  ipcRenderer.send('open-external-url', url);
+  // ipcRenderer.send('open-external-url', url);
 };
 
 export const url = 'http://localhost:3003';
@@ -63,8 +63,6 @@ function App() {
       };
   }, []);
   
-  const isDev = process.env.NODE_ENV === 'development';
-
   useEffect(() => {
     if(isFirstRun) {
       getDefaultCharactersFromPublic();
@@ -96,7 +94,6 @@ function App() {
             <Route path='/completions' element={<CompletionsPage/>} />
           </Routes>
         </div>
-        {/* {isDev ? <DevPanel /> : null} */}
         <Steps
           initialStep={0}
           enabled={!doneTutorial}

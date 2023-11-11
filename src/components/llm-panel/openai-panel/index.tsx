@@ -1,4 +1,4 @@
-import { OAI_Model, getLLMOAIModel, setLLMOAIModel } from "@/api/llmapi";
+import { OAI_Model, getLLMOAIModel, setLLMOAIModel } from "../../../api/llmapi";
 import { useEffect, useState } from "react";
 interface OpenAIPanelProps {
     selectedModel: string;

@@ -1,8 +1,8 @@
-import { Lorebook } from "@/classes/Lorebook";
+import { Lorebook } from "../../classes/Lorebook";
 import LorebookInfo from "./lorebook-info";
 import { useEffect, useState } from "react";
-import Loading from "@/components/loading";
-import { deleteLorebook, getLorebooks, saveNewLorebook } from "@/api/dbapi";
+import Loading from "../../components/loading";
+import { deleteLorebook, getLorebooks, saveNewLorebook } from "../../api/dbapi";
 import LorebookCrud from "./lorebook-crud";
 
 const LorebooksPage = () => {

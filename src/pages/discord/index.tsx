@@ -1,9 +1,9 @@
-import { handleLinkClick } from "@/App";
-import { getActiveConstructList, removeConstructFromActive } from "@/api/constructapi";
-import { getConstruct, getStorageValue, setStorageValue } from "@/api/dbapi";
-import { getBotStatus, getDelayValue, getDoDelayValue, getDoStableDiffusionReactsStatus, getDoStableDiffusionStatus, getSavedDiscordData, getShowDiffusionDetailsStatus, loginToDiscord, logoutFromDiscord, saveDiscordData, setDelayValue, setDoDelayValue, setDoStableDiffusionReactsStatus, setDoStableDiffusionStatus, setShowDiffusionDetailsStatus } from "@/api/discordapi";
-import { Construct } from "@/classes/Construct";
-import Accordian from "@/components/accordion";
+import { handleLinkClick } from "../../App";
+import { getActiveConstructList, removeConstructFromActive } from "../../api/constructapi";
+import { getConstruct, getStorageValue, setStorageValue } from "../../api/dbapi";
+import { getBotStatus, getDelayValue, getDoDelayValue, getDoStableDiffusionReactsStatus, getDoStableDiffusionStatus, getSavedDiscordData, getShowDiffusionDetailsStatus, loginToDiscord, logoutFromDiscord, saveDiscordData, setDelayValue, setDoDelayValue, setDoStableDiffusionReactsStatus, setDoStableDiffusionStatus, setShowDiffusionDetailsStatus } from "../../api/discordapi";
+import { Construct } from "../../classes/Construct";
+import Accordian from "../../components/accordion";
 import { useEffect, useState } from "react";
 import ReactSwitch from "react-switch";
 import ChannelManager from "./channel-manager";

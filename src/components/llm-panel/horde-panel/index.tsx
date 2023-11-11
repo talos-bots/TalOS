@@ -1,4 +1,4 @@
-import { setLLMModel } from "@/api/llmapi";
+import { setLLMModel } from "../../../api/llmapi";
 import { useState, useEffect } from "react";
 interface HordePanelProps {
     selectedModel: string;

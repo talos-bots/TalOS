@@ -1,5 +1,5 @@
-import { url } from "@/App";
-import { Message } from "@/classes/Message";
+import { url } from "../../App";
+import { Message } from "../../classes/Message";
 import axios from "axios";
 
 export async function getVector(text: string): Promise<any[]> {

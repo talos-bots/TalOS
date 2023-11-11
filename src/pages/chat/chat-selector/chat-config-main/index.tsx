@@ -1,7 +1,7 @@
-import { getImageURL } from "@/api/baseapi";
-import { getConstructs, updateChat } from "@/api/dbapi";
-import { Chat } from "@/classes/Chat";
-import { Construct, ConstructChatConfig } from "@/classes/Construct";
+import { getImageURL } from "../../../../api/baseapi";
+import { getConstructs, updateChat } from "../../../../api/dbapi";
+import { Chat } from "../../../../classes/Chat";
+import { Construct, ConstructChatConfig } from "../../../../classes/Construct";
 import { useEffect, useState } from "react";
 import { RiQuestionMark } from "react-icons/ri";
 import ReactSwitch from "react-switch";

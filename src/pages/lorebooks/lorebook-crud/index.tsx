@@ -1,12 +1,12 @@
-import { getConstructs, saveNewLorebook, updateLorebook } from "@/api/dbapi";
-import { LoreEntry, Lorebook } from "@/classes/Lorebook";
+import { getConstructs, saveNewLorebook, updateLorebook } from "../../../api/dbapi";
+import { LoreEntry, Lorebook } from "../../../classes/Lorebook";
 import { useEffect, useState } from "react";
 import { RiQuestionMark } from "react-icons/ri";
 import ReactSwitch from "react-switch";
 import EntryCrud from "./entry-crud";
-import { Construct } from "@/classes/Construct";
+import { Construct } from "../../../classes/Construct";
 import { Save, Trash } from "lucide-react";
-import { getImageURL, uploadImage } from "@/api/baseapi";
+import { getImageURL, uploadImage } from "../../../api/baseapi";
 
 interface LorebookCrudProps {
     book: Lorebook | null;

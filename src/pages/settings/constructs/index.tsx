@@ -1,5 +1,5 @@
-import { loadModels } from "@/api/baseapi";
-import { getDoCaptioning, getDoEmotions, setDoCaptioning, setDoEmotions } from "@/api/llmapi";
+import { loadModels } from "../../../api/baseapi";
+import { getDoCaptioning, getDoEmotions, setDoCaptioning, setDoEmotions } from "../../../api/llmapi";
 import { Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import ReactSwitch from "react-switch";

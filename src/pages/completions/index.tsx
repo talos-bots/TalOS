@@ -1,12 +1,12 @@
-import { Completion } from "@/classes/Completion"
-import { CompletionLog } from "@/classes/CompletionLog"
-import { CompletionType } from "@/types"
+import { Completion } from "../../classes/Completion"
+import { CompletionLog } from "../../classes/CompletionLog"
+import { CompletionType } from "../../types"
 import CodeEditor from '@uiw/react-textarea-code-editor';
 import rehypePrism from "rehype-prism-plus";
 import rehypeRewrite from "rehype-rewrite";
 import { useEffect, useState } from "react"
 import { SendHorizonal } from "lucide-react";
-import { deleteCompletion, getCompletions, saveNewCompletion, updateCompletion } from "@/api/dbapi";
+import { deleteCompletion, getCompletions, saveNewCompletion, updateCompletion } from "../../api/dbapi";
 import CompletionLogDetails from "./completion-log-details";
 
 const CompletionsPage = () => {

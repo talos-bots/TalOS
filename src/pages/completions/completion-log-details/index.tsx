@@ -1,9 +1,9 @@
-import { updateCompletion } from "@/api/dbapi";
-import { getFormattedTime } from "@/pages/chat/chat-log/message";
+import { updateCompletion } from "../../../api/dbapi";
+import { getFormattedTime } from "../../../pages/chat/chat-log/message";
 import { Edit2Icon, TrashIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { confirmModal } from "@/components/confirm-modal";
-import { CompletionLog } from "@/classes/CompletionLog";
+import { confirmModal } from "../../../components/confirm-modal";
+import { CompletionLog } from "../../../classes/CompletionLog";
 interface ChatDetailsProps {
     chat: CompletionLog;
     onDoubleClick?: (chat: CompletionLog) => void;

@@ -1,4 +1,4 @@
-import { ConstructChatConfig, DefaultChatConfig, InstructType } from "@/classes/Construct";
+import { ConstructChatConfig, DefaultChatConfig, InstructType } from "../../classes/Construct";
 import { useEffect, useState } from "react";
 import ReactSwitch from "react-switch";
 

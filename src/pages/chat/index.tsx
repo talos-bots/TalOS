@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import ChatLog from "./chat-log";
 import ChatSelector from "./chat-selector";
-import { Chat } from "@/classes/Chat";
-import { getChat, getUser, saveNewChat, updateChat } from "@/api/dbapi";
-import { getActiveConstructList } from "@/api/constructapi";
-import { User } from "@/classes/User";
+import { Chat } from "../../classes/Chat";
+import { getChat, getUser, saveNewChat, updateChat } from "../../api/dbapi";
+import { getActiveConstructList } from "../../api/constructapi";
+import { User } from "../../classes/User";
 
 const ChatPage = () => {
     const [selectedChat, setSelectedChat] = useState<string | null>(null);

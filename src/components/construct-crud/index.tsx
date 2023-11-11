@@ -1,24 +1,24 @@
-import { deleteConstruct, getConstruct, saveNewConstruct, updateConstruct } from "@/api/dbapi";
-import { Construct, ConstructChatConfig, DefaultChatConfig, Sprite } from "@/classes/Construct";
+import { deleteConstruct, getConstruct, saveNewConstruct, updateConstruct } from "../../api/dbapi";
+import { Construct, ConstructChatConfig, DefaultChatConfig, Sprite } from "../../classes/Construct";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { RiQuestionMark } from "react-icons/ri";
 import './ConstructCrud.scss';
-import { setConstructAsPrimary, addConstructToActive, constructIsActive, getActiveConstructList, removeConstructFromActive } from "@/api/constructapi";
+import { setConstructAsPrimary, addConstructToActive, constructIsActive, getActiveConstructList, removeConstructFromActive } from "../../api/constructapi";
 import StringArrayEditorCards from "../string-array-editor-cards";
-import { saveTavernCardAsImage } from "@/api/extrasapi";
+import { saveTavernCardAsImage } from "../../api/extrasapi";
 import { ArrowBigLeft, ArrowBigRight, Download, RefreshCw, Save, Trash } from "lucide-react";
-import { sendTxt2Img } from "@/api/sdapi";
+import { sendTxt2Img } from "../../api/sdapi";
 import { Alert } from "@material-tailwind/react";
-import { Emotion, emotions } from "@/types";
+import { Emotion, emotions } from "../../types";
 import SpriteCrud from "./sprite-crud";
 import ConstructChatConfigPanel from "../construct-chat-config";
 import TokenTextarea from "../token-textarea";
 import { confirmModal } from "../confirm-modal";
 import Loading from "../loading";
-import { getImageURL, uploadImage } from "@/api/baseapi";
+import { getImageURL, uploadImage } from "../../api/baseapi";
 import AutoFillGenerator, { fieldTypes } from "./auto-fill-generator";
-import { getGPTTokens, getLlamaTokens, getTokenizer } from "@/api/llmapi";
+import { getGPTTokens, getLlamaTokens, getTokenizer } from "../../api/llmapi";
 
 const commandTypes = [
     {

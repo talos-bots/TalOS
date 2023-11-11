@@ -1,6 +1,6 @@
-import { deleteUser, getUsers, saveNewUser } from "@/api/dbapi";
-import { User } from "@/classes/User";
-import Loading from "@/components/loading";
+import { deleteUser, getUsers, saveNewUser } from "../../api/dbapi";
+import { User } from "../../classes/User";
+import Loading from "../../components/loading";
 import { useEffect, useState } from "react";
 import UserInfo from "./user-info";
 import UserCrud from "./user-crud";

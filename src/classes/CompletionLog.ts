@@ -1,4 +1,4 @@
-import { CompletionType } from "@/types";
+import { CompletionType } from "../types";
 import { Completion } from "./Completion";
 
 export class CompletionLog{

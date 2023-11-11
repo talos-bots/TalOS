@@ -1,6 +1,6 @@
-import { getImageURL, uploadImage } from "@/api/baseapi";
-import { Sprite } from "@/classes/Construct"
-import { Emotion } from "@/types";
+import { getImageURL, uploadImage } from "../../../api/baseapi";
+import { Sprite } from "../../../classes/Construct"
+import { Emotion } from "../../../types";
 import { useEffect, useState } from "react";
 import { RiQuestionMark } from "react-icons/ri";
 

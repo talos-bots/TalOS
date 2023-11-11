@@ -1,8 +1,8 @@
-import { getStorageValue, setStorageValue } from "@/api/dbapi";
-import LLMPanel from "@/components/llm-panel";
-import { defaultThemes } from "@/constants/uithemes";
+import { getStorageValue, setStorageValue } from "../../api/dbapi";
+import LLMPanel from "../../components/llm-panel";
+import { defaultThemes } from "../../constants/uithemes";
 import { useEffect, useState } from "react";
-import Accordian from "@/components/accordion";
+import Accordian from "../../components/accordion";
 import StableDiffusionPanel from "./stable-diffuson";
 import ConstructSettingsPanel from "./constructs";
 import BackgroundSelector from "./background-selector";

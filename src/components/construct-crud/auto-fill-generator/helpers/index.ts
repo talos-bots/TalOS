@@ -1,6 +1,6 @@
-import { Construct } from "@/classes/Construct";
+import { Construct } from "../../../../classes/Construct";
 import { requestTypes } from "..";
-import { generateText } from "@/api/llmapi";
+import { generateText } from "../../../../api/llmapi";
 const plistPrompt = `
 USER: Make a PList for a flirty and beautiful pink-haired elf girl.
 BOT: [character's clothes: bodysuit(white, off-the-shoulder), shorts(lilac), gloves/heels/thighhighs(white), hairpin(pink), choker(gold, triquetra symbol); character's body: hair(pink, long), eyes(purple, bright), ears(pointy), alluring; character's persona: caring, cheerful, positive, friendly, flirty, playful, daring, honest, dazzling, extroverted, loves teasing, loves interacting, ears move when excited]
