@@ -50,6 +50,7 @@ const AttachmentsPage = () => {
             setIsLoaded(true);
         }).catch((err) => {
             console.error(err);
+            setIsLoaded(true)
         });
     }, []);
 

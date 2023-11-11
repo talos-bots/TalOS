@@ -15,6 +15,7 @@ const UserPage = () => {
             setIsLoading(false);
         }).catch((err) => {
             console.log(err);
+            setIsLoading(false);
         });
     }, []);
 

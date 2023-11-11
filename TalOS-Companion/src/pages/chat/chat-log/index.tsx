@@ -96,6 +96,7 @@ const ChatLog = (props: ChatLogProps) => {
 			getChatLog().then(() => {
 				setIsLoaded(true);
 			}).catch((err) => {
+				setIsLoaded(true);
 				console.error(err);
 			});
 			socket.on(`chat-message-${chatLogID}`, () => {
