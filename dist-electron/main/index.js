@@ -2318,7 +2318,7 @@ const generateText = async (prompt, configuredName = "You", stopList = null, con
           max_length: settings.max_length ? settings.max_length : 350
         };
         cancelTokenSource = axios.CancelToken.source();
-        response = await axios.post(`${endpointURLObject.protocol}//${endpointURLObject.hostname}${endpointURLObject.port ? `:${endpointURLObject.port}` : ""}/api/v1/generate`, koboldPayload, { cancelToken: cancelTokenSource.token }).catch((error) => {
+        response = await axios.post(`${endpointURLObject.protocol}//${endpointURLObject.hostname.includes("localhost") ? "127.0.0.1" : endpointURLObject.hostname}${endpointURLObject.port ? `:${endpointURLObject.port}` : ""}/api/v1/generate`, koboldPayload, { cancelToken: cancelTokenSource.token }).catch((error) => {
           throw error;
         });
         if (response.status === 200) {
