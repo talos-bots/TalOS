@@ -2,7 +2,11 @@ import { app, BrowserWindow, shell, ipcMain, dialog, session } from "electron";
 import { release } from "node:os";
 import path, { join } from "node:path";
 import fs from "fs";
-import './server.ts';
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+import './server.js';
 process.env.DIST_ELECTRON = join(__dirname, "../");
 process.env.DIST = join(process.env.DIST_ELECTRON, "../dist");
 process.env.VITE_PUBLIC = process.env.VITE_DEV_SERVER_URL

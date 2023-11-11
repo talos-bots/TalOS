@@ -1,5 +1,5 @@
-import { ChatInterface, MessageInterface } from "../types/types";
-import { getGPTTokens } from "./helpers";
+import { ChatInterface, MessageInterface } from "../types/types.js";
+import { getGPTTokens } from "./helpers.js";
 type Tokenizer = 'OpenAI' | 'LLaMA';
 
 export function fillChatContextToLimit(chatLog: ChatInterface, tokenLimit: number, tokenizer: Tokenizer = 'LLaMA'){

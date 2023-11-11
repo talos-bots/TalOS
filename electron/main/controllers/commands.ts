@@ -1,15 +1,15 @@
 import { AttachmentBuilder, CommandInteraction, EmbedBuilder, Message } from "discord.js";
-import { Alias, ChatInterface, ConstructInterface, MessageInterface, SlashCommand } from "../types/types";
-import { addAlias, addConstructToChatLog, addDiffusionWhitelist, addRegisteredChannel, continueChatLog, getDiffusionWhitelist, getRegisteredChannels, getShowDiffusionDetails, getUsername, removeConstructFromChatLog, removeDiffusionWhitelist, removeRegisteredChannel, setDoAutoReply, setInterrupted, setMaxMessages, setReplaceUser } from "./DiscordController";
-import { addChat, getAllConstructs, getChat, getConstruct, removeChat, updateChat } from "../api/pouchdb";
-import { assembleChatFromData, assembleConstructFromData, getIntactChatLog } from "../helpers/helpers";
-import { retrieveConstructs, setDoMultiLine } from "./ChatController";
-import { cleanEmotes, clearMessageQueue, clearWebhooksFromChannel, doGlobalNicknameChange, sendMessage, sendMessageAsCharacter } from "../api/discord";
-import { doInstruct, generateText, getStatus } from "../api/llm";
-import { deleteIndex } from "../api/vector";
-import { getDefaultCfg, getDefaultHeight, getDefaultHighresSteps, getDefaultNegativePrompt, getDefaultSteps, getDefaultWidth, txt2img, getDefaultPrompt } from "../api/sd";
+import { Alias, ChatInterface, ConstructInterface, MessageInterface, SlashCommand } from "../types/types.js";
+import { addAlias, addConstructToChatLog, addDiffusionWhitelist, addRegisteredChannel, continueChatLog, getDiffusionWhitelist, getRegisteredChannels, getShowDiffusionDetails, getUsername, removeConstructFromChatLog, removeDiffusionWhitelist, removeRegisteredChannel, setDoAutoReply, setInterrupted, setMaxMessages, setReplaceUser } from "./DiscordController.js";
+import { addChat, getAllConstructs, getChat, getConstruct, removeChat, updateChat } from "../api/pouchdb.js";
+import { assembleChatFromData, assembleConstructFromData, getIntactChatLog } from "../helpers/helpers.js";
+import { retrieveConstructs, setDoMultiLine } from "./ChatController.js";
+import { cleanEmotes, clearMessageQueue, clearWebhooksFromChannel, doGlobalNicknameChange, sendMessage, sendMessageAsCharacter } from "../api/discord.js";
+import { doInstruct, generateText, getStatus } from "../api/llm.js";
+import { deleteIndex } from "../api/vector.js";
+import { getDefaultCfg, getDefaultHeight, getDefaultHighresSteps, getDefaultNegativePrompt, getDefaultSteps, getDefaultWidth, txt2img, getDefaultPrompt } from "../api/sd.js";
 import { cat } from "@xenova/transformers";
-import { setDoSystemInfo } from "./ActiveConstructController";
+import { setDoSystemInfo } from "./ActiveConstructController.js";
 
 export const RegisterCommand: SlashCommand = {
     name: 'register',

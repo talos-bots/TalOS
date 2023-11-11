@@ -1,5 +1,5 @@
 import path from 'path';
-import { imagesPath, modelsPath, wasmPath } from '../server';
+import { imagesPath, modelsPath, wasmPath } from '../server.js';
 import { unlink, writeFile } from 'fs/promises';
 import { Pipeline, Tensor } from '@xenova/transformers';
 

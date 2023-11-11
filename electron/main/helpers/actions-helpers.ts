@@ -1,4 +1,4 @@
-import { getEmbeddingSimilarity, getQuestionAnswering, getYesNoMaybe } from "../model-pipeline/transformers"
+import { getEmbeddingSimilarity, getQuestionAnswering, getYesNoMaybe } from "../model-pipeline/transformers.js"
 
 const selfieIntentExamples = [
     "Send me a picture of your breasts.",

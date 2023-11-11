@@ -1,17 +1,17 @@
 import Store from 'electron-store';
-import { generateContinueChatLog, generateThoughts, getDoMultiLine, regenerateMessageFromChatLog, removeMessagesFromChatLog, retrieveConstructs } from './ChatController';
-import { addChat, getAllConstructs, getChat, getConstruct, updateChat } from '../api/pouchdb';
-import { addUserFromDiscordMessage, assembleChatFromData, assembleConstructFromData, convertDiscordMessageToMessage } from '../helpers/helpers';
+import { generateContinueChatLog, generateThoughts, getDoMultiLine, regenerateMessageFromChatLog, removeMessagesFromChatLog, retrieveConstructs } from './ChatController.js';
+import { addChat, getAllConstructs, getChat, getConstruct, updateChat } from '../api/pouchdb.js';
+import { addUserFromDiscordMessage, assembleChatFromData, assembleConstructFromData, convertDiscordMessageToMessage } from '../helpers/helpers.js';
 import { AttachmentBuilder, CommandInteraction, EmbedBuilder, GuildMember, Message, MessageComponentInteraction } from 'discord.js';
-import { cancel, deleteMessage, disClient, editMessage, getStopList, isAutoReplyMode, isMultiCharacterMode, isMultiConstructMode, registerCommands, sendAttachment, sendAttachmentAsCharacter, sendEmbedAsCharacter, sendMessage, sendMessageAsCharacter, sendMessageEmbed, sendReply, sendTyping, waitFor } from '../api/discord';
-import { Alias, AttachmentInferface, ChannelConfigInterface, ChatInterface, ConstructInterface, MessageInterface } from '../types/types';
-import { addVectorFromMessage } from '../api/vector';
-import { getDefaultCfg, getDefaultHeight, getDefaultHighresSteps, getDefaultNegativePrompt, getDefaultPrompt, getDefaultSteps, getDefaultWidth, makeImage } from '../api/sd';
-import { expressApp, expressAppIO } from '../server';
-import { detectIntent } from '../helpers/actions-helpers';
-import { createSelfieForConstruct } from '../helpers/discord-helpers';
-import { cancelGeneration } from '../api/llm';
-import { getShowDiscordUserInfo } from './ActiveConstructController';
+import { cancel, deleteMessage, disClient, editMessage, getStopList, isAutoReplyMode, isMultiCharacterMode, isMultiConstructMode, registerCommands, sendAttachment, sendAttachmentAsCharacter, sendEmbedAsCharacter, sendMessage, sendMessageAsCharacter, sendMessageEmbed, sendReply, sendTyping, waitFor } from '../api/discord.js';
+import { Alias, AttachmentInferface, ChannelConfigInterface, ChatInterface, ConstructInterface, MessageInterface } from '../types/types.js';
+import { addVectorFromMessage } from '../api/vector.js';
+import { getDefaultCfg, getDefaultHeight, getDefaultHighresSteps, getDefaultNegativePrompt, getDefaultPrompt, getDefaultSteps, getDefaultWidth, makeImage } from '../api/sd.js';
+import { expressApp, expressAppIO } from '../server.js';
+import { detectIntent } from '../helpers/actions-helpers.js';
+import { createSelfieForConstruct } from '../helpers/discord-helpers.js';
+import { cancelGeneration } from '../api/llm.js';
+import { getShowDiscordUserInfo } from './ActiveConstructController.js';
 
 const store = new Store({
     name: 'discordData',

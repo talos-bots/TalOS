@@ -1,5 +1,5 @@
-import { txt2img } from "../api/sd";
-import { ConstructInterface } from "../types/types";
+import { txt2img } from "../api/sd.js";
+import { ConstructInterface } from "../types/types.js";
 
 export async function createSelfieForConstruct(construct: ConstructInterface, intent: string, subject: string) {
     if (!construct) return null;

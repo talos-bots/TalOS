@@ -1,7 +1,7 @@
 import PouchDB from 'pouchdb';
-import { dataPath, expressApp, isDarwin } from '../server';
+import { dataPath, expressApp, isDarwin } from '../server.js';
 import LeveldbAdapter from 'pouchdb-adapter-leveldb';
-import { addAttachmentFromEDB, addChatFromEDB, addCommandFromEDB, addCompletionFromEDB, addConstructFromEDB, addInstructFromEDB, addLorebookFromEDB, addUserFromEDB, getAttachmentFromEDB, getAttachmentsFromEDB, getChatFromEDB, getChatsByConstructFromEDB, getChatsFromEDB, getCommandFromEDB, getCommandsFromEDB, getCompletionFromEDB, getCompletionsFromEDB, getConstructFromEDB, getConstructsFromEDB, getInstructFromEDB, getInstructsFromEDB, getLorebookFromEDB, getLorebooksFromEDB, getUserFromEDB, getUsersFromEDB, removeAttachmentFromEDB, removeChatFromEDB, removeCommandFromEDB, removeCompletionFromEDB, removeConstructFromEDB, removeInstructFromEDB, removeLorebookFromEDB, removeUserFromEDB } from './electrondb';
+import { addAttachmentFromEDB, addChatFromEDB, addCommandFromEDB, addCompletionFromEDB, addConstructFromEDB, addInstructFromEDB, addLorebookFromEDB, addUserFromEDB, getAttachmentFromEDB, getAttachmentsFromEDB, getChatFromEDB, getChatsByConstructFromEDB, getChatsFromEDB, getCommandFromEDB, getCommandsFromEDB, getCompletionFromEDB, getCompletionsFromEDB, getConstructFromEDB, getConstructsFromEDB, getInstructFromEDB, getInstructsFromEDB, getLorebookFromEDB, getLorebooksFromEDB, getUserFromEDB, getUsersFromEDB, removeAttachmentFromEDB, removeChatFromEDB, removeCommandFromEDB, removeCompletionFromEDB, removeConstructFromEDB, removeInstructFromEDB, removeLorebookFromEDB, removeUserFromEDB } from './electrondb.js';
 
 let constructDB: PouchDB.Database<any>;
 let chatsDB: PouchDB.Database<any>;

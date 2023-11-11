@@ -1,25 +1,30 @@
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 process.env.DIST_ELECTRON = join(__dirname, "../");
 process.env.DIST = join(process.env.DIST_ELECTRON, "../dist");
 process.env.VITE_PUBLIC = process.env.VITE_DEV_SERVER_URL
   ? join(process.env.DIST_ELECTRON, "../public")
   : process.env.DIST;
+
 const appDataPath = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + 'Library/Preferences' : '/var/local');
-import DiscordController from "./controllers/DiscordController";
-import { ElectronDBRoutes } from "./api/electrondb";
-import { VectorDBRoutes } from "./api/vector";
-import { getModels } from "./model-pipeline/transformers";
+import DiscordController from "./controllers/DiscordController.js";
+import { ElectronDBRoutes } from "./api/electrondb.js";
+import { VectorDBRoutes } from "./api/vector.js";
+import { getModels } from "./model-pipeline/transformers.js";
 import express, { Request, Response } from 'express';
 import multer from 'multer';
 import cors from 'cors';
 import { createServer } from "node:http";
-import { LanguageModelAPI } from "./api/llm";
-import { SDRoutes } from "./api/sd";
-import constructController from "./controllers/ChatController";
-import { DiscordJSRoutes } from "./api/discord";
-import { PouchDBRoutes } from "./api/pouchdb";
+import { LanguageModelAPI } from "./api/llm.js";
+import { SDRoutes } from "./api/sd.js";
+import constructController from "./controllers/ChatController.js";
+import { DiscordJSRoutes } from "./api/discord.js";
+import { PouchDBRoutes } from "./api/pouchdb.js";
 import path, { join } from "node:path";
 import fs from "fs";
-import { ActiveConstructController } from "./controllers/ActiveConstructController";
+import { ActiveConstructController } from "./controllers/ActiveConstructController.js";
 import Store from "electron-store";
 export const store = new Store();
 export const modelsPath = path.join(process.env.VITE_PUBLIC, "models/");
@@ -84,7 +89,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-expressApp.post("/api/models/load", async (req: Request, res: Response) => {
+expressApp.post("/api/models/load", async (req, res) => {
   getModels().then(() => {
     res.send(true);
   }).catch((err) => {

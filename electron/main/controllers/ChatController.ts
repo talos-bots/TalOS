@@ -1,15 +1,15 @@
 import Store from 'electron-store';
-import { assembleAlpacaPromptFromLog, assembleConstructFromData, assembleLorebookFromData, assembleMetharmePromptFromLog, assemblePromptFromLog, assembleUserFromData, assembleVicunaPromptFromLog, getGPTTokens } from '../helpers/helpers';
-import { generateText, getCurrentSettingsPreset, settings } from '../api/llm';
-import { isReady, setDiscordBotInfo } from '../api/discord';
-import { getConstruct, getLorebooks, getUser, updateChat } from '../api/pouchdb';
-import { ChatInterface, ConstructInterface, LoreEntryInterface, MessageInterface, UserInterface } from '../types/types';
-import { getRelaventMemories } from '../api/vector';
-import { detectIntent } from '../helpers/actions-helpers';
-import { expressApp } from '../server';
-import { getYesNoMaybe } from '../model-pipeline/transformers';
-import { getDoSystemInfo, setDoSystemInfo } from './ActiveConstructController';
-import { fillChatContextToLimit } from '../helpers/chat-helpers';
+import { assembleAlpacaPromptFromLog, assembleConstructFromData, assembleLorebookFromData, assembleMetharmePromptFromLog, assemblePromptFromLog, assembleUserFromData, assembleVicunaPromptFromLog, getGPTTokens } from '../helpers/helpers.js';
+import { generateText, getCurrentSettingsPreset, settings } from '../api/llm.js';
+import { isReady, setDiscordBotInfo } from '../api/discord.js';
+import { getConstruct, getLorebooks, getUser, updateChat } from '../api/pouchdb.js';
+import { ChatInterface, ConstructInterface, LoreEntryInterface, MessageInterface, UserInterface } from '../types/types.js';
+import { getRelaventMemories } from '../api/vector.js';
+import { detectIntent } from '../helpers/actions-helpers.js';
+import { expressApp } from '../server.js';
+import { getYesNoMaybe } from '../model-pipeline/transformers.js';
+import { getDoSystemInfo, setDoSystemInfo } from './ActiveConstructController.js';
+import { fillChatContextToLimit } from '../helpers/chat-helpers.js';
 const store = new Store({
     name: 'constructData',
 });

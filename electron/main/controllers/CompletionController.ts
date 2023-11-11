@@ -1,8 +1,8 @@
 import Store from 'electron-store';
-import { expressApp } from '../server';
-import { CompletionInterface, CompletionLogInterface } from '../types/types';
-import { getGPTTokens } from '../helpers/helpers';
-import { settings } from '../api/llm';
+import { expressApp } from '../server.js';
+import { CompletionInterface, CompletionLogInterface } from '../types/types.js';
+import { getGPTTokens } from '../helpers/helpers.js';
+import { settings } from '../api/llm.js';
 type Tokenizer = 'OpenAI' | 'LLaMA';
 
 async function completeDocument(document: CompletionLogInterface, guidance: string){

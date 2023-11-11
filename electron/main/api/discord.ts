@@ -1,12 +1,12 @@
 import { ActivityType, Client, GatewayIntentBits, Collection, REST, Routes, Partials, TextChannel, DMChannel, NewsChannel, Snowflake, Webhook, Message, CommandInteraction, Events, PartialGroupDMChannel } from 'discord.js';
 import Store from 'electron-store';
-import { expressApp, uploadsPath } from '../server';
-import { doImageReaction, getDelay, getDoDelay, getDoStableDiffusion, getMessageIntent, getRegisteredChannels, getUsername, handleDiscordMessage, handleRemoveMessage, handleRengenerateMessage, makeDelay, setInterrupted } from '../controllers/DiscordController';
-import { ConstructInterface, SlashCommand } from '../types/types';
-import { assembleConstructFromData, base642Buffer } from '../helpers/helpers';
-import { DefaultCommands, stableDiffusionCommands } from '../controllers/commands';
-import { retrieveConstructs } from '../controllers/ChatController';
-import { getConstruct } from './pouchdb';
+import { expressApp, uploadsPath } from '../server.js';
+import { doImageReaction, getDelay, getDoDelay, getDoStableDiffusion, getMessageIntent, getRegisteredChannels, getUsername, handleDiscordMessage, handleRemoveMessage, handleRengenerateMessage, makeDelay, setInterrupted } from '../controllers/DiscordController.js';
+import { ConstructInterface, SlashCommand } from '../types/types.js';
+import { assembleConstructFromData, base642Buffer } from '../helpers/helpers.js';
+import { DefaultCommands, stableDiffusionCommands } from '../controllers/commands.js';
+import { retrieveConstructs } from '../controllers/ChatController.js';
+import { getConstruct } from './pouchdb.js';
 
 const intents = { 
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, 

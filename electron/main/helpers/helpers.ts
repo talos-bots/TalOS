@@ -1,15 +1,15 @@
 import { CommandInteraction, Message } from "discord.js";
-import { AttachmentInferface, ChatInterface, ConstructInterface, LorebookInterface, MessageInterface, UserInterface } from "../types/types";
+import { AttachmentInferface, ChatInterface, ConstructInterface, LorebookInterface, MessageInterface, UserInterface } from "../types/types.js";
 import FormData from 'form-data';
 import axios from "axios";
-import { getUsername } from "../controllers/DiscordController";
-import { addAttachment, addUser, getChat, getUser, updateUser } from "../api/pouchdb";
+import { getUsername } from "../controllers/DiscordController.js";
+import { addAttachment, addUser, getChat, getUser, updateUser } from "../api/pouchdb.js";
 // @ts-ignore
 import { encode } from 'gpt-tokenizer'
-import { getCaption } from "../model-pipeline/transformers";
-import { cleanEmotes } from "../api/discord";
-import { fillChatContextToLimit } from "./chat-helpers";
-import { imagesPath, uploadsPath } from "../server";
+import { getCaption } from "../model-pipeline/transformers.js";
+import { cleanEmotes } from "../api/discord.js";
+import { fillChatContextToLimit } from "./chat-helpers.js";
+import { imagesPath, uploadsPath } from "../server.js";
 import fetch from 'node-fetch';
 import fs from 'fs';
 import path from 'path';

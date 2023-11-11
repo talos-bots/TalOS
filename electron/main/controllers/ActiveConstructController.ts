@@ -1,5 +1,5 @@
 import Store from 'electron-store';
-import { expressApp } from '../server';
+import { expressApp } from '../server.js';
 
 const constructSettings = new Store(
     {

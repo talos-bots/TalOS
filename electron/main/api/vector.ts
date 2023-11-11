@@ -1,8 +1,8 @@
-import { dataPath, expressApp, isDarwin } from '../server';
+import { dataPath, expressApp, isDarwin } from '../server.js';
 import path from 'path';
 import { LocalIndex } from 'vectra';
-import { MessageInterface } from '../types/types';
-import { getEmbedding } from '../model-pipeline/transformers';
+import { MessageInterface } from '../types/types.js';
+import { getEmbedding } from '../model-pipeline/transformers.js';
 
 export async function getAllVectors(schemaName: string) {
     try {

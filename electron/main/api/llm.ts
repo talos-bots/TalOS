@@ -1,11 +1,11 @@
 import axios, { CancelTokenSource, AxiosInstance } from 'axios';
 import OpenAI from "openai";
 import Store from 'electron-store';
-import { instructPrompt, instructPromptWithContext, instructPromptWithExamples, instructPromptWithGuidance, instructPromptWithGuidanceAndContext, instructPromptWithGuidanceAndContextAndExamples, instructPromptWithGuidanceAndExamples } from '../types/prompts';
-import { getCaption, getClassification, getEmbedding, getEmbeddingSimilarity,  getQuestionAnswering } from '../model-pipeline/transformers';
-import { expressApp } from '../server';
-import { detectIntent } from '../helpers/actions-helpers';
-import { ConstructInterface } from '../types/types';
+import { instructPrompt, instructPromptWithContext, instructPromptWithExamples, instructPromptWithGuidance, instructPromptWithGuidanceAndContext, instructPromptWithGuidanceAndContextAndExamples, instructPromptWithGuidanceAndExamples } from '../types/prompts.js';
+import { getCaption, getClassification, getEmbedding, getEmbeddingSimilarity,  getQuestionAnswering } from '../model-pipeline/transformers.js';
+import { expressApp } from '../server.js';
+import { detectIntent } from '../helpers/actions-helpers.js';
+import { ConstructInterface } from '../types/types.js';
 
 const HORDE_API_URL = 'https://aihorde.net/api';
 
