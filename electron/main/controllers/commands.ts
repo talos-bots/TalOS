@@ -1154,7 +1154,8 @@ export const DefaultCommands = [
     replaceUserCommand,
     stopCommand,
     manageConstructsCommand,
-    toggleSystemInfo
+    toggleSystemInfo,
+    ToggleShowTypingCommand
 ];
 
 export const constructImagine: SlashCommand = {

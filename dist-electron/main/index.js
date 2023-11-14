@@ -3753,6 +3753,27 @@ const SetAliasCommand = {
     });
   }
 };
+const ToggleShowTypingCommand = {
+  name: "showtyping",
+  description: "Toggles whether the bot will show typing.",
+  options: [
+    {
+      name: "showtyping",
+      description: "Whether to show typing.",
+      type: 5,
+      required: true
+    }
+  ],
+  execute: async (interaction) => {
+    var _a;
+    await interaction.deferReply({ ephemeral: false });
+    const showtyping = (_a = interaction.options.get("showtyping")) == null ? void 0 : _a.value;
+    setShowTyping(showtyping);
+    await interaction.editReply({
+      content: `Set show typing to ${showtyping}`
+    });
+  }
+};
 const ClearAllWebhooksCommand = {
   name: "clearallwebhooks",
   description: "Clears all webhooks for the current channel.",
@@ -4413,7 +4434,8 @@ const DefaultCommands = [
   replaceUserCommand,
   stopCommand,
   manageConstructsCommand,
-  toggleSystemInfo
+  toggleSystemInfo,
+  ToggleShowTypingCommand
 ];
 const constructImagine = {
   name: "cosimagine",
@@ -6678,6 +6700,9 @@ function getDiscordSettings() {
 }
 const getDoAutoReply = () => {
   return store$1.get("doAutoReply", false);
+};
+const setShowTyping = (show) => {
+  store$1.set("showTyping", show);
 };
 const getShowTyping = () => {
   return store$1.get("showTyping", false);
