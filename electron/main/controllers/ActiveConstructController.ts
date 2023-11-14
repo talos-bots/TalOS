@@ -74,7 +74,7 @@ export function setMessageInterval(messageInterval: number){
 }
 
 export function getDoSystemInfo(): boolean{
-    return constructSettings.get('doSystemInfo') as boolean || true;
+    return constructSettings.get('doSystemInfo') as boolean || false;
 }
 
 export function setDoSystemInfo(doSystemSettings: boolean){

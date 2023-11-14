@@ -523,17 +523,18 @@ export const DoCharacterGreetingsCommand: SlashCommand = {
         }
         const pulledLog = await getIntactChatLog(interaction);
         const constructs = pulledLog?.constructs;
+        console.log(constructs);
         if(!constructs || constructs.length < 1) return;
         let currentConstructIndex = 0;
         let constructDoc = null;
-        while(constructDoc === null && currentConstructIndex < constructs.length - 1){
-            constructDoc = await getConstruct(constructs[currentConstructIndex]).then((doc) => {
-                return doc;
-            }).catch((e) => {
+        for(let i = 0; i < constructs.length; i++){
+            console.log(constructs[i]);
+            try{
+                constructDoc = await getConstruct(constructs[i]);
+            }catch(e){
                 console.log(e);
-                return null;
-            });
-            currentConstructIndex++;
+            }
+            if(constructDoc === null) continue;
         }
         let construct = assembleConstructFromData(constructDoc);
         let user = getUsername(interaction.user.id, interaction.channelId);

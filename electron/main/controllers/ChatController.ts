@@ -540,7 +540,7 @@ export async function removeMessagesFromChatLog(chatLog: ChatInterface, messageC
     let newChatLog = chatLog;
     let messages = newChatLog.messages;
     for(let i = 0; i < messages.length; i++){
-        if(messages[i].text === messageContent){
+        if(messages[i].text.trim().toLocaleLowerCase() === messageContent.trim().toLocaleLowerCase()){
             messages.splice(i, 1);
             break;
         }

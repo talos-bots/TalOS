@@ -3129,7 +3129,7 @@ function setMessageInterval(messageInterval) {
   constructSettings.set("messageInterval", messageInterval);
 }
 function getDoSystemInfo() {
-  return constructSettings.get("doSystemInfo") || true;
+  return constructSettings.get("doSystemInfo") || false;
 }
 function setDoSystemInfo(doSystemSettings) {
   constructSettings.set("doSystemInfo", doSystemSettings);
@@ -3716,18 +3716,19 @@ const DoCharacterGreetingsCommand = {
     }
     const pulledLog = await getIntactChatLog(interaction);
     const constructs = pulledLog == null ? void 0 : pulledLog.constructs;
+    console.log(constructs);
     if (!constructs || constructs.length < 1)
       return;
-    let currentConstructIndex = 0;
     let constructDoc = null;
-    while (constructDoc === null && currentConstructIndex < constructs.length - 1) {
-      constructDoc = await getConstruct(constructs[currentConstructIndex]).then((doc) => {
-        return doc;
-      }).catch((e) => {
+    for (let i = 0; i < constructs.length; i++) {
+      console.log(constructs[i]);
+      try {
+        constructDoc = await getConstruct(constructs[i]);
+      } catch (e) {
         console.log(e);
-        return null;
-      });
-      currentConstructIndex++;
+      }
+      if (constructDoc === null)
+        continue;
     }
     let construct = assembleConstructFromData(constructDoc);
     let user = getUsername(interaction.user.id, interaction.channelId);
@@ -6249,7 +6250,7 @@ async function removeMessagesFromChatLog(chatLog, messageContent) {
   let newChatLog = chatLog;
   let messages = newChatLog.messages;
   for (let i = 0; i < messages.length; i++) {
-    if (messages[i].text === messageContent) {
+    if (messages[i].text.trim().toLocaleLowerCase() === messageContent.trim().toLocaleLowerCase()) {
       messages.splice(i, 1);
       break;
     }
