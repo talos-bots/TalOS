@@ -28,6 +28,7 @@ let doGeneralPurpose = false;
 let diffusionWhitelist: string[] = [];
 let replaceUser = true;
 let lastIntentData: any = null;
+let showTyping = false;
 let delay = 0;
 let doDelay = false;
 
@@ -41,6 +42,9 @@ function getDiscordSettings(){
     diffusionWhitelist = getDiffusionWhitelist();
     showDiffusionDetails = getShowDiffusionDetails();
     replaceUser = getReplaceUser();
+    delay = getDelay();
+    doDelay = getDoDelay();
+    showTyping = getShowTyping();
 }
 
 export const setDoAutoReply = (doAutoReply: boolean): void => {
@@ -49,6 +53,15 @@ export const setDoAutoReply = (doAutoReply: boolean): void => {
 
 export const getDoAutoReply =  (): boolean => {
     return store.get('doAutoReply', false) as boolean;
+}
+
+export const setShowTyping = (show: boolean): void => {
+    store.set('showTyping', show);
+    showTyping = show;
+}
+
+export const getShowTyping = (): boolean => {
+    return store.get('showTyping', false) as boolean;
 }
 
 export const setDoStableDiffusion = (doStableDiffusion: boolean): void => {
@@ -444,7 +457,9 @@ export async function handleDiscordMessage(message: Message) {
             let wasMentioned = isMentioned(chatLog.lastMessage.text, constructArray[0]) && chatLog.lastMessage.isHuman;
             if(wasMentioned){
                 if(config.replyToUserMention >= Math.random()){
-                    sendTyping(message);
+                    if(getShowTyping()){
+                        sendTyping(message);
+                    }
                     console.log('replying to user mention')
                     let replyLog = await doCharacterReply(constructArray[0], chatLog, message);
                     if(replyLog !== undefined){
@@ -454,7 +469,9 @@ export async function handleDiscordMessage(message: Message) {
             }else{
                 if(config.replyToUser >= Math.random()){
                     console.log('replying to user')
-                    sendTyping(message);
+                    if(getShowTyping()){
+                        sendTyping(message);
+                    }
                     let replyLog = await doCharacterReply(constructArray[0], chatLog, message);
                     if(replyLog !== undefined){
                         chatLog = replyLog;
@@ -500,7 +517,9 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
     }
     if(construct.defaultConfig.haveThoughts && construct.defaultConfig.thinkBeforeChat){
         if(construct.defaultConfig.thoughtChance >= Math.random()){
-            sendTyping(message);
+            if(getShowTyping()){
+                sendTyping(message);
+            }
             let thoughtChatLog = await doCharacterThoughts(construct, chatLog, message);
             if(thoughtChatLog !== undefined){
                 chatLog = thoughtChatLog;
@@ -512,7 +531,9 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
         return chatLog;
     }
     let dataString = '';
-    sendTyping(message);
+    if(getShowTyping()){
+        sendTyping(message);
+    }
     if(getShowDiscordUserInfo() && !message.channel.isDMBased() && message instanceof Message && message.guildId !== null){
         const userData = await assembleUserProfile(message.guildId, message.author.id);
         if(userData !== null && userData !== undefined){
@@ -588,7 +609,9 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
     }
     if(construct.defaultConfig.haveThoughts && !construct.defaultConfig.thinkBeforeChat){
         if(construct.defaultConfig.thoughtChance >= Math.random()){
-            sendTyping(message);
+            if(getShowTyping()){
+                sendTyping(message);
+            }
             console.log('thinking after chat')
             let thoughtChatLog = await doCharacterThoughts(construct, chatLog, message);
             if(thoughtChatLog !== undefined){
@@ -923,7 +946,9 @@ export async function continueChatLog(interaction: CommandInteraction) {
             let wasMentioned = isMentioned(chatLog.lastMessage.text, constructArray[0]) && chatLog.lastMessage.isHuman;
             if(wasMentioned){
                 if(config.replyToUserMention >= Math.random()){
-                    sendTyping(interaction);
+                    if(getShowTyping()){
+                        sendTyping(interaction);
+                    }
                     let replyLog = await doCharacterReply(constructArray[0], chatLog, interaction);
                     if(replyLog !== undefined){
                         chatLog = replyLog;
@@ -931,7 +956,9 @@ export async function continueChatLog(interaction: CommandInteraction) {
                 }
             }else{
                 if(config.replyToUser >= Math.random()){
-                    sendTyping(interaction);
+                    if(getShowTyping()){
+                        sendTyping(interaction);
+                    }
                     let replyLog = await doCharacterReply(constructArray[0], chatLog, interaction);
                     if(replyLog !== undefined){
                         chatLog = replyLog;

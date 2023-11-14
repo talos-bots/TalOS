@@ -1,6 +1,6 @@
 import { AttachmentBuilder, CommandInteraction, EmbedBuilder, Message } from "discord.js";
 import { Alias, ChatInterface, ConstructInterface, MessageInterface, SlashCommand } from "../types/types.js";
-import { addAlias, addConstructToChatLog, addDiffusionWhitelist, addRegisteredChannel, continueChatLog, getDiffusionWhitelist, getRegisteredChannels, getShowDiffusionDetails, getUsername, removeConstructFromChatLog, removeDiffusionWhitelist, removeRegisteredChannel, setDoAutoReply, setInterrupted, setMaxMessages, setReplaceUser } from "./DiscordController.js";
+import { addAlias, addConstructToChatLog, addDiffusionWhitelist, addRegisteredChannel, continueChatLog, getDiffusionWhitelist, getRegisteredChannels, getShowDiffusionDetails, getUsername, removeConstructFromChatLog, removeDiffusionWhitelist, removeRegisteredChannel, setDoAutoReply, setInterrupted, setMaxMessages, setReplaceUser, setShowTyping } from "./DiscordController.js";
 import { addChat, getAllConstructs, getChat, getConstruct, removeChat, updateChat } from "../api/pouchdb.js";
 import { assembleChatFromData, assembleConstructFromData, getIntactChatLog } from "../helpers/helpers.js";
 import { retrieveConstructs, setDoMultiLine } from "./ChatController.js";
@@ -468,6 +468,26 @@ export const SetAliasCommand: SlashCommand = {
     }
 }
 
+export const ToggleShowTypingCommand: SlashCommand = {
+    name: 'showtyping',
+    description: 'Toggles whether the bot will show typing.',
+    options: [
+        {
+            name: 'showtyping',
+            description: 'Whether to show typing.',
+            type: 5,
+            required: true,
+        },
+    ],
+    execute: async (interaction: CommandInteraction) => {
+        await interaction.deferReply({ephemeral: false});
+        const showtyping = interaction.options.get('showtyping')?.value as boolean;
+        setShowTyping(showtyping);
+        await interaction.editReply({
+            content: `Set show typing to ${showtyping}`,
+        });
+    }
+}
 export const ClearAllWebhooksCommand: SlashCommand = {
     name: 'clearallwebhooks',
     description: 'Clears all webhooks for the current channel.',
