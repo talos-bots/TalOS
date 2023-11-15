@@ -4414,6 +4414,42 @@ function getEmojiByNumber(input) {
       return "❎";
   }
 }
+const doLurkCommand = {
+  name: "lurk",
+  description: "Lurks in the current channel.",
+  execute: async (interaction) => {
+    await interaction.deferReply({ ephemeral: true });
+    if (interaction.channelId === null) {
+      await interaction.editReply({
+        content: "This command can only be used in a server."
+      });
+      return;
+    }
+    if (interaction.guild === null) {
+      await interaction.editReply({
+        content: "This command can only be used in a server."
+      });
+      return;
+    }
+    await interaction.editReply({
+      content: "Lurking..."
+    });
+    const channels = getLurkingChannels();
+    if (!channels.includes(interaction.channelId)) {
+      addLurkingChannel(interaction.channelId);
+      await interaction.editReply({
+        content: "Now lurking."
+      });
+      return;
+    } else {
+      removeLurkingChannel(interaction.channelId);
+      await interaction.editReply({
+        content: "Stopped lurking."
+      });
+      return;
+    }
+  }
+};
 const DefaultCommands = [
   PingCommand,
   RegisterCommand,
@@ -4435,7 +4471,8 @@ const DefaultCommands = [
   stopCommand,
   manageConstructsCommand,
   toggleSystemInfo,
-  ToggleShowTypingCommand
+  ToggleShowTypingCommand,
+  doLurkCommand
 ];
 const constructImagine = {
   name: "cosimagine",
@@ -6684,6 +6721,7 @@ let showDiffusionDetails = false;
 let diffusionWhitelist = [];
 let replaceUser = true;
 let lastIntentData = null;
+let lurkingChannels = [];
 function getDiscordSettings() {
   maxMessages = getMaxMessages();
   getDoMultiLine();
@@ -6703,6 +6741,19 @@ const getDoAutoReply = () => {
 };
 const setShowTyping = (show) => {
   store$1.set("showTyping", show);
+};
+const addLurkingChannel = (channelID) => {
+  if (lurkingChannels.includes(channelID))
+    return;
+  lurkingChannels.push(channelID);
+};
+const getLurkingChannels = () => {
+  return lurkingChannels;
+};
+const removeLurkingChannel = (channelID) => {
+  if (lurkingChannels.includes(channelID)) {
+    lurkingChannels.splice(lurkingChannels.indexOf(channelID), 1);
+  }
 };
 const getShowTyping = () => {
   return store$1.get("showTyping", false);
@@ -6923,7 +6974,7 @@ async function handleDiscordMessage(message) {
       lastIntentData = intentData;
     }
   }
-  if (message.content.startsWith("-")) {
+  if (message.content.startsWith("-") || lurkingChannels.includes(message.channel.id)) {
     await updateChat(chatLog);
     return;
   }

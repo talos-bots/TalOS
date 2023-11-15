@@ -31,6 +31,7 @@ let lastIntentData: any = null;
 let showTyping = false;
 let delay = 0;
 let doDelay = false;
+let lurkingChannels: string[] = [];
 
 function getDiscordSettings(){
     maxMessages = getMaxMessages();
@@ -58,6 +59,21 @@ export const getDoAutoReply =  (): boolean => {
 export const setShowTyping = (show: boolean): void => {
     store.set('showTyping', show);
     showTyping = show;
+}
+
+export const addLurkingChannel = (channelID: string): void => {
+    if(lurkingChannels.includes(channelID)) return;
+    lurkingChannels.push(channelID);
+}
+
+export const getLurkingChannels = (): string[] => {
+    return lurkingChannels;
+}
+
+export const removeLurkingChannel = (channelID: string): void => {
+    if(lurkingChannels.includes(channelID)){
+        lurkingChannels.splice(lurkingChannels.indexOf(channelID), 1);
+    }
 }
 
 export const getShowTyping = (): boolean => {
@@ -340,7 +356,7 @@ export async function handleDiscordMessage(message: Message) {
             lastIntentData = intentData;
         }
     }
-    if(message.content.startsWith('-')){
+    if(message.content.startsWith('-') || lurkingChannels.includes(message.channel.id)){
         await updateChat(chatLog);
         return;
     }
