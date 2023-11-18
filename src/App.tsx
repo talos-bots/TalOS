@@ -18,10 +18,11 @@ import ZeroPage from './pages/zero';
 import NavBar from './components/shared/NavBar';
 import { io } from 'socket.io-client';
 import NetworkPage from './pages/network';
+import { ipcRenderer } from 'electron';
 
 export const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, url: string) => {
   e.preventDefault();
-  // ipcRenderer.send('open-external-url', url);
+  ipcRenderer.send('open-external-url', url);
 };
 
 export const url = 'http://localhost:3003';
