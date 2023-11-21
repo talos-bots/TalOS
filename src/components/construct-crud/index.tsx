@@ -492,12 +492,12 @@ const ConstructManagement = (props: ConstructManagementProps) => {
                                 </div>
                             </div>
                             <div className="flex flex-col h-3/6 w-full items-center justify-center">
-                            <label htmlFor="image-upload" className="relative">
-                                <div className={"absolute rounded-theme-border-radius inset-0 bg-black bg-opacity-50 flex items-center justify-center" + (!waitingForImage ? " hidden" : "")}>
-                                    <div className="animate-spin rounded-full h-20 w-20 border-b-4 border-theme-text"></div>
-                                </div>
-                                {constructImage === '' ? <RiQuestionMark className="construct-image-default"/> : <img src={getImageURL(constructImage)} alt={constructName} className="construct-image"/>}
-                            </label>
+                                <label htmlFor="image-upload" className="relative">
+                                    <div className={"absolute rounded-theme-border-radius inset-0 bg-black bg-opacity-50 flex items-center justify-center" + (!waitingForImage ? " hidden" : "")}>
+                                        <div className="animate-spin rounded-full h-20 w-20 border-b-4 border-theme-text"></div>
+                                    </div>
+                                    {constructImage === '' ? <RiQuestionMark className="construct-image-default"/> : <img src={getImageURL(constructImage)} alt={constructName} className="construct-image"/>}
+                                </label>
                                 <input 
                                     type="file" 
                                     required={true}

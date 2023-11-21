@@ -1231,7 +1231,7 @@ export async function doImageReaction(message: Message){
     ])
     .setImage(`attachment://${imageData.name}`)
     .setFooter({text: 'Powered by Stable Diffusion'});
-    if(!showDiffusionDetails){
+    if(showDiffusionDetails){
         message.reply({files: [attachment], embeds: [embed]});
     }else{
         message.reply({files: [attachment]});
