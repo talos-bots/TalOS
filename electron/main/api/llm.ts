@@ -301,7 +301,7 @@ export async function getStatus(testEndpoint?: string, testEndpointType?: string
             case 'Aphrodite':
                 endpointURLObject = new URL(endpointUrl);
                 try{
-                    response = await axios.get(`${endpointURLObject.protocol}//${endpointURLObject.hostname}${endpointURLObject.port? `:${endpointURLObject.port}` : ''}/api/v1/model`,
+                    response = await axios.get(`${endpointURLObject.protocol}//${endpointURLObject.hostname}${endpointURLObject.port? `:${endpointURLObject.port}` : ''}/v1/model`,
                     { cancelToken: connectionCancelTokenSource.token }
                     ).then((response) => {
                         return response;
@@ -310,7 +310,7 @@ export async function getStatus(testEndpoint?: string, testEndpointType?: string
                         throw error;
                     });
                     if(response){
-                        return response.data.result;
+                        return response.data.data.map((model: any) => model.id).join(', ');
                     }else{
                         return 'Aphrodite endpoint is not responding.';
                     }
@@ -340,7 +340,7 @@ export async function getStatus(testEndpoint?: string, testEndpointType?: string
             case 'Ooba':
                 endpointURLObject = new URL(endpointUrl);
                 try{
-                    response = await axios.get(`${endpointURLObject.protocol}//${endpointURLObject.hostname}${endpointURLObject.port? `:${endpointURLObject.port}` : ''}/api/v1/model`,
+                    response = await axios.get(`${endpointURLObject.protocol}//${endpointURLObject.hostname}${endpointURLObject.port? `:${endpointURLObject.port}` : ''}/v1/models`,
                     { cancelToken: connectionCancelTokenSource.token }
                     ).then((response) => {
                         return response;
@@ -349,7 +349,8 @@ export async function getStatus(testEndpoint?: string, testEndpointType?: string
                         throw error;
                     });
                     if(response){
-                        return response.data.result;
+                        console.log(response.data);
+                        return response.data.data.map((model: any) => model.id).join(', ');
                     }else{
                         return 'Ooba endpoint is not responding.';
                     }
@@ -363,12 +364,11 @@ export async function getStatus(testEndpoint?: string, testEndpointType?: string
                 try {
                     response = await axios.get(`https://api.openai.com/v1/models`, { headers: { 'Authorization': `Bearer ${endpointUrl}`, 'Content-Type': 'application/json' }, cancelToken: connectionCancelTokenSource.token }).then ((response) => {
                         console.log(response.data);
-                        return response;
+                        return response.data.data.map((model: any) => model.id).join(', ');
                     }).catch((error) => {
                         console.log(error);
                         throw error;
                     });
-                    return 'Key is valid.';
                 } catch(e) {
                     console.log(e);
                     return 'Key is invalid.';
@@ -514,7 +514,7 @@ export const generateText = async (
             try{
                 const oobaPayload = {
                 'prompt': newPrompt,
-                'max_new_tokens': settings.max_length ? settings.max_length : 350,
+                'max_tokens': settings.max_length ? settings.max_length : 350,
                 'temperature': settings.temperature ? settings.temperature : 0.9,
                 'top_p': settings.top_p ? settings.top_p : 0.9,
                 'typical_p': settings.typical ? settings.typical : 0.9,
@@ -528,15 +528,20 @@ export const generateText = async (
                 'add_bos_token': true,
                 'ban_eos_token': false,
                 'skip_special_tokens': true,
-                'stopping_strings': stops
+                'stopping_strings': stops,
+                'frequency_penalty': settings.frequency_penalty ? settings.frequency_penalty : 0,
+                'presence_penalty': settings.presence_penalty ? settings.presence_penalty : 0,
+                'mirostat_mode': settings.mirostat_mode ? settings.mirostat_mode : false,
+                'mirostat_tau': settings.mirostat_tau ? settings.mirostat_tau : 0.0,
+                'mirostat_eta': settings.mirostat_eta ? settings.mirostat_eta : 0.0,
                 }
                 console.log(oobaPayload)
                 cancelTokenSource = axios.CancelToken.source();
-                response = await axios.post(`${endpointURLObject.protocol}//${endpointURLObject.hostname}${endpointURLObject.port? `:${endpointURLObject.port}` : ''}/api/v1/generate`, oobaPayload, { cancelToken: cancelTokenSource.token }).catch((error) => {
+                response = await axios.post(`${endpointURLObject.protocol}//${endpointURLObject.hostname}${endpointURLObject.port? `:${endpointURLObject.port}` : ''}/v1/completions`, oobaPayload, { cancelToken: cancelTokenSource.token }).catch((error) => {
                     throw error;
                 });
                 if (response?.status === 200) {
-                    results = response.data['results'][0]['text'];
+                    results = response.data.choices[0].text;
                     return results = { results: [results], prompt: prompt };
                 }else{
                     return results = { results: null, error: response.data, prompt: prompt};
@@ -546,7 +551,7 @@ export const generateText = async (
             }
         break;
         case "Aphrodite":
-            console.log("Ooba");
+            console.log("Aphrodite");
             endpointURLObject = new URL(endpoint);
             prompt = prompt.toString().replace(/<br>/g, '').replace(/\\/g, "");
             let formattedPrompt = prompt.toString();
@@ -554,7 +559,7 @@ export const generateText = async (
                 const oobaPayload = {
                 'prompt': formattedPrompt,
                 'stream': false,
-                'max_new_tokens': settings.max_length ? settings.max_length : 350,
+                'max_tokens': settings.max_length ? settings.max_length : 350,
                 'temperature': settings.temperature ? settings.temperature : 0.9,
                 'top_p': settings.top_p ? settings.top_p : 0.9,
                 'typical_p': settings.typical ? settings.typical : 0.9,
@@ -573,7 +578,7 @@ export const generateText = async (
                 }
                 console.log(oobaPayload)
                 cancelTokenSource = axios.CancelToken.source();
-                response = await axios.post(`${endpointURLObject.protocol}//${endpointURLObject.hostname}${endpointURLObject.port? `:${endpointURLObject.port}` : ''}/api/v1/generate`, oobaPayload, 
+                response = await axios.post(`${endpointURLObject.protocol}//${endpointURLObject.hostname}${endpointURLObject.port? `:${endpointURLObject.port}` : ''}/v1/generate`, oobaPayload, 
                 { cancelToken: cancelTokenSource.token, headers: {
                     'Content-Type': 'application/json',
                     "x-api-key": password
@@ -582,7 +587,7 @@ export const generateText = async (
                     throw error;
                 });
                 if (response?.status === 200) {
-                    results = response.data['results'][0]['text'];
+                    results = response.data.choices[0].text;
                     return results = { results: [results], prompt: prompt };
                 }else{
                     return results = { results: null, error: response.data, prompt: prompt};
