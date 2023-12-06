@@ -468,6 +468,10 @@ export const generateText = async (
             stops.push(`${construct.name}'s Thoughts:`);
         }
     }
+    if(stops.length > 5){
+        // remove any elements after the 5th element
+        stops = stops.slice(0, 5);
+    }
     let claudeModel = connection?.claudeModel || 'claude-v1.3-100k';
     let endpointURLObject;
     switch (endpointType) {
