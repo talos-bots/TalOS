@@ -1775,6 +1775,8 @@ async function getStatus(testEndpoint, testEndpointType) {
   var _a, _b, _c, _d, _e, _f, _g;
   let endpointUrl = testEndpoint ? testEndpoint : endpoint;
   let endpointStatusType = testEndpointType ? testEndpointType : endpointType;
+  console.log(endpointUrl);
+  console.log(endpointStatusType);
   let endpointURLObject;
   let connection = connectionPresets.find((connectionPreset) => connectionPreset._id === currentConnectionPreset);
   if (cancelTokenSource)
@@ -1934,6 +1936,8 @@ const generateText = async (prompt, configuredName = "You", stopList = null, con
     stops.push("[", "]");
   }
   let connection = connectionPresets.find((connectionPreset) => connectionPreset._id === currentConnectionPreset);
+  if (!connection)
+    return { error: "Invalid connection." };
   if (construct) {
     if (construct == null ? void 0 : construct.defaultConfig.doInstruct) {
       if ((construct == null ? void 0 : construct.defaultConfig.instructType) === "Metharme") {
@@ -1954,9 +1958,9 @@ const generateText = async (prompt, configuredName = "You", stopList = null, con
   }
   let claudeModel = (connection == null ? void 0 : connection.claudeModel) || "claude-v1.3-100k";
   let endpointURLObject;
-  switch (endpointType) {
+  switch (connection.endpointType) {
     case "Kobold":
-      endpointURLObject = new URL(endpoint);
+      endpointURLObject = new URL(connection.endpoint);
       console.log("Kobold");
       try {
         const koboldPayload = {
@@ -2378,6 +2382,7 @@ Assistant: Okay, here is my response as ${char}:`;
       }
       break;
     default:
+      console.log("Default");
       return results = { results: null, error: "Invalid Endpoint", prompt };
   }
   return results = { results: null, error: "No Valid Response from LLM", prompt };
@@ -6360,6 +6365,8 @@ async function generateContinueChatLogAsUser(user, chatLog, currentUser, message
   }
 }
 function breakUpCommands(charName, commandString, user = "You", stopList = [], doMultiLine = false) {
+  console.log("Line Parser:");
+  console.log("Input text:", commandString);
   let lines = commandString.split("\n");
   let formattedCommands = [];
   let currentCommand = "";
@@ -6407,6 +6414,7 @@ function breakUpCommands(charName, commandString, user = "You", stopList = [], d
     formattedCommands.push(currentCommand.replaceAll(`${charName}:`, ""));
   }
   let final = formattedCommands.join("\n");
+  console.log("Output text:", final);
   return final;
 }
 async function removeMessagesFromChatLog(chatLog, messageContent) {

@@ -291,6 +291,8 @@ export const setSelectedTokenizer = (newSelectedTokenizer: TokenType) => {
 export async function getStatus(testEndpoint?: string, testEndpointType?: string){
     let endpointUrl = testEndpoint ? testEndpoint : endpoint;
     let endpointStatusType = testEndpointType ? testEndpointType : endpointType;
+    console.log(endpointUrl);
+    console.log(endpointStatusType);
     let endpointURLObject;
     let connection = connectionPresets.find((connectionPreset) => connectionPreset._id === currentConnectionPreset);
     if(cancelTokenSource) cancelTokenSource.cancel('Operation canceled by the user.');
@@ -453,6 +455,7 @@ export const generateText = async (
       stops.push('[', ']');
     }
     let connection = connectionPresets.find((connectionPreset) => connectionPreset._id === currentConnectionPreset);
+    if(!connection) return { error: 'Invalid connection.' };
     if(construct){
         if(construct?.defaultConfig.doInstruct){
             if(construct?.defaultConfig.instructType === 'Metharme'){
@@ -474,9 +477,9 @@ export const generateText = async (
     }
     let claudeModel = connection?.claudeModel || 'claude-v1.3-100k';
     let endpointURLObject;
-    switch (endpointType) {
+    switch (connection.endpointType) {
         case 'Kobold':
-            endpointURLObject = new URL(endpoint);
+            endpointURLObject = new URL(connection.endpoint);
             console.log("Kobold");
             try{
                 const koboldPayload = { 
@@ -882,6 +885,7 @@ export const generateText = async (
             }
         break;
     default:
+        console.log("Default");
         return  results = { results: null, error: 'Invalid Endpoint', prompt: prompt };
     }
     return results = { results: null, error: 'No Valid Response from LLM', prompt: prompt };
