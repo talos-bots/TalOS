@@ -317,6 +317,7 @@ export async function getStatus(testEndpoint?: string, testEndpointType?: string
                 }catch (error) {
                     return `${error}`;
                 }
+            default:
             case 'Kobold':
                 endpointURLObject = new URL(endpointUrl);
                 try{
@@ -424,8 +425,7 @@ export async function getStatus(testEndpoint?: string, testEndpointType?: string
                     console.log(error);
                     return 'PaLM endpoint is not responding.';
                 }
-            default:
-                throw new Error('Invalid endpoint type.');
+                break;
             }
     } catch (error) {
         console.log(error);
