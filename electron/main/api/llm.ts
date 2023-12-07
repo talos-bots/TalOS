@@ -515,7 +515,7 @@ export const generateText = async (
         break;
         case 'Ooba':
             console.log("Ooba");
-            endpointURLObject = new URL(endpoint);
+            endpointURLObject = new URL(connection.endpoint);
             prompt = prompt.toString().replace(/<br>/g, '').replace(/\\/g, "");
             let newPrompt = prompt.toString();
             try{
@@ -559,7 +559,7 @@ export const generateText = async (
         break;
         case "Aphrodite":
             console.log("Aphrodite");
-            endpointURLObject = new URL(endpoint);
+            endpointURLObject = new URL(connection.endpoint);
             prompt = prompt.toString().replace(/<br>/g, '').replace(/\\/g, "");
             let formattedPrompt = prompt.toString();
             try{
@@ -712,7 +712,7 @@ export const generateText = async (
             }
         case 'P-OAI':
             console.log("P-OAI");
-            endpointURLObject = new URL(endpoint);
+            endpointURLObject = new URL(connection.endpoint);
             try{
                 cancelTokenSource = axios.CancelToken.source();
                 const response = await axios.post(`${endpointURLObject.protocol}//${endpointURLObject.hostname}${endpointURLObject.port? `:${endpointURLObject.port}` : ''}` + '/proxy/openai/v1/chat/completions', {
@@ -752,7 +752,7 @@ export const generateText = async (
             break;
         case 'P-Claude':
             console.log("P-Claude");
-            endpointURLObject = new URL(endpoint);
+            endpointURLObject = new URL(connection.endpoint);
             try {
                 const promptString = `\n\nHuman:\nWrite ${char}'s next reply in a fictional chat between ${char} and ${configuredName}. Write 1 reply only in internet RP style, italicize actions, and avoid quotation marks. Use markdown. Be proactive, creative, and drive the plot and conversation forward. Write at least 1 sentence, up to 4. Always stay in character and avoid repetition.\n${prompt}\n\nAssistant: Okay, here is my response as ${char}:`;
                 cancelTokenSource = axios.CancelToken.source();
@@ -784,7 +784,7 @@ export const generateText = async (
             }    
         case 'P-AWS-Claude':
             console.log("P-AWS-Claude");
-            endpointURLObject = new URL(endpoint);
+            endpointURLObject = new URL(connection.endpoint);
             try {
                 const promptString = `\n\nHuman:\nWrite ${char}'s next reply in a fictional chat between ${char} and ${configuredName}. Write 1 reply only in internet RP style, italicize actions, and avoid quotation marks. Use markdown. Be proactive, creative, and drive the plot and conversation forward. Write at least 1 sentence, up to 4. Always stay in character and avoid repetition.\n${prompt}\n\nAssistant: Okay, here is my response as ${char}:`;
                 cancelTokenSource = axios.CancelToken.source();
