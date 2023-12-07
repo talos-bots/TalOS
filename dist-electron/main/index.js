@@ -1803,6 +1803,7 @@ async function getStatus(testEndpoint, testEndpointType) {
         } catch (error) {
           return `${error}`;
         }
+      default:
       case "Kobold":
         endpointURLObject = new URL(endpointUrl);
         try {
@@ -1912,8 +1913,7 @@ async function getStatus(testEndpoint, testEndpointType) {
           console.log(error);
           return "PaLM endpoint is not responding.";
         }
-      default:
-        throw new Error("Invalid endpoint type.");
+        break;
     }
   } catch (error) {
     console.log(error);
@@ -1948,6 +1948,9 @@ const generateText = async (prompt, configuredName = "You", stopList = null, con
       stops.push(`${construct.name}:`);
       stops.push(`${construct.name}'s Thoughts:`);
     }
+  }
+  if (stops.length > 5) {
+    stops = stops.slice(0, 5);
   }
   let claudeModel = (connection == null ? void 0 : connection.claudeModel) || "claude-v1.3-100k";
   let endpointURLObject;
@@ -6362,8 +6365,12 @@ function breakUpCommands(charName, commandString, user = "You", stopList = [], d
   let currentCommand = "";
   let isFirstLine = true;
   if (doMultiLine === false) {
-    lines = lines.slice(0, 1);
     let command = lines[0];
+    if (command.trim() === "") {
+      if (lines.length > 1) {
+        command = lines[1];
+      }
+    }
     return command;
   }
   for (let i = 0; i < lines.length; i++) {

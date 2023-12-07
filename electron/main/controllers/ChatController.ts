@@ -482,14 +482,20 @@ export async function generateContinueChatLogAsUser(user: UserInterface, chatLog
 }
 
 export function breakUpCommands(charName: string, commandString: string, user = 'You', stopList: string[] = [], doMultiLine: boolean = false): string {
+    console.log('Line Parser:');
+    console.log('Input text:', commandString)
     let lines = commandString.split('\n');
     let formattedCommands = [];
     let currentCommand = '';
     let isFirstLine = true;
     
     if (doMultiLine === false){
-        lines = lines.slice(0, 1);
         let command = lines[0];
+        if(command.trim() === ''){
+            if(lines.length > 1){
+                command = lines[1];
+            }
+        }
         return command;
     }
     
@@ -533,6 +539,7 @@ export function breakUpCommands(charName: string, commandString: string, user = 
     }
     
     let final = formattedCommands.join('\n');
+    console.log('Output text:', final);
     return final;
 }
 
