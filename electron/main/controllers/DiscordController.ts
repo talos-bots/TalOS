@@ -350,12 +350,12 @@ export async function handleDiscordMessage(message: Message) {
     if(!chatLog.messages.includes(newMessage)){
         chatLog.messages.push(newMessage);
     }
-    const intentData = await detectIntent(newMessage.text);
-    if(intentData !== null){
-        if(intentData?.intent !== 'none'){
-            lastIntentData = intentData;
-        }
-    }
+    // const intentData = await detectIntent(newMessage.text);
+    // if(intentData !== null){
+    //     if(intentData?.intent !== 'none'){
+    //         lastIntentData = intentData;
+    //     }
+    // }
     if(message.content.startsWith('-') || lurkingChannels.includes(message.channel.id)){
         await updateChat(chatLog);
         return;
