@@ -1995,7 +1995,7 @@ const generateText = async (prompt, configuredName = "You", stopList = null, con
       break;
     case "Ooba":
       console.log("Ooba");
-      endpointURLObject = new URL(endpoint);
+      endpointURLObject = new URL(connection.endpoint);
       prompt = prompt.toString().replace(/<br>/g, "").replace(/\\/g, "");
       let newPrompt = prompt.toString();
       try {
@@ -2039,7 +2039,7 @@ const generateText = async (prompt, configuredName = "You", stopList = null, con
       break;
     case "Aphrodite":
       console.log("Aphrodite");
-      endpointURLObject = new URL(endpoint);
+      endpointURLObject = new URL(connection.endpoint);
       prompt = prompt.toString().replace(/<br>/g, "").replace(/\\/g, "");
       let formattedPrompt = prompt.toString();
       try {
@@ -2197,7 +2197,7 @@ const generateText = async (prompt, configuredName = "You", stopList = null, con
       }
     case "P-OAI":
       console.log("P-OAI");
-      endpointURLObject = new URL(endpoint);
+      endpointURLObject = new URL(connection.endpoint);
       try {
         cancelTokenSource = axios.CancelToken.source();
         const response2 = await axios.post(`${endpointURLObject.protocol}//${endpointURLObject.hostname}${endpointURLObject.port ? `:${endpointURLObject.port}` : ""}/proxy/openai/v1/chat/completions`, {
@@ -2238,7 +2238,7 @@ const generateText = async (prompt, configuredName = "You", stopList = null, con
       break;
     case "P-Claude":
       console.log("P-Claude");
-      endpointURLObject = new URL(endpoint);
+      endpointURLObject = new URL(connection.endpoint);
       try {
         const promptString = `
 
@@ -2276,7 +2276,7 @@ Assistant: Okay, here is my response as ${char}:`;
       }
     case "P-AWS-Claude":
       console.log("P-AWS-Claude");
-      endpointURLObject = new URL(endpoint);
+      endpointURLObject = new URL(connection.endpoint);
       try {
         const promptString = `
 
@@ -5070,22 +5070,6 @@ async function sendMessage(channelID, message) {
     }
   }
 }
-async function sendAttachment(channelID, attachment) {
-  if (!isReady)
-    return;
-  if (!disClient.user) {
-    console.error("Discord client user is not initialized.");
-    return;
-  }
-  const channel = await disClient.channels.fetch(channelID);
-  if (!channel)
-    return;
-  if (!attachment)
-    return;
-  if (channel instanceof discord_js.TextChannel || channel instanceof discord_js.DMChannel || channel instanceof discord_js.NewsChannel) {
-    return channel.send({ files: [attachment] });
-  }
-}
 async function sendReply(message, reply) {
   if (!isReady)
     return;
@@ -5177,22 +5161,6 @@ async function sendEmbedAsCharacter(char, channelID, embed) {
   if (!embed)
     return;
   await webhook.send({ embeds: [embed] });
-}
-async function sendAttachmentAsCharacter(char, channelID, embed) {
-  if (!isReady)
-    return;
-  let webhook = await getWebhookForCharacter(char.name, channelID);
-  if (!webhook) {
-    webhook = await createWebhookForChannel(channelID, char);
-  }
-  if (!webhook) {
-    console.error("Failed to create webhook.");
-    sendMessage(channelID, "*Failed to create webhook. Check the number of webhooks in channel, if it is at 15, run /clearallwebhooks. Otherwise, ask your server adminstrator to give you the permissions they removed like a twat.*");
-    return;
-  }
-  if (!embed)
-    return;
-  await webhook.send({ files: [embed] });
 }
 async function clearWebhooksFromChannel(channelID) {
   if (!isReady)
@@ -6723,15 +6691,6 @@ function constructController() {
     });
   });
 }
-async function createSelfieForConstruct(construct, intent, subject) {
-  if (!construct)
-    return null;
-  let prompt = construct.visualDescription + ", " + intent + ", " + subject;
-  const imageData = await txt2img(prompt);
-  if (!imageData)
-    return null;
-  return imageData;
-}
 const store$1 = new Store({
   name: "discordData"
 });
@@ -6740,7 +6699,6 @@ let doStableReactions = false;
 let showDiffusionDetails = false;
 let diffusionWhitelist = [];
 let replaceUser = true;
-let lastIntentData = null;
 let lurkingChannels = [];
 function getDiscordSettings() {
   maxMessages = getMaxMessages();
@@ -6988,24 +6946,9 @@ async function handleDiscordMessage(message) {
   if (!chatLog.messages.includes(newMessage)) {
     chatLog.messages.push(newMessage);
   }
-  const intentData = await detectIntent(newMessage.text);
-  if (intentData !== null) {
-    if ((intentData == null ? void 0 : intentData.intent) !== "none") {
-      lastIntentData = intentData;
-    }
-  }
   if (message.content.startsWith("-") || lurkingChannels.includes(message.channel.id)) {
     await updateChat(chatLog);
     return;
-  }
-  if (chatLog.doVector) {
-    if (chatLog.global) {
-      for (let i = 0; i < constructArray.length; i++) {
-        addVectorFromMessage(constructArray[i]._id, newMessage);
-      }
-    } else {
-      addVectorFromMessage(chatLog._id, newMessage);
-    }
   }
   await updateChat(chatLog);
   expressAppIO.emit(`chat-message-${message.channel.id}`);
@@ -7219,28 +7162,6 @@ async function doCharacterReply(construct, chatLog, message) {
   chatLog.messages.push(replyMessage);
   chatLog.lastMessage = replyMessage;
   chatLog.lastMessageDate = replyMessage.timestamp;
-  if (lastIntentData !== null && construct.defaultConfig.doActions === true) {
-    const currentIntentData = await detectIntent(reply);
-    if (currentIntentData !== null) {
-      if ((lastIntentData == null ? void 0 : lastIntentData.intent) !== "search") {
-        if ((currentIntentData == null ? void 0 : currentIntentData.compliance) === true) {
-          const imageData = await createSelfieForConstruct(construct, lastIntentData == null ? void 0 : lastIntentData.intent, currentIntentData == null ? void 0 : currentIntentData.subject);
-          if (imageData !== null) {
-            const buffer = Buffer.from(imageData.base64, "base64");
-            let attachment = new discord_js.AttachmentBuilder(buffer, { name: `${imageData.name}` });
-            if (primaryConstruct === construct._id) {
-              await sendAttachment(message.channel.id, attachment);
-            } else {
-              await sendAttachmentAsCharacter(construct, message.channel.id, attachment);
-            }
-            lastIntentData = null;
-            const selfieMessage = createSelfieMessage(imageData.name, construct);
-            chatLog.messages.push(selfieMessage);
-          }
-        }
-      }
-    }
-  }
   if (primaryConstruct === construct._id) {
     console.log("sending message as primary");
     if (0.5 >= Math.random() && !message.channel.isDMBased() && message instanceof discord_js.Message) {
@@ -7413,32 +7334,6 @@ async function doRoundRobin(constructArray, chatLog, message) {
     }
   }
   return chatLog;
-}
-function createSelfieMessage(attachmentURL, construct) {
-  const attachment = {
-    _id: (/* @__PURE__ */ new Date()).getTime().toString(),
-    name: "Selfie taken by " + construct.name,
-    type: "image/png",
-    data: `/api/images/${attachmentURL}`,
-    fileext: "png",
-    metadata: ""
-  };
-  const newMessage = {
-    _id: (/* @__PURE__ */ new Date()).getTime().toString(),
-    user: construct.name,
-    avatar: construct.avatar,
-    text: "",
-    userID: construct._id,
-    timestamp: (/* @__PURE__ */ new Date()).getTime(),
-    origin: "Selfie",
-    isHuman: false,
-    isCommand: false,
-    isPrivate: false,
-    participants: [construct._id],
-    attachments: [attachment],
-    isThought: false
-  };
-  return newMessage;
 }
 async function continueChatLog(interaction) {
   var _a, _b, _c;
