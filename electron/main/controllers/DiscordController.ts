@@ -360,15 +360,15 @@ export async function handleDiscordMessage(message: Message) {
         await updateChat(chatLog);
         return;
     }
-    if(chatLog.doVector){
-        if(chatLog.global){
-            for(let i = 0; i < constructArray.length; i++){
-                addVectorFromMessage(constructArray[i]._id, newMessage);
-            }
-        }else{
-            addVectorFromMessage(chatLog._id, newMessage);
-        }
-    }
+    // if(chatLog.doVector){
+    //     if(chatLog.global){
+    //         for(let i = 0; i < constructArray.length; i++){
+    //             addVectorFromMessage(constructArray[i]._id, newMessage);
+    //         }
+    //     }else{
+    //         addVectorFromMessage(chatLog._id, newMessage);
+    //     }
+    // }
     await updateChat(chatLog);
     expressAppIO.emit(`chat-message-${message.channel.id}`);
     if(isMultiConstructMode() && !message.channel.isDMBased()){
@@ -590,28 +590,28 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
     chatLog.messages.push(replyMessage);
     chatLog.lastMessage = replyMessage;
     chatLog.lastMessageDate = replyMessage.timestamp;
-    if(lastIntentData !== null && construct.defaultConfig.doActions === true){
-        const currentIntentData = await detectIntent(reply);
-        if(currentIntentData !== null){
-            if(lastIntentData?.intent !== 'search'){
-                if(currentIntentData?.compliance === true){
-                    const imageData = await createSelfieForConstruct(construct, lastIntentData?.intent, currentIntentData?.subject);
-                    if(imageData !== null){
-                        const buffer = Buffer.from(imageData.base64, 'base64');
-                        let attachment = new AttachmentBuilder(buffer, {name: `${imageData.name}`});
-                        if(primaryConstruct === construct._id){
-                            await sendAttachment(message.channel.id, attachment);
-                        }else{
-                            await sendAttachmentAsCharacter(construct, message.channel.id, attachment);
-                        }
-                        lastIntentData = null;
-                        const selfieMessage = createSelfieMessage(imageData.name, construct);
-                        chatLog.messages.push(selfieMessage);
-                    }
-                }
-            }
-        }
-    }
+    // if(lastIntentData !== null && construct.defaultConfig.doActions === true){
+    //     const currentIntentData = await detectIntent(reply);
+    //     if(currentIntentData !== null){
+    //         if(lastIntentData?.intent !== 'search'){
+    //             if(currentIntentData?.compliance === true){
+    //                 const imageData = await createSelfieForConstruct(construct, lastIntentData?.intent, currentIntentData?.subject);
+    //                 if(imageData !== null){
+    //                     const buffer = Buffer.from(imageData.base64, 'base64');
+    //                     let attachment = new AttachmentBuilder(buffer, {name: `${imageData.name}`});
+    //                     if(primaryConstruct === construct._id){
+    //                         await sendAttachment(message.channel.id, attachment);
+    //                     }else{
+    //                         await sendAttachmentAsCharacter(construct, message.channel.id, attachment);
+    //                     }
+    //                     lastIntentData = null;
+    //                     const selfieMessage = createSelfieMessage(imageData.name, construct);
+    //                     chatLog.messages.push(selfieMessage);
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
     if(primaryConstruct === construct._id){
         console.log('sending message as primary')
         if(0.5 >= Math.random() && !message.channel.isDMBased() && message instanceof Message){
