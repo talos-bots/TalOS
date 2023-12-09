@@ -455,7 +455,20 @@ export const generateText = async (
       stops.push('[', ']');
     }
     let connection = connectionPresets.find((connectionPreset) => connectionPreset._id === currentConnectionPreset);
-    if(!connection) return { error: 'Invalid connection.' };
+    if(!connection){
+        connection = {
+            _id: '0000000000',
+            name: 'Default',
+            endpoint: endpoint,
+            endpointType: endpointType,
+            password: password,
+            openaiModel: openaiModel,
+            palmFilters: palmFilters,
+            claudeModel: 'claude-v1.3-100k',
+            palmModel: 'models/text-bison-001',
+            hordeModel: hordeModel as string,
+        }
+    }
     if(construct){
         if(construct?.defaultConfig.doInstruct){
             if(construct?.defaultConfig.instructType === 'Metharme'){
@@ -478,6 +491,7 @@ export const generateText = async (
     let claudeModel = connection?.claudeModel || 'claude-v1.3-100k';
     let endpointURLObject;
     switch (connection.endpointType) {
+        default:
         case 'Kobold':
             endpointURLObject = new URL(connection.endpoint);
             console.log("Kobold");
@@ -884,9 +898,6 @@ export const generateText = async (
                 throw error;
             }
         break;
-    default:
-        console.log("Default");
-        return  results = { results: null, error: 'Invalid Endpoint', prompt: prompt };
     }
     return results = { results: null, error: 'No Valid Response from LLM', prompt: prompt };
 };

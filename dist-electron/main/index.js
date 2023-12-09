@@ -1936,8 +1936,20 @@ const generateText = async (prompt, configuredName = "You", stopList = null, con
     stops.push("[", "]");
   }
   let connection = connectionPresets.find((connectionPreset) => connectionPreset._id === currentConnectionPreset);
-  if (!connection)
-    return { error: "Invalid connection." };
+  if (!connection) {
+    connection = {
+      _id: "0000000000",
+      name: "Default",
+      endpoint,
+      endpointType,
+      password,
+      openaiModel,
+      palmFilters,
+      claudeModel: "claude-v1.3-100k",
+      palmModel: "models/text-bison-001",
+      hordeModel
+    };
+  }
   if (construct) {
     if (construct == null ? void 0 : construct.defaultConfig.doInstruct) {
       if ((construct == null ? void 0 : construct.defaultConfig.instructType) === "Metharme") {
@@ -1959,6 +1971,7 @@ const generateText = async (prompt, configuredName = "You", stopList = null, con
   let claudeModel = (connection == null ? void 0 : connection.claudeModel) || "claude-v1.3-100k";
   let endpointURLObject;
   switch (connection.endpointType) {
+    default:
     case "Kobold":
       endpointURLObject = new URL(connection.endpoint);
       console.log("Kobold");
@@ -2381,9 +2394,6 @@ Assistant: Okay, here is my response as ${char}:`;
         throw error;
       }
       break;
-    default:
-      console.log("Default");
-      return results = { results: null, error: "Invalid Endpoint", prompt };
   }
   return results = { results: null, error: "No Valid Response from LLM", prompt };
 };
