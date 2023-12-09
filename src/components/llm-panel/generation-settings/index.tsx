@@ -207,6 +207,9 @@ const GenerationSettings = () => {
         setCurrentLLMConnectionPreset(preset._id);
         setPresencePenalty(preset.presence_penalty);
         setFrequencyPenalty(preset.frequency_penalty);
+        setMirostatEta(preset.mirostat_eta);
+        setMirostatMode(preset.mirostat_mode);
+        setMirostatTau(preset.mirostat_tau);
         saveSettings();
     }
 

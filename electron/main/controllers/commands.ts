@@ -1,6 +1,6 @@
 import { AttachmentBuilder, CommandInteraction, EmbedBuilder, Message } from "discord.js";
 import { Alias, ChatInterface, ConstructInterface, MessageInterface, SlashCommand } from "../types/types.js";
-import { addAlias, addConstructToChatLog, addDiffusionWhitelist, addRegisteredChannel, continueChatLog, getDiffusionWhitelist, getRegisteredChannels, getShowDiffusionDetails, getUsername, removeConstructFromChatLog, removeDiffusionWhitelist, removeRegisteredChannel, setDoAutoReply, setInterrupted, setMaxMessages, setReplaceUser } from "./DiscordController.js";
+import { addAlias, addConstructToChatLog, addDiffusionWhitelist, addLurkingChannel, addRegisteredChannel, continueChatLog, getDiffusionWhitelist, getLurkingChannels, getRegisteredChannels, getShowDiffusionDetails, getUsername, removeConstructFromChatLog, removeDiffusionWhitelist, removeLurkingChannel, removeRegisteredChannel, setDoAutoReply, setInterrupted, setMaxMessages, setReplaceUser, setShowTyping } from "./DiscordController.js";
 import { addChat, getAllConstructs, getChat, getConstruct, removeChat, updateChat } from "../api/pouchdb.js";
 import { assembleChatFromData, assembleConstructFromData, getIntactChatLog } from "../helpers/helpers.js";
 import { retrieveConstructs, setDoMultiLine } from "./ChatController.js";
@@ -468,6 +468,26 @@ export const SetAliasCommand: SlashCommand = {
     }
 }
 
+export const ToggleShowTypingCommand: SlashCommand = {
+    name: 'showtyping',
+    description: 'Toggles whether the bot will show typing.',
+    options: [
+        {
+            name: 'showtyping',
+            description: 'Whether to show typing.',
+            type: 5,
+            required: true,
+        },
+    ],
+    execute: async (interaction: CommandInteraction) => {
+        await interaction.deferReply({ephemeral: false});
+        const showtyping = interaction.options.get('showtyping')?.value as boolean;
+        setShowTyping(showtyping);
+        await interaction.editReply({
+            content: `Set show typing to ${showtyping}`,
+        });
+    }
+}
 export const ClearAllWebhooksCommand: SlashCommand = {
     name: 'clearallwebhooks',
     description: 'Clears all webhooks for the current channel.',
@@ -523,17 +543,18 @@ export const DoCharacterGreetingsCommand: SlashCommand = {
         }
         const pulledLog = await getIntactChatLog(interaction);
         const constructs = pulledLog?.constructs;
+        console.log(constructs);
         if(!constructs || constructs.length < 1) return;
         let currentConstructIndex = 0;
         let constructDoc = null;
-        while(constructDoc === null && currentConstructIndex < constructs.length - 1){
-            constructDoc = await getConstruct(constructs[currentConstructIndex]).then((doc) => {
-                return doc;
-            }).catch((e) => {
+        for(let i = 0; i < constructs.length; i++){
+            console.log(constructs[i]);
+            try{
+                constructDoc = await getConstruct(constructs[i]);
+            }catch(e){
                 console.log(e);
-                return null;
-            });
-            currentConstructIndex++;
+            }
+            if(constructDoc === null) continue;
         }
         let construct = assembleConstructFromData(constructDoc);
         let user = getUsername(interaction.user.id, interaction.channelId);
@@ -1113,6 +1134,45 @@ function getEmojiByNumber(input: number){
     }
 }
 
+export const doLurkCommand: SlashCommand = {
+    name: 'lurk',
+    description: 'Lurks in the current channel.',
+    execute: async (interaction: CommandInteraction) => {
+        await interaction.deferReply({ephemeral: true});
+        if (interaction.channelId === null) {
+            await interaction.editReply({
+            content: "This command can only be used in a server.",
+            });
+            return;
+        }
+        if(interaction.guild === null){
+            await interaction.editReply({
+            content: "This command can only be used in a server.",
+            });
+            return;
+        }
+        await interaction.editReply({
+            content: "Lurking...",
+        });
+        const channels = getLurkingChannels();
+        if(!channels.includes(interaction.channelId)){
+            addLurkingChannel(interaction.channelId);
+            await interaction.editReply({
+                content: "Now lurking.",
+            });
+            return;
+        }else{
+            removeLurkingChannel(interaction.channelId);
+            await interaction.editReply({
+                content: "Stopped lurking.",
+            });
+            return;
+        }
+        await interaction.editReply({
+            content: "Lurking...",
+        });
+    }
+};
 export const DefaultCommands = [
     PingCommand,
     RegisterCommand,
@@ -1133,7 +1193,9 @@ export const DefaultCommands = [
     replaceUserCommand,
     stopCommand,
     manageConstructsCommand,
-    toggleSystemInfo
+    toggleSystemInfo,
+    ToggleShowTypingCommand,
+    doLurkCommand
 ];
 
 export const constructImagine: SlashCommand = {

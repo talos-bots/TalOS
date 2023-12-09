@@ -107,6 +107,10 @@ const DiscordPage = () => {
             <div className="grid grid-cols-2 gap-2">
                 <div className="col-span-1 flex flex-col gap-2">
                     <Accordian title="What is this?" className="slide-in-left">
+                        <div className="text-left">
+                            <p>This is the Discord Configuration Panel. Here you will be able to configure your discord bot, and manage your discord servers.</p>
+                            <p>For more information on how to configure your bot, please see the "How do I use this?" section.</p>
+                        </div>
                     </Accordian>
                     <Accordian title="Construct Chat Configuration" className="slide-in-left">
                         <div className="grid grid-cols-2 gap-2">
@@ -242,6 +246,13 @@ const DiscordPage = () => {
                                 <li>Turn on all of the "Privileged Gateway Intents"</li>
                                 <li>Click "Save Changes"</li>
                                 <li>Flip the "Activate Bot" switch in the "Bot Configuration" tab.</li>
+                            </ol>
+                            <h3>Using the Discord Bot</h3>
+                            <ol>
+                                <li>Invite the bot to your server by clicking the "Invite Bot" button in the "Bot Configuration" tab.</li>
+                                <li>Go to the the channel you want to use the bot in. and run the "/register" command and then react with the number of the bot you want to chat with.</li>
+                                <li>If you wish to change the bot run "/channelconstructs", and repeat the process.</li>
+                                <li>Run the "/showtyping" if you'd like the bot to display the "is typing..." message.</li>
                             </ol>
                         </div>
                     </Accordian>

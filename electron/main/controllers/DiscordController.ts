@@ -28,8 +28,10 @@ let doGeneralPurpose = false;
 let diffusionWhitelist: string[] = [];
 let replaceUser = true;
 let lastIntentData: any = null;
+let showTyping = false;
 let delay = 0;
 let doDelay = false;
+let lurkingChannels: string[] = [];
 
 function getDiscordSettings(){
     maxMessages = getMaxMessages();
@@ -41,6 +43,9 @@ function getDiscordSettings(){
     diffusionWhitelist = getDiffusionWhitelist();
     showDiffusionDetails = getShowDiffusionDetails();
     replaceUser = getReplaceUser();
+    delay = getDelay();
+    doDelay = getDoDelay();
+    showTyping = getShowTyping();
 }
 
 export const setDoAutoReply = (doAutoReply: boolean): void => {
@@ -49,6 +54,30 @@ export const setDoAutoReply = (doAutoReply: boolean): void => {
 
 export const getDoAutoReply =  (): boolean => {
     return store.get('doAutoReply', false) as boolean;
+}
+
+export const setShowTyping = (show: boolean): void => {
+    store.set('showTyping', show);
+    showTyping = show;
+}
+
+export const addLurkingChannel = (channelID: string): void => {
+    if(lurkingChannels.includes(channelID)) return;
+    lurkingChannels.push(channelID);
+}
+
+export const getLurkingChannels = (): string[] => {
+    return lurkingChannels;
+}
+
+export const removeLurkingChannel = (channelID: string): void => {
+    if(lurkingChannels.includes(channelID)){
+        lurkingChannels.splice(lurkingChannels.indexOf(channelID), 1);
+    }
+}
+
+export const getShowTyping = (): boolean => {
+    return store.get('showTyping', false) as boolean;
 }
 
 export const setDoStableDiffusion = (doStableDiffusion: boolean): void => {
@@ -321,25 +350,25 @@ export async function handleDiscordMessage(message: Message) {
     if(!chatLog.messages.includes(newMessage)){
         chatLog.messages.push(newMessage);
     }
-    const intentData = await detectIntent(newMessage.text);
-    if(intentData !== null){
-        if(intentData?.intent !== 'none'){
-            lastIntentData = intentData;
-        }
-    }
-    if(message.content.startsWith('-')){
+    // const intentData = await detectIntent(newMessage.text);
+    // if(intentData !== null){
+    //     if(intentData?.intent !== 'none'){
+    //         lastIntentData = intentData;
+    //     }
+    // }
+    if(message.content.startsWith('-') || lurkingChannels.includes(message.channel.id)){
         await updateChat(chatLog);
         return;
     }
-    if(chatLog.doVector){
-        if(chatLog.global){
-            for(let i = 0; i < constructArray.length; i++){
-                addVectorFromMessage(constructArray[i]._id, newMessage);
-            }
-        }else{
-            addVectorFromMessage(chatLog._id, newMessage);
-        }
-    }
+    // if(chatLog.doVector){
+    //     if(chatLog.global){
+    //         for(let i = 0; i < constructArray.length; i++){
+    //             addVectorFromMessage(constructArray[i]._id, newMessage);
+    //         }
+    //     }else{
+    //         addVectorFromMessage(chatLog._id, newMessage);
+    //     }
+    // }
     await updateChat(chatLog);
     expressAppIO.emit(`chat-message-${message.channel.id}`);
     if(isMultiConstructMode() && !message.channel.isDMBased()){
@@ -444,7 +473,9 @@ export async function handleDiscordMessage(message: Message) {
             let wasMentioned = isMentioned(chatLog.lastMessage.text, constructArray[0]) && chatLog.lastMessage.isHuman;
             if(wasMentioned){
                 if(config.replyToUserMention >= Math.random()){
-                    sendTyping(message);
+                    if(getShowTyping()){
+                        sendTyping(message);
+                    }
                     console.log('replying to user mention')
                     let replyLog = await doCharacterReply(constructArray[0], chatLog, message);
                     if(replyLog !== undefined){
@@ -454,7 +485,9 @@ export async function handleDiscordMessage(message: Message) {
             }else{
                 if(config.replyToUser >= Math.random()){
                     console.log('replying to user')
-                    sendTyping(message);
+                    if(getShowTyping()){
+                        sendTyping(message);
+                    }
                     let replyLog = await doCharacterReply(constructArray[0], chatLog, message);
                     if(replyLog !== undefined){
                         chatLog = replyLog;
@@ -500,7 +533,9 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
     }
     if(construct.defaultConfig.haveThoughts && construct.defaultConfig.thinkBeforeChat){
         if(construct.defaultConfig.thoughtChance >= Math.random()){
-            sendTyping(message);
+            if(getShowTyping()){
+                sendTyping(message);
+            }
             let thoughtChatLog = await doCharacterThoughts(construct, chatLog, message);
             if(thoughtChatLog !== undefined){
                 chatLog = thoughtChatLog;
@@ -512,7 +547,9 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
         return chatLog;
     }
     let dataString = '';
-    sendTyping(message);
+    if(getShowTyping()){
+        sendTyping(message);
+    }
     if(getShowDiscordUserInfo() && !message.channel.isDMBased() && message instanceof Message && message.guildId !== null){
         const userData = await assembleUserProfile(message.guildId, message.author.id);
         if(userData !== null && userData !== undefined){
@@ -553,28 +590,28 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
     chatLog.messages.push(replyMessage);
     chatLog.lastMessage = replyMessage;
     chatLog.lastMessageDate = replyMessage.timestamp;
-    if(lastIntentData !== null && construct.defaultConfig.doActions === true){
-        const currentIntentData = await detectIntent(reply);
-        if(currentIntentData !== null){
-            if(lastIntentData?.intent !== 'search'){
-                if(currentIntentData?.compliance === true){
-                    const imageData = await createSelfieForConstruct(construct, lastIntentData?.intent, currentIntentData?.subject);
-                    if(imageData !== null){
-                        const buffer = Buffer.from(imageData.base64, 'base64');
-                        let attachment = new AttachmentBuilder(buffer, {name: `${imageData.name}`});
-                        if(primaryConstruct === construct._id){
-                            await sendAttachment(message.channel.id, attachment);
-                        }else{
-                            await sendAttachmentAsCharacter(construct, message.channel.id, attachment);
-                        }
-                        lastIntentData = null;
-                        const selfieMessage = createSelfieMessage(imageData.name, construct);
-                        chatLog.messages.push(selfieMessage);
-                    }
-                }
-            }
-        }
-    }
+    // if(lastIntentData !== null && construct.defaultConfig.doActions === true){
+    //     const currentIntentData = await detectIntent(reply);
+    //     if(currentIntentData !== null){
+    //         if(lastIntentData?.intent !== 'search'){
+    //             if(currentIntentData?.compliance === true){
+    //                 const imageData = await createSelfieForConstruct(construct, lastIntentData?.intent, currentIntentData?.subject);
+    //                 if(imageData !== null){
+    //                     const buffer = Buffer.from(imageData.base64, 'base64');
+    //                     let attachment = new AttachmentBuilder(buffer, {name: `${imageData.name}`});
+    //                     if(primaryConstruct === construct._id){
+    //                         await sendAttachment(message.channel.id, attachment);
+    //                     }else{
+    //                         await sendAttachmentAsCharacter(construct, message.channel.id, attachment);
+    //                     }
+    //                     lastIntentData = null;
+    //                     const selfieMessage = createSelfieMessage(imageData.name, construct);
+    //                     chatLog.messages.push(selfieMessage);
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
     if(primaryConstruct === construct._id){
         console.log('sending message as primary')
         if(0.5 >= Math.random() && !message.channel.isDMBased() && message instanceof Message){
@@ -588,7 +625,9 @@ async function doCharacterReply(construct: ConstructInterface, chatLog: ChatInte
     }
     if(construct.defaultConfig.haveThoughts && !construct.defaultConfig.thinkBeforeChat){
         if(construct.defaultConfig.thoughtChance >= Math.random()){
-            sendTyping(message);
+            if(getShowTyping()){
+                sendTyping(message);
+            }
             console.log('thinking after chat')
             let thoughtChatLog = await doCharacterThoughts(construct, chatLog, message);
             if(thoughtChatLog !== undefined){
@@ -923,7 +962,9 @@ export async function continueChatLog(interaction: CommandInteraction) {
             let wasMentioned = isMentioned(chatLog.lastMessage.text, constructArray[0]) && chatLog.lastMessage.isHuman;
             if(wasMentioned){
                 if(config.replyToUserMention >= Math.random()){
-                    sendTyping(interaction);
+                    if(getShowTyping()){
+                        sendTyping(interaction);
+                    }
                     let replyLog = await doCharacterReply(constructArray[0], chatLog, interaction);
                     if(replyLog !== undefined){
                         chatLog = replyLog;
@@ -931,7 +972,9 @@ export async function continueChatLog(interaction: CommandInteraction) {
                 }
             }else{
                 if(config.replyToUser >= Math.random()){
-                    sendTyping(interaction);
+                    if(getShowTyping()){
+                        sendTyping(interaction);
+                    }
                     let replyLog = await doCharacterReply(constructArray[0], chatLog, interaction);
                     if(replyLog !== undefined){
                         chatLog = replyLog;
@@ -1188,7 +1231,7 @@ export async function doImageReaction(message: Message){
     ])
     .setImage(`attachment://${imageData.name}`)
     .setFooter({text: 'Powered by Stable Diffusion'});
-    if(!showDiffusionDetails){
+    if(showDiffusionDetails){
         message.reply({files: [attachment], embeds: [embed]});
     }else{
         message.reply({files: [attachment]});
