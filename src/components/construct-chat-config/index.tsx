@@ -1,3 +1,4 @@
+import { ConnectionPreset, getLLMConnectionPresets } from "@/api/llmapi";
 import { ConstructChatConfig, DefaultChatConfig, InstructType } from "../../classes/Construct";
 import { useEffect, useState } from "react";
 import ReactSwitch from "react-switch";
@@ -25,6 +26,17 @@ const ConstructChatConfigPanel = (props: ConstructChatConfigProps) => {
     const [replyToUserMention, setReplyToUserMention] = useState<number>(chatConfig.replyToUserMention);
     const [thoughtChance, setThoughtChance] = useState<number>(chatConfig.thoughtChance);
     const [instructType, setInstructType] = useState<InstructType>(chatConfig.instructType);
+    const [connectionPreset, setConnectionPreset] = useState<string>(chatConfig.connectionPreset);
+    const [doConnectionPreset, setDoConnectionPreset] = useState<boolean>(chatConfig.doConnectionPreset);
+
+    const [presets, setPresets] = useState<ConnectionPreset[]>([]);
+
+    useEffect(() => {
+        getLLMConnectionPresets().then((presets) => {
+            setPresets(presets);
+        });
+    }, []);
+
     const types = ['Alpaca', 'Metharme', 'Vicuna']
 
     const handleEdit = () => {
@@ -45,13 +57,15 @@ const ConstructChatConfigPanel = (props: ConstructChatConfigProps) => {
         chatConfig.replyToUser = replyToUser;
         chatConfig.replyToUserMention = replyToUserMention;
         chatConfig.thoughtChance = thoughtChance;
+        chatConfig.connectionPreset = connectionPreset;
+        chatConfig.doConnectionPreset = doConnectionPreset;
         onChange(chatConfig);
     }
 
     useEffect(() => {
         handleEdit();
-    }, [doInstruct, doMemories, doActions, doSprites, doVoice, doLurk, doRandomGreeting, doRandomFarewell, doRandomThought, haveThoughts, thinkBeforeChat, replyToConstruct, replyToConstructMention, replyToUser, replyToUserMention, thoughtChance, instructType]);
-    
+    }, [doInstruct, doMemories, doActions, doSprites, doVoice, doLurk, doRandomGreeting, doRandomFarewell, doRandomThought, haveThoughts, thinkBeforeChat, replyToConstruct, replyToConstructMention, replyToUser, replyToUserMention, thoughtChance, instructType, connectionPreset, doConnectionPreset]);
+
     return (
         <div className="w-full h-full max-h-full max-w-full themed-input overflow-y-auto">
             <label className="font-semibold">Random Thought</label>
@@ -118,6 +132,30 @@ const ConstructChatConfigPanel = (props: ConstructChatConfigProps) => {
                     checkedIcon={true}
                     id="doInstruct"
                 />
+            </div>
+            <label className="font-semibold">Use Connection Preset?</label>
+            <div className="themed-input flex flex-col items-center w-full flex-grow gap-2 text-left">
+                <ReactSwitch
+                    checked={doConnectionPreset}
+                    onChange={() => {setDoConnectionPreset(!doConnectionPreset);}}
+                    handleDiameter={30}
+                    width={60}
+                    uncheckedIcon={false}
+                    checkedIcon={true}
+                    id="doConnectionPreset"
+                />
+            </div>
+            <label className="font-semibold">Connection Preset</label>
+            <div className="themed-input flex flex-col items-center w-full flex-grow gap-2 text-left">
+                <select
+                    className="themed-input"
+                    value={connectionPreset}
+                    onChange={(e) => {setConnectionPreset(e.target.value);}}
+                >
+                    {presets.map((preset) => (
+                        <option key={preset.name} value={preset._id}>{preset.name}</option>
+                    ))}
+                </select>
             </div>
             <label className="font-semibold">Instruct Type</label>
             <div className="themed-input flex flex-col items-center w-full flex-grow gap-2 text-left">

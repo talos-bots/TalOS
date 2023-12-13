@@ -127,6 +127,8 @@ export type ConstructChatConfig = {
     replyToUser: number;
     replyToUserMention: number;
     thoughtChance: number;
+    connectionPreset: string;
+    doConnectionPreset: boolean;
 }
 
 export interface LorebookInterface {
@@ -179,6 +181,8 @@ export type DefaultChatConfig = {
     replyToUser: number;
     replyToUserMention: number;
     thoughtChance: number;
+    connectionPreset: string;
+    doConnectionPreset: boolean;
 }
 export type Sprite = {
     moood: string;

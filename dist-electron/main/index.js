@@ -1923,7 +1923,7 @@ async function getStatus(testEndpoint, testEndpointType) {
   }
 }
 const generateText = async (prompt, configuredName = "You", stopList = null, construct) => {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t;
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w;
   let response;
   let char = "Character";
   prompt = prompt.toString().replaceAll(/<br>/g, "").replaceAll(/\\/g, "");
@@ -1936,6 +1936,12 @@ const generateText = async (prompt, configuredName = "You", stopList = null, con
     stops.push("[", "]");
   }
   let connection = connectionPresets.find((connectionPreset) => connectionPreset._id === currentConnectionPreset);
+  if (((_a = construct == null ? void 0 : construct.defaultConfig) == null ? void 0 : _a.connectionPreset) !== "default" && ((_b = construct == null ? void 0 : construct.defaultConfig) == null ? void 0 : _b.connectionPreset) !== currentConnectionPreset && ((_c = construct == null ? void 0 : construct.defaultConfig) == null ? void 0 : _c.doConnectionPreset)) {
+    connection = connectionPresets.find((connectionPreset) => {
+      var _a2;
+      return connectionPreset._id === ((_a2 = construct == null ? void 0 : construct.defaultConfig) == null ? void 0 : _a2.connectionPreset);
+    });
+  }
   if (!connection) {
     connection = {
       _id: "0000000000",
@@ -2127,7 +2133,7 @@ const generateText = async (prompt, configuredName = "You", stopList = null, con
           console.log(error);
           throw error;
         });
-        if (((_b = (_a = response == null ? void 0 : response.choices[0]) == null ? void 0 : _a.message) == null ? void 0 : _b.content) === void 0) {
+        if (((_e = (_d = response == null ? void 0 : response.choices[0]) == null ? void 0 : _d.message) == null ? void 0 : _e.content) === void 0) {
           return results = { results: null, error: response.data, prompt };
         } else {
           return results = { results: [response.choices[0].message.content], prompt };
@@ -2238,7 +2244,7 @@ const generateText = async (prompt, configuredName = "You", stopList = null, con
           console.log(error);
           throw error;
         });
-        if (((_d = (_c = response2.choices[0]) == null ? void 0 : _c.message) == null ? void 0 : _d.content) === void 0) {
+        if (((_g = (_f = response2.choices[0]) == null ? void 0 : _f.message) == null ? void 0 : _g.content) === void 0) {
           console.log(response2);
           return results = { results: null, error: response2, prompt };
         } else {
@@ -2278,7 +2284,7 @@ Assistant: Okay, here is my response as ${char}:`;
         }).catch((error) => {
           throw error;
         });
-        if ((_h = (_g = (_f = (_e = claudeResponse.data) == null ? void 0 : _e.choices) == null ? void 0 : _f[0]) == null ? void 0 : _g.message) == null ? void 0 : _h.content) {
+        if ((_k = (_j = (_i = (_h = claudeResponse.data) == null ? void 0 : _h.choices) == null ? void 0 : _i[0]) == null ? void 0 : _j.message) == null ? void 0 : _k.content) {
           return results = { results: [claudeResponse.data.choices[0].message.content] };
         } else {
           console.log("Unexpected Response:", claudeResponse);
@@ -2317,7 +2323,7 @@ Assistant: Okay, here is my response as ${char}:`;
         }).catch((error) => {
           throw error;
         });
-        if ((_i = claudeResponse.data) == null ? void 0 : _i.completion) {
+        if ((_l = claudeResponse.data) == null ? void 0 : _l.completion) {
           console.log(claudeResponse.data.completion);
           return results = { results: [claudeResponse.data.completion] };
         } else {
@@ -2379,16 +2385,16 @@ Assistant: Okay, here is my response as ${char}:`;
         });
         if (!(googleReply == null ? void 0 : googleReply.data)) {
           throw new Error("No valid response from LLM.");
-        } else if ((_j = googleReply == null ? void 0 : googleReply.data) == null ? void 0 : _j.error) {
+        } else if ((_m = googleReply == null ? void 0 : googleReply.data) == null ? void 0 : _m.error) {
           throw new Error(googleReply.data.error.message);
-        } else if ((_k = googleReply == null ? void 0 : googleReply.data) == null ? void 0 : _k.filters) {
+        } else if ((_n = googleReply == null ? void 0 : googleReply.data) == null ? void 0 : _n.filters) {
           throw new Error("No valid response from LLM. Filters are blocking the response.");
-        } else if (!((_m = (_l = googleReply == null ? void 0 : googleReply.data) == null ? void 0 : _l.candidates[0]) == null ? void 0 : _m.output)) {
+        } else if (!((_p = (_o = googleReply == null ? void 0 : googleReply.data) == null ? void 0 : _o.candidates[0]) == null ? void 0 : _p.output)) {
           throw new Error("No valid response from LLM.");
-        } else if (((_p = (_o = (_n = googleReply == null ? void 0 : googleReply.data) == null ? void 0 : _n.candidates[0]) == null ? void 0 : _o.output) == null ? void 0 : _p.length) < 1) {
+        } else if (((_s = (_r = (_q = googleReply == null ? void 0 : googleReply.data) == null ? void 0 : _q.candidates[0]) == null ? void 0 : _r.output) == null ? void 0 : _s.length) < 1) {
           throw new Error("No valid response from LLM.");
-        } else if (((_s = (_r = (_q = googleReply == null ? void 0 : googleReply.data) == null ? void 0 : _q.candidates[0]) == null ? void 0 : _r.output) == null ? void 0 : _s.length) > 1) {
-          return results = { results: [(_t = googleReply.data.candidates[0]) == null ? void 0 : _t.output], prompt };
+        } else if (((_v = (_u = (_t = googleReply == null ? void 0 : googleReply.data) == null ? void 0 : _t.candidates[0]) == null ? void 0 : _u.output) == null ? void 0 : _v.length) > 1) {
+          return results = { results: [(_w = googleReply.data.candidates[0]) == null ? void 0 : _w.output], prompt };
         }
       } catch (error) {
         throw error;

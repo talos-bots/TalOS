@@ -233,9 +233,11 @@ export class DefaultChatConfig{
         public replyToUser: number = 1,
         public replyToUserMention: number = 1,
         public thoughtChance: number = 0.50,
+        public connectionPreset: string = 'default',
+        public doConnectionPreset: boolean = false,
     ){}
 
-    setDefaultChatConfig(doInstruct: boolean, doMemories: boolean, doActions: boolean, doSprites: boolean, doVoice: boolean, doLurk: boolean, doRandomGreeting: boolean, doRandomFarewell: boolean, doRandomThought: boolean, haveThoughts: boolean, thinkBeforeChat: boolean, replyToConstruct: number, replyToConstructMention: number, replyToUser: number, replyToUserMention: number, thoughtChance: number){
+    setDefaultChatConfig(doInstruct: boolean, doMemories: boolean, doActions: boolean, doSprites: boolean, doVoice: boolean, doLurk: boolean, doRandomGreeting: boolean, doRandomFarewell: boolean, doRandomThought: boolean, haveThoughts: boolean, thinkBeforeChat: boolean, replyToConstruct: number, replyToConstructMention: number, replyToUser: number, replyToUserMention: number, thoughtChance: number, connectionPreset: string, doConnectionPreset: boolean){
         this.doInstruct = doInstruct;
         this.doMemories = doMemories;
         this.doActions = doActions;
@@ -252,7 +254,8 @@ export class DefaultChatConfig{
         this.replyToUser = replyToUser;
         this.replyToUserMention = replyToUserMention;
         this.thoughtChance = thoughtChance;
-
+        this.connectionPreset = connectionPreset;
+        this.doConnectionPreset = doConnectionPreset;
     }
 
     getDefaultChatConfig(){
@@ -273,6 +276,8 @@ export class DefaultChatConfig{
             replyToUser: this.replyToUser,
             replyToUserMention: this.replyToUserMention,
             thoughtChance: this.thoughtChance,
+            connectionPreset: this.connectionPreset,
+            doConnectionPreset: this.doConnectionPreset,
         }
     }
 }
@@ -297,6 +302,8 @@ export class ConstructChatConfig{
         public replyToUser: number = 1,
         public replyToUserMention: number = 1,
         public thoughtChance: number = 0.50,
+        public connectionPreset: string = 'default',
+        public doConnectionPreset: boolean = false,
     ){}
 
     createChatConfigFromDefault(defaultChatConfig: DefaultChatConfig, constructID: string){
@@ -317,6 +324,8 @@ export class ConstructChatConfig{
         this.replyToUser = defaultChatConfig.replyToUser;
         this.replyToUserMention = defaultChatConfig.replyToUserMention;
         this.thoughtChance = defaultChatConfig.thoughtChance;
+        this.connectionPreset = defaultChatConfig.connectionPreset;
+        this.doConnectionPreset = defaultChatConfig.doConnectionPreset;
     }
 }
 export class Sprite{

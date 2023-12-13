@@ -455,6 +455,9 @@ export const generateText = async (
       stops.push('[', ']');
     }
     let connection = connectionPresets.find((connectionPreset) => connectionPreset._id === currentConnectionPreset);
+    if(construct?.defaultConfig?.connectionPreset !== 'default' && construct?.defaultConfig?.connectionPreset !== currentConnectionPreset && construct?.defaultConfig?.doConnectionPreset){
+        connection = connectionPresets.find((connectionPreset) => connectionPreset._id === construct?.defaultConfig?.connectionPreset);
+    }
     if(!connection){
         connection = {
             _id: '0000000000',
