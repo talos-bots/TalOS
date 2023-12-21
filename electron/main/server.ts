@@ -8,7 +8,7 @@ process.env.VITE_PUBLIC = process.env.VITE_DEV_SERVER_URL
   ? join(process.env.DIST_ELECTRON, "../public")
   : process.env.DIST;
 
-const appDataPath = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + 'Library/Preferences/' : '/var/local/');
+const appDataPath = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Preferences/' : '/var/local/');
 import DiscordController from "./controllers/DiscordController.js";
 import { ElectronDBRoutes } from "./api/electrondb.js";
 import { VectorDBRoutes } from "./api/vector.js";
