@@ -1,6 +1,10 @@
 # TalOS
 ![TalOSLinesLogoClean](https://github.com/WaywardWyvernsSoftworks/TalOS/assets/26259870/d43eb0d1-dcdd-4b4c-abf9-3ecda3b2d996)
 TalOS is intended to be the one shop stop for all things LLM, and some things Stable Diffusion. You can create Constructs, which is a type character. You can import Constructs from Traditional Character cards, in both V1 and V2 format, but a lot of fields will be missing, and I'd highly reccomend taking the time to expore the edit UI for all imported cards. Thought patterns, sprites, greetings, farewells, relationships, and interests are all unique to TalOS and if you intended to do more than RP with your character, it will be highly beneficial to fully flesh out your construct.
+
+# TalOS is being replaced by:
+https://github.com/waywysw/TalOS-Reborn
+Which is a much more performance friendly web based application with an optional tauri desktop mode. Has more fratures, in UI multiplayer, and an account system for allowing your friends to connect and share the same characters and endpoints as you. 
 ## Development Build Setup
 1. Download the Repo using ```git clone https://github.com/WaywardWyvernsSoftworks/TalOS.git```
 2. Ensure you have needed dependencies, which luckily for this application only includes Node.JS which can be downloaded here (downloading the LTS build is reccommended): https://nodejs.org/en
